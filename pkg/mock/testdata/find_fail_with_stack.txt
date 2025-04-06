@@ -1,0 +1,10 @@
+Log message with stack trace.
+---
+[mock] unexpected method call:
+         closest: Zero(int) string
+  argument match:
+                  0: FAIL: (int=0) != (Missing)
+           stack:
+                  a
+                  b
+                  c

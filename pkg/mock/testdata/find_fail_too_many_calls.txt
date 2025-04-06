@@ -1,0 +1,7 @@
+Log message when the mocked method was found but it cannot be used due to
+exceeded number of allowed calls.
+---
+[mock] too many method calls:
+      method: Wrap()
+  want calls: 1
+  have calls: 2

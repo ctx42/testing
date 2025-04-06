@@ -132,13 +132,15 @@ type TPtr struct{ Val string } // nolint: errname
 
 func (typ *TPtr) AAA() string { return typ.Val }
 
-func (typ *TPtr) Variadic1(str string, i ...int) string {
+func (typ *TPtr) Variadic(str string, i ...int) string {
 	return fmt.Sprintf("%s %s %v", typ.Val, str, i)
 }
 
 func (typ *TPtr) Error() string { return typ.Val }
 
-func (typ *TPtr) PS(a, b string) string { return a + typ.Val + b }
+func (typ *TPtr) Wrap(a, b string) string { return a + typ.Val + b }
+
+func (typ *TPtr) Identity(val *string) *string { return val }
 
 // /////////////////////////////////////////////////////////////////////////////
 

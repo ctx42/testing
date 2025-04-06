@@ -1,0 +1,7 @@
+Log message when method argument matcher panics when comparing arguments.
+---
+[mock] unexpected method call:
+         closest: MethodIntVar(int, *mock.Matcher) <nil>
+  argument match:
+                  0: PASS: (int=10) == (int=10)
+                  1: FAIL: [mock.MatchBy=func(int) bool] {panic: "boom"} != (int=4)

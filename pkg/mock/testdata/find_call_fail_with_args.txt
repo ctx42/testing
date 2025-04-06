@@ -1,0 +1,8 @@
+Log message when the mocked method call was not found by name.
+The searched method has no arguments.
+---
+[mock] method call not found:
+     method: Two(int, int)
+  with args:
+             0: 1
+             1: 2

@@ -1,0 +1,8 @@
+Example log message when expected mock method is called too few times.
+---
+[mock] too few method calls:
+         method: Method(int) int
+  expected args:
+                 0: 1
+     want calls: 2
+     have calls: 1

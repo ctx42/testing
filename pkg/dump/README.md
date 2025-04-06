@@ -16,7 +16,7 @@
 The `dump` package is a utility that serializes any Go value into its string
 representation.
 
-The `dump` package is part of the Ctx42 Testing Module, an ongoing effort to 
+The `dump` package is part of the CTX42 Testing Module, an ongoing effort to 
 build a new, flexible, and developer-friendly testing framework.
 
 The `dump` package provides a configurable way to render any Go value — whether 

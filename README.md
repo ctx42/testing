@@ -1,3 +1,5 @@
+![gopher.png](doc/gopher.png)
+
 This repository is work in progress open sourcing libraries I've created during 
 my time as a Go developer.
 
@@ -5,7 +7,7 @@ my time as a Go developer.
 [![GoDoc](https://img.shields.io/badge/api-Godoc-blue.svg)](https://pkg.go.dev/github.com/ctx42/testing)
 ![Tests](https://github.com/ctx42/testing/actions/workflows/go.yml/badge.svg?branch=master)
 
-I’ve written several [blog posts](http://localhost:1313/tags/gtm/) tied to this
+I’ve written several [blog posts](http://blog.ctx42.com/tags/gtm/) tied to this
 repository. If you’re curious about the behind-the-scenes details of how this
 package is coming together, check them out and share your thoughts—I’d love to
 hear what you think! Any feedback is greatly appreciated.
@@ -18,11 +20,13 @@ hear what you think! Any feedback is greatly appreciated.
   * [Modular and Extensible Design](#modular-and-extensible-design)
   * [Installation](#installation)
   * [Packages](#packages)
+    * [Main Packages](#main-packages)
+    * [Infrastructure Packets](#infrastructure-packets)
 <!-- TOC -->
 
 # Introduction to Ctx42 Testing Module
 
-This repository marks the beginning of Ctx42 Testing Module, a collection of 
+This repository marks the beginning of CTX42 Testing Module, a collection of 
 testing and assertion packages poised to help developers approach testing. As 
 it develops, it will offer a comprehensive suite of tools designed to make 
 testing more efficient, enjoyable, and integral to the development process.
@@ -53,7 +57,7 @@ project’s exact needs, avoiding unnecessary overhead. Beyond customization, th
 extensible architecture invites you to create your own test helpers ensuring.
 
 ## Installation
-To install Ctx42 Testing Module, use go get:
+To install CTX42 Testing Module, use go get:
 
 ```shell
 go get github.com/ctx42/testing
@@ -63,12 +67,22 @@ This will make all the package modules available to you.
 
 ## Packages
 
+### Main Packages
+
+Packages used in test cases. 
+
 - Package [assert](pkg/assert/README.md) provides assertion toolkit.
 - Package [check](pkg/check/README.md) provides equality toolkit used by `assert` package.
-- Package [dump](pkg/dump/README.md) provides configurable renderer of any type to a string.
+- Package [mock](pkg/mock) package provides primitives for writing interface mocks.
 - Package [must](pkg/must/README.md) provides basic test helpers which panic on error.
+
+### Infrastructure Packets
+
+Packages used to create custom checks, assertions and helpers.
+
+- Package [dump](pkg/dump/README.md) provides configurable renderer of any type to a string.
 - Package [notice](pkg/notice/README.md) helps to create nicely formated assertion messages.
 - Package [tester](pkg/tester/README.md) provides facilities to test `Test Helpers`.
 
-Click on the package link to see its README.md file with documentation. Each 
-also package has an `examples_test.go` file with usage examples.
+Click on the package link to see its README.md file with documentation. Also 
+most of the packages contain `examples_test.go` file with usage examples.

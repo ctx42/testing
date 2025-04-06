@@ -1,0 +1,7 @@
+Log message when an assertion on the number of mocked method calls fails due to
+too few calls.
+---
+[mock] too few method calls:
+      method: MethodBool
+  want calls: 1
+  have calls: 2

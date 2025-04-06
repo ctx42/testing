@@ -1,0 +1,8 @@
+Log message when the mocked method call is found but the expected argument
+values do not match.
+---
+[mock] unexpected method call:
+         closest: Zero(int, int)
+  argument match:
+                  0: FAIL: (int=0) != (int=2)
+                  1: FAIL: (int=1) != (int=3)

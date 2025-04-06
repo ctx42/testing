@@ -1,0 +1,6 @@
+Log message when a argument matcher panics.
+---
+[mock] unexpected method call:
+         closest: MethodBool(*mock.Matcher)
+  argument match:
+                  0: FAIL: [mock.MatchBy=func(bool) bool] {panic: "integer divide by zero"} != (bool=false)

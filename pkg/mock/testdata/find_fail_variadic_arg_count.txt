@@ -1,0 +1,10 @@
+Log message when mocked method has variadic number of arguments, and we are
+searching for the call that has different number of arguments.
+---
+[mock] unexpected method call:
+         closest: MethodIntVar(int, int, int, int) <nil>
+  argument match:
+                  0: PASS: (int=1) == (int=1)
+                  1: PASS: (int=2) == (int=2)
+                  2: PASS: (int=3) == (int=3)
+                  3: FAIL: (int=4) != (Missing)

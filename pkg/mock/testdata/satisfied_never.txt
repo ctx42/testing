@@ -1,0 +1,6 @@
+Example log message when expected mock method is never called.
+---
+[mock] method never called:
+         method: Method(int) int
+  expected args:
+                 0: 1
