@@ -1,0 +1,5 @@
+Example log message triggered from mock cleanup callback.
+---
+[mock] too few method calls:
+  missing calls:
+                 Zero(int) expected 0 calls received 0 calls

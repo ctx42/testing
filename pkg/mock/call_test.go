@@ -1,0 +1,1041 @@
+package mock
+
+import (
+	"errors"
+	"reflect"
+	"testing"
+	"time"
+
+	"github.com/ctx42/testing/internal/tstkit"
+	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/assert"
+	"github.com/ctx42/testing/pkg/tester"
+)
+
+func Test_newCall(t *testing.T) {
+	// --- Given ---
+	tspy := tester.New(t)
+	tspy.ExpectCleanups(1)
+	tspy.Close()
+
+	mck := NewMock(tspy)
+	stk := []string{"/absolute/path/to/caller.go:42"}
+
+	// --- When ---
+	call := newCall(mck, "Method", stk, "arg0", "arg1")
+
+	// --- Then ---
+	assert.Equal(t, []string{"/absolute/path/to/caller.go:42"}, call.stack)
+	assert.Same(t, mck, call.parent)
+	assert.Equal(t, "Method", call.method)
+	assert.Equal(t, Arguments{"arg0", "arg1"}, call.args)
+	assert.False(t, call.argsAny)
+	assert.Len(t, 0, call.returns)
+	assert.Equal(t, 0, call.wantCalls)
+	assert.Equal(t, 0, call.haveCalls)
+	assert.False(t, call.optional)
+	assert.Nil(t, call.until)
+	assert.Duration(t, 0, call.after)
+	assert.Nil(t, call.alter)
+	assert.Nil(t, call.panic)
+	assert.Nil(t, call.requires)
+	assert.False(t, call.proxy.IsValid())
+}
+
+func Test_newProxy(t *testing.T) {
+	t.Run("regular", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		stk := []string{"/absolute/path/to/caller.go:42"}
+		ptr := &types.TPtr{}
+		met := reflect.ValueOf(ptr.AAA)
+
+		// --- When ---
+		call := newProxy(mck, stk, met)
+
+		// --- Then ---
+		assert.Equal(t, []string{"/absolute/path/to/caller.go:42"}, call.stack)
+		assert.Same(t, mck, call.parent)
+		assert.Equal(t, "AAA", call.method)
+		assert.Nil(t, call.args)
+		assert.False(t, call.argsAny)
+		assert.Len(t, 0, call.returns)
+		assert.Equal(t, 0, call.wantCalls)
+		assert.Equal(t, 0, call.haveCalls)
+		assert.False(t, call.optional)
+		assert.Nil(t, call.until)
+		assert.Duration(t, 0, call.after)
+		assert.Nil(t, call.alter)
+		assert.Nil(t, call.panic)
+		assert.Nil(t, call.requires)
+		assert.Equal(t, met, call.proxy)
+	})
+
+	t.Run("variadic", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		stk := []string{"/absolute/path/to/caller.go:42"}
+		ptr := &types.TPtr{}
+		met := reflect.ValueOf(ptr.Variadic)
+
+		// --- When ---
+		call := newProxy(mck, stk, met)
+
+		// --- Then ---
+		assert.Equal(t, []string{"/absolute/path/to/caller.go:42"}, call.stack)
+		assert.Same(t, mck, call.parent)
+		assert.Equal(t, "Variadic", call.method)
+		assert.Nil(t, call.args)
+		assert.False(t, call.argsAny)
+		assert.Len(t, 0, call.returns)
+		assert.Equal(t, 0, call.wantCalls)
+		assert.Equal(t, 0, call.haveCalls)
+		assert.False(t, call.optional)
+		assert.Nil(t, call.until)
+		assert.Duration(t, 0, call.after)
+		assert.Nil(t, call.alter)
+		assert.Nil(t, call.panic)
+		assert.Nil(t, call.requires)
+		assert.Equal(t, met, call.proxy)
+	})
+
+	t.Run("custom name", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ptr := &types.TPtr{}
+		met := reflect.ValueOf(ptr.Variadic)
+
+		// --- When ---
+		call := newProxy(mck, nil, met, "MyName")
+
+		// --- Then ---
+		assert.Equal(t, "MyName", call.method)
+	})
+}
+
+func Test_Call_With(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ptr := &types.TPtr{Val: "c"}
+		prx := reflect.ValueOf(ptr.AAA)
+		call := newProxy(mck, nil, prx)
+
+		// --- When ---
+		have := call.With("a", "b")
+
+		// --- Then ---
+		assert.Same(t, call, have)
+		assert.Equal(t, Arguments{"a", "b"}, have.args)
+	})
+
+	t.Run("panics if not proxied call", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil)
+
+		// --- When ---
+		msg := assert.PanicMsg(t, func() { call.With("a", "b") })
+
+		// --- Then ---
+		assert.Contain(t, "cannot set arguments on proxy calls", *msg)
+	})
+}
+
+func Test_Call_Return(t *testing.T) {
+	t.Run("simple values", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil)
+
+		// --- When ---
+		have := call.Return("str", 42, true)
+
+		// --- Then ---
+		assert.Same(t, call, have)
+		assert.Equal(t, Arguments{"str", 42, true}, have.returns)
+	})
+
+	t.Run("with slices", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil)
+
+		// --- When ---
+		have := call.Return("str", []any{42, true})
+
+		// --- Then ---
+		assert.Same(t, call, have)
+		assert.Equal(t, Arguments{"str", []any{42, true}}, have.returns)
+	})
+
+	t.Run("nothing", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil)
+
+		// --- When ---
+		have := call.Return()
+
+		// --- Then ---
+		assert.Same(t, call, have)
+		assert.Nil(t, have.returns)
+	})
+
+	t.Run("panics if proxy call", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.ExpectFail()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ptr := &types.TPtr{}
+		call := mck.Proxy(ptr.AAA)
+
+		// --- When ---
+		have := assert.PanicMsg(t, func() { call.Return() })
+
+		// --- Then ---
+		assert.Equal(t, *have, "proxy calls cannot have return values")
+	})
+}
+
+func Test_Call_Panic(t *testing.T) {
+	t.Run("success with string", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil)
+
+		// --- When ---
+		have := call.Panic("message")
+
+		// --- Then ---
+		assert.Same(t, call, have)
+		assert.Equal(t, "message", have.panic)
+	})
+
+	t.Run("success with error", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		ErrTst := errors.New("test")
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil)
+
+		// --- When ---
+		have := call.Panic(ErrTst)
+
+		// --- Then ---
+		assert.Same(t, call, have)
+		assert.ErrorIs(t, ErrTst, have.panic.(error))
+	})
+
+	t.Run("panics if proxy call", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.ExpectFail()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ptr := &types.TPtr{}
+		call := mck.Proxy(ptr.AAA)
+
+		// --- When ---
+		have := assert.PanicMsg(t, func() { call.Panic("message") })
+
+		// --- Then ---
+		assert.Equal(t, *have, "cannot call panic on proxy calls")
+	})
+}
+
+func Test_Call_Once(t *testing.T) {
+	// --- Given ---
+	tspy := tester.New(t)
+	tspy.ExpectCleanups(1)
+	tspy.Close()
+
+	mck := NewMock(tspy)
+	call := newCall(mck, "Zero", nil)
+
+	// --- When ---
+	have := call.Once()
+
+	// --- Then ---
+	assert.Same(t, call, have)
+	assert.Equal(t, 1, have.wantCalls)
+}
+
+func Test_Call_Times(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil)
+
+		// --- When ---
+		have := call.Times(3)
+
+		// --- Then ---
+		assert.Same(t, call, have)
+		assert.Equal(t, 3, have.wantCalls)
+	})
+
+	t.Run("panics when used with Optional", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil).Optional()
+
+		// --- When ---
+		msg := assert.PanicMsg(t, func() { call.Times(3) })
+
+		// --- Then ---
+		assert.NotNil(t, msg)
+		wMsg := "cannot use Optional and Times in the same time"
+		assert.Equal(t, wMsg, *msg)
+	})
+}
+
+func Test_Call_Until(t *testing.T) {
+	// --- Given ---
+	tspy := tester.New(t)
+	tspy.ExpectCleanups(1)
+	tspy.Close()
+
+	mck := NewMock(tspy)
+	call := newCall(mck, "Zero", nil)
+	ch := time.After(50 * time.Millisecond)
+	defer func() { <-ch }()
+
+	// --- When ---
+	have := call.Until(ch)
+
+	// --- Then ---
+	assert.Same(t, call, have)
+	assert.Equal(t, ch, have.until)
+}
+
+func Test_Call_After(t *testing.T) {
+	// --- Given ---
+	tspy := tester.New(t)
+	tspy.ExpectCleanups(1)
+	tspy.Close()
+
+	mck := NewMock(tspy)
+	call := newCall(mck, "Zero", nil)
+
+	// --- When ---
+	have := call.After(100 * time.Millisecond)
+
+	// --- Then ---
+	assert.Same(t, call, have)
+	assert.Equal(t, 100*time.Millisecond, have.after)
+}
+
+func Test_Call_Alter(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil)
+
+		// --- When ---
+		alter0 := func(_ Arguments) {}
+		alter1 := func(_ Arguments) {}
+		have := call.Alter(alter0, alter1)
+
+		// --- Then ---
+		assert.Same(t, call, have)
+		assert.Same(t, alter0, have.alter[0])
+		assert.Same(t, alter1, have.alter[1])
+	})
+}
+
+func Test_Call_Optional(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil)
+
+		// --- When ---
+		have := call.Optional()
+
+		// --- Then ---
+		assert.Same(t, call, have)
+		assert.True(t, have.optional)
+	})
+
+	t.Run("panics when used with Times", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil).Times(3)
+
+		// --- When ---
+		msg := assert.PanicMsg(t, func() { call.Optional() })
+
+		// --- Then ---
+		assert.NotNil(t, msg)
+		wMsg := "cannot use Optional and Times in the same time"
+		assert.Equal(t, wMsg, *msg)
+	})
+}
+
+func Test_Call_Requires(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		tspy0 := tester.New(t)
+		tspy0.ExpectCleanups(1)
+		tspy0.ExpectFail()
+		tspy0.IgnoreLogs()
+		tspy0.Close()
+
+		mck0 := NewMock(tspy0)
+		call00 := mck0.On("Zero0")
+
+		tspy1 := tester.New(t)
+		tspy1.ExpectCleanups(1)
+		tspy1.ExpectFail()
+		tspy1.IgnoreLogs()
+		tspy1.Close()
+
+		mck1 := NewMock(tspy1)
+		call10 := mck1.On("Zero1")
+		call11 := mck1.On("One1")
+
+		// --- When ---
+		have := call00.Requires(call10, call11)
+
+		// --- Then ---
+		assert.Same(t, call00, have)
+		want := []*Call{call10, call11}
+		assert.Equal(t, want, have.requires)
+	})
+
+	t.Run("nil instance on the list", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil)
+
+		// --- Then ---
+		msg := assert.PanicMsg(t, func() { call.Requires(nil) })
+		assert.Contain(t, "nil instance", *msg)
+	})
+
+	t.Run("instance with nil parent on the list", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call0 := newCall(nil, "Zero", nil)
+		call1 := newCall(mck, "One", nil)
+
+		// --- Then ---
+		have := assert.PanicMsg(t, func() { call1.Requires(call0) })
+		assert.Contain(t, "nil parent", *have)
+	})
+}
+
+func Test_Call_CanCall_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		max      int
+		cnt      int
+		optional bool
+		want     error
+	}{
+		{"no max never called not optional", 0, 0, false, nil},
+		{"no max never called optional", 0, 0, true, nil},
+		{"no max called not optional", 0, 1, false, nil},
+		{"no max called optional", 0, 1, true, nil},
+		{"called fewer times than expected not optional", 2, 0, false, nil},
+		{"called fewer times than expected optional", 2, 0, true, nil},
+		{"called requested number of times not optional", 1, 1, false, ErrTooManyCalls},
+		{"called requested number of times optional", 1, 1, true, ErrTooManyCalls},
+		{"called more than requested number of times not optional", 1, 2, false, ErrTooManyCalls},
+		{"called more than requested number of times optional", 1, 2, false, ErrTooManyCalls},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- Given ---
+			call := &Call{
+				wantCalls: tc.max,
+				haveCalls: tc.cnt,
+			}
+
+			// --- When ---
+			err := call.CanCall()
+
+			// --- Then ---
+			assert.ErrorIs(t, err, tc.want)
+		})
+	}
+}
+
+func Test_Call_Satisfied(t *testing.T) {
+	t.Run("satisfied", func(t *testing.T) {
+		// --- Given ---
+		call := &Call{
+			wantCalls: 1,
+			haveCalls: 1,
+			optional:  false,
+		}
+
+		// --- When ---
+		have := call.Satisfied()
+
+		// --- Then ---
+		assert.True(t, have)
+	})
+
+	t.Run("not satisfied", func(t *testing.T) {
+		// --- Given ---
+		call := &Call{
+			wantCalls: 1,
+			haveCalls: 0,
+			optional:  false,
+		}
+
+		// --- When ---
+		have := call.Satisfied()
+
+		// --- Then ---
+		assert.False(t, have)
+	})
+}
+
+func Test_Call_satisfied_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		wantCalls int
+		haveCalls int
+		optional  bool
+		err       error
+	}{
+		{"no max never called not optional", 0, 0, false, ErrNeverCalled},
+		{"no max never called optional", 0, 0, true, nil},
+		{"no max called not optional", 0, 1, false, nil},
+		{"no max called not optional", 0, 1, true, nil},
+		{"no max called multiple times optional", 0, 10, true, nil},
+		{"no max called multiple times not optional", 0, 10, false, nil},
+		{"called fewer times than max not optional", 2, 1, false, ErrTooFewCalls},
+		{"called fewer times than max optional", 2, 1, true, nil},
+		{"called requested number of times and optional", 5, 5, false, nil},
+		{"called requested number of times optional", 5, 5, true, nil},
+		{"called more times than max not optional", 1, 10, false, ErrTooManyCalls},
+		{"called more times than max optional", 1, 10, true, ErrTooManyCalls},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- Given ---
+			call := &Call{
+				wantCalls: tc.wantCalls,
+				// haveCalls: Method doesn't consider it.
+				optional: tc.optional,
+				args:     []any{1},
+			}
+
+			// --- When ---
+			err := call.satisfied(tc.haveCalls)
+
+			// --- Then ---
+			assert.True(t, errors.Is(err, tc.err))
+		})
+	}
+}
+
+func Test_Call_satisfied(t *testing.T) {
+	t.Run("method never called", func(t *testing.T) {
+		// --- Given ---
+		call := &Call{
+			cStack:    cStack{method: "Method"},
+			wantCalls: 0,
+			optional:  false,
+			args:      []any{1},
+			returns:   []any{2},
+		}
+
+		// --- When ---
+		err := call.satisfied(0)
+
+		// --- Then ---
+		wMsg := tstkit.Golden(t, "testdata/satisfied_never.txt")
+		assert.ErrorEqual(t, wMsg, err)
+	})
+
+	t.Run("method called too few times", func(t *testing.T) {
+		// --- Given ---
+		call := &Call{
+			cStack:    cStack{method: "Method"},
+			wantCalls: 2,
+			optional:  false,
+			args:      []any{1},
+			returns:   []any{2},
+		}
+
+		// --- When ---
+		err := call.satisfied(1)
+
+		// --- Then ---
+		wMsg := tstkit.Golden(t, "testdata/satisfied_too_few.txt")
+		assert.ErrorEqual(t, wMsg, err)
+	})
+
+	t.Run("method called too many times", func(t *testing.T) {
+		// --- Given ---
+		call := &Call{
+			cStack:    cStack{method: "Method"},
+			wantCalls: 2,
+			optional:  false,
+			args:      []any{1},
+			returns:   []any{2},
+		}
+
+		// --- When ---
+		err := call.satisfied(3)
+
+		// --- Then ---
+		wMsg := tstkit.Golden(t, "testdata/satisfied_too_many.txt")
+		assert.ErrorEqual(t, wMsg, err)
+	})
+}
+
+func Test_Call_call(t *testing.T) {
+	t.Run("without returns", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil)
+
+		// --- When ---
+		have := call.call()
+
+		// --- Then ---
+		assert.Nil(t, have)
+		assert.Equal(t, 1, call.haveCalls)
+	})
+
+	t.Run("with until", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ch := time.After(50 * time.Millisecond)
+		call := newCall(mck, "Zero", nil).Until(ch)
+		now := time.Now()
+
+		// --- When ---
+		have := call.call()
+
+		// --- Then ---
+		assert.True(t, time.Since(now) > 50*time.Millisecond)
+		assert.Nil(t, have)
+		assert.Equal(t, 1, call.haveCalls)
+	})
+
+	t.Run("with sleep", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil).After(50 * time.Millisecond)
+		now := time.Now()
+
+		// --- When ---
+		have := call.call()
+
+		// --- Then ---
+		assert.True(t, time.Since(now) > 50*time.Millisecond)
+		assert.Nil(t, have)
+		assert.Equal(t, 1, call.haveCalls)
+	})
+
+	t.Run("with panic", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil).Panic("test panic")
+
+		// --- When ---
+		have := assert.PanicMsg(t, func() { call.call() })
+
+		// --- Then ---
+		assert.Equal(t, "test panic", *have)
+		assert.Equal(t, 1, call.haveCalls)
+	})
+
+	t.Run("with panic after given time", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Zero", nil).
+			After(50 * time.Millisecond).
+			Panic("test panic")
+		now := time.Now()
+
+		// --- When ---
+		have := assert.PanicMsg(t, func() { call.call() })
+
+		// --- Then ---
+		assert.True(t, time.Since(now) > 50*time.Millisecond)
+		assert.Equal(t, "test panic", *have)
+		assert.Equal(t, 1, call.haveCalls)
+	})
+
+	t.Run("alter arguments", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		arg0, arg1 := 0, 1
+
+		alter0 := func(args Arguments) { *(args.Get(0).(*int))++ }
+		alter1 := func(args Arguments) { *(args.Get(1).(*int)) += 2 }
+		call := newCall(mck, "Zero", nil).Alter(alter0, alter1)
+
+		// --- When ---
+		have := call.call(&arg0, &arg1)
+
+		// --- Then ---
+		assert.Nil(t, have)
+		assert.Equal(t, 1, call.haveCalls)
+		assert.Equal(t, 1, arg0)
+		assert.Equal(t, 3, arg1)
+	})
+
+	t.Run("calls proxy method", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ptr := &types.TPtr{Val: "c"}
+		prx := reflect.ValueOf(ptr.Variadic)
+		call := newProxy(mck, nil, prx)
+
+		// --- When ---
+		have := call.call("abc")
+
+		// --- Then ---
+		assert.Equal(t, Arguments{"c abc []"}, have)
+		assert.Equal(t, 1, call.haveCalls)
+	})
+
+	t.Run("alter called before proxied call", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ptr := &types.TPtr{Val: "c"}
+		prx := reflect.ValueOf(ptr.Identity)
+		arg := "abc"
+		alter := func(args Arguments) { *(args.Get(0).(*string)) += " xyz" }
+		call := newProxy(mck, nil, prx).Alter(alter)
+
+		// --- When ---
+		have := call.call(&arg)
+
+		// --- Then ---
+		want := "abc xyz"
+		assert.Equal(t, Arguments{&want}, have)
+		assert.Equal(t, 1, call.haveCalls)
+	})
+}
+
+func Test_Call_proxyCall(t *testing.T) {
+	t.Run("regular call", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ptr := &types.TPtr{Val: "c"}
+		prx := reflect.ValueOf(ptr.AAA)
+		call := newProxy(mck, nil, prx)
+
+		// --- When ---
+		have := call.callProxy()
+
+		// --- Then ---
+		assert.Len(t, 1, have)
+		assert.Equal(t, "c", have[0])
+		assert.Len(t, 0, call.returns)
+	})
+
+	t.Run("regular call with arguments", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ptr := &types.TPtr{Val: "|"}
+		prx := reflect.ValueOf(ptr.Wrap)
+		call := newProxy(mck, nil, prx)
+
+		// --- When ---
+		have := call.callProxy("a", "b")
+
+		// --- Then ---
+		assert.Len(t, 1, have)
+		assert.Equal(t, "a|b", have[0])
+	})
+
+	t.Run("variadic proxy without variadic arguments", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ptr := &types.TPtr{Val: "v"}
+		prx := reflect.ValueOf(ptr.Variadic)
+		call := newProxy(mck, nil, prx)
+
+		// --- When ---
+		have := call.callProxy("abc")
+
+		// --- Then ---
+		assert.Len(t, 1, have)
+		assert.Equal(t, "v abc []", have[0])
+	})
+
+	t.Run("variadic proxy with one variadic arguments", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ptr := &types.TPtr{Val: "v"}
+		prx := reflect.ValueOf(ptr.Variadic)
+		call := newProxy(mck, nil, prx)
+
+		// --- When ---
+		have := call.callProxy("abc", 1, 2, 3)
+
+		// --- Then ---
+		assert.Len(t, 1, have)
+		assert.Equal(t, "v abc [1 2 3]", have[0])
+	})
+
+	t.Run("variadic proxy with multiple variadic arguments", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		ptr := &types.TPtr{Val: "v"}
+		prx := reflect.ValueOf(ptr.Variadic)
+		call := newProxy(mck, nil, prx)
+
+		// --- When ---
+		have := call.callProxy("abc", 1)
+
+		// --- Then ---
+		assert.Len(t, 1, have)
+		assert.Equal(t, "v abc [1]", have[0])
+	})
+
+	t.Run("panics if proxy not defined", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Method", nil)
+
+		// --- When ---
+		msg := assert.PanicMsg(t, func() { call.callProxy() })
+
+		// --- Then ---
+		assert.Equal(t, "proxy method not found", *msg)
+	})
+}
+
+func Test_Call_checkReq(t *testing.T) {
+	t.Run("no prerequisites", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		call := newCall(mck, "Method", nil)
+
+		// --- When ---
+		have := call.checkReq(nil)
+
+		// --- Then ---
+		assert.NoError(t, have)
+	})
+
+	t.Run("prerequisites are satisfied", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		pre0 := newCall(mck, "Pre0", nil).Optional()
+		pre1 := newCall(mck, "Pre1", nil).Optional()
+		call := newCall(mck, "Method", nil).Requires(pre0, pre1)
+
+		// --- When ---
+		have := call.checkReq(nil)
+
+		// --- Then ---
+		assert.NoError(t, have)
+	})
+
+	t.Run("error missing from same mock", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		pre0 := newCall(mck, "Pre0", nil, 1).Optional()
+		pre1 := newCall(mck, "Pre1", nil, 1)
+		stk := []string{"line0", "line1", "line2"}
+		call := newCall(mck, "Method", nil, "abc").
+			Return(1, "abc").
+			Requires(pre0, pre1)
+
+		// --- When ---
+		have := call.checkReq(stk)
+
+		// --- Then ---
+		want := tstkit.Golden(t, "testdata/check_req_same_mock.txt")
+		assert.ErrorEqual(t, want, have)
+		assert.ErrorIs(t, have, ErrRequirements)
+	})
+
+	t.Run("error missing form different mock", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(2)
+		tspy.Close()
+
+		mck0 := NewMock(tspy)
+		pre01 := newCall(mck0, "Pre01", nil)
+
+		mck1 := NewMock(tspy)
+		newCall(mck1, "Pre11", nil)
+		call := newCall(mck1, "Method", nil).Requires(pre01)
+
+		// --- When ---
+		have := call.checkReq(nil)
+
+		// --- Then ---
+		want := tstkit.Golden(t, "testdata/check_req_mock_other.txt")
+		assert.ErrorEqual(t, want, have)
+		assert.ErrorIs(t, have, ErrRequirements)
+	})
+}
+
+func Test_Call_End(t *testing.T) {
+	// --- Given ---
+	tspy := tester.New(t)
+	tspy.ExpectCleanups(1)
+	tspy.Close()
+
+	mck := NewMock(tspy)
+	call := newCall(mck, "Zero", nil)
+
+	// --- When ---
+	have := call.End()
+
+	// --- Then ---
+	assert.Same(t, mck, have)
+}

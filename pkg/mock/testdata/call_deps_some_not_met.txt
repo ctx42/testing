@@ -1,0 +1,10 @@
+Logs a message when a mocked method is called before its required dependency.
+---
+[mock] unexpected method call:
+          method: Two(int) string
+   expected args:
+                  0: 2
+        requires: One(int) string
+   expected args:
+                  0: 1
+            from: the same mock

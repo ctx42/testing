@@ -1,0 +1,7 @@
+Log message when the mocked method call has not been found on the list of
+expected methods.
+---
+[mock] method call not found:
+     method: One(int)
+  with args:
+             0: 1

@@ -1,0 +1,4 @@
+Log message when unsetting method (call) that has not been found.
+---
+[mock] unsetting non-existing method:
+  method: Zero()

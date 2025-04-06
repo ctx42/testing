@@ -1,0 +1,7 @@
+Log message when the mocked call was found by name but has different number of
+arguments.
+---
+[mock] unexpected method call:
+         closest: One(int) string
+  argument match:
+                  0: FAIL: (int=1) != (Missing)

@@ -1,0 +1,7 @@
+Log message when a mocked method is called but its dependencies from other
+mocks are not satisfied.
+---
+[mock] unexpected method call:
+    method: Method()
+  requires: Pre01()
+      from: a different mock
