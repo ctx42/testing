@@ -11,7 +11,7 @@ import (
 	"github.com/ctx42/testing/internal/types"
 )
 
-func Test_Nil_ZENValues(t *testing.T) {
+func Test_Nil_ZENValues_tabular(t *testing.T) {
 	for _, tc := range cases.ZENValues() {
 		t.Run("Nil "+tc.Desc, func(t *testing.T) {
 			// --- When ---
@@ -25,44 +25,6 @@ func Test_Nil_ZENValues(t *testing.T) {
 			if !tc.IsNil && have {
 				format := "expected not-nil error:\n  have: %#v"
 				t.Errorf(format, have)
-			}
-		})
-	}
-}
-
-func Test_Len_tabular(t *testing.T) {
-	ch := make(chan int, 10)
-	ch <- 0
-	t.Cleanup(func() { <-ch; close(ch) })
-
-	tt := []struct {
-		testN string
-
-		val  any
-		want int
-		ok   bool
-	}{
-		{"success string", "abc", 3, true},
-		{"success slice", []int{1, 2}, 2, true},
-		{"success array", [...]int{1, 2}, 2, true},
-		{"success channel", ch, 1, true},
-
-		{"error not supported", 123, 0, false},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
-			// --- When ---
-			haveLen, haveOK := Len(tc.val)
-
-			// --- Then ---
-			if tc.want != haveLen {
-				format := "expected length:\n  have: %d\n  want: %d"
-				t.Errorf(format, haveLen, tc.want)
-			}
-			if tc.ok != haveOK {
-				format := "expected ok:\n  have: %t\n  want: %t"
-				t.Errorf(format, haveOK, tc.ok)
 			}
 		})
 	}

@@ -4,9 +4,11 @@
 package check
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
+	"github.com/ctx42/testing/pkg/notice"
 )
 
 func Test_Len(t *testing.T) {
@@ -69,17 +71,60 @@ func Test_Len_error_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		val  any
-		want int
-		wMsg string
+		want   int
+		val    any
+		actual int
+		wMsg   string
 	}{
-		{"int empty fail", []int{}, 1, "expected []int length:\n  want: 1\n  have: 0"},
-		{"int fail", []int{1}, 2, "expected []int length:\n  want: 2\n  have: 1"},
-		{"map empty fail", map[string]int{}, 1, "expected map[string]int length:\n  want: 1\n  have: 0"},
-		{"map fail", map[string]int{"A": 1}, 2, "expected map[string]int length:\n  want: 2\n  have: 1"},
-		{"invalid type", 1, 0, "cannot execute len(int)"},
-		{"chan fail", ch, 4, "expected chan int length:\n  want: 4\n  have: 3"},
-		{"string fail", "abc", 4, "expected string length:\n  want: 4\n  have: 3"},
+		{
+			"int empty fail",
+			1,
+			[]int{},
+			0,
+			"expected []int length:\n  want: 1\n  have: 0",
+		},
+		{
+			"int fail",
+			2,
+			[]int{1},
+			1,
+			"expected []int length:\n  want: 2\n  have: 1",
+		},
+		{
+			"map empty fail",
+			1,
+			map[string]int{},
+			0,
+			"expected map[string]int length:\n  want: 1\n  have: 0",
+		},
+		{
+			"map fail",
+			2,
+			map[string]int{"A": 1},
+			1,
+			"expected map[string]int length:\n  want: 2\n  have: 1",
+		},
+		{
+			"invalid type",
+			0,
+			1,
+			0,
+			"cannot execute len(int)",
+		},
+		{
+			"chan fail",
+			4,
+			ch,
+			3,
+			"expected chan int length:\n  want: 4\n  have: 3",
+		},
+		{
+			"string fail",
+			4,
+			"abc",
+			3,
+			"expected string length:\n  want: 4\n  have: 3",
+		},
 	}
 
 	for _, tc := range tt {
@@ -90,6 +135,12 @@ func Test_Len_error_tabular(t *testing.T) {
 			// --- Then ---
 			affirm.NotNil(t, err)
 			affirm.Equal(t, tc.wMsg, err.Error())
+
+			var msg *notice.Notice
+			affirm.True(t, errors.As(err, &msg))
+			cnt, ok := msg.GetData("len")
+			affirm.True(t, ok)
+			affirm.Equal(t, tc.actual, cnt.(int))
 		})
 	}
 }

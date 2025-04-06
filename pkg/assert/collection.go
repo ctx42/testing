@@ -6,8 +6,8 @@ package assert
 import (
 	"cmp"
 
-	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/pkg/check"
+	"github.com/ctx42/testing/pkg/notice"
 	"github.com/ctx42/testing/pkg/tester"
 )
 
@@ -16,7 +16,10 @@ import (
 func Len(t tester.T, want int, have any, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.Len(want, have, opts...); e != nil {
-		cnt, _ := core.Len(have)
+		var cnt int
+		if val, ok := notice.From(e).GetData("len"); ok {
+			cnt = val.(int) // nolint: forcetypeassert
+		}
 		if want > cnt {
 			t.Fatal(e)
 		} else {

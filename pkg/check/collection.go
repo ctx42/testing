@@ -9,23 +9,26 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/pkg/notice"
 )
 
 // Len checks "have" has "want" elements. Returns nil if it has, otherwise it
 // returns an error with a message indicating the expected and actual values.
-func Len(want int, have any, opts ...Option) error {
-	cnt, ok := core.Len(have)
-	if !ok {
-		return notice.New("cannot execute len(%T)", have)
-	}
+func Len(want int, have any, opts ...Option) (err error) {
+	vv := reflect.ValueOf(have)
+	defer func() {
+		if e := recover(); e != nil {
+			err = notice.New("cannot execute len(%T)", have).SetData("len", 0)
+		}
+	}()
+	cnt := vv.Len()
 	if want != cnt {
 		ops := DefaultOptions(opts...)
 		msg := notice.New("expected %T length", have).
 			Trail(ops.Trail).
 			Want("%d", want).
-			Have("%d", cnt)
+			Have("%d", cnt).
+			SetData("len", cnt)
 		return msg
 	}
 	return nil

@@ -25,19 +25,6 @@ func IsNil(have any) bool {
 	return false
 }
 
-// Len gets length of x using reflection. Returns (0, false) if impossible.
-//
-// Can be used for: strings, arrays, slices and channels.
-func Len(v any) (length int, ok bool) {
-	vv := reflect.ValueOf(v)
-	defer func() {
-		if e := recover(); e != nil {
-			ok = false
-		}
-	}()
-	return vv.Len(), true
-}
-
 // DidPanic returns true if the passed function panicked when executed, the
 // value that was passed to panic, and the stack trace. When function did not
 // panic it returns false and zero values for the other two return arguments.

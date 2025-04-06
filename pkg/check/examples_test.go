@@ -62,6 +62,19 @@ func ExampleNoError_changeMessage() {
 	//   context: wow
 }
 
+func ExampleEqual_wrongTypes() {
+	err := check.Equal(42, byte(42), check.WithTrail("type.field"))
+
+	fmt.Println(err)
+	// Output:
+	//  expected values to be equal:
+	//       trail: type.field
+	//        want: 42
+	//        have: 0x2a ('*')
+	//   want type: int
+	//   have type: uint8
+}
+
 func ExampleEqual_structs() {
 	type T struct {
 		Int int

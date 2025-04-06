@@ -16,11 +16,6 @@ import (
 // and value. It works with pointers to objects, slices, maps and functions.
 // For arrays, it always returns error.
 func Same(want, have any, opts ...Option) error {
-	return same(want, have, opts...)
-}
-
-// same is internal implementation of [Same].
-func same(want, have any, opts ...Option) error {
 	if core.Same(want, have) {
 		return nil
 	}
