@@ -25,10 +25,10 @@ func IsNil(have any) bool {
 	return false
 }
 
-// DidPanic returns true if the passed function panicked when executed, the
+// WillPanic returns true if the passed function panicked when executed, the
 // value that was passed to panic, and the stack trace. When function did not
 // panic it returns false and zero values for the other two return arguments.
-func DidPanic(fn func()) (didPanic bool, val any, stack string) {
+func WillPanic(fn func()) (didPanic bool, val any, stack string) {
 	didPanic = true
 
 	defer func() {

@@ -109,7 +109,7 @@ func Panic(t *testing.T, fn func()) *string {
 	t.Helper()
 	var val any
 	var panicked bool
-	if panicked, val, _ = core.DidPanic(fn); !panicked {
+	if panicked, val, _ = core.WillPanic(fn); !panicked {
 		t.Error("expected fn to panic")
 		return nil
 	}

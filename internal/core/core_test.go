@@ -30,23 +30,23 @@ func Test_Nil_ZENValues_tabular(t *testing.T) {
 	}
 }
 
-func Test_DidPanic(t *testing.T) {
+func Test_WillPanic(t *testing.T) {
 	t.Run("panicked", func(t *testing.T) {
 		// --- Given ---
 		fn := func() { panic("panic") }
 
 		// --- When ---
-		did, val, stack := DidPanic(fn)
+		did, val, stack := WillPanic(fn)
 
 		// --- Then ---
 		if !did {
-			t.Error("expected DidPanic to return true")
+			t.Error("expected WillPanic to return true")
 		}
 		if val.(string) != "panic" {
-			t.Error("expected DidPanic to return value 'panic'")
+			t.Error("expected WillPanic to return value 'panic'")
 		}
 		if stack == "" {
-			t.Error("expected DidPanic to return stack trace")
+			t.Error("expected WillPanic to return stack trace")
 		}
 	})
 
@@ -55,17 +55,17 @@ func Test_DidPanic(t *testing.T) {
 		fn := func() {}
 
 		// --- When ---
-		did, val, stack := DidPanic(fn)
+		did, val, stack := WillPanic(fn)
 
 		// --- Then ---
 		if did {
-			t.Error("expected DidPanic to return false")
+			t.Error("expected WillPanic to return false")
 		}
 		if val != nil {
-			t.Error("expected DidPanic to return empty string")
+			t.Error("expected WillPanic to return empty string")
 		}
 		if stack != "" {
-			t.Error("expected DidPanic to return empty string")
+			t.Error("expected WillPanic to return empty string")
 		}
 	})
 }
