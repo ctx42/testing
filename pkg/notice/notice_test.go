@@ -516,6 +516,36 @@ func Test_Message_Error(t *testing.T) {
 	})
 }
 
+//goland:noinspection GoDirectComparisonOfErrors
+func Test_Notice_SetData_GetData(t *testing.T) {
+	t.Run("set data and get data", func(t *testing.T) {
+		// --- Given ---
+		msg := New("header")
+
+		// --- When ---
+		have := msg.SetData("key", "value")
+
+		// --- Then ---
+		affirm.True(t, msg == have)
+
+		val, ok := have.GetData("key")
+		affirm.True(t, ok)
+		affirm.Equal(t, "value", val)
+	})
+
+	t.Run("get not existing key", func(t *testing.T) {
+		// --- Given ---
+		msg := New("header")
+
+		// --- When ---
+		haveVal, haveOK := msg.GetData("key")
+
+		// --- Then ---
+		affirm.False(t, haveOK)
+		affirm.Nil(t, haveVal)
+	})
+}
+
 func Test_equalizeNames(t *testing.T) {
 	// --- Given ---
 	msg := New("expected values to be equal").

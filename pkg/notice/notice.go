@@ -45,6 +45,7 @@ var ErrAssert = errors.New("assert error")
 type Notice struct {
 	Header string            // Header message.
 	Rows   map[string]string // Context rows.
+	Data   map[string]any    // Any useful data (ignored by Notice).
 	Order  []string          // Order to display rows in.
 	err    error             // Base error.
 }
@@ -210,6 +211,25 @@ func (msg *Notice) Error() string {
 		}
 	}
 	return m
+}
+
+// SetData sets data. To get it back use [Notice.GetData] method.
+func (msg *Notice) SetData(key string, val any) *Notice {
+	if msg.Data == nil {
+		msg.Data = make(map[string]any)
+	}
+	msg.Data[key] = val
+	return msg
+}
+
+// GetData returns data set by [Notice.SetData]. Returns nil and false if the
+// key was never set.
+func (msg *Notice) GetData(key string) (any, bool) {
+	if msg.Data == nil {
+		return nil, false
+	}
+	val, ok := msg.Data[key]
+	return val, ok
 }
 
 // equalizeNames returns a slice of row names where each name is the same

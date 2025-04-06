@@ -126,6 +126,16 @@ func ExampleNotice_Trail() {
 	//    have: xyz
 }
 
+func ExampleNotice_SetData() {
+	msg := notice.New("expected values to be equal").
+		Want("%s", "abc").
+		Have("%s", "xyz").
+		SetData("key", 123)
+
+	fmt.Println(msg.GetData("key"))
+	// Output: 123 true
+}
+
 func ExampleIndent() {
 	lines := notice.Indent(4, ' ', "line1\nline2\nline3")
 

@@ -1,3 +1,10 @@
+<!-- TOC -->
+* [Notice Package](#notice-package)
+  * [Basic Usage](#basic-usage)
+    * [Create a message](#create-a-message)
+  * [Formatting Lines](#formatting-lines)
+<!-- TOC -->
+
 # Notice Package
 
 The `notice` package provides a set of utilities for building structured 
@@ -6,41 +13,45 @@ messages with a header and contextual rows. The package supports fluent
 interfaces for building messages and includes helper functions for formatting 
 and unwrapping errors.
 
-## Usage
+## Basic Usage
 
-Creating a basic message
+### Create a Message
 
 ```go
-msg := New("expected %s to be equal", "values").
+msg := notice.New("expected values to be equal").
     Want("%s", "abc").
     Have("%s", "xyz")
 
-fmt.Println(msg.Error())
+fmt.Println(msg)
+// Output:
+// expected values to be equal:
+//   want: abc
+//   have: xyz
 ```
 
-Output:
+### Add Metadata
 
-```text
-expected values to be equal:
-  want: abc
-  have: xyz
+```go
+msg := notice.New("expected values to be equal").
+    Want("%s", "abc").
+    Have("%s", "xyz").
+    SetData("key", 123)
+
+fmt.Println(msg.GetData("key"))
+// Output: value true
+}
 ```
 
 For more examples see [examples_test.go](examples_test.go) file.
 
-## Formatting Lines
+## Indenting Lines
 
 ```go
-lines := notice.Lines(1, "line1\nline2\nline3")
+lines := notice.Indent(4, ' ', "line1\nline2\nline3")
 
 fmt.Println(lines)
+// Output:
+//     line1
+//     line2
+//     line3
 ```
-
-Output:
-
-```text
-  >| line1
-  >| line2
-  >| line3
-```
-
