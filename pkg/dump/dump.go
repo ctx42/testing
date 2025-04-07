@@ -59,7 +59,7 @@ var (
 	typTime     = reflect.TypeOf(time.Time{})
 )
 
-var valueOfNil = reflect.ValueOf(nil)
+var nilVal = reflect.ValueOf(nil)
 
 // Dumper represents function signature for value dumpers.
 type Dumper func(dmp Dump, level int, val reflect.Value) string
@@ -221,7 +221,7 @@ func (dmp Dump) value(lvl int, val reflect.Value) string {
 	switch valKnd {
 	case reflect.Invalid:
 		str = valInvalid
-		if valueOfNil == val { // nolint: govet
+		if nilVal == val { // nolint: govet
 			str = valNil
 		}
 
