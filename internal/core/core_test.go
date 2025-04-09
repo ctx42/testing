@@ -5,6 +5,7 @@ package core
 
 import (
 	"reflect"
+	"runtime"
 	"testing"
 
 	"github.com/ctx42/testing/internal/cases"
@@ -36,13 +37,27 @@ func Test_WillPanic(t *testing.T) {
 		fn := func() { panic("panic") }
 
 		// --- When ---
-		did, val, stack := WillPanic(fn)
+		val, stack := WillPanic(fn)
 
 		// --- Then ---
-		if !did {
-			t.Error("expected WillPanic to return true")
-		}
 		if val.(string) != "panic" {
+			t.Error("expected WillPanic to return value 'panic'")
+		}
+		if stack == "" {
+			t.Error("expected WillPanic to return stack trace")
+		}
+	})
+
+	t.Run("panicked with nil", func(t *testing.T) {
+		// --- Given ---
+		fn := func() { panic(nil) } // nolint: govet
+
+		// --- When ---
+		val, stack := WillPanic(fn)
+
+		// --- Then ---
+		//goland:noinspection GoTypeAssertionOnErrors
+		if _, ok := val.(*runtime.PanicNilError); !ok {
 			t.Error("expected WillPanic to return value 'panic'")
 		}
 		if stack == "" {
@@ -55,12 +70,9 @@ func Test_WillPanic(t *testing.T) {
 		fn := func() {}
 
 		// --- When ---
-		did, val, stack := WillPanic(fn)
+		val, stack := WillPanic(fn)
 
 		// --- Then ---
-		if did {
-			t.Error("expected WillPanic to return false")
-		}
 		if val != nil {
 			t.Error("expected WillPanic to return empty string")
 		}

@@ -17,7 +17,7 @@ type TestFunc func()
 // Panic checks "fn" panics. Returns nil if it does, otherwise it returns an
 // error with a message with value passed to panic and stack trace.
 func Panic(fn TestFunc, opts ...Option) error {
-	if panicked, _, _ := core.WillPanic(fn); !panicked {
+	if _, stack := core.WillPanic(fn); stack == "" {
 		ops := DefaultOptions(opts...)
 		return notice.New("func should panic").Trail(ops.Trail)
 	}
@@ -27,7 +27,7 @@ func Panic(fn TestFunc, opts ...Option) error {
 // NoPanic checks "fn" does not panic. Returns nil if it doesn't, otherwise it
 // returns an error with a message with value passed to panic and stack trace.
 func NoPanic(fn TestFunc, opts ...Option) error {
-	if panicked, val, stack := core.WillPanic(fn); panicked {
+	if val, stack := core.WillPanic(fn); stack != "" {
 		ops := DefaultOptions(opts...)
 		return notice.New("func should not panic").
 			Trail(ops.Trail).
@@ -41,8 +41,8 @@ func NoPanic(fn TestFunc, opts ...Option) error {
 // as a string contains "want". Returns nil if it does, otherwise it returns an
 // error with a message with value passed to panic and stack trace.
 func PanicContain(want string, fn TestFunc, opts ...Option) error {
-	panicked, val, stack := core.WillPanic(fn)
-	if !panicked {
+	val, stack := core.WillPanic(fn)
+	if stack == "" {
 		return notice.New("func should panic")
 	}
 
@@ -70,8 +70,8 @@ func PanicContain(want string, fn TestFunc, opts ...Option) error {
 // string. If function didn't panic, it returns nil and an error with a
 // detailed message indicating the expected behaviour.
 func PanicMsg(fn TestFunc, opts ...Option) (*string, error) {
-	panicked, val, _ := core.WillPanic(fn)
-	if !panicked {
+	val, stack := core.WillPanic(fn)
+	if stack == "" {
 		ops := DefaultOptions(opts...)
 		return nil, notice.New("func should panic").Trail(ops.Trail)
 	}

@@ -108,8 +108,8 @@ func NotNil(t *testing.T, have any) bool {
 func Panic(t *testing.T, fn func()) *string {
 	t.Helper()
 	var val any
-	var panicked bool
-	if panicked, val, _ = core.WillPanic(fn); !panicked {
+	var stack string
+	if val, stack = core.WillPanic(fn); stack == "" {
 		t.Error("expected fn to panic")
 		return nil
 	}

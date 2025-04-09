@@ -28,18 +28,14 @@ func IsNil(have any) bool {
 // WillPanic returns true if the passed function panicked when executed, the
 // value that was passed to panic, and the stack trace. When function did not
 // panic it returns false and zero values for the other two return arguments.
-func WillPanic(fn func()) (panicked bool, val any, stack string) {
-	panicked = true
-
+func WillPanic(fn func()) (val any, stack string) {
 	defer func() {
-		val = recover()
-		if panicked {
+		if val = recover(); val != nil {
 			stack = string(debug.Stack())
 		}
 	}()
 
 	fn() // Call the target function
-	panicked = false
 	return
 }
 
