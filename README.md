@@ -5,6 +5,11 @@ my time as a Go developer.
 [![GoDoc](https://img.shields.io/badge/api-Godoc-blue.svg)](https://pkg.go.dev/github.com/ctx42/testing)
 ![Tests](https://github.com/ctx42/testing/actions/workflows/go.yml/badge.svg?branch=master)
 
+I’ve written several [blog posts](http://localhost:1313/tags/gtm/) tied to this
+repository. If you’re curious about the behind-the-scenes details of how this
+package is coming together, check them out and share your thoughts—I’d love to
+hear what you think! Any feedback is greatly appreciated.
+
 ---
 
 <!-- TOC -->
