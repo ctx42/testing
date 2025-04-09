@@ -25,9 +25,9 @@ func IsNil(have any) bool {
 	return false
 }
 
-// WillPanic returns true if the passed function panicked when executed, the
-// value that was passed to panic, and the stack trace. When function did not
-// panic it returns false and zero values for the other two return arguments.
+// WillPanic returns not empty stack trace if the passed function panicked when
+// executed and the value that was passed to panic. When function did not panic
+// it returns nil and empty stack.
 func WillPanic(fn func()) (val any, stack string) {
 	defer func() {
 		if val = recover(); val != nil {
