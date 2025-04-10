@@ -484,7 +484,7 @@ func Test_Message_Error(t *testing.T) {
 		// --- Given ---
 		msg := New("expected values to be equal").
 			Want("42").
-			Append("longer", "\n[]int{\n  0,\n  1,\n  2,\n}")
+			Append("longer", "[]int{\n  0,\n  1,\n  2,\n}")
 
 		// --- When ---
 		have := msg.Error()

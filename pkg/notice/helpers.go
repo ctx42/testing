@@ -13,13 +13,15 @@ func Indent(n int, r rune, lns string) string {
 	if lns == "" {
 		return ""
 	}
-	out := strings.TrimSpace(lns)
-	rows := strings.Split(out, "\n")
+	rows := strings.Split(lns, "\n")
 	if len(rows) == 1 {
 		return lns
 	}
 	for i, lin := range rows {
-		ind := strings.Repeat(string(r), n)
+		var ind string
+		if lin != "" {
+			ind = strings.Repeat(string(r), n)
+		}
 		rows[i] = ind + lin
 	}
 	return strings.Join(rows, "\n")
