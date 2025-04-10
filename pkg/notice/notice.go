@@ -34,9 +34,9 @@ const trail = "trail"
 //	  have: have 1
 const ContinuationHeader = " ---"
 
-// ErrAssert represents an error that occurs during an assertion. It is
-// typically used when a condition fails to meet the expected value.
-var ErrAssert = errors.New("assert error")
+// ErrNotice is sentinel error which is automatically wrapped by all instances
+// of [Notice] unless changed with [Notice.Wrap] method.
+var ErrNotice = errors.New("notice error")
 
 // Notice represents structured notice message consisting of a header and
 // multiple named rows giving context to it.
@@ -47,16 +47,16 @@ type Notice struct {
 	Rows   map[string]string // Context rows.
 	Data   map[string]any    // Any useful data (ignored by Notice).
 	Order  []string          // Order to display rows in.
-	err    error             // Base error.
+	err    error             // Base error (default: [ErrNotice]).
 }
 
 // New creates a new [Notice] with the specified header which is constructed
 // using [fmt.Sprintf] from format and args. By default, the base error is
-// set to [ErrAssert].
+// set to [ErrNotice].
 func New(header string, args ...any) *Notice {
 	msg := &Notice{
 		Rows: make(map[string]string, 2),
-		err:  ErrAssert,
+		err:  ErrNotice,
 	}
 	return msg.SetHeader(header, args...)
 }
@@ -169,9 +169,9 @@ func (msg *Notice) Have(format string, args ...any) *Notice {
 	return msg.Append("have", format, args...)
 }
 
-// Wrap wraps base error with provided one.
+// Wrap sets base error with provided one.
 func (msg *Notice) Wrap(err error) *Notice {
-	msg.err = fmt.Errorf("%w: %w", msg.err, err)
+	msg.err = err
 	return msg
 }
 

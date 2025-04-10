@@ -20,7 +20,7 @@ func Test_New(t *testing.T) {
 		affirm.True(t, msg.Rows != nil)
 		affirm.Equal(t, 0, len(msg.Rows))
 		affirm.True(t, msg.Order == nil)
-		affirm.True(t, errors.Is(msg, ErrAssert))
+		affirm.True(t, errors.Is(msg, ErrNotice))
 	})
 
 	t.Run("with percent but no args", func(t *testing.T) {
@@ -32,7 +32,7 @@ func Test_New(t *testing.T) {
 		affirm.True(t, msg.Rows != nil)
 		affirm.Equal(t, 0, len(msg.Rows))
 		affirm.True(t, msg.Order == nil)
-		affirm.True(t, errors.Is(msg, ErrAssert))
+		affirm.True(t, errors.Is(msg, ErrNotice))
 	})
 }
 
@@ -48,7 +48,7 @@ func Test_From(t *testing.T) {
 		// --- Then ---
 		affirm.True(t, orig == have)
 		affirm.Equal(t, "[prefix] header row", have.Header)
-		affirm.True(t, errors.Is(have, ErrAssert))
+		affirm.True(t, errors.Is(have, ErrNotice))
 		wRows := map[string]string{"first": "0", "second": "1"}
 		affirm.DeepEqual(t, wRows, have.Rows)
 		affirm.DeepEqual(t, []string{"first", "second"}, have.Order)
@@ -64,7 +64,7 @@ func Test_From(t *testing.T) {
 		// --- Then ---
 		affirm.True(t, orig == have)
 		affirm.Equal(t, "header row", have.Header)
-		affirm.True(t, errors.Is(have, ErrAssert))
+		affirm.True(t, errors.Is(have, ErrNotice))
 		wRows := map[string]string{"first": "0", "second": "1"}
 		affirm.DeepEqual(t, wRows, have.Rows)
 		affirm.DeepEqual(t, []string{"first", "second"}, have.Order)
@@ -80,7 +80,7 @@ func Test_From(t *testing.T) {
 		// --- Then ---
 		affirm.True(t, orig != have) // nolint: errorlint
 		affirm.Equal(t, "[prefix] assertion error", have.Header)
-		affirm.True(t, errors.Is(have, ErrAssert))
+		affirm.False(t, errors.Is(have, ErrNotice))
 		affirm.True(t, errors.Is(have, orig))
 		affirm.DeepEqual(t, map[string]string{"first": "0"}, have.Rows)
 		affirm.DeepEqual(t, []string{"first"}, have.Order)
@@ -96,7 +96,7 @@ func Test_From(t *testing.T) {
 		// --- Then ---
 		affirm.True(t, orig != have) // nolint: errorlint
 		affirm.Equal(t, "assertion error", have.Header)
-		affirm.True(t, errors.Is(have, ErrAssert))
+		affirm.False(t, errors.Is(have, ErrNotice))
 		affirm.True(t, errors.Is(have, orig))
 		affirm.DeepEqual(t, map[string]string{"first": "0"}, have.Rows)
 		affirm.DeepEqual(t, []string{"first"}, have.Order)
@@ -397,7 +397,7 @@ func Test_Message_Wrap(t *testing.T) {
 
 	// --- Then ---
 	affirm.True(t, msg == have)
-	affirm.True(t, errors.Is(msg, ErrAssert))
+	affirm.False(t, errors.Is(msg, ErrNotice))
 	affirm.True(t, errors.Is(msg, errMy))
 	affirm.DeepEqual(t, map[string]string{"first": "0"}, msg.Rows)
 	affirm.DeepEqual(t, []string{"first"}, msg.Order)
