@@ -14,9 +14,9 @@ import (
 )
 
 // Golden is a helper returning contents of a golden file at given path. The
-// contents start after marker "---" line, anything before it is ignored. It's
-// customary to have a short documentation about golden file contents before the
-// "marker".
+// contents start after mandatory marker "---" line, anything before it is
+// ignored. It's customary to have a short documentation about golden file
+// contents before the "marker".
 func Golden(t tester.T, pth string) string {
 	t.Helper()
 
