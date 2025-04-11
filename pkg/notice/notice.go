@@ -145,24 +145,12 @@ func (msg *Notice) Trail(tr string) *Notice {
 // Want uses Append method to append a row with "want" name. If the "want" row
 // already exists it will just replace its value.
 func (msg *Notice) Want(format string, args ...any) *Notice {
-	fn := func(row Row) bool { return row.Name == "want" }
-	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
-		msg.Rows[idx].Format = format
-		msg.Rows[idx].Args = args
-		return msg
-	}
 	return msg.Append("want", format, args...)
 }
 
 // Have uses Append method to append a row with "have" name. If the "have" row
 // already exists it will just replace its value.
 func (msg *Notice) Have(format string, args ...any) *Notice {
-	fn := func(row Row) bool { return row.Name == "have" }
-	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
-		msg.Rows[idx].Format = format
-		msg.Rows[idx].Args = args
-		return msg
-	}
 	return msg.Append("have", format, args...)
 }
 
