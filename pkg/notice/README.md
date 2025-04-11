@@ -1,17 +1,18 @@
 <!-- TOC -->
 * [Notice Package](#notice-package)
   * [Basic Usage](#basic-usage)
-    * [Create a message](#create-a-message)
-  * [Formatting Lines](#formatting-lines)
+    * [Create a Message](#create-a-message)
+    * [Add Metadata](#add-metadata)
+  * [Indenting Lines](#indenting-lines)
 <!-- TOC -->
 
 # Notice Package
 
-The `notice` package provides a set of utilities for building structured 
-assertion messages. It's designed to create easy to read and understand error 
-messages with a header and contextual rows. The package supports fluent 
-interfaces for building messages and includes helper functions for formatting 
-and unwrapping errors.
+The `notice` package offers a suite of utilities for crafting clear, structured
+assertion messages. It simplifies the creation of readable error messages,
+featuring a header and contextual rows. With a fluent interface, it enables
+seamless message construction and includes helper functions for formatting and
+unwrapping errors.
 
 ## Basic Usage
 
@@ -27,6 +28,21 @@ fmt.Println(msg)
 // expected values to be equal:
 //   want: abc
 //   have: xyz
+```
+
+### Wrap Errors
+
+```go
+ErrMy := errors.New("my error")
+
+msg := notice.New("expected values to be equal").
+    Want("%s", "abc").
+    Have("%s", "xyz").
+    Wrap(ErrMy)
+
+is := errors.Is(msg, ErrMy)
+fmt.Println(is)
+// Output: true
 ```
 
 ### Add Metadata

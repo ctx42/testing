@@ -469,7 +469,8 @@ func Test_Message_Error(t *testing.T) {
 		have := msg.Error()
 
 		// --- Then ---
-		want := "expected values to be equal:\n" +
+		want := "" +
+			"expected values to be equal:\n" +
 			"  want: 42\n" +
 			"  have: 44"
 		affirm.Equal(t, want, have)
@@ -485,7 +486,8 @@ func Test_Message_Error(t *testing.T) {
 		have := msg.Error()
 
 		// --- Then ---
-		want := "expected values to be equal:\n" +
+		want := "" +
+			"expected values to be equal:\n" +
 			"    want: 42\n" +
 			"  longer: 44"
 		affirm.Equal(t, want, have)
@@ -501,7 +503,8 @@ func Test_Message_Error(t *testing.T) {
 		have := msg.Error()
 
 		// --- Then ---
-		want := "expected values to be equal:\n" +
+		want := "" +
+			"expected values to be equal:\n" +
 			"    want: 42\n" +
 			"  longer:\n" +
 			"          []int{\n" +
@@ -509,6 +512,26 @@ func Test_Message_Error(t *testing.T) {
 			"            1,\n" +
 			"            2,\n" +
 			"          }"
+		affirm.Equal(t, want, have)
+	})
+
+	t.Run("force row message to start on the next line", func(t *testing.T) {
+		// --- Given ---
+		msg := New("expected values to be equal").
+			Append("first", "%d", 1).
+			Append("second", "\n%d", 2).
+			Append("third", "%d", 3)
+
+		// --- When ---
+		have := msg.Error()
+
+		// --- Then ---
+		want := "" +
+			"expected values to be equal:\n" +
+			"   first: 1\n" +
+			"  second:\n" +
+			"          2\n" +
+			"   third: 3"
 		affirm.Equal(t, want, have)
 	})
 

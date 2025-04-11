@@ -4,6 +4,7 @@
 package notice_test
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/ctx42/testing/pkg/notice"
@@ -21,7 +22,7 @@ func ExampleNew() {
 	//   have: xyz
 }
 
-func ExampleNew_formated() {
+func ExampleNew_formatedHeader() {
 	msg := notice.New("expected %s to be equal", "values").
 		Want("%s", "abc").
 		Have("%s", "xyz")
@@ -51,7 +52,7 @@ func ExampleFrom() {
 }
 
 func ExampleNotice_SetHeader() {
-	msg := notice.New("expected %s to be equal", "values").
+	msg := notice.New("expected values to be equal").
 		Want("%s", "abc").
 		Have("%s", "xyz")
 
@@ -65,7 +66,7 @@ func ExampleNotice_SetHeader() {
 }
 
 func ExampleNotice_Append() {
-	msg := notice.New("expected %s to be equal", "values").
+	msg := notice.New("expected values to be equal").
 		Want("%s", "abc").
 		Have("%s", "xyz").
 		Append("name", "%d", 5)
@@ -78,11 +79,43 @@ func ExampleNotice_Append() {
 	//   name: 5
 }
 
+func ExampleNotice_Append_multiLine() {
+	msg := notice.New("expected values to be equal").
+		Want("%s", "abc").
+		Have("%s", "x\ny\nz").
+		Append("name", "%d", 5)
+
+	fmt.Println(msg)
+	// Output:
+	// expected values to be equal:
+	//   want: abc
+	//   have:
+	//         x
+	//         y
+	//         z
+	//   name: 5
+}
+
+func ExampleNotice_Append_forceNexLine() {
+	msg := notice.New("expected values to be equal").
+		Want("%s", "abc").
+		Have("\n%s", "xyz").
+		Append("name", "%d", 5)
+
+	fmt.Println(msg)
+	// Output:
+	// expected values to be equal:
+	//   want: abc
+	//   have:
+	//         xyz
+	//   name: 5
+}
+
 func ExampleNotice_AppendRow() {
 	row0 := notice.NewRow("number", "%d", 5)
 	row1 := notice.NewRow("string", "%s", "abc")
 
-	msg := notice.New("expected %s to be equal", "values").
+	msg := notice.New("expected values to be equal").
 		Want("%s", "abc").
 		Have("%s", "xyz").
 		AppendRow(row0, row1)
@@ -97,7 +130,7 @@ func ExampleNotice_AppendRow() {
 }
 
 func ExampleNotice_Prepend() {
-	msg := notice.New("expected %s to be equal", "values").
+	msg := notice.New("expected values to be equal").
 		Trail("type.field").
 		Want("%s", "abc").
 		Have("%s", "xyz").
@@ -113,7 +146,7 @@ func ExampleNotice_Prepend() {
 }
 
 func ExampleNotice_Trail() {
-	msg := notice.New("expected %s to be equal", "values").
+	msg := notice.New("expected values to be equal").
 		Trail("type.field").
 		Want("%s", "abc").
 		Have("%s", "xyz")
@@ -124,6 +157,19 @@ func ExampleNotice_Trail() {
 	//   trail: type.field
 	//    want: abc
 	//    have: xyz
+}
+
+func ExampleNotice_Wrap() {
+	ErrMy := errors.New("my error")
+
+	msg := notice.New("expected values to be equal").
+		Want("%s", "abc").
+		Have("%s", "xyz").
+		Wrap(ErrMy)
+
+	is := errors.Is(msg, ErrMy)
+	fmt.Println(is)
+	// Output: true
 }
 
 func ExampleNotice_SetData() {

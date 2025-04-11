@@ -184,8 +184,12 @@ func (msg *Notice) Error() string {
 		name := row.PadName(longest)
 		value := row.String()
 		format := "  %s: %s"
-		if strings.IndexByte(value, '\n') >= 0 {
-			format = "  %s:\n%s"
+		if idx := strings.IndexByte(value, '\n'); idx >= 0 {
+			if idx == 0 {
+				format = "  %s:%s"
+			} else {
+				format = "  %s:\n%s"
+			}
 			value = Indent(len(name)+4, ' ', value)
 		}
 		m += fmt.Sprintf(format, name, value)
