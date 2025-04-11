@@ -62,9 +62,9 @@ func callStack() []string {
 		// Drop the package.
 		segments := strings.Split(name, ".")
 		name = segments[len(segments)-1]
-		if isTest(name, "Test") ||
-			isTest(name, "Benchmark") ||
-			isTest(name, "Example") {
+		if isTestName(name, "Test") ||
+			isTestName(name, "Benchmark") ||
+			isTestName(name, "Example") {
 			break
 		}
 	}
@@ -101,37 +101,13 @@ func formatArgs(args Arguments) string {
 	return strings.Join(out, "\n")
 }
 
-// formatStack formats call stack.
-func formatStack(stack []string, padLeft int) string {
-	// TODO(rz): I don't think we need it when we use notice messages.
-	if len(stack) == 0 {
-		return ""
-	}
-	var out []string
-	pad := strings.Repeat("\t", padLeft)
-	for _, line := range stack {
-		out = append(out, pad+line)
-	}
-	return strings.Join(out, "\n")
-}
-
-// formatDiff formats diff lines.
-func formatDiff(diff []string, padLeft int) string {
-	var out string
-	pad := strings.Repeat("\t", padLeft)
-	for _, line := range diff {
-		out += pad + line + "\n"
-	}
-	return out
-}
-
-// Stolen from the `go test` tool.
+// isTestName checks if the given name starts with the provided prefix (e.g.,
+// "Test", "Benchmark", or "Example") and is followed by an uppercase letter or
+// non-letter character, indicating it is a valid test function. It returns
+// true if the name matches this pattern; otherwise, it returns false.
 //
-// isTest tells whether name looks like a test (or benchmark, according to
-// prefix). It is a Test (say) if there is a character after "Test" that is
-// not a lower-case letter. We don't want TesticularCancer.
-func isTest(name, prefix string) bool {
-	// TODO(rz): rename this - it has nothing to do with "Test".
+// Copied from: go/src/cmd/go/internal/load/test.go:617
+func isTestName(name, prefix string) bool {
 	if !strings.HasPrefix(name, prefix) {
 		return false
 	}

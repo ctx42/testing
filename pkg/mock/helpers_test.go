@@ -106,80 +106,7 @@ func Test_formatArgs_tabular(t *testing.T) {
 	}
 }
 
-func Test_formatStack(t *testing.T) {
-	t.Run("stack without padding", func(t *testing.T) {
-		// --- Given ---
-		stack := []string{"/dir/file.go:1", "/dir/file.go:2"}
-
-		// --- When ---
-		have := formatStack(stack, 0)
-
-		// --- Then ---
-		want := "" +
-			"/dir/file.go:1\n" +
-			"/dir/file.go:2"
-		assert.Equal(t, want, have)
-	})
-
-	t.Run("stack with padding", func(t *testing.T) {
-		// --- Given ---
-		stack := []string{"/dir/file.go:1", "/dir/file.go:2"}
-
-		// --- When ---
-		have := formatStack(stack, 1)
-
-		// --- Then ---
-		want := "" +
-			"\t/dir/file.go:1\n" +
-			"\t/dir/file.go:2"
-		assert.Equal(t, want, have)
-	})
-
-	t.Run("empty", func(t *testing.T) {
-		// --- When ---
-		have := formatStack([]string{}, 0)
-
-		// --- Then ---
-		assert.Equal(t, "", have)
-	})
-}
-
-func Test_formatDiff(t *testing.T) {
-	t.Run("format", func(t *testing.T) {
-		// --- Given ---
-		diff := []string{"AAA", "BBB", "CCC"}
-
-		// --- When ---
-		have := formatDiff(diff, 0)
-
-		// --- Then ---
-		assert.Equal(t, "AAA\nBBB\nCCC\n", have)
-	})
-
-	t.Run("padding", func(t *testing.T) {
-		// --- Given ---
-		diff := []string{"AAA", "BBB", "CCC"}
-
-		// --- When ---
-		have := formatDiff(diff, 1)
-
-		// --- Then ---
-		assert.Equal(t, "\tAAA\n\tBBB\n\tCCC\n", have)
-	})
-
-	t.Run("empty", func(t *testing.T) {
-		// --- Given ---
-		diff := make([]string, 0)
-
-		// --- When ---
-		have := formatDiff(diff, 1)
-
-		// --- Then ---
-		assert.Equal(t, "", have)
-	})
-}
-
-func Test_isTest_tabular(t *testing.T) {
+func Test_isTestFunction_tabular(t *testing.T) {
 	tt := []struct {
 		name   string
 		prefix string
@@ -198,11 +125,12 @@ func Test_isTest_tabular(t *testing.T) {
 		{"Test", "Test", true},
 		{"Benchmark", "Benchmark", true},
 		{"Example", "Example", true},
+		{"TesticularCancer", "Test", false},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.want, isTest(tc.name, tc.prefix))
+			assert.Equal(t, tc.want, isTestName(tc.name, tc.prefix))
 		})
 	}
 }

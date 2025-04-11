@@ -407,7 +407,7 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 	}
 
 	if len(cs) > 0 {
-		_ = msg.Append("stack", "\n%s", formatStack(cs, 0))
+		_ = msg.Append("stack", "\n%s", strings.Join(cs, "\n"))
 	}
 	return nil, msg
 }
