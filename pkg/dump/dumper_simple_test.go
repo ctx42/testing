@@ -5,6 +5,7 @@ package dump
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
@@ -56,9 +57,9 @@ func Test_sampleDumper_tabular(t *testing.T) {
 }
 
 func Test_sampleDumper(t *testing.T) {
-	t.Run("string with Dump.Flat false", func(t *testing.T) {
+	t.Run("string with Flat false and FlatStrings off", func(t *testing.T) {
 		// --- Given ---
-		dmp := New()
+		dmp := New(WithFlatStrings(0))
 
 		// --- When ---
 		have := simpleDumper(dmp, 0, reflect.ValueOf("str0\nstr1\n"))
@@ -67,7 +68,38 @@ func Test_sampleDumper(t *testing.T) {
 		affirm.Equal(t, "\"str0\nstr1\n\"", have)
 	})
 
-	t.Run("string with Dump.Flat true", func(t *testing.T) {
+	t.Run("string with Flat false and FlatStrings default", func(t *testing.T) {
+		// --- Given ---
+		dmp := New()
+
+		// --- When ---
+		have := simpleDumper(dmp, 0, reflect.ValueOf("str0\nstr1\n"))
+
+		// --- Then ---
+		affirm.Equal(t, "\"str0\\nstr1\\n\"", have)
+	})
+
+	t.Run("long string with Flat false and FlatStrings default", func(t *testing.T) {
+		// --- Given ---
+		// The string is one character longer than default value of
+		// [Dump.FlatStrings]
+		str := strings.Repeat("a", 100) + "\n" + strings.Repeat("a", 100)
+		dmp := New()
+
+		// --- When ---
+		have := simpleDumper(dmp, 0, reflect.ValueOf(str))
+
+		// --- Then ---
+		want := "\"" +
+			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n" +
+			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+			"\""
+		affirm.Equal(t, want, have)
+	})
+
+	t.Run("string with Flat true and FlatStrings default", func(t *testing.T) {
 		// --- Given ---
 		dmp := New(WithFlat)
 

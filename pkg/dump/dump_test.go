@@ -26,6 +26,17 @@ func Test_WithFlat(t *testing.T) {
 	affirm.True(t, dmp.Flat)
 }
 
+func Test_WithFlatStrings(t *testing.T) {
+	// --- Given ---
+	dmp := &Dump{}
+
+	// --- When ---
+	WithFlatStrings(123)(dmp)
+
+	// --- Then ---
+	affirm.Equal(t, 123, dmp.FlatStings)
+}
+
 func Test_WithCompact(t *testing.T) {
 	// --- Given ---
 	dmp := &Dump{}
@@ -115,6 +126,7 @@ func Test_New(t *testing.T) {
 
 		// --- Then ---
 		affirm.False(t, have.Flat)
+		affirm.Equal(t, 200, have.FlatStings)
 		affirm.False(t, have.Compact)
 		affirm.Equal(t, TimeFormat, have.TimeFormat)
 		affirm.Equal(t, "", have.DurationFormat)

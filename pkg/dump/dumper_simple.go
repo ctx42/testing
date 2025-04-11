@@ -36,8 +36,9 @@ func simpleDumper(dmp Dump, lvl int, val reflect.Value) string {
 	var format string
 	switch val.Kind() {
 	case reflect.String:
+		length := val.Len()
 		format = `"%v"`
-		if dmp.Flat {
+		if dmp.Flat || (dmp.FlatStings > 0 && length <= dmp.FlatStings) {
 			format = `%#v`
 		}
 

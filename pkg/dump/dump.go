@@ -70,6 +70,15 @@ type Option func(*Dump)
 // WithFlat is option for [New] which makes [Dump] display values in one line.
 func WithFlat(dmp *Dump) { dmp.Flat = true }
 
+// WithFlatStrings configures the maximum length of strings to be represented
+// as flat in the output. Strings longer than the specified length may be
+// formatted differently, depending on the configuration. This option is
+// similar to [WithFlat] but applies specifically to strings based on their
+// length.
+func WithFlatStrings(n int) Option {
+	return func(dmp *Dump) { dmp.FlatStings = n }
+}
+
 // WithCompact is option for [New] which makes [Dump] display values without
 // unnecessary whitespaces.
 func WithCompact(dmp *Dump) { dmp.Compact = true }
@@ -110,6 +119,9 @@ func WithTabWidth(n int) Option {
 type Dump struct {
 	// Display values on one line.
 	Flat bool
+
+	// Display strings shorter that given value as with Flat.
+	FlatStings int
 
 	// Do not use any indents or whitespace separators.
 	Compact bool
@@ -165,6 +177,7 @@ type Dump struct {
 // New returns new instance of [Dump].
 func New(opts ...Option) Dump {
 	dmp := Dump{
+		FlatStings: 200,
 		TimeFormat: TimeFormat,
 		PrintType:  true,
 		UseAny:     true,
