@@ -106,7 +106,7 @@ func Test_From(t *testing.T) {
 }
 
 //goland:noinspection GoDirectComparisonOfErrors
-func Test_Message_Append(t *testing.T) {
+func Test_Notice_Append(t *testing.T) {
 	t.Run("append first", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header")
@@ -152,7 +152,7 @@ func Test_Message_Append(t *testing.T) {
 }
 
 //goland:noinspection GoDirectComparisonOfErrors
-func Test_Message_AppendRow(t *testing.T) {
+func Test_Notice_AppendRow(t *testing.T) {
 	t.Run("append first", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header")
@@ -201,7 +201,7 @@ func Test_Message_AppendRow(t *testing.T) {
 }
 
 //goland:noinspection GoDirectComparisonOfErrors
-func Test_Message_Prepend(t *testing.T) {
+func Test_Notice_Prepend(t *testing.T) {
 	t.Run("prepend first", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header")
@@ -264,7 +264,7 @@ func Test_Message_Prepend(t *testing.T) {
 }
 
 //goland:noinspection GoDirectComparisonOfErrors
-func Test_Message_Trail(t *testing.T) {
+func Test_Notice_Trail(t *testing.T) {
 	t.Run("add as first row", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header")
@@ -318,7 +318,7 @@ func Test_Message_Trail(t *testing.T) {
 	})
 }
 
-func Test_Message_Want(t *testing.T) {
+func Test_Notice_Want(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header").Append("first", "%d", 1)
@@ -361,7 +361,7 @@ func Test_Message_Want(t *testing.T) {
 }
 
 //goland:noinspection GoDirectComparisonOfErrors
-func Test_Message_Have(t *testing.T) {
+func Test_Notice_Have(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header").Append("first", "%d", 1)
@@ -402,7 +402,7 @@ func Test_Message_Have(t *testing.T) {
 }
 
 //goland:noinspection GoDirectComparisonOfErrors
-func Test_Message_Wrap(t *testing.T) {
+func Test_Notice_Wrap(t *testing.T) {
 	// --- Given ---
 	var errMy = errors.New("my-error")
 	msg := New("header").Append("first", "%d", 1)
@@ -418,8 +418,33 @@ func Test_Message_Wrap(t *testing.T) {
 	affirm.DeepEqual(t, wRows, msg.Rows)
 }
 
+func Test_Notice_Unwrap(t *testing.T) {
+	t.Run("standard", func(t *testing.T) {
+		// --- Given ---
+		msg := New("header").Append("first", "%d", 1)
+
+		// --- When ---
+		err := msg.Unwrap()
+
+		// --- Then ---
+		affirm.True(t, errors.Is(err, ErrNotice))
+	})
+
+	t.Run("wrapped", func(t *testing.T) {
+		// --- Given ---
+		var errMy = errors.New("my-error")
+		msg := New("header").Append("first", "%d", 1).Wrap(errMy)
+
+		// --- When ---
+		err := msg.Unwrap()
+
+		// --- Then ---
+		affirm.True(t, errors.Is(err, errMy))
+	})
+}
+
 //goland:noinspection GoDirectComparisonOfErrors
-func Test_Message_Remove(t *testing.T) {
+func Test_Notice_Remove(t *testing.T) {
 	t.Run("remove existing", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header").Append("first", "%d", 1).Append("second", "%d", 2)
@@ -447,7 +472,7 @@ func Test_Message_Remove(t *testing.T) {
 	})
 }
 
-func Test_Message_Error(t *testing.T) {
+func Test_Notice_Error(t *testing.T) {
 	t.Run("header only", func(t *testing.T) {
 		// --- Given ---
 		msg := New("expected values to be equal")

@@ -160,6 +160,12 @@ func (msg *Notice) Wrap(err error) *Notice {
 	return msg
 }
 
+// Unwrap returns wrapped error. By default, it returns [ErrNotice] unless a
+// different error was specified using [Notice.Wrap].
+func (msg *Notice) Unwrap() error {
+	return msg.err
+}
+
 // Remove removes named row.
 func (msg *Notice) Remove(name string) *Notice {
 	fn := func(row Row) bool { return row.Name == name }

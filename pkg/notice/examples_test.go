@@ -172,6 +172,18 @@ func ExampleNotice_Wrap() {
 	// Output: true
 }
 
+func ExampleNotice_Unwrap() {
+	ErrMy := errors.New("my error")
+
+	msg := notice.New("expected values to be equal").
+		Want("%s", "abc").
+		Have("%s", "xyz").
+		Wrap(ErrMy)
+
+	fmt.Println(msg.Unwrap())
+	// Output: my error
+}
+
 func ExampleNotice_SetData() {
 	msg := notice.New("expected values to be equal").
 		Want("%s", "abc").
