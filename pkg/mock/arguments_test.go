@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/pkg/assert"
-	"github.com/ctx42/testing/pkg/tester"
 )
 
 func Test_Arguments_Get(t *testing.T) {
@@ -378,40 +377,6 @@ func Test_Arguments_Diff(t *testing.T) {
 		assert.Equal(t, exp, got)
 	})
 
-}
-
-func Test_Arguments_Assert(t *testing.T) {
-	t.Run("match", func(t *testing.T) {
-		// --- Given ---
-		tspy := tester.New(t).Close()
-		args := Arguments([]any{"str", 42, true})
-
-		// --- When ---
-		have := args.Assert(tspy, "str", 42, true)
-
-		// --- Then ---
-		assert.True(t, have)
-	})
-
-	t.Run("no match", func(t *testing.T) {
-		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectFail()
-		tspy.ExpectLogContain("arguments do not match")
-		tspy.ExpectLogContain(`0: FAIL: (string="str") != (string="string")`)
-		tspy.ExpectLogContain(`1: FAIL: (int=42) != (int=44)`)
-		tspy.ExpectLogContain(`2: PASS: (bool=true) == (bool=true)`)
-		tspy.ExpectLogContain("stack:")
-		tspy.Close()
-
-		args := Arguments([]any{"str", 42, true})
-
-		// --- When ---
-		have := args.Assert(tspy, "string", 44, true)
-
-		// --- Then ---
-		assert.False(t, have)
-	})
 }
 
 func Test_Arguments_String(t *testing.T) {

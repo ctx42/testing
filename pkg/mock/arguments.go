@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-
-	"github.com/ctx42/testing/pkg/tester"
 )
 
 // Arguments holds an array of method arguments or return values.
@@ -119,30 +117,6 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 		out = append(out, msg)
 	}
 	return out, diffCnt
-}
-
-// Assert compares the arguments with the specified objects and fails if they
-// do not exactly match.
-func (args Arguments) Assert(t tester.T, vs ...any) bool {
-	t.Helper()
-
-	// TODO(rz): use notice for error messages.
-
-	dif, cnt := args.Diff(vs)
-	if cnt == 0 {
-		return true
-	}
-
-	// Report differences.
-	format := "arguments do not match"
-	format = "" +
-		format + "\n" +
-		strings.Repeat("-", len(format)) + "\n" +
-		formatDiff(dif, 1) +
-		"\tstack:\n" +
-		"%s\n"
-	t.Errorf(format, formatStack(callStack(), 2))
-	return false
 }
 
 // String gets the argument at the specified index cast to string. Panics for

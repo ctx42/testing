@@ -3,6 +3,7 @@ package mock
 import (
 	"errors"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -350,7 +351,7 @@ func (c *Call) checkReq(cs []string) error {
 		}
 		_ = msg.Append("from", "%s", parent).Wrap(ErrRequirements)
 		if len(cs) > 0 {
-			_ = msg.Append("stack", "%s", formatStack(cs, 0))
+			_ = msg.Append("stack", "%s", strings.Join(cs, "\n"))
 		}
 		ers = append(ers, msg)
 	}
