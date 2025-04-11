@@ -77,32 +77,33 @@ type Call struct {
 
 // newCall returns new [Call] instance for a method with given name, stack
 // trace, and arguments it is expected to be called with.
-func newCall(parent *Mock, stack []string, method string, args ...any) *Call {
-	// TODO(rz): since parent and stack can in most cases be nil refactor it
-	//  just to take method name and args. The stack set via helper, parent as
-	//  well.
-
+func newCall(method string, args ...any) *Call {
 	// TODO(rz): document what kind of stack it is - where method call
 	//  requirement was defined.
 	return &Call{
-		cStack: cStack{
-			method: method,
-			stack:  stack,
-		},
-		parent: parent,
+		cStack: cStack{method: method},
 		args:   args,
 	}
 }
 
+func (c *Call) withParent(parent *Mock) *Call {
+	// TODO(rz): test this.
+	// TODO(rz): document this.
+	c.parent = parent
+	return c
+}
+
+func (c *Call) withStack(stack []string) *Call {
+	// TODO(rz): test this.
+	// TODO(rz): document this.
+	c.stack = stack
+	return c
+}
+
 // newProxy returns [Call] instance representing a proxy call. If name is not
 // empty the first value from the slice will be used as the proxied method name.
-func newProxy(
-	parent *Mock,
-	stack []string,
-	proxy reflect.Value,
-	name ...string,
-) *Call {
-
+func newProxy(proxy reflect.Value, name ...string) *Call {
+	// TODO(rz): document this.
 	var metName string
 	if len(name) == 0 {
 		metName = methodName(proxy)
@@ -110,7 +111,7 @@ func newProxy(
 		metName = name[0]
 	}
 
-	call := newCall(parent, stack, metName)
+	call := newCall(metName)
 	call.proxy = proxy
 	return call
 }
@@ -253,10 +254,6 @@ func (c *Call) Requires(calls ...*Call) *Call {
 		if call == nil {
 			panic("a nil instance of mock.Call passed to mock.Call.Requires")
 		}
-		// TODO(rz):
-		// if call.parent == nil {
-		// 	panic("nil parent in mock.Call passed to Requires")
-		// }
 	}
 	c.requires = append(c.requires, calls...)
 	return c

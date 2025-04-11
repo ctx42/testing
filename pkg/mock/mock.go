@@ -133,7 +133,7 @@ func (mck *Mock) On(method string, args ...any) *Call {
 
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
-	call := newCall(mck, callStack(), method, args...)
+	call := newCall(method, args...).withParent(mck).withStack(callStack())
 	mck.expected = append(mck.expected, call)
 	return call
 }
@@ -152,7 +152,7 @@ func (mck *Mock) OnAny(method string) *Call {
 	defer mck.mx.Unlock()
 	mck.t.Helper()
 
-	call := newCall(mck, callStack(), method)
+	call := newCall(method).withParent(mck).withStack(callStack())
 	call.argsAny = true
 	mck.expected = append(mck.expected, call)
 	return call
@@ -175,7 +175,7 @@ func (mck *Mock) Proxy(met any, name ...string) *Call {
 		panic("Proxy requires a valid not nil method")
 	}
 
-	call := newProxy(mck, callStack(), val, name...)
+	call := newProxy(val, name...).withParent(mck).withStack(callStack())
 	mck.expected = append(mck.expected, call)
 	return call
 }

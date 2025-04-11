@@ -9,24 +9,15 @@ import (
 	"github.com/ctx42/testing/internal/tstkit"
 	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/assert"
-	"github.com/ctx42/testing/pkg/tester"
 )
 
 func Test_newCall(t *testing.T) {
-	// --- Given ---
-	tspy := tester.New(t)
-	tspy.ExpectCleanups(1)
-	tspy.Close()
-
-	mck := NewMock(tspy)
-	stk := []string{"/absolute/path/to/caller.go:42"}
-
 	// --- When ---
-	call := newCall(mck, stk, "Method", "arg0", "arg1")
+	call := newCall("Method", "arg0", "arg1")
 
 	// --- Then ---
-	assert.Equal(t, []string{"/absolute/path/to/caller.go:42"}, call.stack)
-	assert.Same(t, mck, call.parent)
+	assert.Nil(t, call.stack)
+	assert.Nil(t, call.parent)
 	assert.Equal(t, "Method", call.method)
 	assert.Equal(t, Arguments{"arg0", "arg1"}, call.args)
 	assert.False(t, call.argsAny)
@@ -45,21 +36,15 @@ func Test_newCall(t *testing.T) {
 func Test_newProxy(t *testing.T) {
 	t.Run("regular", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		stk := []string{"/absolute/path/to/caller.go:42"}
 		ptr := &types.TPtr{}
 		met := reflect.ValueOf(ptr.AAA)
 
 		// --- When ---
-		call := newProxy(mck, stk, met)
+		call := newProxy(met)
 
 		// --- Then ---
-		assert.Equal(t, []string{"/absolute/path/to/caller.go:42"}, call.stack)
-		assert.Same(t, mck, call.parent)
+		assert.Nil(t, call.stack)
+		assert.Nil(t, call.parent)
 		assert.Equal(t, "AAA", call.method)
 		assert.Nil(t, call.args)
 		assert.False(t, call.argsAny)
@@ -77,21 +62,15 @@ func Test_newProxy(t *testing.T) {
 
 	t.Run("variadic", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		stk := []string{"/absolute/path/to/caller.go:42"}
 		ptr := &types.TPtr{}
 		met := reflect.ValueOf(ptr.Variadic)
 
 		// --- When ---
-		call := newProxy(mck, stk, met)
+		call := newProxy(met)
 
 		// --- Then ---
-		assert.Equal(t, []string{"/absolute/path/to/caller.go:42"}, call.stack)
-		assert.Same(t, mck, call.parent)
+		assert.Nil(t, call.stack)
+		assert.Nil(t, call.parent)
 		assert.Equal(t, "Variadic", call.method)
 		assert.Nil(t, call.args)
 		assert.False(t, call.argsAny)
@@ -109,16 +88,11 @@ func Test_newProxy(t *testing.T) {
 
 	t.Run("custom name", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
 		ptr := &types.TPtr{}
 		met := reflect.ValueOf(ptr.Variadic)
 
 		// --- When ---
-		call := newProxy(mck, nil, met, "MyName")
+		call := newProxy(met, "MyName")
 
 		// --- Then ---
 		assert.Equal(t, "MyName", call.method)
@@ -128,14 +102,9 @@ func Test_newProxy(t *testing.T) {
 func Test_Call_With(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
 		ptr := &types.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.AAA)
-		call := newProxy(mck, nil, prx)
+		call := newProxy(prx)
 
 		// --- When ---
 		have := call.With("a", "b")
@@ -147,12 +116,7 @@ func Test_Call_With(t *testing.T) {
 
 	t.Run("panics if not proxied call", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero")
+		call := newCall("Zero")
 
 		// --- When ---
 		msg := assert.PanicMsg(t, func() { call.With("a", "b") })
@@ -165,12 +129,7 @@ func Test_Call_With(t *testing.T) {
 func Test_Call_Return(t *testing.T) {
 	t.Run("simple values", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero")
+		call := newCall("Zero")
 
 		// --- When ---
 		have := call.Return("str", 42, true)
@@ -182,12 +141,7 @@ func Test_Call_Return(t *testing.T) {
 
 	t.Run("with slices", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero")
+		call := newCall("Zero")
 
 		// --- When ---
 		have := call.Return("str", []any{42, true})
@@ -199,12 +153,7 @@ func Test_Call_Return(t *testing.T) {
 
 	t.Run("nothing", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero")
+		call := newCall("Zero")
 
 		// --- When ---
 		have := call.Return()
@@ -216,15 +165,9 @@ func Test_Call_Return(t *testing.T) {
 
 	t.Run("panics if proxy call", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.ExpectFail()
-		tspy.IgnoreLogs()
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		ptr := &types.TPtr{}
-		call := mck.Proxy(ptr.AAA)
+		ptr := &types.TPtr{Val: "c"}
+		prx := reflect.ValueOf(ptr.AAA)
+		call := newProxy(prx)
 
 		// --- When ---
 		have := assert.PanicMsg(t, func() { call.Return() })
@@ -237,12 +180,7 @@ func Test_Call_Return(t *testing.T) {
 func Test_Call_Panic(t *testing.T) {
 	t.Run("success with string", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero")
+		call := newCall("Zero")
 
 		// --- When ---
 		have := call.Panic("message")
@@ -254,14 +192,8 @@ func Test_Call_Panic(t *testing.T) {
 
 	t.Run("success with error", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
 		ErrTst := errors.New("test")
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero")
+		call := newCall("Zero")
 
 		// --- When ---
 		have := call.Panic(ErrTst)
@@ -273,15 +205,9 @@ func Test_Call_Panic(t *testing.T) {
 
 	t.Run("panics if proxy call", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.ExpectFail()
-		tspy.IgnoreLogs()
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		ptr := &types.TPtr{}
-		call := mck.Proxy(ptr.AAA)
+		ptr := &types.TPtr{Val: "c"}
+		prx := reflect.ValueOf(ptr.AAA)
+		call := newProxy(prx)
 
 		// --- When ---
 		have := assert.PanicMsg(t, func() { call.Panic("message") })
@@ -293,12 +219,7 @@ func Test_Call_Panic(t *testing.T) {
 
 func Test_Call_Once(t *testing.T) {
 	// --- Given ---
-	tspy := tester.New(t)
-	tspy.ExpectCleanups(1)
-	tspy.Close()
-
-	mck := NewMock(tspy)
-	call := newCall(mck, nil, "Zero")
+	call := newCall("Zero")
 
 	// --- When ---
 	have := call.Once()
@@ -311,12 +232,7 @@ func Test_Call_Once(t *testing.T) {
 func Test_Call_Times(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero")
+		call := newCall("Zero")
 
 		// --- When ---
 		have := call.Times(3)
@@ -328,12 +244,7 @@ func Test_Call_Times(t *testing.T) {
 
 	t.Run("panics when used with Optional", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero").Optional()
+		call := newCall("Zero").Optional()
 
 		// --- When ---
 		msg := assert.PanicMsg(t, func() { call.Times(3) })
@@ -347,12 +258,7 @@ func Test_Call_Times(t *testing.T) {
 
 func Test_Call_Until(t *testing.T) {
 	// --- Given ---
-	tspy := tester.New(t)
-	tspy.ExpectCleanups(1)
-	tspy.Close()
-
-	mck := NewMock(tspy)
-	call := newCall(mck, nil, "Zero")
+	call := newCall("Zero")
 	ch := time.After(50 * time.Millisecond)
 	defer func() { <-ch }()
 
@@ -366,12 +272,7 @@ func Test_Call_Until(t *testing.T) {
 
 func Test_Call_After(t *testing.T) {
 	// --- Given ---
-	tspy := tester.New(t)
-	tspy.ExpectCleanups(1)
-	tspy.Close()
-
-	mck := NewMock(tspy)
-	call := newCall(mck, nil, "Zero")
+	call := newCall("Zero")
 
 	// --- When ---
 	have := call.After(100 * time.Millisecond)
@@ -384,12 +285,7 @@ func Test_Call_After(t *testing.T) {
 func Test_Call_Alter(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero")
+		call := newCall("Zero")
 
 		// --- When ---
 		alter0 := func(_ Arguments) {}
@@ -406,12 +302,7 @@ func Test_Call_Alter(t *testing.T) {
 func Test_Call_Optional(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero")
+		call := newCall("Zero")
 
 		// --- When ---
 		have := call.Optional()
@@ -423,12 +314,7 @@ func Test_Call_Optional(t *testing.T) {
 
 	t.Run("panics when used with Times", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero").Times(3)
+		call := newCall("Zero").Times(3)
 
 		// --- When ---
 		msg := assert.PanicMsg(t, func() { call.Optional() })
@@ -443,24 +329,12 @@ func Test_Call_Optional(t *testing.T) {
 func Test_Call_Requires(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		tspy0 := tester.New(t)
-		tspy0.ExpectCleanups(1)
-		tspy0.ExpectFail()
-		tspy0.IgnoreLogs()
-		tspy0.Close()
+		mck0 := &Mock{}
+		call00 := newCall("Zero0").withParent(mck0)
 
-		mck0 := NewMock(tspy0)
-		call00 := mck0.On("Zero0")
-
-		tspy1 := tester.New(t)
-		tspy1.ExpectCleanups(1)
-		tspy1.ExpectFail()
-		tspy1.IgnoreLogs()
-		tspy1.Close()
-
-		mck1 := NewMock(tspy1)
-		call10 := mck1.On("Zero1")
-		call11 := mck1.On("One1")
+		mck1 := &Mock{}
+		call10 := newCall("Zero1").withParent(mck1)
+		call11 := newCall("One1").withParent(mck1)
 
 		// --- When ---
 		have := call00.Requires(call10, call11)
@@ -473,31 +347,11 @@ func Test_Call_Requires(t *testing.T) {
 
 	t.Run("nil instance on the list", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero")
+		call := newCall("Zero")
 
 		// --- Then ---
 		msg := assert.PanicMsg(t, func() { call.Requires(nil) })
 		assert.Contain(t, "nil instance", *msg)
-	})
-
-	t.Run("instance with nil parent on the list", func(t *testing.T) {
-		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call0 := newCall(nil, nil, "Zero")
-		call1 := newCall(mck, nil, "One")
-
-		// --- Then ---
-		have := assert.PanicMsg(t, func() { call1.Requires(call0) })
-		assert.Contain(t, "nil parent", *have)
 	})
 }
 
@@ -672,12 +526,7 @@ func Test_Call_satisfied(t *testing.T) {
 func Test_Call_call(t *testing.T) {
 	t.Run("without returns", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero")
+		call := newCall("Zero")
 
 		// --- When ---
 		have := call.call()
@@ -689,13 +538,8 @@ func Test_Call_call(t *testing.T) {
 
 	t.Run("with until", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
 		ch := time.After(50 * time.Millisecond)
-		call := newCall(mck, nil, "Zero").Until(ch)
+		call := newCall("Zero").Until(ch)
 		now := time.Now()
 
 		// --- When ---
@@ -709,12 +553,7 @@ func Test_Call_call(t *testing.T) {
 
 	t.Run("with sleep", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero").After(50 * time.Millisecond)
+		call := newCall("Zero").After(50 * time.Millisecond)
 		now := time.Now()
 
 		// --- When ---
@@ -728,12 +567,7 @@ func Test_Call_call(t *testing.T) {
 
 	t.Run("with panic", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero").Panic("test panic")
+		call := newCall("Zero").Panic("test panic")
 
 		// --- When ---
 		have := assert.PanicMsg(t, func() { call.call() })
@@ -745,12 +579,7 @@ func Test_Call_call(t *testing.T) {
 
 	t.Run("with panic after given time", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Zero").
+		call := newCall("Zero").
 			After(50 * time.Millisecond).
 			Panic("test panic")
 		now := time.Now()
@@ -766,16 +595,11 @@ func Test_Call_call(t *testing.T) {
 
 	t.Run("alter arguments", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
 		arg0, arg1 := 0, 1
 
 		alter0 := func(args Arguments) { *(args.Get(0).(*int))++ }
 		alter1 := func(args Arguments) { *(args.Get(1).(*int)) += 2 }
-		call := newCall(mck, nil, "Zero").Alter(alter0, alter1)
+		call := newCall("Zero").Alter(alter0, alter1)
 
 		// --- When ---
 		have := call.call(&arg0, &arg1)
@@ -789,14 +613,9 @@ func Test_Call_call(t *testing.T) {
 
 	t.Run("calls proxy method", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
 		ptr := &types.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.Variadic)
-		call := newProxy(mck, nil, prx)
+		call := newProxy(prx)
 
 		// --- When ---
 		have := call.call("abc")
@@ -808,16 +627,11 @@ func Test_Call_call(t *testing.T) {
 
 	t.Run("alter called before proxied call", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
 		ptr := &types.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.Identity)
 		arg := "abc"
 		alter := func(args Arguments) { *(args.Get(0).(*string)) += " xyz" }
-		call := newProxy(mck, nil, prx).Alter(alter)
+		call := newProxy(prx).Alter(alter)
 
 		// --- When ---
 		have := call.call(&arg)
@@ -832,14 +646,9 @@ func Test_Call_call(t *testing.T) {
 func Test_Call_proxyCall(t *testing.T) {
 	t.Run("regular call", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
 		ptr := &types.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.AAA)
-		call := newProxy(mck, nil, prx)
+		call := newProxy(prx)
 
 		// --- When ---
 		have := call.callProxy()
@@ -852,14 +661,9 @@ func Test_Call_proxyCall(t *testing.T) {
 
 	t.Run("regular call with arguments", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
 		ptr := &types.TPtr{Val: "|"}
 		prx := reflect.ValueOf(ptr.Wrap)
-		call := newProxy(mck, nil, prx)
+		call := newProxy(prx)
 
 		// --- When ---
 		have := call.callProxy("a", "b")
@@ -871,14 +675,9 @@ func Test_Call_proxyCall(t *testing.T) {
 
 	t.Run("variadic proxy without variadic arguments", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
 		ptr := &types.TPtr{Val: "v"}
 		prx := reflect.ValueOf(ptr.Variadic)
-		call := newProxy(mck, nil, prx)
+		call := newProxy(prx)
 
 		// --- When ---
 		have := call.callProxy("abc")
@@ -890,14 +689,9 @@ func Test_Call_proxyCall(t *testing.T) {
 
 	t.Run("variadic proxy with one variadic arguments", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
 		ptr := &types.TPtr{Val: "v"}
 		prx := reflect.ValueOf(ptr.Variadic)
-		call := newProxy(mck, nil, prx)
+		call := newProxy(prx)
 
 		// --- When ---
 		have := call.callProxy("abc", 1, 2, 3)
@@ -909,14 +703,9 @@ func Test_Call_proxyCall(t *testing.T) {
 
 	t.Run("variadic proxy with multiple variadic arguments", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
 		ptr := &types.TPtr{Val: "v"}
 		prx := reflect.ValueOf(ptr.Variadic)
-		call := newProxy(mck, nil, prx)
+		call := newProxy(prx)
 
 		// --- When ---
 		have := call.callProxy("abc", 1)
@@ -928,12 +717,7 @@ func Test_Call_proxyCall(t *testing.T) {
 
 	t.Run("panics if proxy not defined", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		call := newCall(mck, nil, "Method")
+		call := newCall("Method")
 
 		// --- When ---
 		msg := assert.PanicMsg(t, func() { call.callProxy() })
@@ -948,7 +732,7 @@ func Test_Call_checkReq(t *testing.T) {
 
 	t.Run("no prerequisites", func(t *testing.T) {
 		// --- Given ---
-		call := newCall(nil, nil, "Method")
+		call := newCall("Method")
 
 		// --- When ---
 		have := call.checkReq(nil)
@@ -959,9 +743,9 @@ func Test_Call_checkReq(t *testing.T) {
 
 	t.Run("satisfied prerequisites", func(t *testing.T) {
 		// --- Given ---
-		pre0 := newCall(nil, nil, "Pre0").satisfy()
-		pre1 := newCall(nil, nil, "Pre1").satisfy()
-		call := newCall(nil, nil, "Method").Requires(pre0, pre1)
+		pre0 := newCall("Pre0").satisfy()
+		pre1 := newCall("Pre1").satisfy()
+		call := newCall("Method").Requires(pre0, pre1)
 
 		// --- When ---
 		have := call.checkReq(nil)
@@ -972,9 +756,9 @@ func Test_Call_checkReq(t *testing.T) {
 
 	t.Run("optional prerequisites are considered", func(t *testing.T) {
 		// --- Given ---
-		pre0 := newCall(nil, nil, "Pre0").Optional()
-		pre1 := newCall(nil, nil, "Pre1").Optional()
-		call := newCall(nil, nil, "Method").Requires(pre0, pre1)
+		pre0 := newCall("Pre0").Optional()
+		pre1 := newCall("Pre1").Optional()
+		call := newCall("Method").Requires(pre0, pre1)
 
 		// --- When ---
 		have := call.checkReq(nil)
@@ -985,9 +769,9 @@ func Test_Call_checkReq(t *testing.T) {
 
 	t.Run("error missing one from same mock", func(t *testing.T) {
 		// --- Given ---
-		pre1 := newCall(nil, nil, "Pre1", 1)
+		pre1 := newCall("Pre1", 1)
 		stk := []string{"line0", "line1", "line2"}
-		call := newCall(nil, nil, "Method", "abc").Return(1, "abc").Requires(pre1)
+		call := newCall("Method", "abc").Return(1, "abc").Requires(pre1)
 
 		// --- When ---
 		have := call.checkReq(stk)
@@ -1000,10 +784,10 @@ func Test_Call_checkReq(t *testing.T) {
 
 	t.Run("error missing one from same mock", func(t *testing.T) {
 		// --- Given ---
-		pre0 := newCall(nil, nil, "Pre0", 1).satisfy()
-		pre1 := newCall(nil, nil, "Pre1", 1)
+		pre0 := newCall("Pre0", 1).satisfy()
+		pre1 := newCall("Pre1", 1)
 		stk := []string{"line0", "line1", "line2"}
-		call := newCall(nil, nil, "Method", "abc").Return(1, "abc").Requires(pre0, pre1)
+		call := newCall("Method", "abc").Return(1, "abc").Requires(pre0, pre1)
 
 		// --- When ---
 		have := call.checkReq(stk)
@@ -1015,13 +799,14 @@ func Test_Call_checkReq(t *testing.T) {
 	})
 
 	t.Run("error missing form different mock", func(t *testing.T) {
+		// TODO(rz): cr this
 		// --- Given ---
 		mck0 := &Mock{}
-		pre01 := newCall(mck0, nil, "Pre01")
+		pre01 := newCall("Pre01").withParent(mck0)
 
 		mck1 := &Mock{}
-		newCall(mck1, nil, "Pre11")
-		call := newCall(mck1, nil, "Method").Requires(pre01)
+		newCall("Pre11").withParent(mck1)
+		call := newCall("Method").Requires(pre01)
 
 		// --- When ---
 		have := call.checkReq(nil)
@@ -1035,12 +820,8 @@ func Test_Call_checkReq(t *testing.T) {
 
 func Test_Call_End(t *testing.T) {
 	// --- Given ---
-	tspy := tester.New(t)
-	tspy.ExpectCleanups(1)
-	tspy.Close()
-
-	mck := NewMock(tspy)
-	call := newCall(mck, nil, "Zero")
+	mck := &Mock{}
+	call := newCall("Zero").withParent(mck)
 
 	// --- When ---
 	have := call.End()
