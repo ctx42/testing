@@ -43,21 +43,17 @@ var ErrNotice = errors.New("notice error")
 //
 // nolint: errname
 type Notice struct {
-	Header string            // Header message.
-	Rows   map[string]string // Context rows.
-	Data   map[string]any    // Any useful data (ignored by Notice).
-	Order  []string          // Order to display rows in.
-	err    error             // Base error (default: [ErrNotice]).
+	Header string         // Header message.
+	Rows   []Row          // Context rows.
+	Data   map[string]any // Any useful data attached to the Notice.
+	err    error          // Base error (default: [ErrNotice]).
 }
 
 // New creates a new [Notice] with the specified header which is constructed
 // using [fmt.Sprintf] from format and args. By default, the base error is
 // set to [ErrNotice].
 func New(header string, args ...any) *Notice {
-	msg := &Notice{
-		Rows: make(map[string]string, 2),
-		err:  ErrNotice,
-	}
+	msg := &Notice{err: ErrNotice}
 	return msg.SetHeader(header, args...)
 }
 
@@ -94,13 +90,13 @@ func (msg *Notice) SetHeader(header string, args ...any) *Notice {
 // exists, it is moved to the end of the [Notice.Order] slice. Implements
 // fluent interface.
 func (msg *Notice) Append(name, format string, args ...any) *Notice {
-	if _, exists := msg.Rows[name]; exists {
-		msg.Order = slices.DeleteFunc(msg.Order, func(s string) bool {
-			return name == s
-		})
+	fn := func(row Row) bool { return row.Name == name }
+	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
+		msg.Rows[idx].Format = format
+		msg.Rows[idx].Args = args
+		return msg
 	}
-	msg.Rows[name] = fmt.Sprintf(format, args...)
-	msg.Order = append(msg.Order, name)
+	msg.Rows = append(msg.Rows, NewRow(name, format, args...))
 	return msg
 }
 
@@ -117,20 +113,17 @@ func (msg *Notice) AppendRow(desc ...Row) *Notice {
 // exists, it is moved to the beginning of the [Notice.Order] slice.
 // Implements fluent interface.
 func (msg *Notice) Prepend(name, format string, args ...any) *Notice {
-	hasTrail := slices.Contains(msg.Order, trail)
-	msg.Order = slices.DeleteFunc(msg.Order, func(s string) bool {
-		if hasTrail && s == trail {
-			return true
-		}
-		return name == s
-	})
-	msg.Rows[name] = fmt.Sprintf(format, args...)
-	var prepend []string
-	if hasTrail && name != trail {
-		prepend = []string{trail}
+	fn := func(row Row) bool { return row.Name == name }
+	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
+		msg.Rows[idx].Format = format
+		msg.Rows[idx].Args = args
+		return msg
 	}
-	prepend = append(prepend, name)
-	msg.Order = append(prepend, msg.Order...)
+	var idx int
+	if len(msg.Rows) != 0 && msg.Rows[0].Name == trail {
+		idx = 1
+	}
+	msg.Rows = slices.Insert(msg.Rows, idx, NewRow(name, format, args...))
 	return msg
 }
 
@@ -152,8 +145,10 @@ func (msg *Notice) Trail(tr string) *Notice {
 // Want uses Append method to append a row with "want" name. If the "want" row
 // already exists it will just replace its value.
 func (msg *Notice) Want(format string, args ...any) *Notice {
-	if _, ok := msg.Rows["want"]; ok {
-		msg.Rows["want"] = fmt.Sprintf(format, args...)
+	fn := func(row Row) bool { return row.Name == "want" }
+	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
+		msg.Rows[idx].Format = format
+		msg.Rows[idx].Args = args
 		return msg
 	}
 	return msg.Append("want", format, args...)
@@ -162,8 +157,10 @@ func (msg *Notice) Want(format string, args ...any) *Notice {
 // Have uses Append method to append a row with "have" name. If the "have" row
 // already exists it will just replace its value.
 func (msg *Notice) Have(format string, args ...any) *Notice {
-	if _, ok := msg.Rows["have"]; ok {
-		msg.Rows["have"] = fmt.Sprintf(format, args...)
+	fn := func(row Row) bool { return row.Name == "have" }
+	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
+		msg.Rows[idx].Format = format
+		msg.Rows[idx].Args = args
 		return msg
 	}
 	return msg.Append("have", format, args...)
@@ -177,10 +174,8 @@ func (msg *Notice) Wrap(err error) *Notice {
 
 // Remove removes named row.
 func (msg *Notice) Remove(name string) *Notice {
-	msg.Order = slices.DeleteFunc(msg.Order, func(s string) bool {
-		return name == s
-	})
-	delete(msg.Rows, name)
+	fn := func(row Row) bool { return row.Name == name }
+	msg.Rows = slices.DeleteFunc(msg.Rows, fn)
 	return msg
 }
 
@@ -189,24 +184,24 @@ func (msg *Notice) Is(target error) bool { return errors.Is(msg.err, target) }
 // Notice returns a formatted string representation of the Notice.
 func (msg *Notice) Error() string {
 	m := msg.Header
-	if len(msg.Order) > 0 {
+	if len(msg.Rows) > 0 {
 		if msg.Header != ContinuationHeader {
 			m += ":"
 		}
 		m += "\n"
 	}
-	names := msg.equalizeNames()
-	for i := range msg.Order {
-		display := names[i]
-		given := msg.Order[i]
-		value := msg.Rows[given]
+	longest := msg.longestName()
+	for i := range msg.Rows {
+		row := msg.Rows[i]
+		name := row.PadName(longest)
+		value := row.String()
 		format := "  %s: %s"
 		if strings.IndexByte(value, '\n') >= 0 {
 			format = "  %s:\n%s"
-			value = Indent(len(display)+4, ' ', value)
+			value = Indent(len(name)+4, ' ', value)
 		}
-		m += fmt.Sprintf(format, display, value)
-		if i < len(msg.Order)-1 {
+		m += fmt.Sprintf(format, name, value)
+		if i < len(msg.Rows)-1 {
 			m += "\n"
 		}
 	}
@@ -232,20 +227,13 @@ func (msg *Notice) GetData(key string) (any, bool) {
 	return val, ok
 }
 
-// equalizeNames returns a slice of row names where each name is the same
-// length as the longest row name. The shorter names have spaces prepended to
-// their names. The order of the returned slice is the same as Order field.
-func (msg *Notice) equalizeNames() []string {
+// longestName returns the longest row name in [Notice.Rows].
+func (msg *Notice) longestName() int {
 	var maxLen int
-	for _, name := range msg.Order {
-		if maxLen < len(name) {
-			maxLen = len(name)
+	for _, row := range msg.Rows {
+		if maxLen < len(row.Name) {
+			maxLen = len(row.Name)
 		}
 	}
-	var names []string
-	for _, name := range msg.Order {
-		name = strings.Repeat(" ", maxLen-len(name)) + name
-		names = append(names, name)
-	}
-	return names
+	return maxLen
 }

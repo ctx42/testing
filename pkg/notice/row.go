@@ -3,6 +3,11 @@
 
 package notice
 
+import (
+	"fmt"
+	"strings"
+)
+
 // Row represents [Notice] row.
 type Row struct {
 	Name   string
@@ -15,7 +20,14 @@ func NewRow(name, format string, args ...any) Row {
 	return Row{Name: name, Format: format, Args: args}
 }
 
-// Trail is convenience constructor function for [Row] with given name.
-func Trail(name string) Row {
-	return Row{Name: trail, Format: name}
+// String returns formated string value.
+func (r Row) String() string { return fmt.Sprintf(r.Format, r.Args...) }
+
+// PadName left pads row name with spaces to be requested length.
+func (r Row) PadName(length int) string {
+	l := len(r.Name)
+	if length > l {
+		return strings.Repeat(" ", length-l) + r.Name
+	}
+	return r.Name
 }
