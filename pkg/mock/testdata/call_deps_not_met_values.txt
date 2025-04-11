@@ -5,7 +5,7 @@ which was invoked but with different arguments than expected.
           method: Two(int) string
    expected args:
                   0: 2
-        requires: Zero(int)
+        requires: Zero(int) string
    expected args:
-                  0: 0
-            from: a different mock
+                  0: 1
+            from: the same mock

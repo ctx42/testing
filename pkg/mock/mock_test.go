@@ -611,9 +611,7 @@ func Test_Mock_Call(t *testing.T) {
 		assert.True(t, mck.failed)
 	})
 
-	t.Run("call before some required deps are met", func(t *testing.T) {
-		// TODO(rz): something strange with those tests. feels like we are
-		//  missing cases for required calls.
+	t.Run("error when not all requirements are met", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -633,34 +631,24 @@ func Test_Mock_Call(t *testing.T) {
 		assert.True(t, mck.failed)
 	})
 
-	t.Run("call before required deps are met different mock", func(t *testing.T) {
+	t.Run("error requirement values did not match", func(t *testing.T) {
 		// --- Given ---
-		tspy0 := tester.New(t)
-		tspy0.ExpectCleanups(1)
-		tspy0.ExpectFail()
-		tspy0.IgnoreLogs()
-		tspy0.Close()
-
-		mck0 := NewMock(tspy0, WithNoStack)
-		req00 := mck0.On("Zero", 0)
-
-		tspy1 := tester.New(t)
-		tspy1.ExpectCleanups(1)
-		tspy1.ExpectFail()
-		// TODO(rz): so where is the test for required methods called but not
-		//  with the expected4d values?
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.ExpectFail()
 		wMsg := tstkit.Golden(t, "testdata/call_deps_not_met_values.txt")
-		tspy1.ExpectLogEqual(wMsg)
-		tspy1.Close()
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
 
-		mck1 := NewMock(tspy1, WithNoStack)
-		req10 := mck1.On("Zero", 0).Return("zero")
-		mck1.On("Two", 2).Return("two").Requires(req00, req10)
+		mck := NewMock(tspy, WithNoStack)
+		req0 := mck.On("Zero", 0).Return("zero 0")
+		req1 := mck.On("Zero", 1).Return("zero 1")
+		mck.On("Two", 2).Return("two").Requires(req0, req1)
+		mck.Call("Zero", 0) // Satisfy one of the requirements.
 
 		// --- When ---
-		assert.Panic(t, func() { mck1.Call("Two", 2) })
-		assert.False(t, mck0.failed)
-		assert.True(t, mck1.failed)
+		assert.Panic(t, func() { mck.Call("Two", 2) })
+		assert.True(t, mck.failed)
 	})
 
 	t.Run("wait for until", func(t *testing.T) {
