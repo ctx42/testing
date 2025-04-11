@@ -12,13 +12,16 @@ import (
 
 // stack represents a method call stack.
 type cStack struct {
-	method string   // The name of the method that was or will be called.
-	stack  []string // The call stack of the method.
+	// The name of the method that was or will be called.
+	method string
+
+	// The call stack of the method. What kind of stack it is context dependent.
+	stack []string
 }
 
 // Call represents a mocked method call, used for defining expectations.
 type Call struct {
-	// Method name and its call stack.
+	// Method name and call stack where the method call requirement was defined.
 	cStack
 
 	// Mock instance the call belongs to.
@@ -74,19 +77,20 @@ type Call struct {
 
 // newCall returns new [Call] instance for a method with given name, stack
 // trace, and arguments it is expected to be called with.
-func newCall(parent *Mock, method string, stack []string, args ...any) *Call {
+func newCall(parent *Mock, stack []string, method string, args ...any) *Call {
+	// TODO(rz): since parent and stack can in most cases be nil refactor it
+	//  just to take method name and args. The stack set via helper, parent as
+	//  well.
+
+	// TODO(rz): document what kind of stack it is - where method call
+	//  requirement was defined.
 	return &Call{
 		cStack: cStack{
 			method: method,
 			stack:  stack,
 		},
-		parent:    parent,
-		args:      args,
-		returns:   nil,
-		wantCalls: 0,
-		until:     nil,
-		alter:     nil,
-		panic:     nil,
+		parent: parent,
+		args:   args,
 	}
 }
 
@@ -106,7 +110,7 @@ func newProxy(
 		metName = name[0]
 	}
 
-	call := newCall(parent, metName, stack)
+	call := newCall(parent, stack, metName)
 	call.proxy = proxy
 	return call
 }
@@ -247,11 +251,12 @@ func (c *Call) Optional() *Call {
 func (c *Call) Requires(calls ...*Call) *Call {
 	for _, call := range calls {
 		if call == nil {
-			panic("nil instance of mock.Call passed to Requires")
+			panic("a nil instance of mock.Call passed to mock.Call.Requires")
 		}
-		if call.parent == nil {
-			panic("nil parent in mock.Call passed to Requires")
-		}
+		// TODO(rz):
+		// if call.parent == nil {
+		// 	panic("nil parent in mock.Call passed to Requires")
+		// }
 	}
 	c.requires = append(c.requires, calls...)
 	return c
@@ -325,7 +330,9 @@ func (c *Call) satisfied(haveCalls int) error {
 		Wrap(ErrTooFewCalls)
 }
 
-// checkReq checks all prerequisites for this call are satisfied.
+// checkReq verifies that all prerequisites for a method call are met. The
+// stack parameter should contain the stack trace from where the method was
+// invoked.
 func (c *Call) checkReq(cs []string) error {
 	var ers []error
 	for _, req := range c.requires {
@@ -356,9 +363,7 @@ func (c *Call) checkReq(cs []string) error {
 		ers = append(ers, msg)
 	}
 
-	// TODO(rz): you need to move not exported wrap from check package
-	//  so all packages can reuse it - like here.
-	err := errors.Join(ers...) // TODO(rz):
+	err := notice.Join(ers...) // TODO(rz):
 	fmt.Println(err)           // TODO():
 	return err
 }
@@ -403,6 +408,19 @@ func (c *Call) callProxy(args ...any) Arguments {
 		returns = append(returns, ret.Interface())
 	}
 	return returns
+}
+
+func (c *Call) satisfy() *Call {
+	// TODO(rz): test this.
+	// TODO(rz): document this.
+	c.mx.Lock()
+	defer c.mx.Unlock()
+	if c.wantCalls == 0 {
+		c.haveCalls = 1
+	} else {
+		c.haveCalls = c.wantCalls
+	}
+	return c
 }
 
 // End ends chain of calls on the [Call] instance and returns parent [Mock].

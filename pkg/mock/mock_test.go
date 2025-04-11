@@ -612,6 +612,8 @@ func Test_Mock_Call(t *testing.T) {
 	})
 
 	t.Run("call before some required deps are met", func(t *testing.T) {
+		// TODO(rz): something strange with those tests. feels like we are
+		//  missing cases for required calls.
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -645,6 +647,8 @@ func Test_Mock_Call(t *testing.T) {
 		tspy1 := tester.New(t)
 		tspy1.ExpectCleanups(1)
 		tspy1.ExpectFail()
+		// TODO(rz): so where is the test for required methods called but not
+		//  with the expected4d values?
 		wMsg := tstkit.Golden(t, "testdata/call_deps_not_met_values.txt")
 		tspy1.ExpectLogEqual(wMsg)
 		tspy1.Close()

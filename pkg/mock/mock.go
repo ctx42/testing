@@ -133,7 +133,7 @@ func (mck *Mock) On(method string, args ...any) *Call {
 
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
-	call := newCall(mck, method, callStack(), args...)
+	call := newCall(mck, callStack(), method, args...)
 	mck.expected = append(mck.expected, call)
 	return call
 }
@@ -152,7 +152,7 @@ func (mck *Mock) OnAny(method string) *Call {
 	defer mck.mx.Unlock()
 	mck.t.Helper()
 
-	call := newCall(mck, method, callStack())
+	call := newCall(mck, callStack(), method)
 	call.argsAny = true
 	mck.expected = append(mck.expected, call)
 	return call
