@@ -4,7 +4,9 @@
 package notice
 
 import (
+	"errors"
 	"strings"
+	"unsafe"
 )
 
 // Indent indents lines with n number of runes. Lines are indented only if
@@ -43,3 +45,64 @@ func Unwrap(err error) []error {
 	}
 	return ers
 }
+
+// Join wraps errors in an instance of multi decorator if it's an error joined
+// with [errors.Join].
+func Join(err ...error) error {
+	var ers []error
+	for _, e := range err {
+		if e == nil {
+			continue
+		}
+		if es, ok := e.(interface{ Unwrap() []error }); ok {
+			ers = append(ers, es.Unwrap()...)
+		} else {
+			ers = append(ers, e)
+		}
+	}
+	switch len(ers) {
+	case 0:
+		return nil
+	case 1:
+		return ers[0]
+	default:
+		return multi{ers: ers}
+	}
+}
+
+// multi is a decorator that formats multiple errors for output. It includes
+// specialized handling for Notice errors but supports any error type.
+type multi struct{ ers []error }
+
+func (e multi) Error() string {
+	if len(e.ers) == 1 {
+		return e.ers[0].Error()
+	}
+
+	var prev string
+	var msg *Notice
+	if errors.As(e.ers[0], &msg) {
+		prev = msg.Header
+	}
+	buf := []byte(e.ers[0].Error())
+
+	for _, err := range e.ers[1:] {
+		if errors.As(err, &msg) {
+			tmp := msg.Header
+			if prev == msg.Header {
+				msg.Header = ContinuationHeader
+				buf = append(buf, '\n')
+				buf = append(buf, msg.Error()...)
+				msg.Header = tmp
+				continue
+			}
+		}
+		prev = ""
+		buf = append(buf, '\n', '\n')
+		buf = append(buf, err.Error()...)
+	}
+
+	return unsafe.String(&buf[0], len(buf))
+}
+
+func (e multi) Unwrap() []error { return e.ers }

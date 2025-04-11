@@ -4,7 +4,6 @@
 package check
 
 import (
-	"errors"
 	"reflect"
 	"sort"
 	"strings"
@@ -187,7 +186,7 @@ func MapSubset[K comparable, V any](want, have map[K]V, opts ...Option) error {
 		ers = append(ers, err)
 	}
 
-	return wrap(errors.Join(ers...))
+	return notice.Join(ers...)
 }
 
 // MapsSubset checks all the "want" maps are subsets of corresponding "have"
@@ -213,5 +212,5 @@ func MapsSubset[K comparable, V any](want, have []map[K]V, opts ...Option) error
 			ers = append(ers, notice.Unwrap(err)...)
 		}
 	}
-	return wrap(errors.Join(ers...))
+	return notice.Join(ers...)
 }

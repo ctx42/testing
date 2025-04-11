@@ -21,7 +21,7 @@ import (
 func Equal(want, have any, opts ...Option) error {
 	wVal := reflect.ValueOf(want)
 	hVal := reflect.ValueOf(have)
-	return wrap(deepEqual(wVal, hVal, opts...))
+	return notice.Join(deepEqual(wVal, hVal, opts...))
 }
 
 // NotEqual checks both values are not equal using. Returns nil if they are not,
