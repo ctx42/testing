@@ -28,18 +28,18 @@ func Test_Arguments_Get(t *testing.T) {
 		msg := assert.PanicMsg(t, func() { args.Get(100) })
 
 		// --- Then ---
-		want := "arguments: Get(100) out of range 2 max"
+		want := "[mock] arguments: Get(100) out of range 2 max"
 		assert.Equal(t, want, *msg)
 	})
 }
 
-func Test_Arguments_Is(t *testing.T) {
+func Test_Arguments_Equal(t *testing.T) {
 	t.Run("match", func(t *testing.T) {
 		// --- Given ---
 		var args = Arguments{"str", 42, true}
 
 		// --- Then ---
-		assert.True(t, args.Is("str", 42, true))
+		assert.True(t, args.Equal("str", 42, true))
 	})
 
 	t.Run("no match", func(t *testing.T) {
@@ -47,7 +47,7 @@ func Test_Arguments_Is(t *testing.T) {
 		var args = Arguments{"str", 42, true}
 
 		// --- Then ---
-		assert.False(t, args.Is("wrong", 456, false))
+		assert.False(t, args.Equal("wrong", 456, false))
 	})
 
 	t.Run("missing indexes", func(t *testing.T) {
@@ -55,10 +55,10 @@ func Test_Arguments_Is(t *testing.T) {
 		var args = Arguments{"str", 42, true}
 
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { args.Is("str", 42) })
+		msg := assert.PanicMsg(t, func() { args.Equal("str", 42) })
 
 		// --- Then ---
-		want := "arguments: arguments and haves lengths do not match 3 != 2"
+		want := "[must] arguments: argument lengths do not match 3 != 2"
 		assert.Equal(t, want, *msg)
 	})
 }
@@ -445,7 +445,7 @@ func Test_Arguments_String(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.String(100) })
 
 		// --- Then ---
-		exp := "arguments: Get(100) out of range 2 max"
+		exp := "[mock] arguments: Get(100) out of range 2 max"
 		assert.Equal(t, exp, *have)
 	})
 
@@ -457,7 +457,7 @@ func Test_Arguments_String(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.String(1) })
 
 		// --- Then ---
-		exp := "arguments: String(1) is of type \"int\" not string"
+		exp := "[mock] arguments: String(1) is of type \"int\" not string"
 		assert.Equal(t, exp, *have)
 	})
 }
@@ -482,7 +482,7 @@ func Test_Arguments_Int(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Int(100) })
 
 		// --- Then ---
-		exp := "arguments: Get(100) out of range 2 max"
+		exp := "[mock] arguments: Get(100) out of range 2 max"
 		assert.Equal(t, exp, *have)
 	})
 
@@ -494,7 +494,7 @@ func Test_Arguments_Int(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Int(2) })
 
 		// --- Then ---
-		exp := "arguments: Int(2) is of type \"bool\" not int"
+		exp := "[mock] arguments: Int(2) is of type \"bool\" not int"
 		assert.Equal(t, exp, *have)
 	})
 }
@@ -531,7 +531,7 @@ func Test_Arguments_Error(t *testing.T) {
 		have := assert.PanicMsg(t, func() { _ = args.Error(100) })
 
 		// --- Then ---
-		exp := "arguments: Get(100) out of range 2 max"
+		exp := "[mock] arguments: Get(100) out of range 2 max"
 		assert.Equal(t, exp, *have)
 	})
 
@@ -543,7 +543,7 @@ func Test_Arguments_Error(t *testing.T) {
 		msg := assert.PanicMsg(t, func() { _ = args.Error(2) })
 
 		// --- Then ---
-		exp := "arguments: Error(2) is of type \"bool\" not error"
+		exp := "[mock] arguments: Error(2) is of type \"bool\" not error"
 		assert.Equal(t, exp, *msg)
 	})
 }
@@ -568,7 +568,7 @@ func Test_Arguments_Bool(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Bool(100) })
 
 		// --- Then ---
-		exp := "arguments: Get(100) out of range 2 max"
+		exp := "[mock] arguments: Get(100) out of range 2 max"
 		assert.Equal(t, exp, *have)
 	})
 
@@ -580,7 +580,7 @@ func Test_Arguments_Bool(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Bool(1) })
 
 		// --- Then ---
-		exp := "arguments: Bool(1) is of type \"int\" not bool"
+		exp := "[mock] arguments: Bool(1) is of type \"int\" not bool"
 		assert.Equal(t, exp, *have)
 	})
 }

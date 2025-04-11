@@ -16,18 +16,18 @@ type Arguments []any
 // bounds.
 func (args Arguments) Get(idx int) any {
 	if idx+1 > len(args) {
-		format := "arguments: Get(%d) out of range %d max"
+		format := "[mock] arguments: Get(%d) out of range %d max"
 		panic(fmt.Sprintf(format, idx, len(args)-1))
 	}
 	return args[idx]
 }
 
-// Is gets whether the objects match the specified arguments. Panics on error.
-func (args Arguments) Is(haves ...any) bool {
+// Equal gets whether the objects match the specified arguments. Panics on error.
+func (args Arguments) Equal(haves ...any) bool {
 	al := len(args)
 	hl := len(haves)
 	if al != hl {
-		format := "arguments: arguments and haves lengths do not match %d != %d"
+		format := "[must] arguments: argument lengths do not match %d != %d"
 		panic(fmt.Sprintf(format, al, hl))
 	}
 	for i, arg := range args {
@@ -126,6 +126,8 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 func (args Arguments) Assert(t tester.T, vs ...any) bool {
 	t.Helper()
 
+	// TODO(rz): use notice for error messages.
+
 	dif, cnt := args.Diff(vs)
 	if cnt == 0 {
 		return true
@@ -162,7 +164,7 @@ func (args Arguments) String(idx int) string {
 		return got
 	}
 
-	format := "arguments: String(%d) is of type \"%T\" not string"
+	format := "[mock] arguments: String(%d) is of type \"%T\" not string"
 	panic(fmt.Sprintf(format, idx, val))
 }
 
@@ -174,7 +176,7 @@ func (args Arguments) Int(idx int) int {
 		return got
 	}
 
-	format := "arguments: Int(%d) is of type \"%T\" not int"
+	format := "[mock] arguments: Int(%d) is of type \"%T\" not int"
 	panic(fmt.Sprintf(format, idx, val))
 }
 
@@ -189,7 +191,7 @@ func (args Arguments) Error(idx int) error {
 		return got
 	}
 
-	format := "arguments: Error(%d) is of type \"%T\" not error"
+	format := "[mock] arguments: Error(%d) is of type \"%T\" not error"
 	panic(fmt.Sprintf(format, idx, val))
 }
 
@@ -201,6 +203,6 @@ func (args Arguments) Bool(idx int) bool {
 		return got
 	}
 
-	format := "arguments: Bool(%d) is of type \"%T\" not bool"
+	format := "[mock] arguments: Bool(%d) is of type \"%T\" not bool"
 	panic(fmt.Sprintf(format, idx, val))
 }

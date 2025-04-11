@@ -16,7 +16,6 @@ import (
 //
 // Copied from: https://github.com/stretchr/testify/blob/5ac6528bffc1ed7557980c3c563caf8308568446/assert/assertions.go#L214
 func callStack() []string {
-	// TODO(rz): everywhere this is used check if we show callstack
 	var pc uintptr
 	var ok bool
 	var file string
@@ -73,37 +72,24 @@ func callStack() []string {
 	return callers
 }
 
-// formatCall formats information about a method call. To show argument values
-// set values to true.
-func formatCall(method string, args Arguments, values bool, leftPad int) string {
-	// TODO(rz): this method is not needed.
-	var out []string
-	pad := strings.Repeat("\t", leftPad) // TODO(rz): dont use tabs
-	out = append(out, fmt.Sprintf("%s%s(%s)", pad, method, args.String(-1)))
-	if values && len(args) > 0 {
-		for idx, arg := range args {
-			out = append(out, fmt.Sprintf("%s\t%d: %#v", pad, idx, arg))
-		}
-	}
-	return strings.Join(out, "\n")
-}
-
+// formatMethod returns formated string representing the method and its input
+// and return arguments.
 func formatMethod(method string, args, rets Arguments) string {
-	// TODO(rz):
-	// TODO(rz): test this.
 	var out []string
 	argsStr := args.String(-1)
 	retsStr := rets.String(-1)
 	if len(rets) > 1 {
-		retsStr = "(" + retsStr + ")" // TODO(rz): test this.
+		retsStr = "(" + retsStr + ")"
 	}
-	if len(rets) > 0 { // TODO(rz): test this.
+	if len(rets) > 0 {
 		retsStr = " " + retsStr
 	}
 	out = append(out, fmt.Sprintf("%s(%s)%s", method, argsStr, retsStr))
 	return strings.Join(out, "\n")
 }
 
+// formatArgs returns formated multi line string representing arguments. Uses
+// internal [dump.Dump].
 func formatArgs(args Arguments) string {
 	if len(args) == 0 {
 		return ""

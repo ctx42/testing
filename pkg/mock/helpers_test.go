@@ -23,70 +23,6 @@ func Test_callStack(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func Test_formatCall(t *testing.T) {
-	t.Run("without values", func(t *testing.T) {
-		// --- Given ---
-		args := Arguments{"str", 42, true}
-
-		// --- When ---
-		have := formatCall("One", args, false, 0)
-
-		// --- Then ---
-		assert.Equal(t, "One(string, int, bool)", have)
-	})
-
-	t.Run("with values and zero padding", func(t *testing.T) {
-		// --- Given ---
-		args := Arguments{"str", 42, true}
-
-		// --- When ---
-		have := formatCall("One", args, true, 0)
-
-		// --- Then ---
-		want := "" +
-			"One(string, int, bool)\n" +
-			"\t0: \"str\"\n" +
-			"\t1: 42\n" +
-			"\t2: true"
-		assert.Equal(t, want, have)
-	})
-
-	t.Run("with values and left padding", func(t *testing.T) {
-		// --- Given ---
-		args := Arguments{"str", 42, true}
-
-		// --- When ---
-		have := formatCall("One", args, true, 1)
-
-		// --- Then ---
-		want := "" +
-			"\tOne(string, int, bool)\n" +
-			"\t\t0: \"str\"\n" +
-			"\t\t1: 42\n" +
-			"\t\t2: true"
-		assert.Equal(t, want, have)
-	})
-
-	t.Run("call without arguments with values", func(t *testing.T) {
-		// --- When ---
-		have := formatCall("One", Arguments{}, true, 0)
-
-		// --- Then ---
-		assert.Equal(t, "One()", have)
-	})
-
-	t.Run("nil argument", func(t *testing.T) {
-		// --- When ---
-		have := formatCall("One", Arguments{nil}, true, 0)
-
-		// --- Then ---
-		want := "" +
-			"One(<nil>)\n" +
-			"\t0: <nil>"
-		assert.Equal(t, want, have)
-	})
-}
-
 func Test_formatMethod_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
@@ -132,6 +68,37 @@ func Test_formatMethod_tabular(t *testing.T) {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
 			have := formatMethod(tc.method, tc.args, tc.rets)
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
+}
+
+func Test_formatArgs_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		args Arguments
+		want string
+	}{
+		{"nil arguments", nil, ""},
+		{"single simple argument", []any{1}, "0: 1"},
+		// TODO(rz): see how dumper is dumping multi line strings in assert.Equal.
+		{
+			"multiple simple arguments",
+			[]any{1, "abc", 2.2},
+			"" +
+				"0: 1\n" +
+				"1: \"abc\"\n" +
+				"2: 2.2",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := formatArgs(tc.args)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)
