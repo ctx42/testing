@@ -2,7 +2,6 @@ package mock
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"sync"
 	"time"
@@ -75,35 +74,19 @@ type Call struct {
 	mx sync.Mutex
 }
 
-// newCall returns new [Call] instance for a method with given name, stack
-// trace, and arguments it is expected to be called with.
+// newCall returns a new Call instance for a method with the specified name and
+// expected arguments.
 func newCall(method string, args ...any) *Call {
-	// TODO(rz): document what kind of stack it is - where method call
-	//  requirement was defined.
 	return &Call{
 		cStack: cStack{method: method},
 		args:   args,
 	}
 }
 
-func (c *Call) withParent(parent *Mock) *Call {
-	// TODO(rz): test this.
-	// TODO(rz): document this.
-	c.parent = parent
-	return c
-}
-
-func (c *Call) withStack(stack []string) *Call {
-	// TODO(rz): test this.
-	// TODO(rz): document this.
-	c.stack = stack
-	return c
-}
-
-// newProxy returns [Call] instance representing a proxy call. If name is not
-// empty the first value from the slice will be used as the proxied method name.
+// newProxy returns a Call instance representing a proxy call. Optionally, if
+// name is non-empty, its first value will be used as the custom proxied method
+// name.
 func newProxy(proxy reflect.Value, name ...string) *Call {
-	// TODO(rz): document this.
 	var metName string
 	if len(name) == 0 {
 		metName = methodName(proxy)
@@ -114,6 +97,18 @@ func newProxy(proxy reflect.Value, name ...string) *Call {
 	call := newCall(metName)
 	call.proxy = proxy
 	return call
+}
+
+// withParent sets [Mock] instance the call belongs to.
+func (c *Call) withParent(parent *Mock) *Call {
+	c.parent = parent
+	return c
+}
+
+// withStack sets the stack trace where the call requirement was defined.
+func (c *Call) withStack(stack []string) *Call {
+	c.stack = stack
+	return c
 }
 
 // With sets argument requirements for the proxied method call.
@@ -353,16 +348,13 @@ func (c *Call) checkReq(cs []string) error {
 		if len(req.args) > 0 {
 			_ = msg.Append(" expected args", "\n%s", formatArgs(req.args))
 		}
-		msg.Append("from", "%s", parent).Wrap(ErrRequirements)
+		_ = msg.Append("from", "%s", parent).Wrap(ErrRequirements)
 		if len(cs) > 0 {
 			_ = msg.Append("stack", "%s", formatStack(cs, 0))
 		}
 		ers = append(ers, msg)
 	}
-
-	err := notice.Join(ers...) // TODO(rz):
-	fmt.Println(err)           // TODO():
-	return err
+	return notice.Join(ers...)
 }
 
 // call represents a call to the mocked method with arguments. Returns
@@ -407,9 +399,8 @@ func (c *Call) callProxy(args ...any) Arguments {
 	return returns
 }
 
+// satisfy marks the call as satisfied.
 func (c *Call) satisfy() *Call {
-	// TODO(rz): test this.
-	// TODO(rz): document this.
 	c.mx.Lock()
 	defer c.mx.Unlock()
 	if c.wantCalls == 0 {

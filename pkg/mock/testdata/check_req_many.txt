@@ -1,0 +1,27 @@
+Log message when a mocked method is called but its dependencies within the same
+mock are not satisfied.
+---
+[mock] unexpected method call:
+          method: Method(string) (int, string)
+   expected args:
+                  0: "abc"
+        requires: Pre0(int)
+   expected args:
+                  0: 1
+            from: the same mock
+           stack:
+                  line0
+                  line1
+                  line2
+ ---
+          method: Method(string) (int, string)
+   expected args:
+                  0: "abc"
+        requires: Pre1(int)
+   expected args:
+                  0: 1
+            from: the same mock
+           stack:
+                  line0
+                  line1
+                  line2

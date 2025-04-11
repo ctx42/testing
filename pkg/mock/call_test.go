@@ -99,6 +99,32 @@ func Test_newProxy(t *testing.T) {
 	})
 }
 
+func Test_Call_withParent(t *testing.T) {
+	// --- Given ---
+	parent := &Mock{}
+	call := newCall("Method")
+
+	// --- When ---
+	have := call.withParent(parent)
+
+	// --- Then ---
+	assert.Same(t, call, have)
+	assert.Same(t, parent, call.parent)
+}
+
+func Test_Call_withStack(t *testing.T) {
+	// --- Given ---
+	stack := []string{"a", "b"}
+	call := newCall("Method")
+
+	// --- When ---
+	have := call.withStack(stack)
+
+	// --- Then ---
+	assert.Same(t, call, have)
+	assert.Equal(t, []string{"a", "b"}, call.stack)
+}
+
 func Test_Call_With(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
@@ -728,8 +754,6 @@ func Test_Call_proxyCall(t *testing.T) {
 }
 
 func Test_Call_checkReq(t *testing.T) {
-	// TODO(rz): go over those tests again.
-
 	t.Run("no prerequisites", func(t *testing.T) {
 		// --- Given ---
 		call := newCall("Method")
@@ -767,7 +791,7 @@ func Test_Call_checkReq(t *testing.T) {
 		assert.NoError(t, have)
 	})
 
-	t.Run("error missing one from same mock", func(t *testing.T) {
+	t.Run("error missing one from the same mock", func(t *testing.T) {
 		// --- Given ---
 		pre1 := newCall("Pre1", 1)
 		stk := []string{"line0", "line1", "line2"}
@@ -777,12 +801,12 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/check_req_same_mock.txt")
+		want := tstkit.Golden(t, "testdata/check_req_mock_same.txt")
 		assert.ErrorEqual(t, want, have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
 
-	t.Run("error missing one from same mock", func(t *testing.T) {
+	t.Run("error missing one of many from the same mock", func(t *testing.T) {
 		// --- Given ---
 		pre0 := newCall("Pre0", 1).satisfy()
 		pre1 := newCall("Pre1", 1)
@@ -793,13 +817,28 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/check_req_same_mock.txt")
+		want := tstkit.Golden(t, "testdata/check_req_mock_same.txt")
+		assert.ErrorEqual(t, want, have)
+		assert.ErrorIs(t, have, ErrRequirements)
+	})
+
+	t.Run("error missing many from the same mock", func(t *testing.T) {
+		// --- Given ---
+		pre0 := newCall("Pre0", 1)
+		pre1 := newCall("Pre1", 1)
+		stk := []string{"line0", "line1", "line2"}
+		call := newCall("Method", "abc").Return(1, "abc").Requires(pre0, pre1)
+
+		// --- When ---
+		have := call.checkReq(stk)
+
+		// --- Then ---
+		want := tstkit.Golden(t, "testdata/check_req_many.txt")
 		assert.ErrorEqual(t, want, have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
 
 	t.Run("error missing form different mock", func(t *testing.T) {
-		// TODO(rz): cr this
 		// --- Given ---
 		mck0 := &Mock{}
 		pre01 := newCall("Pre01").withParent(mck0)
@@ -815,6 +854,32 @@ func Test_Call_checkReq(t *testing.T) {
 		want := tstkit.Golden(t, "testdata/check_req_mock_other.txt")
 		assert.ErrorEqual(t, want, have)
 		assert.ErrorIs(t, have, ErrRequirements)
+	})
+}
+
+func Test_Call_satisfy(t *testing.T) {
+	t.Run("number of times not defined", func(t *testing.T) {
+		// --- Given ---
+		call := &Call{wantCalls: 0, haveCalls: 0}
+
+		// --- When ---
+		have := call.satisfy()
+
+		// --- Then ---
+		assert.Same(t, call, have)
+		assert.True(t, call.Satisfied())
+	})
+
+	t.Run("number of times defined", func(t *testing.T) {
+		// --- Given ---
+		call := &Call{wantCalls: 5, haveCalls: 0}
+
+		// --- When ---
+		have := call.satisfy()
+
+		// --- Then ---
+		assert.Same(t, call, have)
+		assert.True(t, call.Satisfied())
 	})
 }
 
