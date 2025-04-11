@@ -19,7 +19,7 @@ func Test_Arguments_Get(t *testing.T) {
 		assert.Equal(t, true, args.Get(2).(bool))
 	})
 
-	t.Run("not existing", func(t *testing.T) {
+	t.Run("panics for invalid index", func(t *testing.T) {
 		// --- Given ---
 		var args = Arguments{"str", 42, true}
 
@@ -49,7 +49,7 @@ func Test_Arguments_Equal(t *testing.T) {
 		assert.False(t, args.Equal("wrong", 456, false))
 	})
 
-	t.Run("missing indexes", func(t *testing.T) {
+	t.Run("panics for invalid indexes", func(t *testing.T) {
 		// --- Given ---
 		var args = Arguments{"str", 42, true}
 
@@ -376,7 +376,6 @@ func Test_Arguments_Diff(t *testing.T) {
 		}
 		assert.Equal(t, exp, got)
 	})
-
 }
 
 func Test_Arguments_String(t *testing.T) {
@@ -402,7 +401,7 @@ func Test_Arguments_String(t *testing.T) {
 		assert.Equal(t, "str", have)
 	})
 
-	t.Run("invalid index", func(t *testing.T) {
+	t.Run("panics for invalid index", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -414,7 +413,7 @@ func Test_Arguments_String(t *testing.T) {
 		assert.Equal(t, exp, *have)
 	})
 
-	t.Run("argument cannot be cast to string", func(t *testing.T) {
+	t.Run("panics when argument cannot be cast to string", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -439,7 +438,7 @@ func Test_Arguments_Int(t *testing.T) {
 		assert.Equal(t, 42, have)
 	})
 
-	t.Run("invalid index", func(t *testing.T) {
+	t.Run("panics for invalid index", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -451,7 +450,7 @@ func Test_Arguments_Int(t *testing.T) {
 		assert.Equal(t, exp, *have)
 	})
 
-	t.Run("argument cannot be cast to int", func(t *testing.T) {
+	t.Run("panics when argument cannot be cast to int", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -488,7 +487,7 @@ func Test_Arguments_Error(t *testing.T) {
 		assert.Nil(t, have)
 	})
 
-	t.Run("invalid index", func(t *testing.T) {
+	t.Run("panics for invalid index", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -500,7 +499,7 @@ func Test_Arguments_Error(t *testing.T) {
 		assert.Equal(t, exp, *have)
 	})
 
-	t.Run("argument cannot be cast to error", func(t *testing.T) {
+	t.Run("panics when argument cannot be cast to error", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -525,7 +524,7 @@ func Test_Arguments_Bool(t *testing.T) {
 		assert.True(t, have)
 	})
 
-	t.Run("invalid index", func(t *testing.T) {
+	t.Run("panics for invalid index", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -537,7 +536,7 @@ func Test_Arguments_Bool(t *testing.T) {
 		assert.Equal(t, exp, *have)
 	})
 
-	t.Run("argument cannot be cast to bool", func(t *testing.T) {
+	t.Run("panics when argument cannot be cast to bool", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
