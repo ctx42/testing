@@ -165,7 +165,7 @@ func Test_Mock_On(t *testing.T) {
 		assert.Len(t, 0, call0.requires)
 	})
 
-	t.Run("cannot use functions in args expectations", func(t *testing.T) {
+	t.Run("panics when functions are in args expectations", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -221,7 +221,7 @@ func Test_Mock_On(t *testing.T) {
 		assert.Equal(t, mck.MethodBoolS(nil).Error(), "fixture1")
 	})
 
-	t.Run("variadic method", func(t *testing.T) {
+	t.Run("error with variadic method", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -420,6 +420,8 @@ func Test_Mock_Called(t *testing.T) {
 	})
 
 	t.Run("calling unexpected method", func(t *testing.T) {
+		// TODO(rz): use golden files.
+
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -465,7 +467,7 @@ func Test_called(t *testing.T) {
 		assert.Equal(t, "func2", method)
 	})
 
-	t.Run("panics", func(t *testing.T) {
+	t.Run("panics for invalid skip value", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -540,7 +542,7 @@ func Test_Mock_Call(t *testing.T) {
 		assert.False(t, mck.failed)
 	})
 
-	t.Run("call method too many times", func(t *testing.T) {
+	t.Run("error when method called too many times", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -558,7 +560,7 @@ func Test_Mock_Call(t *testing.T) {
 		assert.True(t, mck.failed)
 	})
 
-	t.Run("call existing method with different arguments", func(t *testing.T) {
+	t.Run("error when existing method called with different arguments", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -592,7 +594,7 @@ func Test_Mock_Call(t *testing.T) {
 		assert.True(t, mck.failed)
 	})
 
-	t.Run("call before required deps are met", func(t *testing.T) {
+	t.Run("error when method called before required deps are met", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -886,7 +888,7 @@ func Test_Mock_AssertExpectations(t *testing.T) {
 		assert.False(t, mck.failed)
 	})
 
-	t.Run("one not satisfied", func(t *testing.T) {
+	t.Run("error when one call not satisfied", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -910,7 +912,7 @@ func Test_Mock_AssertExpectations(t *testing.T) {
 		assert.True(t, mck.failed)
 	})
 
-	t.Run("multiple not satisfied", func(t *testing.T) {
+	t.Run("error when multiple calls not satisfied", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -988,7 +990,7 @@ func Test_Mock_IsCallable(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("not existing method", func(t *testing.T) {
+	t.Run("error when not existing method name given", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -1006,7 +1008,7 @@ func Test_Mock_IsCallable(t *testing.T) {
 		assert.ErrorIs(t, err, ErrNotFound)
 	})
 
-	t.Run("not matching arguments", func(t *testing.T) {
+	t.Run("error when not matching arguments given", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -1024,7 +1026,7 @@ func Test_Mock_IsCallable(t *testing.T) {
 		assert.ErrorIs(t, err, ErrNotFound)
 	})
 
-	t.Run("cannot be called again", func(t *testing.T) {
+	t.Run("error when called again", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -1061,13 +1063,13 @@ func Test_Mock_AssertCallCount(t *testing.T) {
 		assert.False(t, mck.failed)
 	})
 
-	t.Run("too few calls", func(t *testing.T) {
+	t.Run("error when method called too few times", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
 		wMsg := tstkit.Golden(t, "testdata/assert_call_cnt_too_few.txt")
-		tspy.ExpectLogContain(wMsg)
+		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
 		mck := NewExampleImpl(NewMock(tspy))
@@ -1083,13 +1085,13 @@ func Test_Mock_AssertCallCount(t *testing.T) {
 		assert.True(t, mck.failed)
 	})
 
-	t.Run("too many calls", func(t *testing.T) {
+	t.Run("error when method called too many times", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
 		wMsg := tstkit.Golden(t, "testdata/assert_call_cnt_too_many.txt")
-		tspy.ExpectLogContain(wMsg)
+		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
 		mck := NewExampleImpl(NewMock(tspy))
@@ -1435,7 +1437,7 @@ func Test_Mock_find(t *testing.T) {
 		assert.Same(t, call, have)
 	})
 
-	t.Run("error too many calls to proxy method", func(t *testing.T) {
+	t.Run("error when too many calls to proxy method", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -1583,7 +1585,7 @@ func Test_Mock_Unset(t *testing.T) {
 		assert.Len(t, 2, mck.expected)
 	})
 
-	t.Run("not existing call", func(t *testing.T) {
+	t.Run("error not existing call", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)

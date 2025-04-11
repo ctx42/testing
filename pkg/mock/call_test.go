@@ -371,7 +371,7 @@ func Test_Call_Requires(t *testing.T) {
 		assert.Equal(t, want, have.requires)
 	})
 
-	t.Run("nil instance on the list", func(t *testing.T) {
+	t.Run("panics when nil is one of the arguments", func(t *testing.T) {
 		// --- Given ---
 		call := newCall("Zero")
 
@@ -494,7 +494,7 @@ func Test_Call_satisfied_tabular(t *testing.T) {
 }
 
 func Test_Call_satisfied(t *testing.T) {
-	t.Run("method never called", func(t *testing.T) {
+	t.Run("not satisfied when method never called", func(t *testing.T) {
 		// --- Given ---
 		call := &Call{
 			cStack:    cStack{method: "Method"},
@@ -512,7 +512,7 @@ func Test_Call_satisfied(t *testing.T) {
 		assert.ErrorEqual(t, wMsg, err)
 	})
 
-	t.Run("method called too few times", func(t *testing.T) {
+	t.Run("not satisfied when method called too few times", func(t *testing.T) {
 		// --- Given ---
 		call := &Call{
 			cStack:    cStack{method: "Method"},
@@ -530,7 +530,7 @@ func Test_Call_satisfied(t *testing.T) {
 		assert.ErrorEqual(t, wMsg, err)
 	})
 
-	t.Run("method called too many times", func(t *testing.T) {
+	t.Run("not satisfied when method called too many times", func(t *testing.T) {
 		// --- Given ---
 		call := &Call{
 			cStack:    cStack{method: "Method"},
