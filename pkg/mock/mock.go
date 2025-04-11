@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -14,8 +13,6 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 	"github.com/ctx42/testing/pkg/tester"
 )
-
-// TODO(rz): Tests don't use convention in sub tests naming "error ...".
 
 // Mock requirements violations.
 var (
@@ -196,25 +193,15 @@ func (mck *Mock) Called(args ...any) Arguments {
 // called returns method name. The argument skip is the number of stack frames
 // to ascend, with 0 identifying the caller of Caller.
 func (mck *Mock) called(skip int) string {
-	// get the calling function's name
 	pc, _, _, ok := runtime.Caller(skip)
 	if !ok {
 		panic("could not get the caller information")
 	}
-	functionPath := runtime.FuncForPC(pc).Name()
-	// Next four lines are required to use GCCGO function naming conventions.
-	// For example:
-	//   github_com_docker_libkv_store_mock.WatchTree.pN39_libkv_store_mock.Mock
-	//
-	// uses interface information unlike golang:
-	//   github.com/docker/libkv/store/mock.(*Mock).WatchTree
-	//
-	// With GCCGO we need to remove interface information starting from pN<dd>.
-	re := regexp.MustCompile("\\.pN\\d+_")
-	if re.MatchString(functionPath) {
-		functionPath = re.Split(functionPath, -1)[0]
+	name := runtime.FuncForPC(pc).Name()
+	if strings.Contains(name, ".func") {
+		return "<anonymous>"
 	}
-	parts := strings.Split(functionPath, ".")
+	parts := strings.Split(name, ".")
 	return parts[len(parts)-1]
 }
 
@@ -409,6 +396,7 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 	if len(cs) > 0 {
 		_ = msg.Append("stack", "\n%s", strings.Join(cs, "\n"))
 	}
+	fmt.Println(msg) // TODO():
 	return nil, msg
 }
 

@@ -1,0 +1,9 @@
+Log message when the variadic mocked method is called with wrong number of
+arguments.
+---
+[mock] method call not found:
+     method: <anonymous>(int, int, int)
+  with args:
+             0: 1
+             1: 2
+             2: 3

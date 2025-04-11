@@ -420,16 +420,15 @@ func Test_Mock_Called(t *testing.T) {
 	})
 
 	t.Run("calling unexpected method", func(t *testing.T) {
-		// TODO(rz): use golden files.
-
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		tspy.ExpectLogContain(hNotFoundCall)
+		wMsg := tstkit.Golden(t, "testdata/call_unexpected.txt")
+		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
-		mck := NewExampleImpl(NewMock(tspy))
+		mck := NewExampleImpl(NewMock(tspy, WithNoStack))
 
 		// --- When ---
 		assert.Panic(t, func() { mck.Called(1, 2, 3) })
@@ -464,7 +463,7 @@ func Test_called(t *testing.T) {
 		method := mck.called(1)
 
 		// --- Then ---
-		assert.Equal(t, "func2", method)
+		assert.Equal(t, "<anonymous>", method)
 	})
 
 	t.Run("panics for invalid skip value", func(t *testing.T) {
