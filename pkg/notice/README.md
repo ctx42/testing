@@ -2,6 +2,7 @@
 * [Notice Package](#notice-package)
   * [Basic Usage](#basic-usage)
     * [Create a Message](#create-a-message)
+    * [Wrap Errors](#wrap-errors)
     * [Add Metadata](#add-metadata)
   * [Indenting Lines](#indenting-lines)
 <!-- TOC -->
