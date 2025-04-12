@@ -11,7 +11,7 @@ type Adder interface {
 	Add(a, b float64) float64
 }
 
-// AdderMock implements the Adder interface. By convention, mock types are
+// AdderMock implements the [Adder] interface. By convention, mock types are
 // named after the interface with a "Mock" suffix.
 type AdderMock struct {
 	*mock.Mock // Embedded mock instance.
@@ -19,7 +19,7 @@ type AdderMock struct {
 	// Add custom fields here if needed.
 }
 
-// NewAdderMock creates a new AdderMock instance. By convention, constructor
+// NewAdderMock creates a new [AdderMock] instance. By convention, constructor
 // functions are prefixed with "New". More complex mocks may accept additional
 // parameters.
 func NewAdderMock(t *testing.T) *AdderMock {
