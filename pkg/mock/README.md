@@ -27,16 +27,16 @@ simulate real behavior, mocks ensure tests focus solely on the logic being
 tested, not on external systems. The mock package supports three types of
 replacement objects: fakes, stubs, and mocks.
 
->Fakes: Fakes implement the same interface as the real dependency but operate
+>**Fakes**: Fakes implement the same interface as the real dependency but operate
 independently, returning hardcoded results. While simple, they are
 inflexible—interface changes require updating all related fakes, which can be
 cumbersome.
 
-> Stubs: Stubs return predefined results for specific inputs and ignore
+> **Stubs**: Stubs return predefined results for specific inputs and ignore
 unexpected calls. With the `mock` package, you can define stubs concisely,
 clearly specifying dependency behavior and expected system responses.
 
-> Mocks: Mocks are advanced stubs that support detailed expectations, such as
+> **Mocks**: Mocks are advanced stubs that support detailed expectations, such as
 call counts, call order, and argument values. The `mock` package enables 
 creating mocks with minimal code, improving test readability and precision.
 
