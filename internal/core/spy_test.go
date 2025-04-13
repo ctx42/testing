@@ -4,8 +4,6 @@ import (
 	"testing"
 )
 
-// TODO(rz):
-
 func Test_Spy_Error(t *testing.T) {
 	t.Run("call", func(t *testing.T) {
 		// --- Given ---
