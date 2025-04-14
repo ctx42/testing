@@ -27,10 +27,10 @@ type T interface {
 // It logs calls to Error, Errorf, Fatal, and Fatalf, allowing verification of
 // test behavior without causing actual test failures.
 type Spy struct {
-	HelperCalled     bool // Tracks if Helper was called.
-	ReportedError    bool // Tracks if Error or Errorf was called.
-	TriggeredFailure bool // Tracks if Fatal or Fatalf was called.
-	Messages         *bytes.Buffer
+	HelperCalled     bool          // Tracks if Helper was called.
+	ReportedError    bool          // Tracks if Error or Errorf was called.
+	TriggeredFailure bool          // Tracks if Fatal or Fatalf was called.
+	Messages         *bytes.Buffer // Log messages if set.
 }
 
 // NewSpy returns new instance of [Spy].
