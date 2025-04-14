@@ -1,0 +1,18 @@
+Method without arguments and with single return value.
+---
+func (_mck *MyMock) Method() error {
+	_mck.t.Helper()
+	var _args []any
+	_rets := _mck.Called(_args...)
+	if len(_rets) != 1 {
+		_mck.t.Fatal("the number of mocked method returns does not match")
+	}
+
+	var _r0 error
+	if _rFn, ok := _rets.Get(0).(func() error); ok {
+		_r0 = _rFn()
+	} else if _r := _rets.Get(0); _r != nil {
+		_r0 = _r.(error)
+	}
+	return _r0
+}

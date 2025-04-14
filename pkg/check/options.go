@@ -87,6 +87,17 @@ func WithTrail(pth string) Option {
 	}
 }
 
+func Name(opts []Option) func(name string) Option {
+	// TODO(rz): test this.
+	// TODO(rz): document this.
+	return func(name string) Option {
+		return func(ops Options) Options {
+			ops.Trail = name
+			return ops
+		}
+	}
+}
+
 // WithTrailLog is a [Check] option turning on a collection of checked
 // fields/elements/keys. The trails are added to the provided slice.
 func WithTrailLog(list *[]string) Option {

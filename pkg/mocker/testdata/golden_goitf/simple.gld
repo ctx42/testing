@@ -1,0 +1,7 @@
+Single simple method without arguments nor return values.
+---
+func (_mck *MyMock) Method0() {
+	_mck.t.Helper()
+	var _args []any
+	_mck.Called(_args...)
+}

@@ -1,0 +1,13 @@
+Simple single method without arguments nor return values. With OnXXX helper.
+---
+func (_mck *MyMock) Method0() {
+	_mck.t.Helper()
+	var _args []any
+	_mck.Called(_args...)
+}
+
+func (_mck *MyMock) OnMethod0() *mock.Call {
+	_mck.t.Helper()
+	var _args []any
+	return _mck.On("Method0", _args...)
+}
