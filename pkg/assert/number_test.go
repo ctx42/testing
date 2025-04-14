@@ -21,7 +21,7 @@ func Test_Epsilon(t *testing.T) {
 		have := Epsilon(tspy, 42.0, 0.11, 41.9)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -35,7 +35,7 @@ func Test_Epsilon(t *testing.T) {
 		have := Epsilon(tspy, 42.0, 0.11, 39.9)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -51,6 +51,6 @@ func Test_Epsilon(t *testing.T) {
 		have := Epsilon(tspy, 42.0, 0.11, 39.9, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

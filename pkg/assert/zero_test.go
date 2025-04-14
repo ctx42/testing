@@ -21,7 +21,7 @@ func Test_Zero(t *testing.T) {
 		have := Zero(tspy, time.Time{})
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -35,7 +35,7 @@ func Test_Zero(t *testing.T) {
 		have := Zero(tspy, time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC))
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -51,7 +51,7 @@ func Test_Zero(t *testing.T) {
 		have := Zero(tspy, time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC), opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -64,7 +64,7 @@ func Test_NotZero(t *testing.T) {
 		have := NotZero(tspy, time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC))
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -78,7 +78,7 @@ func Test_NotZero(t *testing.T) {
 		have := NotZero(tspy, time.Time{})
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -94,6 +94,6 @@ func Test_NotZero(t *testing.T) {
 		have := NotZero(tspy, time.Time{}, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

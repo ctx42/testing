@@ -59,5 +59,5 @@ func Test_WithNow(t *testing.T) {
 	have := WithNow(now)(ops)
 
 	// --- Then ---
-	affirm.True(t, core.Same(now, have.now))
+	affirm.Equal(t, true, core.Same(now, have.now))
 }

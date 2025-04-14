@@ -34,7 +34,7 @@ func Test_WithTrailLog(t *testing.T) {
 	have := WithTrailLog(&buf)(ops)
 
 	// --- Then ---
-	affirm.True(t, core.Same(&buf, have.TrailLog))
+	affirm.Equal(t, true, core.Same(&buf, have.TrailLog))
 }
 
 func Test_WithTimeFormat(t *testing.T) {
@@ -81,7 +81,7 @@ func Test_WithTypeChecker(t *testing.T) {
 
 	// --- Then ---
 	haveChk, _ := have.TypeCheckers[reflect.TypeOf(123)]
-	affirm.True(t, core.Same(chk, haveChk))
+	affirm.Equal(t, true, core.Same(chk, haveChk))
 }
 
 func Test_WithTrailChecker(t *testing.T) {
@@ -94,7 +94,7 @@ func Test_WithTrailChecker(t *testing.T) {
 
 	// --- Then ---
 	haveChk, _ := have.TrailCheckers["type.field"]
-	affirm.True(t, core.Same(chk, haveChk))
+	affirm.Equal(t, true, core.Same(chk, haveChk))
 }
 
 func Test_WithSkipTrail(t *testing.T) {
@@ -105,7 +105,7 @@ func Test_WithSkipTrail(t *testing.T) {
 	have := WithSkipTrail("type.field1", "type.field2")(ops)
 
 	// --- Then ---
-	affirm.True(t, ops.SkipTrails == nil)
+	affirm.Equal(t, true, ops.SkipTrails == nil)
 	affirm.DeepEqual(t, []string{"type.field1", "type.field2"}, have.SkipTrails)
 }
 
@@ -139,15 +139,15 @@ func Test_WithOptions(t *testing.T) {
 	have := WithOptions(ops)(Options{})
 
 	// --- Then ---
-	affirm.True(t, core.Same(ops.Dumper.Dumpers, have.Dumper.Dumpers))
-	affirm.True(t, core.Same(ops.TrailLog, have.TrailLog))
-	affirm.True(t, core.Same(ops.TypeCheckers, have.TypeCheckers))
-	affirm.True(t, core.Same(ops.TrailCheckers, have.TrailCheckers))
-	affirm.True(t, core.Same(ops.now, have.now))
+	affirm.Equal(t, true, core.Same(ops.Dumper.Dumpers, have.Dumper.Dumpers))
+	affirm.Equal(t, true, core.Same(ops.TrailLog, have.TrailLog))
+	affirm.Equal(t, true, core.Same(ops.TypeCheckers, have.TypeCheckers))
+	affirm.Equal(t, true, core.Same(ops.TrailCheckers, have.TrailCheckers))
+	affirm.Equal(t, true, core.Same(ops.now, have.now))
 
 	ops.now = nil
 	have.now = nil
-	affirm.True(t, reflect.DeepEqual(ops, have))
+	affirm.Equal(t, true, reflect.DeepEqual(ops, have))
 }
 
 func Test_DefaultOptions(t *testing.T) {
@@ -162,11 +162,11 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, DefaultParseTimeFormat, have.TimeFormat)
 		affirm.Equal(t, DefaultRecentDuration, have.Recent)
 		affirm.Equal(t, "", have.Trail)
-		affirm.True(t, have.TrailLog == nil)
-		affirm.True(t, have.TypeCheckers == nil)
-		affirm.True(t, have.TrailCheckers == nil)
-		affirm.True(t, have.SkipTrails == nil)
-		affirm.True(t, core.Same(time.Now, have.now))
+		affirm.Equal(t, true, have.TrailLog == nil)
+		affirm.Equal(t, true, have.TypeCheckers == nil)
+		affirm.Equal(t, true, have.TrailCheckers == nil)
+		affirm.Equal(t, true, have.SkipTrails == nil)
+		affirm.Equal(t, true, core.Same(time.Now, have.now))
 		affirm.Equal(t, 9, reflect.ValueOf(have).NumField())
 	})
 
@@ -181,11 +181,11 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, DefaultParseTimeFormat, have.TimeFormat)
 		affirm.Equal(t, DefaultRecentDuration, have.Recent)
 		affirm.Equal(t, "type.field", have.Trail)
-		affirm.True(t, have.TrailLog == nil)
-		affirm.True(t, have.TypeCheckers == nil)
-		affirm.True(t, have.TrailCheckers == nil)
-		affirm.True(t, have.SkipTrails == nil)
-		affirm.True(t, core.Same(time.Now, have.now))
+		affirm.Equal(t, true, have.TrailLog == nil)
+		affirm.Equal(t, true, have.TypeCheckers == nil)
+		affirm.Equal(t, true, have.TrailCheckers == nil)
+		affirm.Equal(t, true, have.SkipTrails == nil)
+		affirm.Equal(t, true, core.Same(time.Now, have.now))
 		affirm.Equal(t, 9, reflect.ValueOf(have).NumField())
 	})
 }

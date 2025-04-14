@@ -22,7 +22,7 @@ func Test_Count(t *testing.T) {
 		have := Count(tspy, 2, "ab", "ab cd ab")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -36,7 +36,7 @@ func Test_Count(t *testing.T) {
 		have := Count(tspy, 1, 123, "ab cd ef")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -52,7 +52,7 @@ func Test_Count(t *testing.T) {
 		have := Count(tspy, 1, 123, "ab cd ef", opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -65,7 +65,7 @@ func Test_Type(t *testing.T) {
 		have := Type(tspy, true, true)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -81,7 +81,7 @@ func Test_Type(t *testing.T) {
 		have := Type(tspy, 1, uint(1))
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trails", func(t *testing.T) {
@@ -98,7 +98,7 @@ func Test_Type(t *testing.T) {
 		have := Type(tspy, 1, uint(1), opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -112,7 +112,7 @@ func Test_Fields(t *testing.T) {
 		have := Fields(tspy, 7, types.TA{})
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -126,7 +126,7 @@ func Test_Fields(t *testing.T) {
 		have := Fields(tspy, 1, &types.TA{})
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -142,6 +142,6 @@ func Test_Fields(t *testing.T) {
 		have := Fields(tspy, 1, &types.TA{}, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

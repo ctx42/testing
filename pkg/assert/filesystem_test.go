@@ -20,7 +20,7 @@ func Test_FileExist(t *testing.T) {
 		have := FileExist(tspy, "testdata/file.txt")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -36,7 +36,7 @@ func Test_FileExist(t *testing.T) {
 		have := FileExist(tspy, "testdata/not_existing.txt", opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -52,7 +52,7 @@ func Test_FileExist(t *testing.T) {
 		have := FileExist(tspy, "testdata/not_existing.txt", opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -65,7 +65,7 @@ func Test_NoFileExist(t *testing.T) {
 		have := NoFileExist(tspy, "testdata/not_existing.txt")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -79,7 +79,7 @@ func Test_NoFileExist(t *testing.T) {
 		have := NoFileExist(tspy, "testdata/file.txt")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -95,7 +95,7 @@ func Test_NoFileExist(t *testing.T) {
 		have := NoFileExist(tspy, "testdata/file.txt", opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -108,7 +108,7 @@ func Test_FileContain(t *testing.T) {
 		have := FileContain(tspy, "ghi\njkl", "testdata/file.txt")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -122,7 +122,7 @@ func Test_FileContain(t *testing.T) {
 		have := FileContain(tspy, "not there", "testdata/file.txt")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -138,7 +138,7 @@ func Test_FileContain(t *testing.T) {
 		have := FileContain(tspy, "not there", "testdata/file.txt", opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -151,7 +151,7 @@ func Test_DirExist(t *testing.T) {
 		have := DirExist(tspy, "testdata/dir")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -165,7 +165,7 @@ func Test_DirExist(t *testing.T) {
 		have := DirExist(tspy, "testdata/not_existing_dir")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -181,7 +181,7 @@ func Test_DirExist(t *testing.T) {
 		have := DirExist(tspy, "testdata/not_existing_dir", opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -194,7 +194,7 @@ func Test_NoDirExist(t *testing.T) {
 		have := NoDirExist(tspy, "testdata/not_existing_dir")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -208,7 +208,7 @@ func Test_NoDirExist(t *testing.T) {
 		have := NoDirExist(tspy, "testdata/dir")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -224,6 +224,6 @@ func Test_NoDirExist(t *testing.T) {
 		have := NoDirExist(tspy, "testdata/dir", opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

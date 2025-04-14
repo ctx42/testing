@@ -40,17 +40,17 @@ func Test_typeString(t *testing.T) {
 
 func Test_isPrintableChar(t *testing.T) {
 	for i := 0; i <= 31; i++ {
-		if !affirm.False(t, isPrintableChar(byte(i))) {
+		if !affirm.Equal(t, false, isPrintableChar(byte(i))) {
 			t.Logf("expected false for %d", i)
 		}
 	}
 	for i := 32; i <= 126; i++ {
-		if !affirm.True(t, isPrintableChar(byte(i))) {
+		if !affirm.Equal(t, true, isPrintableChar(byte(i))) {
 			t.Logf("expected true for %d", i)
 		}
 	}
 	for i := 127; i <= 255; i++ {
-		if !affirm.False(t, isPrintableChar(byte(i))) {
+		if !affirm.Equal(t, false, isPrintableChar(byte(i))) {
 			t.Logf("expected false for %d", i)
 		}
 	}

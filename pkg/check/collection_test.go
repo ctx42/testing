@@ -137,9 +137,9 @@ func Test_Len_error_tabular(t *testing.T) {
 			affirm.Equal(t, tc.wMsg, err.Error())
 
 			var msg *notice.Notice
-			affirm.True(t, errors.As(err, &msg))
+			affirm.Equal(t, true, errors.As(err, &msg))
 			cnt, ok := msg.GetData("len")
-			affirm.True(t, ok)
+			affirm.Equal(t, true, ok)
 			affirm.Equal(t, tc.actual, cnt.(int))
 		})
 	}

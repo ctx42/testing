@@ -20,7 +20,7 @@ func Test_True(t *testing.T) {
 		have := True(tspy, true)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -34,7 +34,7 @@ func Test_True(t *testing.T) {
 		have := True(tspy, false)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -50,7 +50,7 @@ func Test_True(t *testing.T) {
 		have := True(tspy, false, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -63,7 +63,7 @@ func Test_False(t *testing.T) {
 		have := False(tspy, false)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -77,7 +77,7 @@ func Test_False(t *testing.T) {
 		have := False(tspy, true)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -93,6 +93,6 @@ func Test_False(t *testing.T) {
 		have := False(tspy, true, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

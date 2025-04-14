@@ -266,6 +266,8 @@ func (mck *Mock) Callable(method string, args ...any) error {
 //
 // A callable method is one that returns no error from [Call.CanCall] method,
 // and has matching arguments.
+//
+// nolint: cyclop
 func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 	var err error
 

@@ -23,7 +23,7 @@ func Test_JSON(t *testing.T) {
 		got := JSON(tspy, want, have)
 
 		// --- Then ---
-		affirm.True(t, got)
+		affirm.Equal(t, true, got)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -40,7 +40,7 @@ func Test_JSON(t *testing.T) {
 		got := JSON(tspy, want, have)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -58,6 +58,6 @@ func Test_JSON(t *testing.T) {
 		got := JSON(tspy, want, have, opt)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 }

@@ -17,9 +17,9 @@ func Test_New(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "header row", msg.Header)
-		affirm.True(t, msg.Rows == nil)
+		affirm.Equal(t, true, msg.Rows == nil)
 		affirm.Equal(t, 0, len(msg.Rows))
-		affirm.True(t, errors.Is(msg, ErrNotice))
+		affirm.Equal(t, true, errors.Is(msg, ErrNotice))
 	})
 
 	t.Run("with percent but no args", func(t *testing.T) {
@@ -28,9 +28,9 @@ func Test_New(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "header %s", msg.Header)
-		affirm.True(t, msg.Rows == nil)
+		affirm.Equal(t, true, msg.Rows == nil)
 		affirm.Equal(t, 0, len(msg.Rows))
-		affirm.True(t, errors.Is(msg, ErrNotice))
+		affirm.Equal(t, true, errors.Is(msg, ErrNotice))
 	})
 }
 
@@ -44,9 +44,9 @@ func Test_From(t *testing.T) {
 		have := From(orig, "prefix").Append("second", "%d", 2)
 
 		// --- Then ---
-		affirm.True(t, orig == have)
+		affirm.Equal(t, true, orig == have)
 		affirm.Equal(t, "[prefix] header row", have.Header)
-		affirm.True(t, errors.Is(have, ErrNotice))
+		affirm.Equal(t, true, errors.Is(have, ErrNotice))
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 			{Name: "second", Format: "%d", Args: []any{2}},
@@ -62,9 +62,9 @@ func Test_From(t *testing.T) {
 		have := From(orig).Append("second", "%d", 2)
 
 		// --- Then ---
-		affirm.True(t, orig == have)
+		affirm.Equal(t, true, orig == have)
 		affirm.Equal(t, "header row", have.Header)
-		affirm.True(t, errors.Is(have, ErrNotice))
+		affirm.Equal(t, true, errors.Is(have, ErrNotice))
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 			{Name: "second", Format: "%d", Args: []any{2}},
@@ -80,10 +80,10 @@ func Test_From(t *testing.T) {
 		have := From(orig, "prefix").Append("first", "%d", 1)
 
 		// --- Then ---
-		affirm.True(t, orig != have) // nolint: errorlint
+		affirm.Equal(t, true, orig != have) // nolint: errorlint
 		affirm.Equal(t, "[prefix] assertion error", have.Header)
-		affirm.False(t, errors.Is(have, ErrNotice))
-		affirm.True(t, errors.Is(have, orig))
+		affirm.Equal(t, false, errors.Is(have, ErrNotice))
+		affirm.Equal(t, true, errors.Is(have, orig))
 		wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
 		affirm.DeepEqual(t, wRows, have.Rows)
 	})
@@ -96,10 +96,10 @@ func Test_From(t *testing.T) {
 		have := From(orig).Append("first", "%d", 1)
 
 		// --- Then ---
-		affirm.True(t, orig != have) // nolint: errorlint
+		affirm.Equal(t, true, orig != have) // nolint: errorlint
 		affirm.Equal(t, "assertion error", have.Header)
-		affirm.False(t, errors.Is(have, ErrNotice))
-		affirm.True(t, errors.Is(have, orig))
+		affirm.Equal(t, false, errors.Is(have, ErrNotice))
+		affirm.Equal(t, true, errors.Is(have, orig))
 		wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
 		affirm.DeepEqual(t, wRows, have.Rows)
 	})
@@ -115,7 +115,7 @@ func Test_Notice_Append(t *testing.T) {
 		have := msg.Append("first", "%dst", 1)
 
 		// --- Then ---
-		affirm.True(t, msg == have)
+		affirm.Equal(t, true, msg == have)
 		wRows := []Row{{Name: "first", Format: "%dst", Args: []any{1}}}
 		affirm.DeepEqual(t, wRows, have.Rows)
 	})
@@ -161,7 +161,7 @@ func Test_Notice_AppendRow(t *testing.T) {
 		have := msg.AppendRow(NewRow("first", "%dst", 1))
 
 		// --- Then ---
-		affirm.True(t, msg == have)
+		affirm.Equal(t, true, msg == have)
 		wRows := []Row{{Name: "first", Format: "%dst", Args: []any{1}}}
 		affirm.DeepEqual(t, wRows, msg.Rows)
 	})
@@ -210,7 +210,7 @@ func Test_Notice_Prepend(t *testing.T) {
 		have := msg.Prepend("first", "%d", 1)
 
 		// --- Then ---
-		affirm.True(t, msg == have)
+		affirm.Equal(t, true, msg == have)
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 		}
@@ -273,7 +273,7 @@ func Test_Notice_Trail(t *testing.T) {
 		have := msg.Trail("type.field")
 
 		// --- Then ---
-		affirm.True(t, msg == have)
+		affirm.Equal(t, true, msg == have)
 		wRows := []Row{{Name: trail, Format: "%s", Args: []any{"type.field"}}}
 		affirm.DeepEqual(t, wRows, msg.Rows)
 	})
@@ -328,7 +328,7 @@ func Test_Notice_Want(t *testing.T) {
 
 		// --- Then ---
 		//goland:noinspection GoDirectComparisonOfErrors
-		affirm.True(t, msg == have)
+		affirm.Equal(t, true, msg == have)
 		affirm.Equal(t, "header", msg.Header)
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
@@ -349,7 +349,7 @@ func Test_Notice_Want(t *testing.T) {
 
 		// --- Then ---
 		//goland:noinspection GoDirectComparisonOfErrors
-		affirm.True(t, msg == have)
+		affirm.Equal(t, true, msg == have)
 		affirm.Equal(t, "header", msg.Header)
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
@@ -370,7 +370,7 @@ func Test_Notice_Have(t *testing.T) {
 		have := msg.Have("%s", "row")
 
 		// --- Then ---
-		affirm.True(t, msg == have)
+		affirm.Equal(t, true, msg == have)
 		affirm.Equal(t, "header", msg.Header)
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
@@ -390,7 +390,7 @@ func Test_Notice_Have(t *testing.T) {
 		have := msg.Have("%s", "row")
 
 		// --- Then ---
-		affirm.True(t, msg == have)
+		affirm.Equal(t, true, msg == have)
 		affirm.Equal(t, "header", msg.Header)
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
@@ -411,9 +411,9 @@ func Test_Notice_Wrap(t *testing.T) {
 	have := msg.Wrap(errMy)
 
 	// --- Then ---
-	affirm.True(t, msg == have)
-	affirm.False(t, errors.Is(msg, ErrNotice))
-	affirm.True(t, errors.Is(msg, errMy))
+	affirm.Equal(t, true, msg == have)
+	affirm.Equal(t, false, errors.Is(msg, ErrNotice))
+	affirm.Equal(t, true, errors.Is(msg, errMy))
 	wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
 	affirm.DeepEqual(t, wRows, msg.Rows)
 }
@@ -427,7 +427,7 @@ func Test_Notice_Unwrap(t *testing.T) {
 		err := msg.Unwrap()
 
 		// --- Then ---
-		affirm.True(t, errors.Is(err, ErrNotice))
+		affirm.Equal(t, true, errors.Is(err, ErrNotice))
 	})
 
 	t.Run("wrapped", func(t *testing.T) {
@@ -439,7 +439,7 @@ func Test_Notice_Unwrap(t *testing.T) {
 		err := msg.Unwrap()
 
 		// --- Then ---
-		affirm.True(t, errors.Is(err, errMy))
+		affirm.Equal(t, true, errors.Is(err, errMy))
 	})
 }
 
@@ -453,7 +453,7 @@ func Test_Notice_Remove(t *testing.T) {
 		have := msg.Remove("first")
 
 		// --- Then ---
-		affirm.True(t, msg == have)
+		affirm.Equal(t, true, msg == have)
 		wRows := []Row{{Name: "second", Format: "%d", Args: []any{2}}}
 		affirm.DeepEqual(t, wRows, msg.Rows)
 	})
@@ -466,7 +466,7 @@ func Test_Notice_Remove(t *testing.T) {
 		have := msg.Remove("second")
 
 		// --- Then ---
-		affirm.True(t, msg == have)
+		affirm.Equal(t, true, msg == have)
 		wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
 		affirm.DeepEqual(t, wRows, msg.Rows)
 	})
@@ -585,10 +585,10 @@ func Test_Notice_SetData_GetData(t *testing.T) {
 		have := msg.SetData("key", "value")
 
 		// --- Then ---
-		affirm.True(t, msg == have)
+		affirm.Equal(t, true, msg == have)
 
 		val, ok := have.GetData("key")
-		affirm.True(t, ok)
+		affirm.Equal(t, true, ok)
 		affirm.Equal(t, "value", val)
 	})
 
@@ -600,7 +600,7 @@ func Test_Notice_SetData_GetData(t *testing.T) {
 		haveVal, haveOK := msg.GetData("key")
 
 		// --- Then ---
-		affirm.False(t, haveOK)
+		affirm.Equal(t, false, haveOK)
 		affirm.Nil(t, haveVal)
 	})
 }

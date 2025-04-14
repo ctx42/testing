@@ -9,49 +9,25 @@ package affirm
 import (
 	"fmt"
 	"reflect"
-	"testing"
+	"strings"
 
 	"github.com/ctx42/testing/internal/core"
 )
 
-// True affirms "have" is true. Returns true if it is, otherwise marks the test
-// as failed, writes error message to the test log and returns false.
-func True(t *testing.T, have bool) bool {
-	t.Helper()
-	if !have {
-		const format = "expected bool to be equal:\n" +
-			"\twant: %v\n" +
-			"\thave: %v"
-		t.Errorf(format, true, have)
-		return false
-	}
-	return true
-}
-
-// False affirms "have" is false. Returns true if it is, otherwise marks the
-// test as failed, writes error message to the test log and returns false.
-func False(t *testing.T, have bool) bool {
-	t.Helper()
-	if have {
-		const format = "expected bool to be equal:\n" +
-			"\twant: %v\n" +
-			"\thave: %v"
-		t.Errorf(format, false, have)
-		return false
-	}
-	return true
-}
+// expected defines log message for failed affirmations.
+const expected = "" +
+	"expected values to be equal:\n" +
+	"  type: %[1]T\n" +
+	"  want: %[1]v\n" +
+	"  have: %v"
 
 // Equal affirms two comparable types are equal. Returns true if it is,
 // otherwise marks the test as failed, writes error message to the test log and
 // returns false.
-func Equal[T comparable](t *testing.T, want, have T) bool {
+func Equal[T comparable](t core.T, want, have T) bool {
 	t.Helper()
 	if want != have {
-		const format = "expected %T to be equal:\n" +
-			"\twant: %#v\n" +
-			"\thave: %#v"
-		t.Errorf(format, want, want, have)
+		t.Errorf(expected, want, have)
 		return false
 	}
 	return true
@@ -60,13 +36,10 @@ func Equal[T comparable](t *testing.T, want, have T) bool {
 // DeepEqual affirms "want" and "have" are equal using [reflect.DeepEqual].
 // Returns true if it is, otherwise marks the test as failed, writes error
 // message to the test log and returns false.
-func DeepEqual(t *testing.T, want, have any) bool {
+func DeepEqual(t core.T, want, have any) bool {
 	t.Helper()
 	if !reflect.DeepEqual(want, have) {
-		const format = "expected %T to be equal:\n" +
-			"\twant: %#v\n" +
-			"\thave: %#v"
-		t.Errorf(format, want, want, have)
+		t.Errorf(expected, want, have)
 		return false
 	}
 	return true
@@ -74,30 +47,32 @@ func DeepEqual(t *testing.T, want, have any) bool {
 
 // Nil affirms "have" is nil. Returns true if it is, otherwise marks the
 // test as failed, writes error message to the test log and returns false.
-func Nil(t *testing.T, have any) bool {
+func Nil(t core.T, have any) bool {
 	t.Helper()
 	if core.IsNil(have) {
 		return true
 	}
-	const format = "expected argument to be nil:\n" +
-		"\twant: nil\n" +
-		"\thave: %+v"
-	t.Errorf(format, have)
+	t.Errorf(expected, nil, have)
 	return false
 }
 
 // NotNil affirms "have" is not nil. Returns true if it is not, otherwise
 // marks the test as failed, writes error message to the test log and returns
 // false.
-func NotNil(t *testing.T, have any) bool {
+func NotNil(t core.T, have any) bool {
 	t.Helper()
 	if !core.IsNil(have) {
 		return true
 	}
-	const format = "expected argument not to be nil:\n" +
-		"\twant: <not-nil>\n" +
-		"\thave: nil"
-	t.Error(format)
+	typ := fmt.Sprintf("  type: %T\n", have)
+	if strings.Contains(typ, "<nil>") {
+		typ = ""
+	}
+	const format = "expected values to be equal:\n" +
+		"%s" +
+		"  want: nil\n" +
+		"  have: <not-nil>"
+	t.Fatalf(format, typ)
 	return false
 }
 
@@ -105,7 +80,7 @@ func NotNil(t *testing.T, have any) bool {
 // string representation of the value used in panic(). When "fn" doesn't panic
 // it returns nil, marks the test as failed and writes error message to the
 // test.
-func Panic(t *testing.T, fn func()) *string {
+func Panic(t core.T, fn func()) *string {
 	t.Helper()
 	var val any
 	var stack string

@@ -23,7 +23,7 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.Nil(t, err)
-		affirm.True(t, want.Equal(have))
+		affirm.Equal(t, true, want.Equal(have))
 	})
 
 	t.Run("not equal both time.Time", func(t *testing.T) {
@@ -156,7 +156,7 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.Nil(t, err)
-		affirm.True(t, want.Equal(have))
+		affirm.Equal(t, true, want.Equal(have))
 	})
 
 	t.Run("error not exact date", func(t *testing.T) {
@@ -174,7 +174,7 @@ func Test_Exact(t *testing.T) {
 			"  have: 2000-01-02T03:04:06Z\n" +
 			"  diff: -1s"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.False(t, want.Equal(have))
+		affirm.Equal(t, false, want.Equal(have))
 	})
 
 	t.Run("error not exact date want is string", func(t *testing.T) {
@@ -223,7 +223,7 @@ func Test_Exact(t *testing.T) {
 			"  want: UTC\n" +
 			"  have: Europe/Warsaw"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.True(t, want.Equal(have))
+		affirm.Equal(t, true, want.Equal(have))
 	})
 
 	t.Run("invalid want date format", func(t *testing.T) {
@@ -267,7 +267,7 @@ func Test_Exact(t *testing.T) {
 			"   have: 2000-01-02T03:04:06Z\n" +
 			"   diff: -1s"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.False(t, want.Equal(have))
+		affirm.Equal(t, false, want.Equal(have))
 	})
 }
 
@@ -1007,14 +1007,14 @@ func Test_getTime(t *testing.T) {
 		haveTim, haveStr, haveRep, err := getTime("2000-01-02", opt)
 
 		// --- Then ---
-		affirm.True(t, haveTim.IsZero())
+		affirm.Equal(t, true, haveTim.IsZero())
 		affirm.Equal(t, "2000-01-02", haveStr)
 		affirm.Equal(t, timeTypeStr, haveRep)
 		wMsg := "failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05Z07:00\n" +
 			"   value: 2000-01-02"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.True(t, errors.Is(err, ErrTimeParse))
+		affirm.Equal(t, true, errors.Is(err, ErrTimeParse))
 	})
 
 	t.Run("empty option time format", func(t *testing.T) {
@@ -1025,7 +1025,7 @@ func Test_getTime(t *testing.T) {
 		have, haveStr, haveRep, err := getTime("2000-01-02", opt)
 
 		// --- Then ---
-		affirm.True(t, have.IsZero())
+		affirm.Equal(t, true, have.IsZero())
 		affirm.Equal(t, "2000-01-02", haveStr)
 		affirm.Equal(t, timeTypeStr, haveRep)
 		wMsg := "failed to parse time:\n" +
@@ -1033,7 +1033,7 @@ func Test_getTime(t *testing.T) {
 			"   value: 2000-01-02\n" +
 			"   error: extra text: \"2000-01-02\""
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.True(t, errors.Is(err, ErrTimeParse))
+		affirm.Equal(t, true, errors.Is(err, ErrTimeParse))
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -1047,7 +1047,7 @@ func Test_getTime(t *testing.T) {
 		have, haveStr, haveRep, err := getTime("2000-01-02", opts...)
 
 		// --- Then ---
-		affirm.True(t, have.IsZero())
+		affirm.Equal(t, true, have.IsZero())
 		affirm.Equal(t, "2000-01-02", haveStr)
 		affirm.Equal(t, timeTypeStr, haveRep)
 		wMsg := "failed to parse time:\n" +
@@ -1062,13 +1062,13 @@ func Test_getTime(t *testing.T) {
 		have, haveStr, haveRep, err := getTime(true)
 
 		// --- Then ---
-		affirm.True(t, have.IsZero())
+		affirm.Equal(t, true, have.IsZero())
 		affirm.Equal(t, "true", haveStr)
 		affirm.Equal(t, "", haveRep)
 		wMsg := "failed to parse time:\n" +
 			"  cause: not supported time type"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.True(t, errors.Is(err, ErrTimeType))
+		affirm.Equal(t, true, errors.Is(err, ErrTimeType))
 	})
 }
 
@@ -1139,7 +1139,7 @@ func Test_getTime_success_tabular(t *testing.T) {
 			affirm.Nil(t, err)
 			affirm.Equal(t, tc.haveStr, haveStr)
 			affirm.Equal(t, tc.haveRep, haveRep)
-			affirm.True(t, tc.want.Equal(haveTim))
+			affirm.Equal(t, true, tc.want.Equal(haveTim))
 			affirm.Equal(t, tc.wantTZ.String(), haveTim.Location().String())
 		})
 	}
@@ -1156,7 +1156,7 @@ func Test_getDur(t *testing.T) {
 		affirm.Equal(t, durTypeStr, haveRep)
 		wMsg := "failed to parse duration:\n  value: abc"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.True(t, errors.Is(err, ErrDurParse))
+		affirm.Equal(t, true, errors.Is(err, ErrDurParse))
 	})
 
 	t.Run("error unsupported type", func(t *testing.T) {
@@ -1170,7 +1170,7 @@ func Test_getDur(t *testing.T) {
 		wMsg := "failed to parse duration:\n" +
 			"  cause: not supported duration type"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.True(t, errors.Is(err, ErrDurType))
+		affirm.Equal(t, true, errors.Is(err, ErrDurType))
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -1188,7 +1188,7 @@ func Test_getDur(t *testing.T) {
 			"  trail: type.field\n" +
 			"  cause: not supported duration type"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.True(t, errors.Is(err, ErrDurType))
+		affirm.Equal(t, true, errors.Is(err, ErrDurType))
 	})
 }
 

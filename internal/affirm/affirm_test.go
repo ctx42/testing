@@ -7,88 +7,37 @@ import (
 	"errors"
 	"runtime"
 	"testing"
+
+	"github.com/ctx42/testing/internal/core"
 )
-
-func Test_True(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
-		// --- Given ---
-		ti := &testing.T{}
-
-		// --- When ---
-		have := True(ti, true)
-
-		// --- Then ---
-		if !have || ti.Failed() {
-			t.Error("expected success")
-		}
-	})
-
-	t.Run("error", func(t *testing.T) {
-		// --- Given ---
-		ti := &testing.T{}
-
-		// --- When ---
-		have := True(ti, false)
-
-		// --- Then ---
-		if have || !ti.Failed() {
-			t.Error("expected failure")
-		}
-	})
-}
-
-func Test_False(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
-		// --- Given ---
-		ti := &testing.T{}
-
-		// --- When ---
-		have := False(ti, false)
-
-		// --- Then ---
-		if !have || ti.Failed() {
-			t.Error("expected success")
-		}
-	})
-
-	t.Run("error", func(t *testing.T) {
-		// --- Given ---
-		ti := &testing.T{}
-
-		// --- When ---
-		have := False(ti, true)
-
-		// --- Then ---
-		if have || !ti.Failed() {
-			t.Error("expected failure")
-		}
-	})
-}
 
 func Test_Equal(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
 
 		// --- When ---
-		have := Equal(ti, 42, 42)
+		have := Equal(spy, 42, 42)
 
 		// --- Then ---
-		if !have || ti.Failed() {
-			t.Error("expected success")
+		if !have || spy.Failed() {
+			t.Error("expected passed test")
 		}
 	})
 
 	t.Run("error", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
 
 		// --- When ---
-		have := Equal(ti, 42, 44)
+		have := Equal(spy, 42, 44)
 
 		// --- Then ---
-		if have || !ti.Failed() {
-			t.Error("expected failure")
+		if have || !spy.Failed() {
+			t.Error("expected test error")
+		}
+		if !spy.ReportedError {
+			t.Error("expected test error")
 		}
 	})
 }
@@ -96,27 +45,30 @@ func Test_Equal(t *testing.T) {
 func Test_DeepEqual(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
 
 		// --- When ---
-		have := DeepEqual(ti, []int{42}, []int{42})
+		have := DeepEqual(spy, []int{42}, []int{42})
 
 		// --- Then ---
-		if !have || ti.Failed() {
-			t.Error("expected success")
+		if !have || spy.Failed() {
+			t.Error("expected test error")
 		}
 	})
 
 	t.Run("error", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
 
 		// --- When ---
-		have := DeepEqual(ti, []int{42}, []int{44})
+		have := DeepEqual(spy, []int{42}, []int{44})
 
 		// --- Then ---
-		if have || !ti.Failed() {
-			t.Error("expected failure")
+		if have || !spy.Failed() {
+			t.Error("expected test error")
+		}
+		if !spy.ReportedError {
+			t.Error("expected test error")
 		}
 	})
 }
@@ -124,27 +76,31 @@ func Test_DeepEqual(t *testing.T) {
 func Test_Nil(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
 
 		// --- When ---
-		have := Nil(ti, nil)
+		have := Nil(spy, nil)
 
 		// --- Then ---
-		if !have || ti.Failed() {
-			t.Error("expected success")
+		if !have || spy.Failed() {
+			t.Error("expected passed test")
 		}
 	})
 
 	t.Run("error", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
+		err := errors.New("m0")
 
 		// --- When ---
-		have := Nil(ti, errors.New("m0"))
+		have := Nil(spy, err)
 
 		// --- Then ---
-		if have || !ti.Failed() {
-			t.Error("expected failure")
+		if have || !spy.Failed() {
+			t.Error("expected test error")
+		}
+		if !spy.ReportedError {
+			t.Error("expected test error")
 		}
 	})
 }
@@ -152,114 +108,116 @@ func Test_Nil(t *testing.T) {
 func Test_NotNil(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
 
 		// --- When ---
-		have := NotNil(ti, errors.New("m0"))
+		have := NotNil(spy, errors.New("m0"))
 
 		// --- Then ---
-		if !have || ti.Failed() {
-			t.Error("expected success")
+		if !have || spy.Failed() {
+			t.Error("expected passed test")
 		}
 	})
 
 	t.Run("error", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy().Capture()
+		var err error
 
 		// --- When ---
-		have := NotNil(ti, nil)
+		have := NotNil(spy, err)
 
 		// --- Then ---
-		if have || !ti.Failed() {
-			t.Error("expected failure")
+		if have || !spy.Failed() {
+			t.Error("expected failed test")
+		}
+		if !spy.TriggeredFailure {
+			t.Error("expected test failure")
 		}
 	})
 }
 
 func Test_Panic(t *testing.T) {
+	const expMsg = "expected values to be equal:\n  want: %q\n  have: %q"
+
 	t.Run("success string message", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
 
 		// --- When ---
-		have := Panic(ti, func() { panic("abc") })
+		have := Panic(spy, func() { panic("abc") })
 
 		// --- Then ---
-		if ti.Failed() {
-			t.Error("expected not failed test")
+		if spy.ReportedError {
+			t.Error("expected passed test")
 		}
 		if *have != "abc" {
-			t.Errorf("expected panic message 'abc', got '%s'", *have)
+			t.Errorf(expMsg, "abc", *have)
 		}
 	})
 
 	t.Run("success error", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
 
 		// --- When ---
-		have := Panic(ti, func() { panic(errors.New("abc")) })
+		have := Panic(spy, func() { panic(errors.New("abc")) })
 
 		// --- Then ---
-		if ti.Failed() {
-			t.Error("expected not failed test")
+		if spy.ReportedError {
+			t.Error("expected passed test")
 		}
 		if *have != "abc" {
-			t.Errorf("expected panic message 'abc', got '%s'", *have)
+			t.Errorf(expMsg, "abc", *have)
 		}
 	})
 
 	t.Run("success other type", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
 
 		// --- When ---
-		have := Panic(ti, func() { panic(123) })
+		have := Panic(spy, func() { panic(123) })
 
 		// --- Then ---
-		if ti.Failed() {
-			t.Error("expected not failed test")
+		if spy.ReportedError {
+			t.Error("expected error")
 		}
 		if *have != "123" {
-			t.Errorf("expected panic message '123', got '%s'", *have)
+			t.Errorf(expMsg, "123", *have)
 		}
 	})
 
 	t.Run("success function panics with nil", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
 
 		// --- When ---
-		have := Panic(ti, func() { panic(nil) }) // nolint: govet
+		have := Panic(spy, func() { panic(nil) }) // nolint: govet
 
 		// --- Then ---
-
-		if ti.Failed() {
-			t.Error("expected not failed test")
+		if spy.ReportedError {
+			t.Error("expected passed test")
 		}
 		want := (&runtime.PanicNilError{}).Error()
 		if *have != want {
-			wMsg := "expected panic message:\n" +
-				"want: %s\n" +
-				"have: %s\n"
-			t.Errorf(wMsg, want, *have)
+			t.Errorf(expMsg, want, *have)
 		}
 	})
 
 	t.Run("error function does not panic", func(t *testing.T) {
 		// --- Given ---
-		ti := &testing.T{}
+		spy := core.NewSpy()
 
 		// --- When ---
-		have := Panic(ti, func() {})
+		have := Panic(spy, func() {})
 
 		// --- Then ---
-		if !ti.Failed() {
+		if !spy.Failed() {
 			t.Error("expected failed test")
 		}
 		if have != nil {
-			t.Errorf("expected empty panic message, got '%s'", *have)
+			t.Errorf(expMsg, "", *have)
 		}
 	})
 }

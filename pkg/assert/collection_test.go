@@ -20,7 +20,7 @@ func Test_Len(t *testing.T) {
 		have := Len(tspy, 2, []int{0, 1})
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("fatal when want is less than actual length", func(t *testing.T) {
@@ -36,7 +36,7 @@ func Test_Len(t *testing.T) {
 		have := Len(tspy, 3, []int{0, 1})
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("error when want is greater than actual length", func(t *testing.T) {
@@ -50,7 +50,7 @@ func Test_Len(t *testing.T) {
 		have := Len(tspy, 1, []int{0, 1})
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -66,7 +66,7 @@ func Test_Len(t *testing.T) {
 		have := Len(tspy, 1, []int{0, 1}, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -81,7 +81,7 @@ func Test_Has(t *testing.T) {
 		have := Has(tspy, 2, val)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -97,7 +97,7 @@ func Test_Has(t *testing.T) {
 		have := Has(tspy, 42, val)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -114,7 +114,7 @@ func Test_Has(t *testing.T) {
 		have := Has(tspy, 42, val, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -128,7 +128,7 @@ func Test_HasNo(t *testing.T) {
 		have := HasNo(tspy, 4, val)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -144,7 +144,7 @@ func Test_HasNo(t *testing.T) {
 		have := HasNo(tspy, 2, val)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -161,7 +161,7 @@ func Test_HasNo(t *testing.T) {
 		have := HasNo(tspy, 2, val, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -177,7 +177,7 @@ func Test_HasKey(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 2, haveValue)
-		affirm.True(t, haveHas)
+		affirm.Equal(t, true, haveHas)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -194,7 +194,7 @@ func Test_HasKey(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 0, haveValue)
-		affirm.False(t, haveHas)
+		affirm.Equal(t, false, haveHas)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -212,7 +212,7 @@ func Test_HasKey(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 0, haveValue)
-		affirm.False(t, haveHas)
+		affirm.Equal(t, false, haveHas)
 	})
 }
 
@@ -227,7 +227,7 @@ func Test_HasNoKey(t *testing.T) {
 		have := HasNoKey(tspy, "D", val)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -243,7 +243,7 @@ func Test_HasNoKey(t *testing.T) {
 		have := HasNoKey(tspy, "B", val)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -260,7 +260,7 @@ func Test_HasNoKey(t *testing.T) {
 		have := HasNoKey(tspy, "B", val, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -274,7 +274,7 @@ func Test_HasKeyValue(t *testing.T) {
 		have := HasKeyValue(tspy, "B", 2, val)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -290,7 +290,7 @@ func Test_HasKeyValue(t *testing.T) {
 		have := HasKeyValue(tspy, "B", 100, val)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -307,7 +307,7 @@ func Test_HasKeyValue(t *testing.T) {
 		have := HasKeyValue(tspy, "B", 100, val, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -324,7 +324,7 @@ func Test_SliceSubset(t *testing.T) {
 		have := SliceSubset(tspy, s0, s1)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -341,7 +341,7 @@ func Test_SliceSubset(t *testing.T) {
 		have := SliceSubset(tspy, sWant, sHave)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -359,7 +359,7 @@ func Test_SliceSubset(t *testing.T) {
 		have := SliceSubset(tspy, s0, s1, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -381,7 +381,7 @@ func Test_MapSubset(t *testing.T) {
 		have := MapSubset(tspy, mWant, mHave)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -405,7 +405,7 @@ func Test_MapSubset(t *testing.T) {
 		have := MapSubset(tspy, m0, m1)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -428,7 +428,7 @@ func Test_MapSubset(t *testing.T) {
 		have := MapSubset(tspy, m0, m1, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -451,7 +451,7 @@ func Test_MapsSubset(t *testing.T) {
 		have := MapsSubset(tspy, w0, w1)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -472,7 +472,7 @@ func Test_MapsSubset(t *testing.T) {
 		have := MapsSubset(tspy, w0, w1)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -493,6 +493,6 @@ func Test_MapsSubset(t *testing.T) {
 		have := MapsSubset(tspy, w0, w1)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

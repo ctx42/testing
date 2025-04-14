@@ -20,7 +20,7 @@ func Test_Nil(t *testing.T) {
 		have := Nil(tspy, nil)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -34,7 +34,7 @@ func Test_Nil(t *testing.T) {
 		have := Nil(tspy, 42)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("option is passed", func(t *testing.T) {
@@ -50,7 +50,7 @@ func Test_Nil(t *testing.T) {
 		have := Nil(tspy, 42, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -63,7 +63,7 @@ func Test_NotNil(t *testing.T) {
 		have := NotNil(tspy, 42)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -83,7 +83,7 @@ func Test_NotNil(t *testing.T) {
 		}()
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("option is passed", func(t *testing.T) {

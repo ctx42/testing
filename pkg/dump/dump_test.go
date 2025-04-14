@@ -23,7 +23,7 @@ func Test_WithFlat(t *testing.T) {
 	WithFlat(dmp)
 
 	// --- Then ---
-	affirm.True(t, dmp.Flat)
+	affirm.Equal(t, true, dmp.Flat)
 }
 
 func Test_WithFlatStrings(t *testing.T) {
@@ -45,7 +45,7 @@ func Test_WithCompact(t *testing.T) {
 	WithCompact(dmp)
 
 	// --- Then ---
-	affirm.True(t, dmp.Compact)
+	affirm.Equal(t, true, dmp.Compact)
 }
 
 func Test_WithPtrAddr(t *testing.T) {
@@ -56,7 +56,7 @@ func Test_WithPtrAddr(t *testing.T) {
 	WithPtrAddr(dmp)
 
 	// --- Then ---
-	affirm.True(t, dmp.PtrAddr)
+	affirm.Equal(t, true, dmp.PtrAddr)
 }
 
 func Test_WithTimeFormat(t *testing.T) {
@@ -125,28 +125,28 @@ func Test_New(t *testing.T) {
 		have := New()
 
 		// --- Then ---
-		affirm.False(t, have.Flat)
+		affirm.Equal(t, false, have.Flat)
 		affirm.Equal(t, 200, have.FlatStings)
-		affirm.False(t, have.Compact)
+		affirm.Equal(t, false, have.Compact)
 		affirm.Equal(t, TimeFormat, have.TimeFormat)
 		affirm.Equal(t, "", have.DurationFormat)
-		affirm.False(t, have.PtrAddr)
-		affirm.True(t, have.UseAny)
-		affirm.True(t, len(have.Dumpers) == 3)
+		affirm.Equal(t, false, have.PtrAddr)
+		affirm.Equal(t, true, have.UseAny)
+		affirm.Equal(t, true, len(have.Dumpers) == 3)
 		affirm.Equal(t, DefaultDepth, have.MaxDepth)
 		affirm.Equal(t, DefaultIndent, have.Indent)
 		affirm.Equal(t, DefaultTabWith, have.TabWidth)
 
 		val, ok := have.Dumpers[typDur]
-		affirm.True(t, ok)
+		affirm.Equal(t, true, ok)
 		affirm.NotNil(t, val)
 
 		val, ok = have.Dumpers[typLocation]
-		affirm.True(t, ok)
+		affirm.Equal(t, true, ok)
 		affirm.NotNil(t, val)
 
 		val, ok = have.Dumpers[typTime]
-		affirm.True(t, ok)
+		affirm.Equal(t, true, ok)
 		affirm.NotNil(t, val)
 	})
 }

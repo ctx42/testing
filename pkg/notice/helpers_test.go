@@ -122,7 +122,7 @@ func Test_Join(t *testing.T) {
 		have := Join(e)
 
 		// --- Then ---
-		affirm.True(t, core.Same(e, have))
+		affirm.Equal(t, true, core.Same(e, have))
 	})
 
 	t.Run("joined errors", func(t *testing.T) {
@@ -135,11 +135,11 @@ func Test_Join(t *testing.T) {
 		have := Join(msg)
 
 		// --- Then ---
-		affirm.False(t, core.Same(msg, have))
+		affirm.Equal(t, false, core.Same(msg, have))
 		ers := have.(multi).Unwrap() // nolint: errorlint
 		affirm.Equal(t, 2, len(ers))
-		affirm.True(t, core.Same(e0, ers[0]))
-		affirm.True(t, core.Same(e1, ers[1]))
+		affirm.Equal(t, true, core.Same(e0, ers[0]))
+		affirm.Equal(t, true, core.Same(e1, ers[1]))
 	})
 
 	t.Run("joined and single errors", func(t *testing.T) {
@@ -155,9 +155,9 @@ func Test_Join(t *testing.T) {
 		// --- Then ---
 		ers := have.(multi).Unwrap() // nolint: errorlint
 		affirm.Equal(t, 3, len(ers))
-		affirm.True(t, core.Same(e0, ers[0]))
-		affirm.True(t, core.Same(e1, ers[1]))
-		affirm.True(t, core.Same(e2, ers[2]))
+		affirm.Equal(t, true, core.Same(e0, ers[0]))
+		affirm.Equal(t, true, core.Same(e1, ers[1]))
+		affirm.Equal(t, true, core.Same(e2, ers[2]))
 	})
 
 	t.Run("nil errors", func(t *testing.T) {
@@ -173,9 +173,9 @@ func Test_Join(t *testing.T) {
 		// --- Then ---
 		ers := have.(multi).Unwrap() // nolint: errorlint
 		affirm.Equal(t, 3, len(ers))
-		affirm.True(t, core.Same(e0, ers[0]))
-		affirm.True(t, core.Same(e1, ers[1]))
-		affirm.True(t, core.Same(e2, ers[2]))
+		affirm.Equal(t, true, core.Same(e0, ers[0]))
+		affirm.Equal(t, true, core.Same(e1, ers[1]))
+		affirm.Equal(t, true, core.Same(e2, ers[2]))
 	})
 
 	t.Run("nil error", func(t *testing.T) {

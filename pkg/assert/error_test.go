@@ -23,7 +23,7 @@ func Test_Error(t *testing.T) {
 		have := Error(tspy, errors.New("e0"))
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -37,7 +37,7 @@ func Test_Error(t *testing.T) {
 		have := Error(tspy, nil)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("option is passed", func(t *testing.T) {
@@ -53,7 +53,7 @@ func Test_Error(t *testing.T) {
 		have := Error(tspy, nil, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -66,7 +66,7 @@ func Test_NoError(t *testing.T) {
 		have := NoError(tspy, nil)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -84,7 +84,7 @@ func Test_NoError(t *testing.T) {
 		}()
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -104,7 +104,7 @@ func Test_NoError(t *testing.T) {
 		}()
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -121,7 +121,7 @@ func Test_ErrorIs(t *testing.T) {
 		have := ErrorIs(tspy, err2, err1)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -142,7 +142,7 @@ func Test_ErrorIs(t *testing.T) {
 		}()
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -164,7 +164,7 @@ func Test_ErrorIs(t *testing.T) {
 		}()
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -178,7 +178,7 @@ func Test_ErrorAs(t *testing.T) {
 		have := ErrorAs(tspy, &types.TPtr{Val: "A"}, &target)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 		affirm.Equal(t, "A", target.Val)
 	})
 
@@ -195,7 +195,7 @@ func Test_ErrorAs(t *testing.T) {
 		have := ErrorAs(tspy, &types.TPtr{Val: "A"}, &target)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 		affirm.Equal(t, "", target.Val)
 	})
 
@@ -213,7 +213,7 @@ func Test_ErrorAs(t *testing.T) {
 		have := ErrorAs(tspy, &types.TPtr{Val: "A"}, &target, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 		affirm.Equal(t, "", target.Val)
 	})
 }
@@ -227,7 +227,7 @@ func Test_ErrorEqual(t *testing.T) {
 		have := ErrorEqual(tspy, "e0", errors.New("e0"))
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -241,7 +241,7 @@ func Test_ErrorEqual(t *testing.T) {
 		have := ErrorEqual(tspy, "e1", errors.New("e0"))
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -257,7 +257,7 @@ func Test_ErrorEqual(t *testing.T) {
 		have := ErrorEqual(tspy, "e1", errors.New("e0"), opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -270,7 +270,7 @@ func Test_ErrorContain(t *testing.T) {
 		have := ErrorContain(tspy, "def", errors.New("abc def ghi"))
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -284,7 +284,7 @@ func Test_ErrorContain(t *testing.T) {
 		have := ErrorContain(tspy, "xyz", errors.New("abc def ghi"))
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -300,7 +300,7 @@ func Test_ErrorContain(t *testing.T) {
 		have := ErrorContain(tspy, "xyz", errors.New("abc def ghi"), opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -313,7 +313,7 @@ func Test_ErrorRegexp(t *testing.T) {
 		have := ErrorRegexp(tspy, "^abc", errors.New("abc def ghi"))
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -327,7 +327,7 @@ func Test_ErrorRegexp(t *testing.T) {
 		have := ErrorRegexp(tspy, "abc$", errors.New("abc def ghi"))
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -343,7 +343,7 @@ func Test_ErrorRegexp(t *testing.T) {
 		have := ErrorRegexp(tspy, "abc$", errors.New("abc def ghi"), opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("invalid regex", func(t *testing.T) {
@@ -357,6 +357,6 @@ func Test_ErrorRegexp(t *testing.T) {
 		have := ErrorRegexp(tspy, "[a-z", errors.New("abc def ghi"))
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

@@ -22,7 +22,7 @@ func Test_Same(t *testing.T) {
 		have := Same(tspy, ptr0, ptr0)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error want is value", func(t *testing.T) {
@@ -39,7 +39,7 @@ func Test_Same(t *testing.T) {
 		have := Same(tspy, w, h)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("error have is value", func(t *testing.T) {
@@ -56,7 +56,7 @@ func Test_Same(t *testing.T) {
 		have := Same(tspy, w, h)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("error not same pointers", func(t *testing.T) {
@@ -73,7 +73,7 @@ func Test_Same(t *testing.T) {
 		have := Same(tspy, ptr0, ptr1)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -92,7 +92,7 @@ func Test_Same(t *testing.T) {
 		have := Same(tspy, ptr0, ptr1, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -108,7 +108,7 @@ func Test_NotSame(t *testing.T) {
 		have := NotSame(tspy, ptr0, ptr1)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -124,7 +124,7 @@ func Test_NotSame(t *testing.T) {
 		have := NotSame(tspy, ptr0, ptr0)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -142,6 +142,6 @@ func Test_NotSame(t *testing.T) {
 		have := NotSame(tspy, ptr0, ptr0, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

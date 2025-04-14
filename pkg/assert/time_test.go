@@ -26,8 +26,8 @@ func Test_Time(t *testing.T) {
 		got := Time(tspy, want, have)
 
 		// --- Then ---
-		affirm.True(t, got)
-		affirm.True(t, want.Equal(have))
+		affirm.Equal(t, true, got)
+		affirm.Equal(t, true, want.Equal(have))
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -44,8 +44,8 @@ func Test_Time(t *testing.T) {
 		got := Time(tspy, want, have)
 
 		// --- Then ---
-		affirm.False(t, got)
-		affirm.False(t, want.Equal(have))
+		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, want.Equal(have))
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -63,8 +63,8 @@ func Test_Time(t *testing.T) {
 		got := Time(tspy, want, have, opt)
 
 		// --- Then ---
-		affirm.False(t, got)
-		affirm.False(t, want.Equal(have))
+		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, want.Equal(have))
 	})
 }
 
@@ -79,8 +79,8 @@ func Test_Exact(t *testing.T) {
 		got := Exact(tspy, want, have)
 
 		// --- Then ---
-		affirm.True(t, got)
-		affirm.True(t, want.Equal(have))
+		affirm.Equal(t, true, got)
+		affirm.Equal(t, true, want.Equal(have))
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -97,8 +97,8 @@ func Test_Exact(t *testing.T) {
 		got := Exact(tspy, want, have)
 
 		// --- Then ---
-		affirm.False(t, got)
-		affirm.False(t, want.Equal(have))
+		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, want.Equal(have))
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -116,8 +116,8 @@ func Test_Exact(t *testing.T) {
 		got := Exact(tspy, want, have, opt)
 
 		// --- Then ---
-		affirm.False(t, got)
-		affirm.False(t, want.Equal(have))
+		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, want.Equal(have))
 	})
 }
 
@@ -134,7 +134,7 @@ func Test_Before(t *testing.T) {
 		have := Before(tspy, date, mark)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("equal", func(t *testing.T) {
@@ -151,7 +151,7 @@ func Test_Before(t *testing.T) {
 		have := Before(tspy, date, mark)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -169,7 +169,7 @@ func Test_Before(t *testing.T) {
 		have := Before(tspy, date, mark, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -185,7 +185,7 @@ func Test_After(t *testing.T) {
 		got := After(tspy, date, mark)
 
 		// --- Then ---
-		affirm.True(t, got)
+		affirm.Equal(t, true, got)
 	})
 
 	t.Run("equal", func(t *testing.T) {
@@ -202,7 +202,7 @@ func Test_After(t *testing.T) {
 		got := After(tspy, date, mark)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -220,7 +220,7 @@ func Test_After(t *testing.T) {
 		got := After(tspy, date, mark, opt)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 }
 
@@ -236,7 +236,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		got := BeforeOrEqual(tspy, date, mark)
 
 		// --- Then ---
-		affirm.True(t, got)
+		affirm.Equal(t, true, got)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -253,7 +253,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		got := BeforeOrEqual(tspy, date, mark)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -271,7 +271,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		got := BeforeOrEqual(tspy, date, mark, opt)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 }
 
@@ -287,7 +287,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		got := AfterOrEqual(tspy, date, mark)
 
 		// --- Then ---
-		affirm.True(t, got)
+		affirm.Equal(t, true, got)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -304,7 +304,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		got := AfterOrEqual(tspy, date, mark)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -322,7 +322,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		got := AfterOrEqual(tspy, date, mark, opt)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 }
 
@@ -338,7 +338,7 @@ func Test_Within(t *testing.T) {
 		got := Within(tspy, want, "1s", have)
 
 		// --- Then ---
-		affirm.True(t, got)
+		affirm.Equal(t, true, got)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -355,7 +355,7 @@ func Test_Within(t *testing.T) {
 		got := Within(tspy, want, "1s", have)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -373,7 +373,7 @@ func Test_Within(t *testing.T) {
 		got := Within(tspy, want, "1s", have, opt)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 
 	t.Run("want is not time.Time", func(t *testing.T) {
@@ -390,7 +390,7 @@ func Test_Within(t *testing.T) {
 		got := Within(tspy, true, "1s", have)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 
 	t.Run("have is not time.Time", func(t *testing.T) {
@@ -407,7 +407,7 @@ func Test_Within(t *testing.T) {
 		got := Within(tspy, want, "1s", true)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 }
 
@@ -422,7 +422,7 @@ func Test_Recent(t *testing.T) {
 		got := Recent(tspy, have)
 
 		// --- Then ---
-		affirm.True(t, got)
+		affirm.Equal(t, true, got)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -438,7 +438,7 @@ func Test_Recent(t *testing.T) {
 		got := Recent(tspy, have)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -455,7 +455,7 @@ func Test_Recent(t *testing.T) {
 		got := Recent(tspy, have, opt)
 
 		// --- Then ---
-		affirm.False(t, got)
+		affirm.Equal(t, false, got)
 	})
 }
 
@@ -468,7 +468,7 @@ func Test_Zone(t *testing.T) {
 		have := Zone(tspy, time.UTC, time.UTC)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -482,7 +482,7 @@ func Test_Zone(t *testing.T) {
 		have := Zone(tspy, nil, types.WAW)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -498,7 +498,7 @@ func Test_Zone(t *testing.T) {
 		have := Zone(tspy, nil, types.WAW, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -511,7 +511,7 @@ func Test_Duration(t *testing.T) {
 		have := Duration(tspy, time.Second, time.Second)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -525,7 +525,7 @@ func Test_Duration(t *testing.T) {
 		have := Duration(tspy, time.Second, 2*time.Second)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -541,6 +541,6 @@ func Test_Duration(t *testing.T) {
 		have := Duration(tspy, time.Second, 2*time.Second, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

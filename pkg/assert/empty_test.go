@@ -20,7 +20,7 @@ func Test_Empty(t *testing.T) {
 		have := Empty(tspy, "")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -34,7 +34,7 @@ func Test_Empty(t *testing.T) {
 		have := Empty(tspy, "abc")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -50,7 +50,7 @@ func Test_Empty(t *testing.T) {
 		have := Empty(tspy, "abc", opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -63,7 +63,7 @@ func Test_NotEmpty(t *testing.T) {
 		have := NotEmpty(tspy, "abc")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -77,7 +77,7 @@ func Test_NotEmpty(t *testing.T) {
 		have := NotEmpty(tspy, "")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -93,6 +93,6 @@ func Test_NotEmpty(t *testing.T) {
 		have := NotEmpty(tspy, "", opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

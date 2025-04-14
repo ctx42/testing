@@ -22,7 +22,7 @@ func Test_find_match(t *testing.T) {
 		have := ent.match("abc def ghi")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error equal", func(t *testing.T) {
@@ -33,7 +33,7 @@ func Test_find_match(t *testing.T) {
 		have := ent.match("def")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("contains success", func(t *testing.T) {
@@ -44,7 +44,7 @@ func Test_find_match(t *testing.T) {
 		have := ent.match("abc def ghi")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error contains", func(t *testing.T) {
@@ -55,7 +55,7 @@ func Test_find_match(t *testing.T) {
 		have := ent.match("abc xyz ghi")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("not contains success", func(t *testing.T) {
@@ -66,7 +66,7 @@ func Test_find_match(t *testing.T) {
 		have := ent.match("abc def ghi")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error not contains", func(t *testing.T) {
@@ -77,7 +77,7 @@ func Test_find_match(t *testing.T) {
 		have := ent.match("abc def ghi")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("regexp success", func(t *testing.T) {
@@ -88,7 +88,7 @@ func Test_find_match(t *testing.T) {
 		have := ent.match("abc def ghi")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error regexp", func(t *testing.T) {
@@ -99,7 +99,7 @@ func Test_find_match(t *testing.T) {
 		have := ent.match("xyz")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("unknown as equal success", func(t *testing.T) {
@@ -110,7 +110,7 @@ func Test_find_match(t *testing.T) {
 		have := ent.match("abc def ghi")
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error unknown as equal", func(t *testing.T) {
@@ -121,7 +121,7 @@ func Test_find_match(t *testing.T) {
 		have := ent.match("def")
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -134,7 +134,7 @@ func Test_New(t *testing.T) {
 		spy := New(ti)
 
 		// --- Then ---
-		affirm.False(t, spy.helperCntSet)
+		affirm.Equal(t, false, spy.helperCntSet)
 		affirm.Equal(t, -1, spy.wantHelperCnt)
 		affirm.Equal(t, 0, spy.haveHelperCnt)
 		affirm.Equal(t, 0, spy.wantNamesCnt)
@@ -143,22 +143,22 @@ func Test_New(t *testing.T) {
 		affirm.Equal(t, 0, len(spy.haveTempDirs))
 		affirm.Equal(t, 0, len(spy.wantEnv))
 		affirm.Equal(t, 0, len(spy.haveEnv))
-		affirm.False(t, spy.closed)
-		affirm.False(t, spy.finished)
-		affirm.False(t, spy.wantFailed)
-		affirm.False(t, spy.wantError)
-		affirm.False(t, spy.haveError)
-		affirm.False(t, spy.wantFatal)
-		affirm.False(t, spy.haveFatal)
-		affirm.False(t, spy.wantSkipped)
-		affirm.False(t, spy.haveSkipped)
-		affirm.False(t, spy.panicked)
+		affirm.Equal(t, false, spy.closed)
+		affirm.Equal(t, false, spy.finished)
+		affirm.Equal(t, false, spy.wantFailed)
+		affirm.Equal(t, false, spy.wantError)
+		affirm.Equal(t, false, spy.haveError)
+		affirm.Equal(t, false, spy.wantFatal)
+		affirm.Equal(t, false, spy.haveFatal)
+		affirm.Equal(t, false, spy.wantSkipped)
+		affirm.Equal(t, false, spy.haveSkipped)
+		affirm.Equal(t, false, spy.panicked)
 		affirm.Equal(t, 0, spy.hadCleanupsCnt)
 		affirm.Equal(t, 0, len(spy.haveCleanups))
 		affirm.Equal(t, 0, len(spy.savedMgs))
 		affirm.Equal(t, 0, len(spy.haveLogMgs))
-		affirm.False(t, spy.ignoreLog)
-		affirm.False(t, spy.runningFinish)
+		affirm.Equal(t, false, spy.ignoreLog)
+		affirm.Equal(t, false, spy.runningFinish)
 	})
 
 	t.Run("set expected Helper calls", func(t *testing.T) {
@@ -169,7 +169,7 @@ func Test_New(t *testing.T) {
 		spy := New(ti, 1)
 
 		// --- Then ---
-		affirm.True(t, spy.helperCntSet)
+		affirm.Equal(t, true, spy.helperCntSet)
 		affirm.Equal(t, 1, spy.wantHelperCnt)
 		affirm.Equal(t, 0, spy.haveHelperCnt)
 	})
@@ -207,7 +207,7 @@ func Test_New_finish_and_assert_called_automatically_at_test_end(t *testing.T) {
 	affirm.Equal(t, 2, len(runs))
 	affirm.Equal(t, 1, runs[0])
 	affirm.Equal(t, 0, runs[1])
-	affirm.True(t, spy.tt == nil)
+	affirm.Equal(t, true, spy.tt == nil)
 }
 
 func Test_Spy_ExpectCleanups(t *testing.T) {
@@ -222,7 +222,7 @@ func Test_Spy_ExpectCleanups(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 2, spy.wantCleanupsCnt)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("panics when called on closed Spy", func(t *testing.T) {
@@ -236,7 +236,7 @@ func Test_Spy_ExpectCleanups(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectCleanups(1) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 
 	})
 
@@ -251,7 +251,7 @@ func Test_Spy_ExpectCleanups(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectCleanups(1) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -293,7 +293,7 @@ func Test_Spy_Cleanup(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Cleanup(func() {}) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -307,7 +307,7 @@ func Test_Spy_Cleanup(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Cleanup(func() {}) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -322,8 +322,8 @@ func Test_Spy_ExpectError(t *testing.T) {
 		have := spy.ExpectError()
 
 		// --- Then ---
-		affirm.True(t, spy.wantError)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy.wantError)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("panics when called on closed Spy", func(t *testing.T) {
@@ -337,7 +337,7 @@ func Test_Spy_ExpectError(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectError() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -351,7 +351,7 @@ func Test_Spy_ExpectError(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectError() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called after ExpectFail", func(t *testing.T) {
@@ -366,7 +366,7 @@ func Test_Spy_ExpectError(t *testing.T) {
 		affirm.NotNil(t, msg)
 		want := "cannot use ExpectError and ExpectFail in the same time"
 		affirm.Equal(t, want, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -384,7 +384,7 @@ func Test_Spy_Error(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, 1, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
-		affirm.True(t, spy.haveError)
+		affirm.Equal(t, true, spy.haveError)
 	})
 
 	t.Run("multi call", func(t *testing.T) {
@@ -402,7 +402,7 @@ func Test_Spy_Error(t *testing.T) {
 		affirm.Equal(t, 2, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
 		affirm.Equal(t, "msg 1", spy.haveLogMgs[1])
-		affirm.True(t, spy.haveError)
+		affirm.Equal(t, true, spy.haveError)
 	})
 
 	t.Run("panics when called on not closed Spy", func(t *testing.T) {
@@ -415,7 +415,7 @@ func Test_Spy_Error(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Error("msg", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -429,7 +429,7 @@ func Test_Spy_Error(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Error("msg", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -447,7 +447,7 @@ func Test_Spy_Errorf(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, 1, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
-		affirm.True(t, spy.haveError)
+		affirm.Equal(t, true, spy.haveError)
 	})
 
 	t.Run("multi call", func(t *testing.T) {
@@ -465,7 +465,7 @@ func Test_Spy_Errorf(t *testing.T) {
 		affirm.Equal(t, 2, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
 		affirm.Equal(t, "msg 1", spy.haveLogMgs[1])
-		affirm.True(t, spy.haveError)
+		affirm.Equal(t, true, spy.haveError)
 	})
 
 	t.Run("panics when called on not closed Spy", func(t *testing.T) {
@@ -478,7 +478,7 @@ func Test_Spy_Errorf(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Errorf("msg %d", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -492,7 +492,7 @@ func Test_Spy_Errorf(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Errorf("msg %d", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -507,8 +507,8 @@ func Test_Spy_ExpectFatal(t *testing.T) {
 		have := spy.ExpectFatal()
 
 		// --- Then ---
-		affirm.True(t, spy.wantFatal)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy.wantFatal)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("panics when called on closed Spy", func(t *testing.T) {
@@ -522,7 +522,7 @@ func Test_Spy_ExpectFatal(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectFatal() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -536,7 +536,7 @@ func Test_Spy_ExpectFatal(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectFatal() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called after ExpectFail", func(t *testing.T) {
@@ -551,7 +551,7 @@ func Test_Spy_ExpectFatal(t *testing.T) {
 		affirm.NotNil(t, msg)
 		want := "cannot use ExpectFatal and ExpectFail in the same time"
 		affirm.Equal(t, want, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -572,7 +572,7 @@ func Test_Spy_Fatal(t *testing.T) {
 
 		affirm.Equal(t, 1, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
-		affirm.True(t, spy.haveFatal)
+		affirm.Equal(t, true, spy.haveFatal)
 	})
 
 	t.Run("multi call", func(t *testing.T) {
@@ -595,7 +595,7 @@ func Test_Spy_Fatal(t *testing.T) {
 		affirm.Equal(t, 2, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
 		affirm.Equal(t, "msg 1", spy.haveLogMgs[1])
-		affirm.True(t, spy.haveFatal)
+		affirm.Equal(t, true, spy.haveFatal)
 	})
 
 	t.Run("panics when called on not closed Spy", func(t *testing.T) {
@@ -608,7 +608,7 @@ func Test_Spy_Fatal(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Fatal("msg", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -622,7 +622,7 @@ func Test_Spy_Fatal(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Fatal("msg", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -642,7 +642,7 @@ func Test_Spy_Fatalf(t *testing.T) {
 		affirm.Equal(t, FailNowMsg, *msg)
 		affirm.Equal(t, 1, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
-		affirm.True(t, spy.haveFatal)
+		affirm.Equal(t, true, spy.haveFatal)
 	})
 
 	t.Run("multi call", func(t *testing.T) {
@@ -665,7 +665,7 @@ func Test_Spy_Fatalf(t *testing.T) {
 		affirm.Equal(t, 2, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
 		affirm.Equal(t, "msg 1", spy.haveLogMgs[1])
-		affirm.True(t, spy.haveFatal)
+		affirm.Equal(t, true, spy.haveFatal)
 	})
 
 	t.Run("panics when called on not closed Spy", func(t *testing.T) {
@@ -678,7 +678,7 @@ func Test_Spy_Fatalf(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Fatalf("msg %d", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -692,7 +692,7 @@ func Test_Spy_Fatalf(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Fatalf("msg %d", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -708,8 +708,8 @@ func Test_Spy_FailNow(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.FailNow() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, FailNowMsg, *msg)
-		affirm.False(t, spy.panicked)
-		affirm.True(t, spy.haveFatal)
+		affirm.Equal(t, false, spy.panicked)
+		affirm.Equal(t, true, spy.haveFatal)
 	})
 
 	t.Run("panics when called on not closed Spy", func(t *testing.T) {
@@ -722,7 +722,7 @@ func Test_Spy_FailNow(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Fatal("msg", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -736,7 +736,7 @@ func Test_Spy_FailNow(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Fatal("msg", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -752,7 +752,7 @@ func Test_Spy_Failed(t *testing.T) {
 		have := spy.Failed()
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("have error", func(t *testing.T) {
@@ -767,7 +767,7 @@ func Test_Spy_Failed(t *testing.T) {
 		have := spy.Failed()
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("have fatal", func(t *testing.T) {
@@ -785,7 +785,7 @@ func Test_Spy_Failed(t *testing.T) {
 		have := spy.Failed()
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("have fatal and error", func(t *testing.T) {
@@ -804,7 +804,7 @@ func Test_Spy_Failed(t *testing.T) {
 		have := spy.Failed()
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("panics when called on not closed Spy", func(t *testing.T) {
@@ -817,7 +817,7 @@ func Test_Spy_Failed(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Failed() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("does not panic when called on finished Spy", func(t *testing.T) {
@@ -832,7 +832,7 @@ func Test_Spy_Failed(t *testing.T) {
 		have := spy.Failed()
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -847,8 +847,8 @@ func Test_Spy_ExpectHelpers(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 2, spy.wantHelperCnt)
-		affirm.True(t, spy.helperCntSet)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy.helperCntSet)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("set at least once", func(t *testing.T) {
@@ -861,8 +861,8 @@ func Test_Spy_ExpectHelpers(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, -1, spy.wantHelperCnt)
-		affirm.True(t, spy.helperCntSet)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy.helperCntSet)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("argument must be greater or equal minus one", func(t *testing.T) {
@@ -875,7 +875,7 @@ func Test_Spy_ExpectHelpers(t *testing.T) {
 		affirm.NotNil(t, msg)
 		want := "ExpectHelpers cnt must be greater or equal to minus one"
 		affirm.Equal(t, want, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("may be set only once", func(t *testing.T) {
@@ -889,7 +889,7 @@ func Test_Spy_ExpectHelpers(t *testing.T) {
 		affirm.NotNil(t, msg)
 		want := "ExpectHelpers may be called only once"
 		affirm.Equal(t, want, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on closed Spy", func(t *testing.T) {
@@ -903,7 +903,7 @@ func Test_Spy_ExpectHelpers(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectHelpers(1) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -917,7 +917,7 @@ func Test_Spy_ExpectHelpers(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectHelpers(1) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -961,7 +961,7 @@ func Test_Spy_Helper(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Helper() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -975,7 +975,7 @@ func Test_Spy_Helper(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Helper() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -992,7 +992,7 @@ func Test_Spy_ExpectSetenv(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, 1, len(spy.wantEnv))
 		affirm.Equal(t, "v0", spy.wantEnv["k0"])
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("panics when called on closed Spy", func(t *testing.T) {
@@ -1006,7 +1006,7 @@ func Test_Spy_ExpectSetenv(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectSetenv("k0", "v0") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1020,7 +1020,7 @@ func Test_Spy_ExpectSetenv(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectSetenv("k0", "v0") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1067,7 +1067,7 @@ func Test_Spy_Setenv(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Setenv("k0", "v0") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1081,7 +1081,7 @@ func Test_Spy_Setenv(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Setenv("k0", "v0") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1096,8 +1096,8 @@ func Test_Spy_ExpectSkipped(t *testing.T) {
 		have := spy.ExpectSkipped()
 
 		// --- Then ---
-		affirm.True(t, spy.wantSkipped)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy.wantSkipped)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("panics when called on closed Spy", func(t *testing.T) {
@@ -1111,7 +1111,7 @@ func Test_Spy_ExpectSkipped(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectSkipped() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1125,7 +1125,7 @@ func Test_Spy_ExpectSkipped(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectSkipped() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1143,7 +1143,7 @@ func Test_Spy_Skip(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, 1, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
-		affirm.True(t, spy.haveSkipped)
+		affirm.Equal(t, true, spy.haveSkipped)
 	})
 
 	t.Run("multi call", func(t *testing.T) {
@@ -1161,7 +1161,7 @@ func Test_Spy_Skip(t *testing.T) {
 		affirm.Equal(t, 2, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
 		affirm.Equal(t, "msg 1", spy.haveLogMgs[1])
-		affirm.True(t, spy.haveSkipped)
+		affirm.Equal(t, true, spy.haveSkipped)
 	})
 
 	t.Run("panics when called on not closed Spy", func(t *testing.T) {
@@ -1174,7 +1174,7 @@ func Test_Spy_Skip(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Skip("msg", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1188,7 +1188,7 @@ func Test_Spy_Skip(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Skip("msg", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1204,7 +1204,7 @@ func Test_Spy_ExpectTempDir(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 1, spy.wantTempDirCnt)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("panics when called on closed Spy", func(t *testing.T) {
@@ -1218,7 +1218,7 @@ func Test_Spy_ExpectTempDir(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectTempDir(1) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1232,7 +1232,7 @@ func Test_Spy_ExpectTempDir(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectTempDir(1) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1290,8 +1290,8 @@ func Test_Spy_GetTempDir(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "", have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		assertSpyHasMgs(t, spy, 1)
 		msg := "ExpectTempDir method must be called before GetTempDir"
 		assertSpyHasMsg(t, spy, 0, msg)
@@ -1313,8 +1313,8 @@ func Test_Spy_GetTempDir(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "", have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		assertSpyHasMgs(t, spy, 1)
 		msg := "temp directory with index 2 does not exist"
 		assertSpyHasMsg(t, spy, 0, msg)
@@ -1334,14 +1334,14 @@ func Test_Spy_TempDir(t *testing.T) {
 
 		// --- Then ---
 		fi, err := os.Lstat(have)
-		affirm.True(t, err == nil)
-		affirm.True(t, fi.IsDir())
+		affirm.Equal(t, true, err == nil)
+		affirm.Equal(t, true, fi.IsDir())
 		affirm.Equal(t, 1, len(spy.haveTempDirs))
 
 		// Dir is added to cleanups and removed when test finishes.
 		spy.Finish()
 		_, err = os.Lstat(have)
-		affirm.True(t, errors.Is(err, os.ErrNotExist))
+		affirm.Equal(t, true, errors.Is(err, os.ErrNotExist))
 	})
 
 	t.Run("call multi", func(t *testing.T) {
@@ -1356,15 +1356,15 @@ func Test_Spy_TempDir(t *testing.T) {
 		got1 := spy.TempDir()
 
 		// --- Then ---
-		affirm.False(t, got0 == got1)
+		affirm.Equal(t, false, got0 == got1)
 
 		fi, err := os.Lstat(got0)
-		affirm.True(t, err == nil)
-		affirm.True(t, fi.IsDir())
+		affirm.Equal(t, true, err == nil)
+		affirm.Equal(t, true, fi.IsDir())
 
 		fi, err = os.Lstat(got1)
-		affirm.True(t, err == nil)
-		affirm.True(t, fi.IsDir())
+		affirm.Equal(t, true, err == nil)
+		affirm.Equal(t, true, fi.IsDir())
 
 		affirm.Equal(t, 2, len(spy.haveTempDirs))
 	})
@@ -1379,7 +1379,7 @@ func Test_Spy_TempDir(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.TempDir() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1393,7 +1393,7 @@ func Test_Spy_TempDir(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.TempDir() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1409,11 +1409,11 @@ func Test_Spy_Context(t *testing.T) {
 		have := spy.Context()
 
 		// --- Then ---
-		affirm.True(t, have != nil)
-		affirm.True(t, have.Err() == nil)
+		affirm.Equal(t, true, have != nil)
+		affirm.Equal(t, true, have.Err() == nil)
 
 		spy.Finish()
-		affirm.True(t, errors.Is(have.Err(), context.Canceled))
+		affirm.Equal(t, true, errors.Is(have.Err(), context.Canceled))
 	})
 
 	t.Run("call multi", func(t *testing.T) {
@@ -1428,7 +1428,7 @@ func Test_Spy_Context(t *testing.T) {
 		have1 := spy.Context()
 
 		// --- Then ---
-		affirm.True(t, have0 == have1)
+		affirm.Equal(t, true, have0 == have1)
 	})
 
 	t.Run("panics when called on not closed Spy", func(t *testing.T) {
@@ -1441,7 +1441,7 @@ func Test_Spy_Context(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Context() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1455,7 +1455,7 @@ func Test_Spy_Context(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Context() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1470,8 +1470,8 @@ func Test_Spy_IgnoreLogs(t *testing.T) {
 		have := spy.IgnoreLogs()
 
 		// --- Then ---
-		affirm.True(t, spy.ignoreLog)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy.ignoreLog)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("panics when called on closed Spy", func(t *testing.T) {
@@ -1485,7 +1485,7 @@ func Test_Spy_IgnoreLogs(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.IgnoreLogs() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1499,7 +1499,7 @@ func Test_Spy_IgnoreLogs(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.IgnoreLogs() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when any of the ExpectLog* methods used", func(t *testing.T) {
@@ -1513,7 +1513,7 @@ func Test_Spy_IgnoreLogs(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.IgnoreLogs() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errIgnoreLogsAfterExpectLog, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1532,7 +1532,7 @@ func Test_Spy_ExpectLog(t *testing.T) {
 		ent := spy.wantLogMgs[0]
 		affirm.Equal(t, Contains, ent.strategy)
 		affirm.Equal(t, "msg 0", ent.want)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("does not add empty messages", func(t *testing.T) {
@@ -1546,7 +1546,7 @@ func Test_Spy_ExpectLog(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 0, len(spy.wantLogMgs))
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("set with percentages without args", func(t *testing.T) {
@@ -1563,7 +1563,7 @@ func Test_Spy_ExpectLog(t *testing.T) {
 		ent := spy.wantLogMgs[0]
 		affirm.Equal(t, Contains, ent.strategy)
 		affirm.Equal(t, "msg %d", ent.want)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("multi set", func(t *testing.T) {
@@ -1608,7 +1608,7 @@ func Test_Spy_ExpectLog(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectLog(Equal, "msg") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1622,7 +1622,7 @@ func Test_Spy_ExpectLog(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectLog(Equal, "msg") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called after IgnoreLogs", func(t *testing.T) {
@@ -1636,7 +1636,7 @@ func Test_Spy_ExpectLog(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectLog(Equal, "msg") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectLogAfterIgnoreLogs, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1655,7 +1655,7 @@ func Test_Spy_ExpectLogEqual(t *testing.T) {
 		ent := spy.wantLogMgs[0]
 		affirm.Equal(t, Equal, ent.strategy)
 		affirm.Equal(t, "msg 0", ent.want)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("multi set", func(t *testing.T) {
@@ -1690,7 +1690,7 @@ func Test_Spy_ExpectLogEqual(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectLogEqual("msg") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1717,7 +1717,7 @@ func Test_Spy_ExpectLogEqual(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectLogEqual("msg") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectLogAfterIgnoreLogs, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1736,7 +1736,7 @@ func Test_Spy_ExpectLogContain(t *testing.T) {
 		ent := spy.wantLogMgs[0]
 		affirm.Equal(t, Contains, ent.strategy)
 		affirm.Equal(t, "msg 0", ent.want)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("multi set", func(t *testing.T) {
@@ -1771,7 +1771,7 @@ func Test_Spy_ExpectLogContain(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectLogContain("msg") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1798,7 +1798,7 @@ func Test_Spy_ExpectLogContain(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectLogContain("msg") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectLogAfterIgnoreLogs, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1817,7 +1817,7 @@ func Test_Spy_ExpectLogNotContain(t *testing.T) {
 		ent := spy.wantLogMgs[0]
 		affirm.Equal(t, NotContains, ent.strategy)
 		affirm.Equal(t, "msg 0", ent.want)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("multi set", func(t *testing.T) {
@@ -1852,7 +1852,7 @@ func Test_Spy_ExpectLogNotContain(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectLogNotContain("msg") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -1879,7 +1879,7 @@ func Test_Spy_ExpectLogNotContain(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectLogNotContain("msg") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectLogAfterIgnoreLogs, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1939,7 +1939,7 @@ func Test_Spy_Log(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Log("msg", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -1999,7 +1999,7 @@ func Test_Spy_Logf(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Logf("msg %d", 0) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -2015,7 +2015,7 @@ func Test_Spy_ExpectedNames(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 2, spy.wantNamesCnt)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("panics when called on closed Spy", func(t *testing.T) {
@@ -2029,7 +2029,7 @@ func Test_Spy_ExpectedNames(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectedNames(1) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -2043,7 +2043,7 @@ func Test_Spy_ExpectedNames(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectedNames(1) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -2100,7 +2100,7 @@ func Test_Name(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Name() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -2114,7 +2114,7 @@ func Test_Name(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Name() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -2129,8 +2129,8 @@ func Test_Spy_ExpectFail(t *testing.T) {
 		have := spy.ExpectFail()
 
 		// --- Then ---
-		affirm.True(t, spy.wantFailed)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy.wantFailed)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("panics when called after ExpectFatal", func(t *testing.T) {
@@ -2145,7 +2145,7 @@ func Test_Spy_ExpectFail(t *testing.T) {
 		affirm.NotNil(t, msg)
 		want := "cannot use ExpectFail and ExpectFatal in the same time"
 		affirm.Equal(t, want, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called after ExpectError", func(t *testing.T) {
@@ -2162,7 +2162,7 @@ func Test_Spy_ExpectFail(t *testing.T) {
 		affirm.NotNil(t, msg)
 		want := "cannot use ExpectFail and ExpectError in the same time"
 		affirm.Equal(t, want, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on closed Spy", func(t *testing.T) {
@@ -2176,7 +2176,7 @@ func Test_Spy_ExpectFail(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectFail() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -2190,7 +2190,7 @@ func Test_Spy_ExpectFail(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.ExpectFail() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -2205,8 +2205,8 @@ func Test_Spy_Close(t *testing.T) {
 		have := spy.Close()
 
 		// --- Then ---
-		affirm.True(t, spy.closed)
-		affirm.True(t, spy == have)
+		affirm.Equal(t, true, spy.closed)
+		affirm.Equal(t, true, spy == have)
 	})
 
 	t.Run("panics when called on closed Spy", func(t *testing.T) {
@@ -2220,7 +2220,7 @@ func Test_Spy_Close(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Close() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errDoubleClose, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("panics when called on finished Spy", func(t *testing.T) {
@@ -2234,7 +2234,7 @@ func Test_Spy_Close(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Close() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errCloseOnFinished, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -2249,7 +2249,7 @@ func Test_Spy_Finish(t *testing.T) {
 		spy.Finish()
 
 		// --- Then ---
-		affirm.True(t, spy.finished)
+		affirm.Equal(t, true, spy.finished)
 	})
 
 	t.Run("runs cleanups", func(t *testing.T) {
@@ -2282,7 +2282,7 @@ func Test_Spy_Finish(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Finish() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errDoubleFinish, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 }
 
@@ -2301,8 +2301,8 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.True(t, spy.finished)
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, true, spy.finished)
 		affirm.Equal(t, 1, len(runs))
 		affirm.Equal(t, 0, runs[0])
 	})
@@ -2319,9 +2319,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2335,7 +2335,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.AssertExpectations() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errAssertOnNotClosed, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 	})
 
 	t.Run("called on panicked instance", func(t *testing.T) {
@@ -2350,15 +2350,15 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		msg := affirm.Panic(t, func() { spy.Finish() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errDoubleFinish, *msg)
-		affirm.True(t, spy.panicked)
+		affirm.Equal(t, true, spy.panicked)
 
 		// --- When ---
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		assertSpyHasMgs(t, spy, 1)
 		assertSpyHasMsg(t, spy, 0, "invalid Spy usage")
 	})
@@ -2379,9 +2379,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2398,9 +2398,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		assertSpyHasMgs(t, spy, 1)
 		wMsg := "expected HUT not to set environment variable:\n" +
 			"\t  have key: \"key0\"\n" +
@@ -2422,9 +2422,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		assertSpyHasMgs(t, spy, 2)
 		wMsg := "expected HUT to set environment variable:\n" +
 			"\t  want key: \"key0\"\n" +
@@ -2452,9 +2452,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		assertSpyHasMgs(t, spy, 2)
 		wMsg := "expected HUT to set environment variable:\n" +
 			"\t  want key: \"key0\"\n" +
@@ -2483,9 +2483,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		assertSpyHasMgs(t, spy, 1)
 		wMsg := "expected HUT to set environment variable:\n" +
 			"\t  want key: \"key0\"\n" +
@@ -2510,9 +2510,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		assertSpyHasMgs(t, spy, 1)
 		wMsg := "expected HUT not to set environment variable:\n" +
 			"\t  have key: \"key2\"\n" +
@@ -2535,9 +2535,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2555,9 +2555,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		assertSpyHasMgs(t, spy, 1)
 		wMsg := "expected HUT to mark test as skipped:\n" +
 			"\twant: false\n" +
@@ -2580,9 +2580,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.True(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, true, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2599,9 +2599,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		wMsg := "expected HUT to call the t.Error* or t.Fatal* methods"
 		assertSpyHasMsg(t, spy, 0, wMsg)
 	})
@@ -2621,9 +2621,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.True(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, true, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2640,9 +2640,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		wMsg := "expected HUT to call any of the t.Error* methods"
 		assertSpyHasMsg(t, spy, 0, wMsg)
 	})
@@ -2664,9 +2664,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.True(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, true, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2683,9 +2683,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		wMsg := "expected HUT to call any of the t.Fatal* methods"
 		assertSpyHasMsg(t, spy, 0, wMsg)
 	})
@@ -2705,9 +2705,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2725,9 +2725,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		wMsg := "expected Helper to be called N times:\n" +
 			"\twant: 2\n" +
 			"\thave: 1"
@@ -2749,9 +2749,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2769,9 +2769,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		wMsg := "expected Name to be called N times:\n" +
 			"\twant: 2\n" +
 			"\thave: 1"
@@ -2793,9 +2793,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2813,9 +2813,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		wMsg := "expected Cleanup to be called N times:\n" +
 			"\twant: 2\n" +
 			"\thave: 1"
@@ -2837,9 +2837,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2858,9 +2858,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2877,9 +2877,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2897,9 +2897,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		wMsg := "expected TempDir to be called N times:\n" +
 			"\twant: 2\n" +
 			"\thave: 1"
@@ -2920,9 +2920,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2940,9 +2940,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		wMsg := "expected HUT to log message 0:\n" +
 			"\tmatcher: equal\n" +
 			"\t   want: \"msg 0\"\n" +
@@ -2965,9 +2965,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -2987,9 +2987,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		wMsg := "expected HUT to log message 0:\n" +
 			"\tmatcher: not-contains\n" +
 			"\t   want: \"msg 0\"\n" +
@@ -3010,9 +3010,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		wMsg := "expected HUT to log no messages but got:\n" +
 			"\thave: \"msg\""
 		assertSpyHasMsg(t, spy, 0, wMsg)
@@ -3032,9 +3032,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -3052,9 +3052,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.True(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.False(t, ti.Failed())
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
 		assertSpyHasMgs(t, spy, 0)
 	})
 
@@ -3071,9 +3071,9 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		have := spy.AssertExpectations()
 
 		// --- Then ---
-		affirm.False(t, have)
-		affirm.False(t, spy.Failed())
-		affirm.True(t, ti.Failed())
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
 		wMsg := "expected Helper to be called N times:\n" +
 			"\twant: >= 1\n" +
 			"\thave: 0"
@@ -3094,7 +3094,7 @@ func Test_Spy_assertFailed(t *testing.T) {
 		have := spy.assertFailed()
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 }
 
@@ -3173,14 +3173,14 @@ func Test_Spy_checkState(t *testing.T) {
 			ti := &testing.T{}
 
 			spy := tc.spy(ti)
-			affirm.False(t, ti.Failed()) // Make sure it is not failed.
+			affirm.Equal(t, false, ti.Failed()) // Make sure it is not failed.
 
 			// --- Then ---
 			msg := affirm.Panic(t, func() { tc.action(spy) })
 			affirm.NotNil(t, msg)
 			affirm.Equal(t, tc.want, *msg)
-			affirm.True(t, spy.panicked)
-			affirm.True(t, ti.Failed())
+			affirm.Equal(t, true, spy.panicked)
+			affirm.Equal(t, true, ti.Failed())
 		})
 	}
 }

@@ -55,9 +55,9 @@ func Test_NoPanic(t *testing.T) {
 		affirm.NotNil(t, err)
 
 		hMsg := err.Error()
-		affirm.True(t, strings.Contains(hMsg, "func should not panic"))
-		affirm.True(t, strings.Contains(hMsg, "panic value: test"))
-		affirm.True(t, strings.Contains(hMsg, "panic stack:"))
+		affirm.Equal(t, true, strings.Contains(hMsg, "func should not panic"))
+		affirm.Equal(t, true, strings.Contains(hMsg, "panic value: test"))
+		affirm.Equal(t, true, strings.Contains(hMsg, "panic stack:"))
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -71,10 +71,10 @@ func Test_NoPanic(t *testing.T) {
 		affirm.NotNil(t, err)
 
 		hMsg := err.Error()
-		affirm.True(t, strings.Contains(hMsg, "func should not panic"))
-		affirm.True(t, strings.Contains(hMsg, "        trail: type.field"))
-		affirm.True(t, strings.Contains(hMsg, "panic value: test"))
-		affirm.True(t, strings.Contains(hMsg, "panic stack:"))
+		affirm.Equal(t, true, strings.Contains(hMsg, "func should not panic"))
+		affirm.Equal(t, true, strings.Contains(hMsg, "        trail: type.field"))
+		affirm.Equal(t, true, strings.Contains(hMsg, "panic value: test"))
+		affirm.Equal(t, true, strings.Contains(hMsg, "panic stack:"))
 	})
 
 	t.Run("no panic", func(t *testing.T) {
@@ -103,10 +103,10 @@ func Test_PanicContain(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "func should panic with string containing:"
 		hMsg := err.Error()
-		affirm.True(t, strings.Contains(hMsg, wMsg))
-		affirm.True(t, strings.Contains(hMsg, "substring: \"xyz\""))
-		affirm.True(t, strings.Contains(hMsg, "panic value: abc def ghi"))
-		affirm.True(t, strings.Contains(hMsg, "panic stack:"))
+		affirm.Equal(t, true, strings.Contains(hMsg, wMsg))
+		affirm.Equal(t, true, strings.Contains(hMsg, "substring: \"xyz\""))
+		affirm.Equal(t, true, strings.Contains(hMsg, "panic value: abc def ghi"))
+		affirm.Equal(t, true, strings.Contains(hMsg, "panic stack:"))
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -120,11 +120,11 @@ func Test_PanicContain(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "func should panic with string containing:"
 		hMsg := err.Error()
-		affirm.True(t, strings.Contains(hMsg, wMsg))
-		affirm.True(t, strings.Contains(hMsg, "trail: type.field"))
-		affirm.True(t, strings.Contains(hMsg, "substring: \"xyz\""))
-		affirm.True(t, strings.Contains(hMsg, "panic value: abc def ghi"))
-		affirm.True(t, strings.Contains(hMsg, "panic stack:"))
+		affirm.Equal(t, true, strings.Contains(hMsg, wMsg))
+		affirm.Equal(t, true, strings.Contains(hMsg, "trail: type.field"))
+		affirm.Equal(t, true, strings.Contains(hMsg, "substring: \"xyz\""))
+		affirm.Equal(t, true, strings.Contains(hMsg, "panic value: abc def ghi"))
+		affirm.Equal(t, true, strings.Contains(hMsg, "panic stack:"))
 	})
 
 	t.Run("panics with error type", func(t *testing.T) {

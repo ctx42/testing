@@ -25,7 +25,7 @@ func Test_ChannelWillClose(t *testing.T) {
 		// --- Then ---
 		close(c)
 		<-done
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -43,7 +43,7 @@ func Test_ChannelWillClose(t *testing.T) {
 
 		// --- Then ---
 		tspy.Finish().AssertExpectations()
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -62,6 +62,6 @@ func Test_ChannelWillClose(t *testing.T) {
 
 		// --- Then ---
 		tspy.Finish().AssertExpectations()
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

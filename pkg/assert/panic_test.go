@@ -20,7 +20,7 @@ func Test_Panic(t *testing.T) {
 		have := Panic(tspy, func() { panic("test") })
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -34,7 +34,7 @@ func Test_Panic(t *testing.T) {
 		have := Panic(tspy, func() {})
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -50,7 +50,7 @@ func Test_Panic(t *testing.T) {
 		have := Panic(tspy, func() {}, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -63,7 +63,7 @@ func Test_NoPanic(t *testing.T) {
 		have := NoPanic(tspy, func() {})
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -77,7 +77,7 @@ func Test_NoPanic(t *testing.T) {
 		have := NoPanic(tspy, func() { panic("test") })
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -93,7 +93,7 @@ func Test_NoPanic(t *testing.T) {
 		have := NoPanic(tspy, func() { panic("test") }, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -106,7 +106,7 @@ func Test_PanicContain(t *testing.T) {
 		have := PanicContain(tspy, "def", func() { panic("abc def ghi") })
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -120,7 +120,7 @@ func Test_PanicContain(t *testing.T) {
 		have := PanicContain(tspy, "xyz", func() { panic("abc def ghi") })
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -136,7 +136,7 @@ func Test_PanicContain(t *testing.T) {
 		have := PanicContain(tspy, "xyz", func() { panic("abc def ghi") }, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }
 

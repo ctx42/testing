@@ -38,8 +38,8 @@ func Test_Value(t *testing.T) {
 		fn()
 
 		// --- Then ---
-		affirm.True(t, panicked)
-		affirm.True(t, have == nil)
+		affirm.Equal(t, true, panicked)
+		affirm.Equal(t, true, have == nil)
 	})
 }
 
@@ -75,7 +75,7 @@ func Test_Values(t *testing.T) {
 		fn()
 
 		// --- Then ---
-		affirm.True(t, panicked)
+		affirm.Equal(t, true, panicked)
 		affirm.Equal(t, 0, t1)
 		affirm.Equal(t, 0.0, t2)
 	})
@@ -103,7 +103,7 @@ func Test_Nil(t *testing.T) {
 		fn()
 
 		// --- Then ---
-		affirm.True(t, panicked)
+		affirm.Equal(t, true, panicked)
 	})
 }
 
@@ -229,6 +229,6 @@ func Test_Single(t *testing.T) {
 		check()
 
 		// --- Then ---
-		affirm.True(t, errors.Is(e, errExpSingle))
+		affirm.Equal(t, true, errors.Is(e, errExpSingle))
 	})
 }

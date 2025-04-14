@@ -24,7 +24,7 @@ func Test_ExitCode(t *testing.T) {
 		have := ExitCode(tspy, 0, val)
 
 		// --- Then ---
-		affirm.True(t, have)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -41,7 +41,7 @@ func Test_ExitCode(t *testing.T) {
 		have := ExitCode(tspy, 77, val)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -59,6 +59,6 @@ func Test_ExitCode(t *testing.T) {
 		have := ExitCode(tspy, 77, val, opt)
 
 		// --- Then ---
-		affirm.False(t, have)
+		affirm.Equal(t, false, have)
 	})
 }

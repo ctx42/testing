@@ -4,14 +4,15 @@
 package core
 
 import (
+	"bytes"
 	"fmt"
-	"strings"
 )
 
-// T defines an interface for types that mimic the behavior of [testing.T] in
-// Go's testing framework, used for capturing error and failure reports in
-// tests. It is implemented by [Spy] to mock test interactions, enabling
-// verification of test behavior without triggering real test failures.
+// T defines an interface capturing a subset of [testing.TB] methods, used to
+// test helper functions that accept `*testing.T` and provide reusable assertions
+// for test cases. Implemented by [Spy], it allows verification of interactions
+// between test helpers and `*testing.T` behavior without causing actual test
+// errors or failures.
 type T interface {
 	Error(args ...any)
 	Errorf(format string, args ...any)
@@ -22,26 +23,38 @@ type T interface {
 }
 
 // Spy is a testing utility that captures and tracks calls to error and failure
-// reporting methods, typically used to mock `*testing.T` in unit tests. It
-// records messages logged via Error, Errorf, Fatal, and Fatalf, and tracks
-// whether errors or fatal failures were reported. Use Spy to verify test
-// behavior without triggering real test failures.
+// reporting methods, used to mock `*testing.T` when testing helper functions.
+// It logs calls to Error, Errorf, Fatal, and Fatalf, allowing verification of
+// test behavior without causing actual test failures.
 type Spy struct {
-	ReportedError    bool   // Tracks if Error or Errorf was called.
-	TriggeredFailure bool   // Tracks if Fatal or Fatalf was called.
-	Messages         string // Accumulated log of all error and failure messages.
+	HelperCalled     bool // Tracks if Helper was called.
+	ReportedError    bool // Tracks if Error or Errorf was called.
+	TriggeredFailure bool // Tracks if Fatal or Fatalf was called.
+	Messages         *bytes.Buffer
+}
+
+// NewSpy returns new instance of [Spy].
+func NewSpy() *Spy { return &Spy{} }
+
+// Capture turns on collection of messages when Error, Errorf, Fatal, and
+// Fatalf are called.
+func (spy *Spy) Capture() *Spy {
+	spy.Messages = &bytes.Buffer{}
+	return spy
 }
 
 // Helper is a no-op method that satisfies the [testing.TB.Helper] interface,
 // allowing [Spy] to be used in contexts expecting a testing helper.
-func (spy *Spy) Helper() {}
+func (spy *Spy) Helper() { spy.HelperCalled = true }
 
 // Error records a non-fatal error with the provided arguments, appending them
 // as a space-separated message to Messages, followed by a newline. It sets
 // [Spy.ReportedError] to true.
 func (spy *Spy) Error(args ...any) {
 	spy.ReportedError = true
-	spy.Messages += spy.log(args...)
+	if spy.Messages != nil {
+		_, _ = fmt.Fprintln(spy.Messages, args...)
+	}
 }
 
 // Errorf records a non-fatal error using the provided format string and
@@ -49,7 +62,10 @@ func (spy *Spy) Error(args ...any) {
 // sets [Spy.ReportedError] to true.
 func (spy *Spy) Errorf(format string, args ...any) {
 	spy.ReportedError = true
-	spy.Messages += fmt.Sprintf(format, args...) + "\n"
+	if spy.Messages != nil {
+		_, _ = fmt.Fprintf(spy.Messages, format, args...)
+		_ = spy.Messages.WriteByte('\n')
+	}
 }
 
 // Fatal records a fatal error with the provided arguments, appending them as a
@@ -57,7 +73,9 @@ func (spy *Spy) Errorf(format string, args ...any) {
 // [Spy.TriggeredFailure] to true.
 func (spy *Spy) Fatal(args ...any) {
 	spy.TriggeredFailure = true
-	spy.Messages += spy.log(args...)
+	if spy.Messages != nil {
+		_, _ = fmt.Fprintln(spy.Messages, args...)
+	}
 }
 
 // Fatalf records a fatal error using the provided format string and arguments,
@@ -65,21 +83,10 @@ func (spy *Spy) Fatal(args ...any) {
 // [Spy.TriggeredFailure] to true.
 func (spy *Spy) Fatalf(format string, args ...any) {
 	spy.TriggeredFailure = true
-	spy.Messages += fmt.Sprintf(format, args...) + "\n"
-}
-
-// log formats the provided arguments into a space-separated string, terminated
-// with a newline, for consistent message logging.
-func (spy *Spy) log(args ...any) string {
-	var buf strings.Builder
-	for i, arg := range args {
-		if i > 0 {
-			buf.WriteByte(' ')
-		}
-		buf.WriteString(fmt.Sprintf("%v", arg))
+	if spy.Messages != nil {
+		_, _ = fmt.Fprintf(spy.Messages, format, args...)
+		_ = spy.Messages.WriteByte('\n')
 	}
-	buf.WriteByte('\n')
-	return buf.String()
 }
 
 // Failed reports whether an error or failure has been recorded, returning true
