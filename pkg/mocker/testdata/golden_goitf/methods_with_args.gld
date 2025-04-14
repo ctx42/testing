@@ -1,0 +1,16 @@
+Two simple methods with arguments and no return values.
+---
+func (_mck *MyMock) Method0(a int) {
+	_mck.t.Helper()
+	_args := []any{a}
+	_mck.Called(_args...)
+}
+
+func (_mck *MyMock) Method1(a string, b ...int) {
+	_mck.t.Helper()
+	_args := []any{a}
+	for _, _elem := range b {
+		_args = append(_args, _elem)
+	}
+	_mck.Called(_args...)
+}

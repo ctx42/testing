@@ -39,7 +39,6 @@ type Goldy struct {
 func Open(t core.T, pth string) *Goldy {
 	t.Helper()
 
-	// Open the file
 	fil, err := os.Open(pth)
 	if err != nil {
 		t.Fatalf("error opening file: %v", err)

@@ -1,0 +1,7 @@
+On helper for method without arguments.
+---
+func (_mck *MyMock) OnMethod() *mock.Call {
+	_mck.t.Helper()
+	var _args []any
+	return _mck.On("Method", _args...)
+}

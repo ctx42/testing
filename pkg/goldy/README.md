@@ -81,7 +81,7 @@ import (
 )
 
 func Test_Generator(t *testing.T) {
-    t.Run("generate content", func(t *testing.T) {
+    t.Run("Generate content", func(t *testing.T) {
         // When
         have := Generate() // Returns string.
 

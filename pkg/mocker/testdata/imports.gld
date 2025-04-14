@@ -1,0 +1,11 @@
+Imports generated for file with mocked interface.
+---
+import (
+	"fmt"
+	"os"
+	tm "time"
+
+	pkga "github.com/ctx42/testing/pkg/mocker/testdata/pkga"
+	"github.com/ctx42/testing/pkg/mocker/testdata/pkgb"
+	"github.com/ctx42/testing/pkg/mocker/testdata/pkgc"
+)
