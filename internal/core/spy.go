@@ -96,3 +96,12 @@ func (spy *Spy) Fatalf(format string, args ...any) {
 func (spy *Spy) Failed() bool {
 	return spy.ReportedError || spy.TriggeredFailure
 }
+
+// Log returns the logged messages. If logging has not been enabled via
+// [Spy.Capture], it will panic to indicate misuse.
+func (spy *Spy) Log() string {
+	if spy.Messages == nil {
+		panic("Spy.Log called without log capture being on")
+	}
+	return spy.Messages.String()
+}
