@@ -73,6 +73,7 @@ Packages used in test cases.
 
 - Package [assert](pkg/assert/README.md) provides assertion toolkit.
 - Package [check](pkg/check/README.md) provides equality toolkit used by `assert` package.
+- Package [goldy](pkg/goldy/README.md) provides basic golden file support.
 - Package [mock](pkg/mock) package provides primitives for writing interface mocks.
 - Package [must](pkg/must/README.md) provides basic test helpers which panic on error.
 

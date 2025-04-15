@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/tstkit"
 	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/goldy"
 )
 
 func Test_mapDumper_tabular(t *testing.T) {
@@ -68,7 +68,7 @@ func Test_mapDumper_tabular(t *testing.T) {
 			"default map[int]types.T1",
 			New(WithTimeFormat(TimeAsUnix)),
 			map[int]types.T1{0: {Int: 0}, 1: {Int: 1}},
-			tstkit.Golden(t, "testdata/map_of_structs.txt"),
+			goldy.Text(t, "testdata/map_of_structs.txt"),
 		},
 	}
 

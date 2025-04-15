@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ctx42/testing/internal/tstkit"
 	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/assert"
+	"github.com/ctx42/testing/pkg/goldy"
 )
 
 func Test_newCall(t *testing.T) {
@@ -511,7 +511,7 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(0)
 
 		// --- Then ---
-		wMsg := tstkit.Golden(t, "testdata/satisfied_never.txt")
+		wMsg := goldy.Text(t, "testdata/satisfied_never.txt")
 		assert.ErrorEqual(t, wMsg, err)
 	})
 
@@ -529,7 +529,7 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(1)
 
 		// --- Then ---
-		wMsg := tstkit.Golden(t, "testdata/satisfied_too_few.txt")
+		wMsg := goldy.Text(t, "testdata/satisfied_too_few.txt")
 		assert.ErrorEqual(t, wMsg, err)
 	})
 
@@ -547,7 +547,7 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(3)
 
 		// --- Then ---
-		wMsg := tstkit.Golden(t, "testdata/satisfied_too_many.txt")
+		wMsg := goldy.Text(t, "testdata/satisfied_too_many.txt")
 		assert.ErrorEqual(t, wMsg, err)
 	})
 }
@@ -804,7 +804,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/check_req_mock_same.txt")
+		want := goldy.Text(t, "testdata/check_req_mock_same.txt")
 		assert.ErrorEqual(t, want, have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
@@ -820,7 +820,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/check_req_mock_same.txt")
+		want := goldy.Text(t, "testdata/check_req_mock_same.txt")
 		assert.ErrorEqual(t, want, have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
@@ -836,7 +836,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/check_req_many.txt")
+		want := goldy.Text(t, "testdata/check_req_many.txt")
 		assert.ErrorEqual(t, want, have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
@@ -854,7 +854,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(nil)
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/check_req_mock_other.txt")
+		want := goldy.Text(t, "testdata/check_req_mock_other.txt")
 		assert.ErrorEqual(t, want, have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})

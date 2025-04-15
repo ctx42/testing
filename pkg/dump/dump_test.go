@@ -11,8 +11,8 @@ import (
 	"unsafe"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/tstkit"
 	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/goldy"
 )
 
 func Test_WithFlat(t *testing.T) {
@@ -318,7 +318,7 @@ func Test_Dump_Any(t *testing.T) {
 		have := New().Any(val)
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/struct_nested.txt")
+		want := goldy.Text(t, "testdata/struct_nested.txt")
 		affirm.Equal(t, want, have)
 	})
 
@@ -351,7 +351,7 @@ func Test_Dump_Any(t *testing.T) {
 		have := dmp.Any(val)
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/struct_nested_with_indent.txt")
+		want := goldy.Text(t, "testdata/struct_nested_with_indent.txt")
 		affirm.Equal(t, want, have)
 	})
 }

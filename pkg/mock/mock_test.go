@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ctx42/testing/internal/tstkit"
 	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/assert"
+	"github.com/ctx42/testing/pkg/goldy"
 	"github.com/ctx42/testing/pkg/tester"
 )
 
@@ -51,7 +51,7 @@ func Test_NewMock(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectError()
-		wMsg := tstkit.Golden(t, "testdata/mock_cleanup_assert_error.txt")
+		wMsg := goldy.Text(t, "testdata/mock_cleanup_assert_error.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -229,7 +229,7 @@ func Test_Mock_On(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/call_unexpected_variadic.txt")
+		wMsg := goldy.Text(t, "testdata/call_unexpected_variadic.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -427,7 +427,7 @@ func Test_Mock_Called(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/call_unexpected.txt")
+		wMsg := goldy.Text(t, "testdata/call_unexpected.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -549,7 +549,7 @@ func Test_Mock_Call(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/mock_too_many_calls.txt")
+		wMsg := goldy.Text(t, "testdata/mock_too_many_calls.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -567,7 +567,7 @@ func Test_Mock_Call(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/call_found_args_dont_match.txt")
+		wMsg := goldy.Text(t, "testdata/call_found_args_dont_match.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -584,7 +584,7 @@ func Test_Mock_Call(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/call_not_found_with_args.txt")
+		wMsg := goldy.Text(t, "testdata/call_not_found_with_args.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -601,7 +601,7 @@ func Test_Mock_Call(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/call_deps_not_met.txt")
+		wMsg := goldy.Text(t, "testdata/call_deps_not_met.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -620,7 +620,7 @@ func Test_Mock_Call(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/call_deps_some_not_met.txt")
+		wMsg := goldy.Text(t, "testdata/call_deps_some_not_met.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -640,7 +640,7 @@ func Test_Mock_Call(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/call_deps_not_met_values.txt")
+		wMsg := goldy.Text(t, "testdata/call_deps_not_met_values.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -960,7 +960,7 @@ func Test_Mock_find(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, err, ErrNotFound)
-		wMsg := tstkit.Golden(t, "testdata/find_fail_arg_count.txt")
+		wMsg := goldy.Text(t, "testdata/find_fail_arg_count.txt")
 		assert.ErrorEqual(t, wMsg, err)
 		assert.Nil(t, have)
 	})
@@ -981,7 +981,7 @@ func Test_Mock_find(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, err, ErrNotFound)
-		wMsg := tstkit.Golden(t, "testdata/find_call_fail_no_args.txt")
+		wMsg := goldy.Text(t, "testdata/find_call_fail_no_args.txt")
 		assert.ErrorEqual(t, wMsg, err)
 		assert.Nil(t, have)
 	})
@@ -1002,7 +1002,7 @@ func Test_Mock_find(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, err, ErrNotFound)
-		wMsg := tstkit.Golden(t, "testdata/find_call_fail_with_args.txt")
+		wMsg := goldy.Text(t, "testdata/find_call_fail_with_args.txt")
 		assert.ErrorEqual(t, wMsg, err)
 		assert.Nil(t, have)
 	})
@@ -1024,7 +1024,7 @@ func Test_Mock_find(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, err, ErrNotFound)
-		wMsg := tstkit.Golden(t, "testdata/find_call_fail_arg_type.txt")
+		wMsg := goldy.Text(t, "testdata/find_call_fail_arg_type.txt")
 		assert.ErrorEqual(t, wMsg, err)
 		assert.Nil(t, have)
 	})
@@ -1087,7 +1087,7 @@ func Test_Mock_find(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, err, ErrNotFound)
-		wMsg := tstkit.Golden(t, "testdata/find_fail_variadic_arg_count.txt")
+		wMsg := goldy.Text(t, "testdata/find_fail_variadic_arg_count.txt")
 		assert.ErrorEqual(t, wMsg, err)
 		assert.Nil(t, have)
 	})
@@ -1131,7 +1131,7 @@ func Test_Mock_find(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, err, ErrNotFound)
-		wMsg := tstkit.Golden(t, "testdata/find_fail_panicking_matcher.txt")
+		wMsg := goldy.Text(t, "testdata/find_fail_panicking_matcher.txt")
 		assert.ErrorEqual(t, wMsg, err)
 		assert.Nil(t, have)
 	})
@@ -1256,7 +1256,7 @@ func Test_Mock_find(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, err, ErrTooManyCalls)
-		wMsg := tstkit.Golden(t, "testdata/find_fail_too_many_calls.txt")
+		wMsg := goldy.Text(t, "testdata/find_fail_too_many_calls.txt")
 		assert.ErrorEqual(t, wMsg, err)
 		assert.Nil(t, have)
 	})
@@ -1278,7 +1278,7 @@ func Test_Mock_find(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, err, ErrNotFound)
-		wMsg := tstkit.Golden(t, "testdata/find_fail_with_stack.txt")
+		wMsg := goldy.Text(t, "testdata/find_fail_with_stack.txt")
 		assert.ErrorEqual(t, wMsg, err)
 		assert.Nil(t, have)
 	})
@@ -1390,7 +1390,7 @@ func Test_Mock_Unset(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/unset_method_not_found.txt")
+		wMsg := goldy.Text(t, "testdata/unset_method_not_found.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -1451,7 +1451,7 @@ func Test_Mock_AssertExpectations(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/missing_calls_one.txt")
+		wMsg := goldy.Text(t, "testdata/missing_calls_one.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -1475,7 +1475,7 @@ func Test_Mock_AssertExpectations(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/missing_calls_multiple.txt")
+		wMsg := goldy.Text(t, "testdata/missing_calls_multiple.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -1500,7 +1500,7 @@ func Test_Mock_AssertExpectations(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/mock_matcher_panics.txt")
+		wMsg := goldy.Text(t, "testdata/mock_matcher_panics.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -1553,7 +1553,7 @@ func Test_Mock_AssertCallCount(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/assert_call_cnt_too_few.txt")
+		wMsg := goldy.Text(t, "testdata/assert_call_cnt_too_few.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -1575,7 +1575,7 @@ func Test_Mock_AssertCallCount(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
 		tspy.ExpectFail()
-		wMsg := tstkit.Golden(t, "testdata/assert_call_cnt_too_many.txt")
+		wMsg := goldy.Text(t, "testdata/assert_call_cnt_too_many.txt")
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 

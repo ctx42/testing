@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/tstkit"
 	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/goldy"
 )
 
 func Test_dumpStruct(t *testing.T) {
@@ -30,7 +30,7 @@ func Test_dumpStruct(t *testing.T) {
 		have := structDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/struct_simple.txt")
+		want := goldy.Text(t, "testdata/struct_simple.txt")
 		affirm.Equal(t, want, have)
 	})
 
@@ -50,7 +50,7 @@ func Test_dumpStruct(t *testing.T) {
 		have := structDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/struct_simple_flat_compact.txt")
+		want := goldy.Text(t, "testdata/struct_simple_flat_compact.txt")
 		affirm.Equal(t, want, have)
 	})
 
@@ -68,7 +68,7 @@ func Test_dumpStruct(t *testing.T) {
 		have := structDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/struct_multi_level.txt")
+		want := goldy.Text(t, "testdata/struct_multi_level.txt")
 		affirm.Equal(t, want, have)
 	})
 
@@ -86,7 +86,7 @@ func Test_dumpStruct(t *testing.T) {
 		have := structDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/struct_multi_level_indent.txt")
+		want := goldy.Text(t, "testdata/struct_multi_level_indent.txt")
 		affirm.Equal(t, want, have)
 	})
 
@@ -104,7 +104,7 @@ func Test_dumpStruct(t *testing.T) {
 		have := structDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
-		want := tstkit.Golden(t, "testdata/struct_multi_level_flat_compact.txt")
+		want := goldy.Text(t, "testdata/struct_multi_level_flat_compact.txt")
 		affirm.Equal(t, want, have)
 	})
 }
