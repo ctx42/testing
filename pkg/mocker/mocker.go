@@ -110,6 +110,8 @@ func (mck *Mocker) methods(job Job) ([]*Method, error) {
 }
 
 func (mck *Mocker) parseMethodField(job Job, fld *ast.Field) ([]*Method, error) {
+	// TODO(rz): document exactly what the cases are with examples.
+
 	switch v := fld.Type.(type) {
 	case *ast.FuncType:
 		met, err := mck.parseMethod(job, 0, v)

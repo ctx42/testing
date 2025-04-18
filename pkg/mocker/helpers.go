@@ -215,7 +215,8 @@ func fmtCmdError(out string) string {
 	return strings.TrimSpace(out)
 }
 
-// parseImports parses [ast.ImportSpec] instances to [Import] instances.
+// parseImports converts a slice of [ast.ImportSpec] nodes from a source file's
+// AST into a slice of [Import] instances.
 func parseImports(iss []*ast.ImportSpec) []Import {
 	specs := make([]Import, 0, len(iss))
 	for _, is := range iss {
@@ -223,11 +224,12 @@ func parseImports(iss []*ast.ImportSpec) []Import {
 		if err != nil {
 			continue
 		}
-		if is.Name == nil {
-			specs = append(specs, NewImport(spec))
-			continue
+
+		imp := NewImport(spec)
+		if is.Name != nil {
+			imp = imp.SetAlias(is.Name.Name)
 		}
-		specs = append(specs, NewImport(spec).SetAlias(is.Name.Name))
+		specs = append(specs, imp)
 	}
 	return specs
 }
