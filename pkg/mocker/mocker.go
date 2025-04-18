@@ -362,12 +362,3 @@ func (mck *Mocker) parseExpr(job Job, lvl int, e ast.Expr) (Expression, error) {
 	}
 	return Expression{}, ErrAstParse
 }
-
-type Job struct {
-	// TODO(rz): do we need it?
-	// TODO(rz): move to its own file. test it.
-	Action *Action
-	Pkg    *Package
-	File   *ast.File
-	Itf    *ast.InterfaceType
-}

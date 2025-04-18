@@ -215,6 +215,23 @@ func fmtCmdError(out string) string {
 	return strings.TrimSpace(out)
 }
 
+// parseImports parses [ast.ImportSpec] instances to [Import] instances.
+func parseImports(iss []*ast.ImportSpec) []Import {
+	specs := make([]Import, 0, len(iss))
+	for _, is := range iss {
+		spec, err := strconv.Unquote(is.Path.Value)
+		if err != nil {
+			continue
+		}
+		if is.Name == nil {
+			specs = append(specs, NewImport(spec))
+			continue
+		}
+		specs = append(specs, NewImport(spec).SetAlias(is.Name.Name))
+	}
+	return specs
+}
+
 // astMethods returns the interface methods as a slice. If the interface has no
 // methods, it returns an [ErrNoMethods].
 func astMethods(itf *ast.InterfaceType) ([]*ast.Field, error) {

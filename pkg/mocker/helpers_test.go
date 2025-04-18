@@ -4,6 +4,7 @@
 package mocker
 
 import (
+	"go/ast"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -419,6 +420,89 @@ func Test_fmtCmdError(t *testing.T) {
 
 	// --- Then ---
 	assert.Equal(t, "abc def", have)
+}
+
+func Test_parseImports(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		ips  []*ast.ImportSpec
+		want []Import
+	}{
+		{
+			"simple import",
+			[]*ast.ImportSpec{
+				{
+					Path: &ast.BasicLit{Value: `"abc.com/usr/repo"`},
+					Name: nil,
+				},
+			},
+			[]Import{
+				{Alias: "", Name: "repo", Spec: "abc.com/usr/repo"},
+			},
+		},
+		{
+			"import with alias",
+			[]*ast.ImportSpec{
+				{
+					Path: &ast.BasicLit{Value: `"abc.com/usr/repo"`},
+					Name: &ast.Ident{Name: "alias"},
+				},
+			},
+			[]Import{
+				{Alias: "alias", Name: "repo", Spec: "abc.com/usr/repo"},
+			},
+		},
+		{
+			"dot alias",
+			[]*ast.ImportSpec{
+				{
+					Path: &ast.BasicLit{Value: `"abc.com/usr/repo"`},
+					Name: &ast.Ident{Name: "."},
+				},
+			},
+			[]Import{
+				{Alias: ".", Name: "repo", Spec: "abc.com/usr/repo"},
+			},
+		},
+		{
+			"multiple",
+			[]*ast.ImportSpec{
+				{
+					Path: &ast.BasicLit{Value: `"abc.com/usr/repoA"`},
+					Name: nil,
+				},
+				{
+					Path: &ast.BasicLit{Value: `"abc.com/usr/repoB"`},
+					Name: nil,
+				},
+			},
+			[]Import{
+				{Alias: "", Name: "repoA", Spec: "abc.com/usr/repoA"},
+				{Alias: "", Name: "repoB", Spec: "abc.com/usr/repoB"},
+			},
+		},
+		{
+			"invalid",
+			[]*ast.ImportSpec{
+				{
+					Path: &ast.BasicLit{Value: `""abc.com/usr/repo"`},
+					Name: nil,
+				},
+			},
+			[]Import{},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := parseImports(tc.ips)
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
 }
 
 func Test_astMethods(t *testing.T) {
