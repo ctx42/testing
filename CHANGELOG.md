@@ -1,3 +1,38 @@
+## v0.6.0 (Fri, 18 Apr 2025 11:16:17 UTC)
+- Regenerate assert documentation TOC.
+- Link to specific package's README.md file from main README.md.
+- Add skip field, element or key documentation.
+- Regenerate assert documentation TOC.
+- Add ability to set metadata on the notice.Notice instance, update documentation and tests.
+- Move core.Len logic to inside check.Len. Clean up code.
+- Rename core.DidPanic to core.WillPanic.
+- Code style / documentation.
+- Code style / documentation.
+- Simplify the check.WillPanic returns to return two arguments instead of three.
+- Update check.WillPanic documentation.
+- Add link to blog.
+- The notice package must be independent so it was wrong to use ErrAssert as a base error - renamed it to ErrNotice, also Notice.Wrap now just sets base error instead of wrapping it with current base error.
+- The notice.Indent does not indent empty lines and does not trim the input string.
+- Update method documentation.
+- Use a slice to keep instance of Rows (not strings like before) in wanted order.
+- Remove redundant code.
+- Add ability in notice package to force row value to start at the next line, and add more documentation.
+- Implement Notice.Unwrap.
+- Update TOC for notice package.
+- Move joined errors decorator from not exported type / helper in check package to exported notice.Join helper so other packages can use it.
+- Strings shorter than 200 characters will be dumped as Flat. Added new dump.Dumper option WithFlatStrings to control the lengths of "flat strings".
+- Mock package.
+- Update README for mock package.
+- Update README for mock package.
+- Add SPDX (Software Package Data Exchange) identifiers to mock package files.
+- Add core.T and core.Spy helper for testing functions in the internal directory which take *testing.T instances.
+- Remove TODO.
+- Refactor internal packages. Use core.Spy to test functions using *testing.T instance.
+- Update Spy documentation.
+- Add code.Spy.Log method. Code style improvements.
+- Add goldy package.
+- Add a requirement for a conscious decision to skip private fields when comparing nested structures.
+
 ## v0.5.0 (Thu, 03 Apr 2025 14:50:14 UTC)
 - Add internal package diff.
 - Add assert and check package.
