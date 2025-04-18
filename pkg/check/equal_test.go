@@ -494,10 +494,10 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.DeepEqual(t, []string{"TC.TD", "TC.Int"}, trail)
 	})
 
-	t.Run("equal with private field with different values", func(t *testing.T) {
+	t.Run("private fields must be skipped to avoid error", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
-		opts := []Option{WithTrailLog(&trail)}
+		opts := []Option{WithTrailLog(&trail), WithSkipTrail("TIntPrv.v")}
 
 		want := types.NewTIntPrv(42, 1)
 		have := types.NewTIntPrv(42, 2)
@@ -507,13 +507,37 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 		// --- Then ---
 		affirm.Nil(t, err)
-		affirm.DeepEqual(t, []string{"TIntPrv.Int"}, trail)
+		wTrail := []string{"TIntPrv.Int", "TIntPrv.v <skipped>"}
+		affirm.DeepEqual(t, wTrail, trail)
+	})
+
+	t.Run("error private fields must be skipped", func(t *testing.T) {
+		// --- Given ---
+		trail := make([]string, 0)
+		opts := []Option{WithTrailLog(&trail)}
+
+		want := types.NewTIntPrv(42, 1)
+		have := types.NewTIntPrv(42, 1)
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		wMsg := "" +
+			"cannot compare values:\n" +
+			"  trail: TIntPrv.v\n" +
+			"  cause: value cannot be used without panicking\n" +
+			"   hint: use WithSkipTrail or WithSkipUnexported option to skip " +
+			"this field"
+		affirm.Equal(t, wMsg, err.Error())
+		wTrail := []string{"TIntPrv.Int", "TIntPrv.v <skipped>"}
+		affirm.DeepEqual(t, wTrail, trail)
 	})
 
 	t.Run("not equal with private fields", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
-		opts := []Option{WithTrailLog(&trail)}
+		opts := []Option{WithTrailLog(&trail), WithSkipTrail("TIntPrv.v")}
 
 		want := types.NewTIntPrv(42, 1)
 		have := types.NewTIntPrv(44, 2)
@@ -528,7 +552,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 			"   want: 42\n" +
 			"   have: 44"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.DeepEqual(t, []string{"TIntPrv.Int"}, trail)
+		wTrail := []string{"TIntPrv.Int", "TIntPrv.v <skipped>"}
+		affirm.DeepEqual(t, wTrail, trail)
 	})
 
 	t.Run("not equal structs with multiple errors", func(t *testing.T) {
@@ -579,7 +604,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("not equal when have is nil struct pointer", func(t *testing.T) {
+	t.Run("not equal when have is a nil struct pointer", func(t *testing.T) {
 		// --- Given ---
 		want := &types.TA{Str: "abc"}
 		var have *types.TA
@@ -605,7 +630,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 	t.Run("not equal deeply nested", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
-		opts := []Option{WithTrailLog(&trail)}
+		opts := []Option{WithTrailLog(&trail), WithSkipUnexported}
 
 		want := types.TNested{STAp: []*types.TA{{TAp: &types.TA{Int: 42}}}}
 		have := types.TNested{STAp: []*types.TA{{TAp: &types.TA{Int: 44}}}}
@@ -634,6 +659,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 			"TNested.STAp[0].TAp.Dur",
 			"TNested.STAp[0].TAp.Loc",
 			"TNested.STAp[0].TAp.TAp",
+			"TNested.STAp[0].TAp.private <skipped>",
+			"TNested.STAp[0].private <skipped>",
 			"TNested.MStrInt",
 			"TNested.MStrTyp",
 			"TNested.MIntTyp",
@@ -647,6 +674,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		opts := []Option{
 			WithTrailLog(&trail),
 			WithSkipTrail("TNested.STAp[0].TAp.Int"),
+			WithSkipUnexported,
 		}
 
 		want := types.TNested{STAp: []*types.TA{{TAp: &types.TA{Int: 42}}}}
@@ -671,6 +699,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 			"TNested.STAp[0].TAp.Dur",
 			"TNested.STAp[0].TAp.Loc",
 			"TNested.STAp[0].TAp.TAp",
+			"TNested.STAp[0].TAp.private <skipped>",
+			"TNested.STAp[0].private <skipped>",
 			"TNested.MStrInt",
 			"TNested.MStrTyp",
 			"TNested.MIntTyp",

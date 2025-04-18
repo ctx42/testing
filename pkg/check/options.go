@@ -27,18 +27,18 @@ const (
 	DefaultDumpDepth = 6
 )
 
-// Package wide configuration.
+// Package-wide configuration.
 var (
-	// ParseTimeFormat is configurable format for parsing time strings.
+	// ParseTimeFormat is a configurable format for parsing time strings.
 	ParseTimeFormat = DefaultParseTimeFormat
 
-	// RecentDuration is configurable duration when comparing recent dates.
+	// RecentDuration is a configurable duration when comparing recent dates.
 	RecentDuration = DefaultRecentDuration
 
 	// DumpTimeFormat is configurable format for dumping [time.Time] values.
 	DumpTimeFormat = DefaultDumpTimeFormat
 
-	// DumpDepth is configurable depth when dumping values in log messages.
+	// DumpDepth is a configurable depth when dumping values in log messages.
 	DumpDepth = DefaultDumpDepth
 )
 
@@ -50,7 +50,7 @@ type Check func(want, have any, opts ...Option) error
 // Option represents [Check] option.
 type Option func(Options) Options
 
-// WithTrail is [Check] option setting initial field/element/key breadcrumb
+// WithTrail is a [Check] option setting initial field/element/key breadcrumb
 // trail.
 func WithTrail(pth string) Option {
 	return func(ops Options) Options {
@@ -59,7 +59,7 @@ func WithTrail(pth string) Option {
 	}
 }
 
-// WithTrailLog is [Check] option turning on collection of checked
+// WithTrailLog is a [Check] option turning on a collection of checked
 // fields/elements/keys. The trails are added to the provided slice.
 func WithTrailLog(list *[]string) Option {
 	return func(ops Options) Options {
@@ -68,7 +68,7 @@ func WithTrailLog(list *[]string) Option {
 	}
 }
 
-// WithTimeFormat is [Check] option setting time format when parsing dates.
+// WithTimeFormat is a [Check] option setting time format when parsing dates.
 func WithTimeFormat(format string) Option {
 	return func(ops Options) Options {
 		ops.TimeFormat = format
@@ -76,7 +76,7 @@ func WithTimeFormat(format string) Option {
 	}
 }
 
-// WithRecent is [Check] option setting duration used to compare recent dates.
+// WithRecent is a [Check] option setting duration used to compare recent dates.
 func WithRecent(recent time.Duration) Option {
 	return func(ops Options) Options {
 		ops.Recent = recent
@@ -94,7 +94,7 @@ func WithDumper(optsD ...dump.Option) Option {
 	}
 }
 
-// WithTypeChecker is [Check] option setting custom checker for a type.
+// WithTypeChecker is a [Check] option setting custom checker for a type.
 func WithTypeChecker(typ any, chk Check) Option {
 	return func(ops Options) Options {
 		if ops.TypeCheckers == nil {
@@ -105,7 +105,8 @@ func WithTypeChecker(typ any, chk Check) Option {
 	}
 }
 
-// WithTrailChecker is [Check] option setting custom checker for a given trail.
+// WithTrailChecker is a [Check] option setting a custom checker for a given
+// trail.
 func WithTrailChecker(trail string, chk Check) Option {
 	return func(ops Options) Options {
 		if ops.TrailCheckers == nil {
@@ -116,7 +117,7 @@ func WithTrailChecker(trail string, chk Check) Option {
 	}
 }
 
-// WithSkipTrail is [Check] option setting trails to skip.
+// WithSkipTrail is a [Check] option setting trails to skip.
 func WithSkipTrail(skip ...string) Option {
 	return func(ops Options) Options {
 		ops.SkipTrails = append(ops.SkipTrails, skip...)
@@ -124,7 +125,14 @@ func WithSkipTrail(skip ...string) Option {
 	}
 }
 
-// WithOptions is [Check] option which passes all options.
+// WithSkipUnexported is a [Check] option instructing equality checks to skip
+// exported fields.
+func WithSkipUnexported(ops Options) Options {
+	ops.SkipUnexported = true
+	return ops
+}
+
+// WithOptions is a [Check] option which passes all options.
 func WithOptions(src Options) Option {
 	return func(ops Options) Options {
 		ops.Dumper = src.Dumper
@@ -135,12 +143,13 @@ func WithOptions(src Options) Option {
 		ops.TypeCheckers = src.TypeCheckers
 		ops.TrailCheckers = src.TrailCheckers
 		ops.SkipTrails = src.SkipTrails
+		ops.SkipUnexported = src.SkipUnexported
 		ops.now = src.now
 		return ops
 	}
 }
 
-// Options represents options used by [Check] functions.
+// Options represent options used by [Check] functions.
 type Options struct {
 	// Dump configuration.
 	Dumper dump.Dump
@@ -158,7 +167,7 @@ type Options struct {
 	// The skipped trails have " <skipped>" suffix.
 	TrailLog *[]string
 
-	// Custom checks to run for given type.
+	// Custom checks to run for a given type.
 	TypeCheckers map[reflect.Type]Check
 
 	// Custom checker for given trail.
@@ -167,7 +176,10 @@ type Options struct {
 	// List of trails to skip.
 	SkipTrails []string
 
-	// Function used to get current time. Used preliminary to inject clock in
+	// Skips all unexported fields during equality checks.
+	SkipUnexported bool
+
+	// Function used to get current time. Used preliminary to inject a clock in
 	// tests of checks and assertions using [time.Now].
 	now func() time.Time
 }
@@ -186,7 +198,7 @@ func DefaultOptions(opts ...Option) Options {
 	return ops.set(opts)
 }
 
-// set sets [Options] from slice of [Option] functions.
+// set sets [Options] from a slice of [Option] functions.
 func (ops Options) set(opts []Option) Options {
 	dst := ops
 	for _, opt := range opts {
@@ -204,7 +216,7 @@ func (ops Options) logTrail() Options {
 }
 
 // structTrail updates [Options.Trail] with struct type and/or field name
-// considering already existing trail.
+// considering an already existing trail.
 //
 // Example trails:
 //

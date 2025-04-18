@@ -240,7 +240,7 @@ func (mck *Mock) Call(method string, args ...any) Arguments {
 		mck.t.Fatal(err)
 	}
 
-	mck.calls = append(mck.calls, cStack{method: method, stack: cs})
+	mck.calls = append(mck.calls, cStack{Method: method, Stack: cs})
 	return call.call(args...)
 }
 
@@ -273,7 +273,7 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 
 	// Find a method (including proxies) with matching arguments.
 	for _, call := range mck.expected {
-		if call.method != method {
+		if call.Method != method {
 			continue
 		}
 		err = call.CanCall()
@@ -289,7 +289,7 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 
 	// Find a proxy method which was added without need for matching arguments.
 	for _, call := range mck.expected {
-		if call.method != method {
+		if call.Method != method {
 			continue
 		}
 		if call.proxy.IsValid() && len(call.args) == 0 {
@@ -308,7 +308,7 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 	// Try to find method that is most similar to the one we are processing.
 	if closest, diff := mck.closest(method, args...); closest != nil {
 		// Similar method found.
-		desc := formatMethod(closest.method, closest.args, closest.returns)
+		desc := formatMethod(closest.Method, closest.args, closest.returns)
 		msg = notice.New(hUnexpectedCall).
 			Append("closest", "%s", desc).
 			Append("argument match", "\n%s", strings.Join(diff, "\n")).
@@ -335,7 +335,7 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 func (mck *Mock) closest(method string, args ...any) (*Call, []string) {
 	var best candidate
 	for _, call := range mck.expected {
-		if call.method != method {
+		if call.Method != method {
 			continue
 		}
 		diff, cnt := call.args.Diff(args)
@@ -383,7 +383,7 @@ func (mck *Mock) Unset(remove *Call) *Mock {
 	mck.expected = expected
 
 	if !found {
-		method := formatMethod(remove.method, remove.args, nil)
+		method := formatMethod(remove.Method, remove.args, nil)
 		msg := notice.New("[mock] unsetting non-existing method").
 			Append("method", "%s", method).
 			Wrap(ErrNotFound)
@@ -418,7 +418,7 @@ func (mck *Mock) AssertExpectations() bool {
 			hCls = "call"
 		}
 
-		name := formatMethod(call.method, call.args, call.returns)
+		name := formatMethod(call.Method, call.args, call.returns)
 		names = append(names, name)
 
 		format := "expected %d %s received %d %s"
@@ -446,7 +446,7 @@ func (mck *Mock) AssertCallCount(method string, want int) bool {
 	mck.t.Helper()
 	var have int
 	for _, call := range mck.calls {
-		if call.method == method {
+		if call.Method == method {
 			have++
 		}
 	}

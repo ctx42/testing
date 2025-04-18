@@ -271,6 +271,39 @@ func ExampleEqual_skipTrails() {
 	// T.Next.Next.Next.Next
 }
 
+func ExampleEqual_skipAllUnexportedFields() {
+	type T struct {
+		Int  int
+		prv  int
+		Next *T
+	}
+
+	have := T{1, -1, &T{2, -2, &T{3, -3, &T{42, -4, nil}}}}
+	want := T{1, -7, &T{2, -7, &T{3, -7, &T{42, -7, nil}}}}
+	trails := make([]string, 0)
+
+	err := check.Equal(
+		want,
+		have,
+		check.WithTrailLog(&trails),
+		check.WithSkipUnexported,
+	)
+
+	fmt.Println(err)
+	fmt.Println(strings.Join(trails, "\n"))
+	// Output:
+	// <nil>
+	// T.Int
+	// T.prv <skipped>
+	// T.Next.Int
+	// T.Next.prv <skipped>
+	// T.Next.Next.Int
+	// T.Next.Next.prv <skipped>
+	// T.Next.Next.Next.Int
+	// T.Next.Next.Next.prv <skipped>
+	// T.Next.Next.Next.Next
+}
+
 func ExampleJSON() {
 	want := `{"A": 1, "B": 2}`
 	have := `{"A": 1, "B": 3}`

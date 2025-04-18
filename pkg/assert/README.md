@@ -10,6 +10,7 @@
   * [Advanced usage](#advanced-usage)
     * [Custom Checkers](#custom-checkers)
     * [Skipping Fields, Elements, or Indexes](#skipping-fields-elements-or-indexes)
+    * [Skipping unexported fields](#skipping-unexported-fields)
 <!-- TOC -->
 
 # The `assert` package
@@ -270,3 +271,45 @@ fmt.Println(strings.Join(trails, "\n"))
 Notice that the requested trail was skipped from assertion even though the
 values were not equal `3 != 8`. The skipped paths are always marked with 
 ` <skipped>` tag.
+
+### Skipping unexported fields
+
+The `assert.Equal` will fail the test if the compared values (structs) have
+unexported fields. This happens by design to make sure the equality check 
+doesn't silently ignore unexported fields. In cases like this the testing 
+module requires from a developer either explicitly specify fields to skip 
+during comparison or enable a mode that ignores all unexported fields, as 
+supported by the testing framework.
+
+```go
+type T struct {
+    Int  int
+    prv  int
+    Next *T
+}
+
+have := T{1, -1, &T{2, -2, &T{3, -3, &T{42, -4, nil}}}}
+want := T{1, -7, &T{2, -7, &T{3, -7, &T{42, -7, nil}}}}
+trails := make([]string, 0)
+
+err := check.Equal(
+    want,
+    have,
+    check.WithTrailLog(&trails),
+    check.WithSkipUnexported,
+)
+
+fmt.Println(err)
+fmt.Println(strings.Join(trails, "\n"))
+// Output:
+// <nil>
+// T.Int
+// T.prv <skipped>
+// T.Next.Int
+// T.Next.prv <skipped>
+// T.Next.Next.Int
+// T.Next.Next.prv <skipped>
+// T.Next.Next.Next.Int
+// T.Next.Next.Next.prv <skipped>
+// T.Next.Next.Next.Next
+```

@@ -19,9 +19,9 @@ func Test_newCall(t *testing.T) {
 	call := newCall("Method", "arg0", "arg1")
 
 	// --- Then ---
-	assert.Nil(t, call.stack)
+	assert.Nil(t, call.Stack)
 	assert.Nil(t, call.parent)
-	assert.Equal(t, "Method", call.method)
+	assert.Equal(t, "Method", call.Method)
 	assert.Equal(t, Arguments{"arg0", "arg1"}, call.args)
 	assert.False(t, call.argsAny)
 	assert.Len(t, 0, call.returns)
@@ -46,9 +46,9 @@ func Test_newProxy(t *testing.T) {
 		call := newProxy(met)
 
 		// --- Then ---
-		assert.Nil(t, call.stack)
+		assert.Nil(t, call.Stack)
 		assert.Nil(t, call.parent)
-		assert.Equal(t, "AAA", call.method)
+		assert.Equal(t, "AAA", call.Method)
 		assert.Nil(t, call.args)
 		assert.False(t, call.argsAny)
 		assert.Len(t, 0, call.returns)
@@ -60,7 +60,7 @@ func Test_newProxy(t *testing.T) {
 		assert.Nil(t, call.alter)
 		assert.Nil(t, call.panic)
 		assert.Nil(t, call.requires)
-		assert.Equal(t, met, call.proxy)
+		assert.Same(t, ptr.AAA, call.proxy.Interface())
 	})
 
 	t.Run("variadic", func(t *testing.T) {
@@ -72,9 +72,9 @@ func Test_newProxy(t *testing.T) {
 		call := newProxy(met)
 
 		// --- Then ---
-		assert.Nil(t, call.stack)
+		assert.Nil(t, call.Stack)
 		assert.Nil(t, call.parent)
-		assert.Equal(t, "Variadic", call.method)
+		assert.Equal(t, "Variadic", call.Method)
 		assert.Nil(t, call.args)
 		assert.False(t, call.argsAny)
 		assert.Len(t, 0, call.returns)
@@ -86,7 +86,7 @@ func Test_newProxy(t *testing.T) {
 		assert.Nil(t, call.alter)
 		assert.Nil(t, call.panic)
 		assert.Nil(t, call.requires)
-		assert.Equal(t, met, call.proxy)
+		assert.Same(t, ptr.Variadic, call.proxy.Interface())
 	})
 
 	t.Run("custom name", func(t *testing.T) {
@@ -98,7 +98,7 @@ func Test_newProxy(t *testing.T) {
 		call := newProxy(met, "MyName")
 
 		// --- Then ---
-		assert.Equal(t, "MyName", call.method)
+		assert.Equal(t, "MyName", call.Method)
 	})
 }
 
@@ -125,7 +125,7 @@ func Test_Call_withStack(t *testing.T) {
 
 	// --- Then ---
 	assert.Same(t, call, have)
-	assert.Equal(t, []string{"a", "b"}, call.stack)
+	assert.Equal(t, []string{"a", "b"}, call.Stack)
 }
 
 func Test_Call_With(t *testing.T) {
@@ -370,8 +370,9 @@ func Test_Call_Requires(t *testing.T) {
 
 		// --- Then ---
 		assert.Same(t, call00, have)
-		want := []*Call{call10, call11}
-		assert.Equal(t, want, have.requires)
+		assert.Len(t, 2, have.requires)
+		assert.Same(t, call10, have.requires[0])
+		assert.Same(t, call11, have.requires[1])
 	})
 
 	t.Run("panics when nil is one of the arguments", func(t *testing.T) {
@@ -500,7 +501,7 @@ func Test_Call_satisfied(t *testing.T) {
 	t.Run("not satisfied when method never called", func(t *testing.T) {
 		// --- Given ---
 		call := &Call{
-			cStack:    cStack{method: "Method"},
+			cStack:    cStack{Method: "Method"},
 			wantCalls: 0,
 			optional:  false,
 			args:      []any{1},
@@ -518,7 +519,7 @@ func Test_Call_satisfied(t *testing.T) {
 	t.Run("not satisfied when method called too few times", func(t *testing.T) {
 		// --- Given ---
 		call := &Call{
-			cStack:    cStack{method: "Method"},
+			cStack:    cStack{Method: "Method"},
 			wantCalls: 2,
 			optional:  false,
 			args:      []any{1},
@@ -536,7 +537,7 @@ func Test_Call_satisfied(t *testing.T) {
 	t.Run("not satisfied when method called too many times", func(t *testing.T) {
 		// --- Given ---
 		call := &Call{
-			cStack:    cStack{method: "Method"},
+			cStack:    cStack{Method: "Method"},
 			wantCalls: 2,
 			optional:  false,
 			args:      []any{1},

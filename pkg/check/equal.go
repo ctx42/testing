@@ -64,6 +64,21 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 		return equalError(wItf, hItf, WithOptions(ops))
 	}
 
+	if !wVal.CanInterface() {
+		trail := ops.Trail
+		ops.Trail += " <skipped>"
+		ops.logTrail()
+		ops.Trail = trail
+		if ops.SkipUnexported {
+			return nil
+		}
+		return notice.New("cannot compare values").
+			Trail(ops.Trail).
+			Append("cause", "%s", "value cannot be used without panicking").
+			Append("hint", "%s", "use WithSkipTrail or WithSkipUnexported "+
+				"option to skip this field")
+	}
+
 	wType := wVal.Type()
 	hType := hVal.Type()
 	if wType != hType {
@@ -126,7 +141,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 		for i := 0; i < wVal.NumField(); i++ {
 			wfVal := wVal.Field(i)
 			hfVal := hVal.Field(i)
-			if !(wfVal.IsValid() && wfVal.CanInterface()) {
+			if !wfVal.IsValid() {
 				continue
 			}
 			wSF := wVal.Type().Field(i)

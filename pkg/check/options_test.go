@@ -109,12 +109,25 @@ func Test_WithSkipTrail(t *testing.T) {
 	affirm.DeepEqual(t, []string{"type.field1", "type.field2"}, have.SkipTrails)
 }
 
+func Test_WithSkipUnexported(t *testing.T) {
+	// --- Given ---
+	ops := Options{}
+
+	// --- When ---
+	have := WithSkipUnexported(ops)
+
+	// --- Then ---
+	affirm.Equal(t, false, ops.SkipUnexported)
+	affirm.Equal(t, true, have.SkipUnexported)
+}
+
 func Test_WithOptions(t *testing.T) {
 	// --- Given ---
 	trailLog := make([]string, 0)
 	ops := Options{
 		Dumper: dump.Dump{
 			Flat:           true,
+			FlatStings:     100,
 			Compact:        true,
 			TimeFormat:     time.Kitchen,
 			DurationFormat: "DurAsString",
@@ -125,14 +138,18 @@ func Test_WithOptions(t *testing.T) {
 				reflect.TypeOf(123): dump.Dumper(nil),
 			},
 			MaxDepth: 6,
+			Indent:   2,
+			TabWidth: 4,
 		},
-		TimeFormat:    time.RFC3339,
-		Recent:        123,
-		Trail:         "trail",
-		TrailLog:      &trailLog,
-		TypeCheckers:  make(map[reflect.Type]Check),
-		TrailCheckers: make(map[string]Check),
-		now:           time.Now,
+		TimeFormat:     time.RFC3339,
+		Recent:         123,
+		Trail:          "trail",
+		TrailLog:       &trailLog,
+		TypeCheckers:   make(map[reflect.Type]Check),
+		TrailCheckers:  make(map[string]Check),
+		SkipTrails:     make([]string, 0),
+		SkipUnexported: true,
+		now:            time.Now,
 	}
 
 	// --- When ---
@@ -143,11 +160,16 @@ func Test_WithOptions(t *testing.T) {
 	affirm.Equal(t, true, core.Same(ops.TrailLog, have.TrailLog))
 	affirm.Equal(t, true, core.Same(ops.TypeCheckers, have.TypeCheckers))
 	affirm.Equal(t, true, core.Same(ops.TrailCheckers, have.TrailCheckers))
+	affirm.Equal(t, true, core.Same(ops.SkipTrails, have.SkipTrails))
 	affirm.Equal(t, true, core.Same(ops.now, have.now))
 
 	ops.now = nil
 	have.now = nil
 	affirm.Equal(t, true, reflect.DeepEqual(ops, have))
+
+	// When those fail, add fields above.
+	affirm.Equal(t, 12, reflect.ValueOf(have.Dumper).NumField())
+	affirm.Equal(t, 10, reflect.ValueOf(have).NumField())
 }
 
 func Test_DefaultOptions(t *testing.T) {
@@ -166,8 +188,9 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, true, have.TypeCheckers == nil)
 		affirm.Equal(t, true, have.TrailCheckers == nil)
 		affirm.Equal(t, true, have.SkipTrails == nil)
+		affirm.Equal(t, false, have.SkipUnexported)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 9, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 10, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("with options", func(t *testing.T) {
@@ -185,8 +208,9 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, true, have.TypeCheckers == nil)
 		affirm.Equal(t, true, have.TrailCheckers == nil)
 		affirm.Equal(t, true, have.SkipTrails == nil)
+		affirm.Equal(t, false, have.SkipUnexported)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 9, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 10, reflect.ValueOf(have).NumField())
 	})
 }
 

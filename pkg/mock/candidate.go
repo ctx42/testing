@@ -21,7 +21,7 @@ func (can candidate) betterThan(other candidate) bool {
 	if other.call == nil {
 		return true
 	}
-	if this.method != other.call.method {
+	if this.Method != other.call.Method {
 		return true
 	}
 	if can.diffCnt > other.diffCnt {

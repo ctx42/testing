@@ -128,7 +128,7 @@ type Dump struct {
 
 	// Controls how [time.Time] is formated.
 	//
-	// Aside form Go time formating layouts following custom formats are
+	// Aside from Go time formating layouts, the following custom formats are
 	// available:
 	//
 	//  - [TimeAsUnix] - Unix timestamp,

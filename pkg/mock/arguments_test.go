@@ -476,7 +476,7 @@ func Test_Arguments_Error(t *testing.T) {
 		have := args.Error(3)
 
 		// --- Then ---
-		assert.Equal(t, err, have)
+		assert.Same(t, err, have)
 	})
 
 	t.Run("nil error", func(t *testing.T) {

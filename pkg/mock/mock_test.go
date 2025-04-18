@@ -152,12 +152,12 @@ func Test_Mock_On(t *testing.T) {
 		assert.Len(t, 1, mck.expected)
 		assert.Same(t, mck.expected[0], call0)
 		assert.Same(t, mck, call0.parent)
-		assert.Equal(t, "Zero", call0.method)
+		assert.Equal(t, "Zero", call0.Method)
 		assert.Equal(t, Arguments{"str", 42, true}, call0.args)
 		assert.False(t, call0.argsAny)
 		assert.Len(t, 0, call0.returns)
-		assert.Len(t, 3, call0.cStack.stack)
-		assert.Contain(t, "mock_test.go", call0.cStack.stack[2])
+		assert.Len(t, 3, call0.cStack.Stack)
+		assert.Contain(t, "mock_test.go", call0.cStack.Stack[2])
 		assert.Equal(t, 0, call0.wantCalls)
 		assert.Equal(t, 0, call0.haveCalls)
 		assert.False(t, call0.optional)
@@ -202,9 +202,9 @@ func Test_Mock_On(t *testing.T) {
 		// --- Then ---
 		assert.Len(t, 2, mck.expected)
 		assert.Same(t, mck.expected[1], call)
-		assert.Equal(t, "Zero", mck.expected[0].method)
+		assert.Equal(t, "Zero", mck.expected[0].Method)
 		assert.Equal(t, Arguments{"zero"}, mck.expected[0].returns)
-		assert.Equal(t, "One", mck.expected[1].method)
+		assert.Equal(t, "One", mck.expected[1].Method)
 		assert.Equal(t, Arguments{"one"}, mck.expected[1].returns)
 	})
 
@@ -239,7 +239,8 @@ func Test_Mock_On(t *testing.T) {
 		call := mck.On("MethodIntVar", 1, 2, 3).Return(nil)
 
 		// --- Then ---
-		assert.Equal(t, []*Call{call}, mck.expected)
+		assert.Len(t, 1, mck.expected)
+		assert.Same(t, call, mck.expected[0])
 		assert.Len(t, 3, call.args)
 		assert.Equal(t, Arguments{1, 2, 3}, call.args)
 
@@ -266,12 +267,12 @@ func Test_Mock_OnAny(t *testing.T) {
 		assert.Len(t, 1, mck.expected)
 		assert.Same(t, mck.expected[0], call0)
 		assert.Same(t, mck, call0.parent)
-		assert.Equal(t, "Zero", call0.method)
+		assert.Equal(t, "Zero", call0.Method)
 		assert.Empty(t, call0.args)
 		assert.True(t, call0.argsAny)
 		assert.Len(t, 0, call0.returns)
-		assert.Len(t, 3, call0.cStack.stack)
-		assert.Contain(t, "mock_test.go", call0.cStack.stack[2])
+		assert.Len(t, 3, call0.cStack.Stack)
+		assert.Contain(t, "mock_test.go", call0.cStack.Stack[2])
 		assert.Equal(t, 0, call0.wantCalls)
 		assert.Equal(t, 0, call0.haveCalls)
 		assert.False(t, call0.optional)
@@ -299,9 +300,9 @@ func Test_Mock_OnAny(t *testing.T) {
 		// --- Then ---
 		assert.Len(t, 2, mck.expected)
 		assert.Same(t, mck.expected[1], call)
-		assert.Equal(t, "Zero", mck.expected[0].method)
+		assert.Equal(t, "Zero", mck.expected[0].Method)
 		assert.Equal(t, Arguments{"zero"}, mck.expected[0].returns)
-		assert.Equal(t, "One", mck.expected[1].method)
+		assert.Equal(t, "One", mck.expected[1].Method)
 		assert.Equal(t, Arguments{"one"}, mck.expected[1].returns)
 	})
 
@@ -317,7 +318,8 @@ func Test_Mock_OnAny(t *testing.T) {
 		call := mck.OnAny("MethodIntVar").Return(nil)
 
 		// --- Then ---
-		assert.Equal(t, []*Call{call}, mck.expected)
+		assert.Len(t, 1, mck.expected)
+		assert.Same(t, call, mck.expected[0])
 		assert.Len(t, 0, call.args)
 
 		assert.NoPanic(t, func() { _ = mck.MethodIntVar(1, 2, 3) })
@@ -343,7 +345,7 @@ func Test_Mock_Proxy(t *testing.T) {
 		// --- Then ---
 		assert.Same(t, mck, call.parent)
 		assert.Nil(t, call.args)
-		assert.Equal(t, "AAA", call.method)
+		assert.Equal(t, "AAA", call.Method)
 	})
 
 	t.Run("with custom name", func(t *testing.T) {
@@ -363,7 +365,7 @@ func Test_Mock_Proxy(t *testing.T) {
 		// --- Then ---
 		assert.Same(t, mck, call.parent)
 		assert.Nil(t, call.args)
-		assert.Equal(t, "MyName", call.method)
+		assert.Equal(t, "MyName", call.Method)
 	})
 
 	t.Run("panics if not method", func(t *testing.T) {
@@ -417,9 +419,9 @@ func Test_Mock_Called(t *testing.T) {
 		assert.Equal(t, 4, got)
 
 		assert.Len(t, 1, mck.calls)
-		assert.Equal(t, "MethodInts", mck.calls[0].method)
-		assert.Len(t, 5, mck.calls[0].stack)
-		assert.Contain(t, "mock_test.go", mck.calls[0].stack[4])
+		assert.Equal(t, "MethodInts", mck.calls[0].Method)
+		assert.Len(t, 5, mck.calls[0].Stack)
+		assert.Contain(t, "mock_test.go", mck.calls[0].Stack[4])
 	})
 
 	t.Run("calling unexpected method", func(t *testing.T) {

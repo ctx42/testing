@@ -16,10 +16,10 @@ import (
 // stack represents a method call stack.
 type cStack struct {
 	// The name of the method that was or will be called.
-	method string
+	Method string
 
-	// The call stack of the method. What kind of stack it is context dependent.
-	stack []string
+	// The call stack of the method. What kind of stack it is context-dependent.
+	Stack []string
 }
 
 // Call represents a mocked method call, used for defining expectations.
@@ -34,8 +34,8 @@ type Call struct {
 	// Expected method arguments.
 	args Arguments
 
-	// Lets method be called with any number of arguments as long as the method
-	// can be called - [Call.CanCall] returns true.
+	// Lets a method be called with any number of arguments as long as the
+	// method can be called - [Call.CanCall] returns true.
 	argsAny bool
 
 	// Arguments to return when this method is called.
@@ -52,10 +52,10 @@ type Call struct {
 	optional bool
 
 	// Will block returning from [Mock.Call] until it either
-	// receives a message or is closed. If nil it returns immediately.
+	// receives a message or is closed. If nil, it returns immediately.
 	until <-chan time.Time
 
-	// Set this to non-zero value to block returning from [Mock.Call]
+	// Set this to a non-zero value to block returning from [Mock.Call]
 	// for a given period of time.
 	after time.Duration
 
@@ -63,12 +63,12 @@ type Call struct {
 	// functions are called on the arguments right before returning.
 	alter []func(Arguments)
 
-	// If it's set to a non-nil value the [Call] will panic with the given
+	// If it's set to a non-nil value, the [Call] will panic with the given
 	// value just before returning.
 	panic any
 
 	// Calls which must be satisfied before this one. Satisfied calls are the
-	// ones which return true from [Call.Satisfied] method.
+	// ones that return true from the [Call.Satisfied] method.
 	requires []*Call
 
 	// The actual method to call.
@@ -82,7 +82,7 @@ type Call struct {
 // expected arguments.
 func newCall(method string, args ...any) *Call {
 	return &Call{
-		cStack: cStack{method: method},
+		cStack: cStack{Method: method},
 		args:   args,
 	}
 }
@@ -111,7 +111,7 @@ func (c *Call) withParent(parent *Mock) *Call {
 
 // withStack sets the stack trace where the call requirement was defined.
 func (c *Call) withStack(stack []string) *Call {
-	c.stack = stack
+	c.Stack = stack
 	return c
 }
 
@@ -168,7 +168,7 @@ func (c *Call) Panic(value any) *Call {
 //	Mock.On("Method", arg1, arg2).Return(returnArg1, returnArg2).Once()
 func (c *Call) Once() *Call { return c.Times(1) }
 
-// Times specifies that the mocked method should only be called i times with
+// Times specify that the mocked method should only be called i times with
 // this set of arguments and return values.
 //
 //	Mock.On("Method", arg1, arg2).Return(returnArg1, returnArg2).Times(5)
@@ -215,7 +215,7 @@ func (c *Call) After(d time.Duration) *Call {
 //		    arg["foo"] = "bar"
 //		})
 //
-// If [Call.After] or [Call.Until] methods are used the provided function is
+// If [Call.After] or [Call.Until] methods are used, the provided function is
 // run after the blocking is done.
 func (c *Call) Alter(fn ...func(Arguments)) *Call {
 	c.alter = append(c.alter, fn...)
@@ -225,7 +225,7 @@ func (c *Call) Alter(fn ...func(Arguments)) *Call {
 // Optional allows the method call to be optional, meaning that the method
 // may or may not be invoked without causing test failures. This can be
 // useful for scenarios where some method calls are not strictly required.
-// Invoking method after [Call.Times] will cause a panic as the two are
+// Invoking the method after [Call.Times] will cause a panic as the two are
 // mutually exclusive.
 //
 // Example usage:
@@ -258,7 +258,7 @@ func (c *Call) Requires(calls ...*Call) *Call {
 	return c
 }
 
-// CanCall provided the arguments match returns nil if the method can be called
+// CanCall provided the argument match returns nil if the method can be called
 // again, otherwise it returns error explaining why method cannot be called.
 func (c *Call) CanCall() error {
 	err := c.satisfied(c.haveCalls + 1)
@@ -280,7 +280,7 @@ func (c *Call) Satisfied() bool {
 }
 
 // satisfied returns nil if the call requirements are satisfied. It takes
-// haveCalls instead of using instance field value so it can be used to check
+// haveCalls instead of using instance field value, so it can be used to check
 // if it is ok to call it one more time see [Call.CanCall].
 func (c *Call) satisfied(haveCalls int) error {
 	if c.wantCalls == haveCalls && c.wantCalls != 0 {
@@ -292,7 +292,7 @@ func (c *Call) satisfied(haveCalls int) error {
 			if c.optional {
 				return nil // Optional and never called.
 			}
-			method := formatMethod(c.method, c.args, c.returns)
+			method := formatMethod(c.Method, c.args, c.returns)
 			return notice.New(hNeverCalled).
 				Append("method", "%s", method).
 				Append("expected args", "\n%s", formatArgs(c.args)).
@@ -302,7 +302,7 @@ func (c *Call) satisfied(haveCalls int) error {
 	}
 
 	if c.wantCalls < haveCalls {
-		method := formatMethod(c.method, c.args, c.returns)
+		method := formatMethod(c.Method, c.args, c.returns)
 		msg := notice.New(hTooManyCalls).
 			Append("method", "%s", method)
 		if len(c.args) > 0 {
@@ -317,7 +317,7 @@ func (c *Call) satisfied(haveCalls int) error {
 		return nil // Can be called up to wantCalls times.
 	}
 
-	method := formatMethod(c.method, c.args, c.returns)
+	method := formatMethod(c.Method, c.args, c.returns)
 	return notice.New(hTooFewCalls).
 		Append("method", "%s", method).
 		Append("expected args", "\n%s", formatArgs(c.args)).
@@ -341,8 +341,8 @@ func (c *Call) checkReq(cs []string) error {
 			parent = "a different mock"
 		}
 
-		method := formatMethod(c.method, c.args, c.returns)
-		requires := formatMethod(req.method, req.args, req.returns)
+		method := formatMethod(c.Method, c.args, c.returns)
+		requires := formatMethod(req.Method, req.args, req.returns)
 
 		msg := notice.New(hUnexpectedCall).Append("method", "%s", method)
 		if len(c.args) > 0 {
@@ -415,5 +415,5 @@ func (c *Call) satisfy() *Call {
 	return c
 }
 
-// End ends chain of calls on the [Call] instance and returns parent [Mock].
+// End ends a chain of calls on the [Call] instance and returns parent [Mock].
 func (c *Call) End() *Mock { return c.parent }
