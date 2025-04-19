@@ -50,11 +50,11 @@ func (mck *Mocker) Run(act *Action) error {
 		return err
 	}
 
-	astFil, astItf := pkg.find(act.SrcName)
+	astFil, astItf := pkg.findItf(act.SrcName)
 	if astFil == nil || astItf == nil {
 		return ErrItfNotFound
 	}
-	job := Job{Action: act, Pkg: pkg, File: astFil, Itf: astItf}
+	job := Job{Action: act, SrcPkg: pkg, SrcFile: astFil, Itf: astItf}
 	if err = mck.parse(job); err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func (mck *Mocker) parseMethodField(job Job, fld *ast.Field) ([]*Method, error) 
 
 	case *ast.Ident:
 		if v.Obj != nil {
-			fil, itf := job.Pkg.find(v.Obj.Name)
+			fil, itf := job.SrcPkg.findItf(v.Obj.Name)
 			if fil == nil || itf == nil {
 				return nil, ErrItfNotFound
 			}
@@ -220,10 +220,10 @@ func (mck *Mocker) parseExpr(job Job, lvl int, e ast.Expr) (Expression, error) {
 
 			// TODO(rz):
 			if v.Obj.Kind == ast.Typ &&
-				job.Pkg.imp.Spec != job.Action.Dst.Spec {
+				job.SrcPkg.imp.Spec != job.Action.Dst.Spec {
 
 				// TODO(rz): why do we set empty alias?
-				imp := job.Pkg.imp.SetAlias("")
+				imp := job.SrcPkg.imp.SetAlias("")
 				exp := Expression{}
 				exp.value = imp.Name + "." + v.Name
 				exp.imports = append(exp.imports, imp)
@@ -234,18 +234,18 @@ func (mck *Mocker) parseExpr(job Job, lvl int, e ast.Expr) (Expression, error) {
 			return exp, nil
 		}
 
-		// TODO(rz):
 		// Local type from different file.
-		// if imp, err := mck.findLocalType(v.Name); err == nil {
-		// 	exp := Expression{}
-		// 	if mck.srcPkg.spec != mck.dstImport.spec {
-		// 		exp.value = imp.name + "." + v.Name
-		// 		exp.imports = append(exp.imports, imp)
-		// 	} else {
-		// 		exp.value = v.Name
-		// 	}
-		// 	return exp, nil
-		// }
+		if job.SrcPkg.hasType(v.Name) {
+			exp := Expression{}
+			imp := job.SrcPkg.imp.SetAlias("")
+			if imp.Spec != job.Action.Dst.Spec {
+				exp.value = imp.Name + "." + v.Name
+				exp.imports = append(exp.imports, imp)
+			} else {
+				exp.value = v.Name
+			}
+			return exp, nil
+		}
 
 		// If parameter type is not builtin or local type
 		// it must have been imported by the dot-import.

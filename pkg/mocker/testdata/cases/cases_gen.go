@@ -7,12 +7,12 @@ import (
 	"io/fs"
 	mt "time"
 
-	"github.com/ctx42/testing/internal/mocker/testdata/pkga"
-	"github.com/ctx42/testing/internal/mocker/testdata/pkgb"
-	"github.com/ctx42/testing/internal/mocker/testdata/pkgc"
-	"github.com/ctx42/testing/internal/mocker/testdata/pkgd"
-	"github.com/ctx42/testing/internal/mocker/testdata/pkge"
 	"github.com/ctx42/testing/pkg/mock"
+	"github.com/ctx42/testing/pkg/mocker/testdata/pkga"
+	"github.com/ctx42/testing/pkg/mocker/testdata/pkgb"
+	"github.com/ctx42/testing/pkg/mocker/testdata/pkgc"
+	"github.com/ctx42/testing/pkg/mocker/testdata/pkgd"
+	"github.com/ctx42/testing/pkg/mocker/testdata/pkge"
 	"github.com/ctx42/testing/pkg/tester"
 )
 

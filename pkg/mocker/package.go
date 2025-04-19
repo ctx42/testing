@@ -53,10 +53,19 @@ func (pkg *Package) parse() error {
 	return nil
 }
 
-// find returns the [ast.File] where the named interface was found along with
+// findItf returns the [ast.File] where the named interface was found along with
 // its [ast.InterfaceType] representation. If an interface with the given name
 // does not exist in the package, it returns [ErrItfNotFound].
-func (pkg *Package) find(name string) (*ast.File, *ast.InterfaceType) {
+func (pkg *Package) findItf(name string) (*ast.File, *ast.InterfaceType) {
+	if fil, typ := pkg.findType(name); fil != nil && typ != nil {
+		if itf, ok := typ.Type.(*ast.InterfaceType); ok {
+			return fil, itf
+		}
+	}
+	return nil, nil
+}
+
+func (pkg *Package) findType(name string) (*ast.File, *ast.TypeSpec) {
 	for _, fil := range pkg.files {
 		for _, dec := range fil.Decls {
 			gen, ok := dec.(*ast.GenDecl)
@@ -68,16 +77,21 @@ func (pkg *Package) find(name string) (*ast.File, *ast.InterfaceType) {
 				if !ok {
 					continue // Can never happen, but just in case.
 				}
-				itf, ok := typ.Type.(*ast.InterfaceType)
-				if !ok {
-					continue
-				}
 				if typ.Name.Name != name {
 					continue
 				}
-				return fil, itf
+				return fil, typ
 			}
 		}
 	}
 	return nil, nil
+}
+
+func (pkg *Package) hasType(name string) bool {
+	// TODO(rz): test this.
+	// TODO(rz): document this.
+	if fil, typ := pkg.findType(name); fil != nil && typ != nil {
+		return true
+	}
+	return false
 }

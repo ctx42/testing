@@ -102,7 +102,7 @@ func findItf(t tester.T, name, spec string) (*ast.File, *ast.InterfaceType) {
 		t.Error(err)
 		return nil, nil
 	}
-	return pkg.find(name)
+	return pkg.findItf(name)
 }
 
 // ================================= TESTS =====================================

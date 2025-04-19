@@ -143,7 +143,7 @@ func Test_NewPackage(t *testing.T) {
 	})
 }
 
-func Test_Package_Find(t *testing.T) {
+func Test_Package_findItf(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		impSpec := "github.com/ctx42/testing/pkg/mocker/testdata/embedded"
@@ -151,7 +151,7 @@ func Test_Package_Find(t *testing.T) {
 		pkg := must.Value(NewPackage(imp))
 
 		// --- When ---
-		astFile, astItf := pkg.find("EmbedLocal")
+		astFile, astItf := pkg.findItf("EmbedLocal")
 
 		// --- Then ---
 		assert.NotNil(t, astFile)
@@ -165,10 +165,30 @@ func Test_Package_Find(t *testing.T) {
 		pkg := must.Value(NewPackage(imp))
 
 		// --- When ---
-		astFile, astItf := pkg.find("NotFound")
+		astFile, astItf := pkg.findItf("NotFound")
 
 		// --- Then ---
 		assert.Nil(t, astFile)
 		assert.Nil(t, astItf)
+	})
+
+	// TODO(rz): test asking for type which is not an interface.
+}
+
+func Test_Package_findType(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		impSpec := "github.com/ctx42/testing/pkg/mocker/testdata/cases"
+		imp := must.Value(settleImport(NewImport(impSpec)))
+		pkg := must.Value(NewPackage(imp))
+
+		// --- When ---
+		astFil, astTyp := pkg.findType("Concrete")
+
+		// --- Then ---
+		assert.NotNil(t, astFil)
+		assert.NotNil(t, astTyp)
+
+		// TODO(rz): finish this test
 	})
 }
