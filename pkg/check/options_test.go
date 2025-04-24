@@ -127,7 +127,7 @@ func Test_WithOptions(t *testing.T) {
 	ops := Options{
 		Dumper: dump.Dump{
 			Flat:           true,
-			FlatStings:     100,
+			FlatStrings:    100,
 			Compact:        true,
 			TimeFormat:     time.Kitchen,
 			DurationFormat: "DurAsString",

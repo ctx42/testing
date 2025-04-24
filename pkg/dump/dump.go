@@ -76,7 +76,7 @@ func WithFlat(dmp *Dump) { dmp.Flat = true }
 // similar to [WithFlat] but applies specifically to strings based on their
 // length.
 func WithFlatStrings(n int) Option {
-	return func(dmp *Dump) { dmp.FlatStings = n }
+	return func(dmp *Dump) { dmp.FlatStrings = n }
 }
 
 // WithCompact is option for [New] which makes [Dump] display values without
@@ -121,7 +121,7 @@ type Dump struct {
 	Flat bool
 
 	// Display strings shorter that given value as with Flat.
-	FlatStings int
+	FlatStrings int
 
 	// Do not use any indents or whitespace separators.
 	Compact bool
@@ -177,14 +177,14 @@ type Dump struct {
 // New returns new instance of [Dump].
 func New(opts ...Option) Dump {
 	dmp := Dump{
-		FlatStings: 200,
-		TimeFormat: TimeFormat,
-		PrintType:  true,
-		UseAny:     true,
-		Dumpers:    make(map[reflect.Type]Dumper),
-		MaxDepth:   Depth,
-		Indent:     Indent,
-		TabWidth:   TabWidth,
+		FlatStrings: 200,
+		TimeFormat:  TimeFormat,
+		PrintType:   true,
+		UseAny:      true,
+		Dumpers:     make(map[reflect.Type]Dumper),
+		MaxDepth:    Depth,
+		Indent:      Indent,
+		TabWidth:    TabWidth,
 	}
 	for _, opt := range opts {
 		opt(&dmp)

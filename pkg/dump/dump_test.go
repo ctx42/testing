@@ -34,7 +34,7 @@ func Test_WithFlatStrings(t *testing.T) {
 	WithFlatStrings(123)(dmp)
 
 	// --- Then ---
-	affirm.Equal(t, 123, dmp.FlatStings)
+	affirm.Equal(t, 123, dmp.FlatStrings)
 }
 
 func Test_WithCompact(t *testing.T) {
@@ -126,7 +126,7 @@ func Test_New(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, have.Flat)
-		affirm.Equal(t, 200, have.FlatStings)
+		affirm.Equal(t, 200, have.FlatStrings)
 		affirm.Equal(t, false, have.Compact)
 		affirm.Equal(t, TimeFormat, have.TimeFormat)
 		affirm.Equal(t, "", have.DurationFormat)
