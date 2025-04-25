@@ -65,7 +65,7 @@ func Test_sampleDumper(t *testing.T) {
 		have := simpleDumper(dmp, 0, reflect.ValueOf("str0\nstr1\n"))
 
 		// --- Then ---
-		affirm.Equal(t, "\"str0\nstr1\n\"", have)
+		affirm.Equal(t, "str0\nstr1\n", have)
 	})
 
 	t.Run("string with Flat false and FlatStrings default", func(t *testing.T) {
@@ -81,7 +81,7 @@ func Test_sampleDumper(t *testing.T) {
 
 	t.Run("long string with Flat false and FlatStrings default", func(t *testing.T) {
 		// --- Given ---
-		// The string is one character longer than default value of
+		// The string is one character longer than the default value of
 		// [Dump.FlatStrings]
 		str := strings.Repeat("a", 100) + "\n" + strings.Repeat("a", 100)
 		dmp := New()
@@ -90,12 +90,11 @@ func Test_sampleDumper(t *testing.T) {
 		have := simpleDumper(dmp, 0, reflect.ValueOf(str))
 
 		// --- Then ---
-		want := "\"" +
+		want := "" +
 			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
 			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n" +
 			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-			"\""
+			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		affirm.Equal(t, want, have)
 	})
 

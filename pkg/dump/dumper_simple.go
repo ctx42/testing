@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 // simpleDumper is a generic dumper for simple types. It expects val to
@@ -40,6 +41,8 @@ func simpleDumper(dmp Dump, lvl int, val reflect.Value) string {
 		format = `"%v"`
 		if dmp.Flat || (dmp.FlatStrings > 0 && length <= dmp.FlatStrings) {
 			format = `%#v`
+		} else if strings.Index(v.(string), "\n") != -1 { // nolint: forcetypeassert
+			format = "%v"
 		}
 
 	case reflect.Float32:

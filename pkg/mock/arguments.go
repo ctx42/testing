@@ -10,11 +10,11 @@ import (
 	"strings"
 )
 
-// Arguments holds an array of method arguments or return values.
+// Arguments hold an array of method arguments or return values.
 type Arguments []any
 
-// Get returns the argument at the specified index. Panics when index is out of
-// bounds.
+// Get returns the argument at the specified index. Panics when the index is
+// out of bounds.
 func (args Arguments) Get(idx int) any {
 	if idx+1 > len(args) {
 		format := "[mock] arguments: Get(%d) out of range %d max"
@@ -23,7 +23,8 @@ func (args Arguments) Get(idx int) any {
 	return args[idx]
 }
 
-// Equal gets whether the objects match the specified arguments. Panics on error.
+// Equal gets whether the objects match the specified arguments. Panics on
+// error.
 func (args Arguments) Equal(haves ...any) bool {
 	al := len(args)
 	hl := len(haves)
@@ -40,8 +41,8 @@ func (args Arguments) Equal(haves ...any) bool {
 }
 
 // Diff gets a string describing the differences between the expected arguments
-// and the specified values. Returns a diff string and number of differences
-// found.
+// and the specified values. Returns a diff string and the number of
+// differences found.
 //
 // nolint: cyclop
 func (args Arguments) Diff(vs []any) ([]string, int) {
@@ -123,9 +124,9 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 }
 
 // String gets the argument at the specified index cast to string. Panics for
-// invalid index or when argument cannot be cast to a string. If index is set
-// to -1 the method returns a complete string representation of the argument
-// types.
+// invalid index or when an argument cannot be cast to a string. If the index
+// is set to -1, the method returns a complete string representation of the
+// argument types.
 func (args Arguments) String(idx int) string {
 	if idx == -1 {
 		// Return a string representation of the arg types.
@@ -145,7 +146,7 @@ func (args Arguments) String(idx int) string {
 }
 
 // Int gets the argument at the specified index cast to int. Panics for invalid
-// index or when argument cannot be cast to an int.
+// index or when an argument cannot be cast to an int.
 func (args Arguments) Int(idx int) int {
 	val := args.Get(idx)
 	if got, ok := val.(int); ok {
