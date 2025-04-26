@@ -21,8 +21,8 @@ of `*testing.T`. It’s the backbone of Go’s testing framework — powerful,
 flexible, and ubiquitous. But as your test suite grows, you might find yourself
 repeating the same chunks of test logic across multiple test cases. Enter _test
 helpers_: reusable functions that streamline your tests, improve readability,
-and reduce complexity. Libraries like assert are prime examples, turning verbose
-checks into concise assertions.
+and reduce complexity. Libraries like `assert` are prime examples, turning 
+verbose checks into concise assertions.
 
 But here’s the catch: how do you test the test helpers themselves? After all,
 these are the tools you rely on to ensure your code works as expected. If they
@@ -40,13 +40,13 @@ _test manager_. By design `T` is a subset of the `testing.TB` interface to
 allow using implementers as well as `*testing.T` as a _test helper_ argument.    
 
 Creating test helpers is part of making tests more readable. Instead of 
-repeating big blocks of code in many test cases we can create a helper, and 
+repeating big blocks of code in many test cases, we can create a helper and 
 delegate part of testing procedures to it. A test helper usually receives
 some kind of test manager instance (usually `*testing.T`) as an argument, so 
-it can log and provide test outcome to the test runner. 
+it can log and provide the test outcome to the test runner. 
 
-Very good example of test helpers are assertion functions in `assert` package, 
-which improve test readability and in many cases reduce their complexity.
+Good example of test helpers is assertion functions in `assert` package, which
+improve test readability and in many cases reduce their complexity.
 
 ## Usage
 
@@ -72,7 +72,7 @@ as long as the test helper uses the following methods:
 So for example a test helper
 
 ```go
-// IsOdd asserts "have" is odd number. Returns true if it is, otherwise marks
+// IsOdd asserts "have" is an odd number. Returns true if it is, otherwise marks
 // the test as failed, writes an error message to the test log and returns false.
 func IsOdd(t *testing.T, have int) bool {
 	t.Helper()
@@ -87,7 +87,7 @@ func IsOdd(t *testing.T, have int) bool {
 can be refactored as
 
 ```go
-// IsOdd asserts "have" is odd number. Returns true if it is, otherwise marks
+// IsOdd asserts "have" is an odd number. Returns true if it is, otherwise marks
 // the test as failed, writes an error message to the test log and returns false.
 func IsOdd(t tester.T, have int) bool {
 	t.Helper()
@@ -165,7 +165,7 @@ tspy.ExpectError()      // Expect HUT to call one of the Error* methods at least
 tspy.ExpectFatal()      // Expect HUT to call one of the Fatal* methods at least once.
 tspy.ExpectFail()       // Expect HUT to call one of the Error* or Fatal* at least once.  
 tspy.ExpectHelpers(n)   // Expect HUT to call Helper method exactly n times. 
-tspy.ExpectSetenv(k, v) // Expect HUT to call Setenv method with key, value pair.
+tspy.ExpectSetenv(k, v) // Expect HUT to call Setenv method with the key, value pair.
 tspy.ExpectSkipped()    // Expect HUT to skip the test.
 tspy.ExpectTempDir(n)   // Expect HUT to call TempDir n times.
 tspy.ExpectFail()       // Expect HUT to call one of the Error* or Fatal* methods.
@@ -173,15 +173,15 @@ tspy.ExpectedNames(n)   // Expect HUT to call Name exactly n times.
 
 // Log message expectations: 
 
-tspy.ExpectLog(matcher, format, args...)  // Expect logged message to match formated string.
-tspy.ExpectLogEqual(format, args...)      // Expect logged message to equal to formated string. 
-tspy.ExpectLogContain(format, args...)    // Expect logged message to contain formated string.
-tspy.ExpectLogNotContain(format, args...) // Expect logged message not to contain formated string.
+tspy.ExpectLog(matcher, format, args...)  // Expect the logged message to match the formated string.
+tspy.ExpectLogEqual(format, args...)      // Expect the logged message to equal to the formated string. 
+tspy.ExpectLogContain(format, args...)    // Expect the logged message to contain the formated string.
+tspy.ExpectLogNotContain(format, args...) // Expect the logged message not to contain the formated string.
 ```
 
-Since each of the methods has very good documentation we encourage you to 
-explore it for more details. Here we wil just document some of the cases which
-might not be so obvious at the first glance.
+Since each of the methods has great documentation, we encourage you to explore
+it for more details. Here we will just document some of the cases which might
+not be so obvious at the first glance.
 
 ### Expectations For `Helper`
 
