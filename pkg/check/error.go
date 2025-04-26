@@ -26,7 +26,7 @@ func NoError(err error, opts ...Option) error {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	const mHeader = "expected error to be nil"
+	const mHeader = "expected the error to be nil"
 	if core.IsNil(err) {
 		return notice.New(mHeader).
 			Trail(ops.Trail).
@@ -47,16 +47,16 @@ func ErrorIs(err, target error, opts ...Option) error {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected err to have target in its tree").
+	return notice.New("expected err to have a target in its tree").
 		Trail(ops.Trail).
 		Want("(%T) %v", target, target).
 		Have("(%T) %v", err, err)
 }
 
-// ErrorAs checks there is an error in "err" tree that matches target, and if
-// one is found, sets target to that error. Returns nil if target is found,
-// otherwise returns an error with a message indicating the expected and actual
-// values.
+// ErrorAs checks there is an error in the "err" tree that matches a target,
+// and if one is found, sets the target to that error. Returns nil if the
+// target is found, otherwise returns an error with a message indicating the
+// expected and actual values.
 func ErrorAs(err error, target any, opts ...Option) error {
 	if e := Error(err); e != nil {
 		return e
@@ -66,7 +66,7 @@ func ErrorAs(err error, target any, opts ...Option) error {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected err to have target in its tree").
+	return notice.New("expected err to have a target in its tree").
 		Trail(ops.Trail).
 		Want("(%T) %#v", err, err).
 		Have("(%T) %#v", target, target)

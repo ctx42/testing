@@ -75,16 +75,11 @@ func Test_Type(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		defer func() { _ = recover() }()
-
 		// --- When ---
-		have := Type(tspy, 1, uint(1))
+		msg := affirm.Panic(t, func() { Type(tspy, 1, uint(1)) })
 
 		// --- Then ---
-
-		// TODO(rz): does not make sense to have this here. It is never
-		//  executed. Check all other cases like this.
-		affirm.Equal(t, false, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
 	t.Run("log message with trails", func(t *testing.T) {
@@ -94,14 +89,13 @@ func Test_Type(t *testing.T) {
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		defer func() { _ = recover() }()
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Type(tspy, 1, uint(1), opt)
+		msg := affirm.Panic(t, func() { Type(tspy, 1, uint(1), opt) })
 
 		// --- Then ---
-		affirm.Equal(t, false, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 }
 

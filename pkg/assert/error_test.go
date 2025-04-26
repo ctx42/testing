@@ -73,18 +73,14 @@ func Test_NoError(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
-		tspy.ExpectLogContain("expected error to be nil")
+		tspy.ExpectLogContain("expected the error to be nil")
 		tspy.Close()
 
 		// --- When ---
-		var have bool
-		func() {
-			defer func() { _ = recover() }()
-			have = NoError(tspy, errors.New("e0"))
-		}()
+		msg := affirm.Panic(t, func() { NoError(tspy, errors.New("e0")) })
 
 		// --- Then ---
-		affirm.Equal(t, false, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -97,14 +93,10 @@ func Test_NoError(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		var have bool
-		func() {
-			defer func() { _ = recover() }()
-			have = NoError(tspy, errors.New("e0"), opt)
-		}()
+		msg := affirm.Panic(t, func() { NoError(tspy, errors.New("e0"), opt) })
 
 		// --- Then ---
-		affirm.Equal(t, false, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 }
 
@@ -128,21 +120,17 @@ func Test_ErrorIs(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
-		tspy.ExpectLogContain("expected err to have target in its tree")
+		tspy.ExpectLogContain("expected err to have a target in its tree")
 		tspy.Close()
 
 		err0 := errors.New("err0")
 		err1 := errors.New("err1")
 
 		// --- When ---
-		var have bool
-		func() {
-			defer func() { _ = recover() }()
-			have = ErrorIs(tspy, err0, err1)
-		}()
+		msg := affirm.Panic(t, func() { ErrorIs(tspy, err0, err1) })
 
 		// --- Then ---
-		affirm.Equal(t, false, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
 	t.Run("log message with trail", func(t *testing.T) {
@@ -157,14 +145,10 @@ func Test_ErrorIs(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		var have bool
-		func() {
-			defer func() { _ = recover() }()
-			have = ErrorIs(tspy, err0, err1, opt)
-		}()
+		msg := affirm.Panic(t, func() { ErrorIs(tspy, err0, err1, opt) })
 
 		// --- Then ---
-		affirm.Equal(t, false, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 }
 

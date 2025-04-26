@@ -21,25 +21,11 @@ func Test_Value(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		// --- Given ---
-		var have *types.TInt
-		var panicked bool
-
-		fn := func() {
-			defer func() {
-				if r := recover(); r != nil {
-					panicked = true
-				}
-			}()
-			have = Value(types.NewTInt(40))
-		}
-
 		// --- When ---
-		fn()
+		msg := affirm.Panic(t, func() { Value(types.NewTInt(40)) })
 
 		// --- Then ---
-		affirm.Equal(t, true, panicked)
-		affirm.Equal(t, true, have == nil)
+		affirm.Equal(t, "not cool", *msg)
 	})
 }
 
@@ -57,27 +43,11 @@ func Test_Values(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		// --- Given ---
-		var t1 int
-		var t2 float64
-		var panicked bool
-
-		fn := func() {
-			defer func() {
-				if r := recover(); r != nil {
-					panicked = true
-				}
-			}()
-			t1, t2 = Values(fnBad())
-		}
-
 		// --- When ---
-		fn()
+		msg := affirm.Panic(t, func() { Values(fnBad()) })
 
 		// --- Then ---
-		affirm.Equal(t, true, panicked)
-		affirm.Equal(t, 0, t1)
-		affirm.Equal(t, 0.0, t2)
+		affirm.Equal(t, "test", *msg)
 	})
 }
 
@@ -87,23 +57,11 @@ func Test_Nil(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		// --- Given ---
-		var panicked bool
-
-		fn := func() {
-			defer func() {
-				if r := recover(); r != nil {
-					panicked = true
-				}
-			}()
-			Nil(errors.New("test err"))
-		}
-
 		// --- When ---
-		fn()
+		msg := affirm.Panic(t, func() { Nil(errors.New("test err")) })
 
 		// --- Then ---
-		affirm.Equal(t, true, panicked)
+		affirm.Equal(t, "test err", *msg)
 	})
 }
 
@@ -134,22 +92,13 @@ func Test_First(t *testing.T) {
 
 	t.Run("error not nil", func(t *testing.T) {
 		// --- Given ---
-		var msg string
-		check := func() {
-			defer func() {
-				if r := recover(); r != nil {
-					msg = r.(error).Error()
-				}
-			}()
-			fn := func() ([]T, error) { return nil, errors.New("test msg") }
-			First(fn())
-		}
+		fn := func() ([]T, error) { return nil, errors.New("test msg") }
 
 		// --- When ---
-		check()
+		msg := affirm.Panic(t, func() { First(fn()) })
 
 		// --- Then ---
-		affirm.Equal(t, "test msg", msg)
+		affirm.Equal(t, "test msg", *msg)
 	})
 
 	t.Run("more than one element no error", func(t *testing.T) {
@@ -193,42 +142,24 @@ func Test_Single(t *testing.T) {
 
 	t.Run("error not nil", func(t *testing.T) {
 		// --- Given ---
-		var msg string
-		check := func() {
-			defer func() {
-				if r := recover(); r != nil {
-					msg = r.(error).Error()
-				}
-			}()
-			fn := func() ([]T, error) { return nil, errors.New("test msg") }
-			Single(fn())
-		}
+		fn := func() ([]T, error) { return nil, errors.New("test msg") }
 
 		// --- When ---
-		check()
+		msg := affirm.Panic(t, func() { Single(fn()) })
 
 		// --- Then ---
-		affirm.Equal(t, "test msg", msg)
+		affirm.Equal(t, "test msg", *msg)
 	})
 
 	t.Run("more than one element no error", func(t *testing.T) {
 		// --- Given ---
-		var e error
-		check := func() {
-			defer func() {
-				if r := recover(); r != nil {
-					e = r.(error)
-				}
-			}()
-			s := []T{{v: 1}, {v: 2}}
-			fn := func() ([]T, error) { return s, nil } // nolint: unparam
-			Single(fn())
-		}
+		s := []T{{v: 1}, {v: 2}}
+		fn := func() ([]T, error) { return s, nil } // nolint: unparam
 
 		// --- When ---
-		check()
+		msg := affirm.Panic(t, func() { Single(fn()) })
 
 		// --- Then ---
-		affirm.Equal(t, true, errors.Is(e, errExpSingle))
+		affirm.Equal(t, "expected single result", *msg)
 	})
 }

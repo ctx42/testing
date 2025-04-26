@@ -73,17 +73,11 @@ func Test_NotNil(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		defer func() { _ = recover() }()
-
 		// --- When ---
-		var have bool
-		func() {
-			defer func() { _ = recover() }()
-			have = NotNil(tspy, nil)
-		}()
+		msg := affirm.Panic(t, func() { NotNil(tspy, nil) })
 
 		// --- Then ---
-		affirm.Equal(t, false, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
 	t.Run("option is passed", func(t *testing.T) {
@@ -93,10 +87,9 @@ func Test_NotNil(t *testing.T) {
 		tspy.ExpectLogContain("  trail: type.field")
 		tspy.Close()
 
-		defer func() { _ = recover() }()
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		NotNil(tspy, nil, opt)
+		affirm.Panic(t, func() { NotNil(tspy, nil, opt) })
 	})
 }

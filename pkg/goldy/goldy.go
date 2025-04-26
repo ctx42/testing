@@ -13,9 +13,9 @@ import (
 	"github.com/ctx42/testing/internal/core"
 )
 
-// Text is a helper returning contents of a golden file at given path. The
-// contents start after mandatory marker "---" line, anything before it is
-// ignored. It's customary to have a short documentation about golden file
+// Text is a helper returning contents of a golden file at the given path. The
+// contents start after the mandatory marker "---" line, anything before it is
+// ignored. It's customary to have short documentation about golden file
 // contents before the "marker".
 func Text(t core.T, pth string) string {
 	t.Helper()

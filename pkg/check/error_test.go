@@ -60,7 +60,7 @@ func Test_NoError(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error to be nil:\n" +
+		wMsg := "expected the error to be nil:\n" +
 			"  want: <nil>\n" +
 			"  have: \"e0\""
 		affirm.Equal(t, wMsg, err.Error())
@@ -75,7 +75,7 @@ func Test_NoError(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error to be nil:\n" +
+		wMsg := "expected the error to be nil:\n" +
 			"  trail: type.field\n" +
 			"   want: <nil>\n" +
 			"   have: \"e0\""
@@ -91,7 +91,7 @@ func Test_NoError(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error to be nil:\n" +
+		wMsg := "expected the error to be nil:\n" +
 			"  want: <nil>\n" +
 			"  have: *types.TPtr"
 		affirm.Equal(t, wMsg, err.Error())
@@ -107,7 +107,7 @@ func Test_NoError(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error to be nil:\n" +
+		wMsg := "expected the error to be nil:\n" +
 			"  trail: type.field\n" +
 			"   want: <nil>\n" +
 			"   have: *types.TPtr"
@@ -123,7 +123,7 @@ func Test_NoError(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error to be nil:\n" +
+		wMsg := "expected the error to be nil:\n" +
 			"  want: <nil>\n" +
 			"  have: \"\""
 		affirm.Equal(t, wMsg, err.Error())
@@ -140,7 +140,7 @@ func Test_ErrorIs(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, have)
-		wMsg := "expected err to have target in its tree:\n" +
+		wMsg := "expected err to have a target in its tree:\n" +
 			"  trail: type.field\n" +
 			"   want: (*errors.errorString) err0\n" +
 			"   have: (*errors.errorString) err0"
@@ -201,7 +201,7 @@ func Test_ErrorIs_error_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- Given ---
-			const format = "expected err to have target in its tree:\n" +
+			const format = "expected err to have a target in its tree:\n" +
 				"  want: (%s) %s\n" +
 				"  have: (%s) %s"
 
@@ -258,7 +258,7 @@ func Test_ErrorAs(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected err to have target in its tree:\n" +
+		wMsg := "expected err to have a target in its tree:\n" +
 			"  want: (*types.TPtr) &types.TPtr{Val:\"A\"}\n" +
 			"  have: (*types.TVal) &types.TVal{Val:\"\"}"
 		affirm.Equal(t, wMsg, err.Error())
@@ -276,7 +276,7 @@ func Test_ErrorAs(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected err to have target in its tree:\n" +
+		wMsg := "expected err to have a target in its tree:\n" +
 			"  trail: type.field\n" +
 			"   want: (*types.TPtr) &types.TPtr{Val:\"A\"}\n" +
 			"   have: (*types.TVal) &types.TVal{Val:\"\"}"

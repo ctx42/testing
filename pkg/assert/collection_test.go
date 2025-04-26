@@ -30,16 +30,14 @@ func Test_Len(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		defer func() { _ = recover() }()
-
 		// --- When ---
-		have := Len(tspy, 3, []int{0, 1})
+		msg := affirm.Panic(t, func() { Len(tspy, 3, []int{0, 1}) })
 
 		// --- Then ---
-		affirm.Equal(t, false, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
-	t.Run("error when want is greater than actual length", func(t *testing.T) {
+	t.Run("error when want is greater than the actual length", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()

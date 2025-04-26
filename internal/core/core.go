@@ -29,8 +29,8 @@ func IsNil(have any) bool {
 }
 
 // WillPanic returns not empty stack trace if the passed function panicked when
-// executed and the value that was passed to panic. When function did not panic
-// it returns nil and empty stack.
+// executed and the value that was passed to panic. When a function does not
+// panic, it returns nil and empty stack.
 func WillPanic(fn func()) (val any, stack string) {
 	defer func() {
 		if val = recover(); val != nil {
@@ -85,7 +85,7 @@ func Same(want, have any) bool {
 	return want == have
 }
 
-// sameFunc returns true when arguments represent values for functions or
+// The sameFunc returns true when arguments represent values for functions or
 // methods of the same type.
 func sameFunc(want, have reflect.Value) bool {
 	if want.Equal(nilVal) || have.Equal(nilVal) {

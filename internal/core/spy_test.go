@@ -242,7 +242,7 @@ func Test_Spy_Log(t *testing.T) {
 		}
 	})
 
-	t.Run("panic when log capture not turned on", func(t *testing.T) {
+	t.Run("panic when log capture is not turned on", func(t *testing.T) {
 		// --- Given ---
 		tspy := NewSpy()
 		tspy.Errorf("a%s", "bc")

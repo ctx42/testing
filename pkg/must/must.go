@@ -64,8 +64,8 @@ func Single[T any](s []T, err error) T {
 	return v
 }
 
-// errExpSingle is error returned when [single] receives a slice with more than
-// one element and nil err.
+// errExpSingle is an error returned when [single] receives a slice with more
+// than one element and nil err.
 var errExpSingle = errors.New("expected single result")
 
 // single returns the first element in the slice or T's zero value if the slice

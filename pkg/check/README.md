@@ -17,7 +17,7 @@ You use checks like any other function returning error.
 
 	fmt.Println(err)
 	// Output:
-	// expected error to be nil:
+	// expected the error to be nil:
 	//	trail: type.field
 	//	 want: <nil>
 	//	 have: "test error"
@@ -36,7 +36,7 @@ err = notice.From(err, "prefix").Append("context", "wow")
 
 fmt.Println(err)
 // Output:
-// [prefix] expected error to be nil:
+// [prefix] expected the error to be nil:
 //	   trail: type.field
 //	    want: <nil>
 //	    have: "test error"
