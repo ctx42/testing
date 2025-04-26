@@ -41,7 +41,7 @@ func simpleDumper(dmp Dump, lvl int, val reflect.Value) string {
 		format = `"%v"`
 		if dmp.Flat || (dmp.FlatStrings > 0 && length <= dmp.FlatStrings) {
 			format = `%#v`
-		} else if strings.Index(v.(string), "\n") != -1 { // nolint: forcetypeassert
+		} else if strings.Contains(v.(string), "\n") { // nolint: forcetypeassert
 			format = "%v"
 		}
 
