@@ -9,9 +9,9 @@ import (
 )
 
 // Empty asserts "have" is empty. Returns true if it's, otherwise marks the
-// test as failed, writes error message to test log and returns false.
+// test as failed, writes an error message to the test log and returns false.
 //
-// See [check.Empty] for list of values which are considered empty.
+// See [check.Empty] for the list of values which are considered empty.
 func Empty(t tester.T, have any, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.Empty(have, opts...); e != nil {
@@ -22,9 +22,10 @@ func Empty(t tester.T, have any, opts ...check.Option) bool {
 }
 
 // NotEmpty asserts "have" is not empty. Returns true if it is not, otherwise
-// marks the test as failed, writes error message to test log and returns false.
+// marks the test as failed, writes an error message to the test log and
+// returns false.
 //
-// See [check.Empty] for list of values which are considered empty.
+// See [check.Empty] for the list of values which are considered empty.
 func NotEmpty(t tester.T, have any, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.NotEmpty(have, opts...); e != nil {

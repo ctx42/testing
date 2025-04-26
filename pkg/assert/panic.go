@@ -9,7 +9,7 @@ import (
 )
 
 // Panic asserts "fn" panics. Returns true if it panicked, otherwise marks the
-// test as failed, writes error message to test log and returns false.
+// test as failed, writes an error message to the test log and returns false.
 func Panic(t tester.T, fn check.TestFunc, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.Panic(fn, opts...); e != nil {
@@ -20,8 +20,8 @@ func Panic(t tester.T, fn check.TestFunc, opts ...check.Option) bool {
 }
 
 // NoPanic asserts "fn" does not panic. Returns true if it did not panic,
-// otherwise marks the test as failed, writes error message to test log and
-// returns false.
+// otherwise marks the test as failed, writes an error message to the test log
+// and returns false.
 func NoPanic(t tester.T, fn check.TestFunc, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.NoPanic(fn, opts...); e != nil {
@@ -32,9 +32,9 @@ func NoPanic(t tester.T, fn check.TestFunc, opts ...check.Option) bool {
 }
 
 // PanicContain asserts "fn" panics, and the recovered panic value represented
-// as a string contains "want". Returns true if it panics and does contain
-// wanted string, otherwise marks the test as failed, writes error message to
-// test log and returns false.
+// as a string contains "want". Returns true if it panics and does contain the
+// wanted string, otherwise marks the test as failed, writes an error message
+// to the test log and returns false.
 func PanicContain(t tester.T, want string, fn check.TestFunc, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.PanicContain(want, fn, opts...); e != nil {
@@ -44,9 +44,9 @@ func PanicContain(t tester.T, want string, fn check.TestFunc, opts ...check.Opti
 	return true
 }
 
-// PanicMsg asserts "fn" panics, and returns the recovered panic value
-// represented as a string. If function did not panic it marks the test as
-// failed and writes error message to test log.
+// PanicMsg asserts the "fn" panics and returns the recovered panic value
+// represented as a string. If the function did not panic, it marks the test as
+// failed and writes an error message to the test log.
 func PanicMsg(t tester.T, fn check.TestFunc, opts ...check.Option) *string {
 	t.Helper()
 	msg, e := check.PanicMsg(fn, opts...)

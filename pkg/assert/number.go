@@ -10,8 +10,8 @@ import (
 )
 
 // Epsilon asserts the difference between two numbers is within a given delta.
-// Returns true if it is, otherwise marks the test as failed, writes error
-// message to test log and returns false.
+// Returns true if it is, otherwise marks the test as failed, writes an error
+// message to the test log and returns false.
 func Epsilon[T constraints.Number](
 	t tester.T,
 	want, delta, have T,

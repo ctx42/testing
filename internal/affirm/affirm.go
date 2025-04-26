@@ -14,7 +14,7 @@ import (
 	"github.com/ctx42/testing/internal/core"
 )
 
-// expected defines log message for failed affirmations.
+// expected defines the log message for failed affirmations.
 const expected = "" +
 	"expected values to be equal:\n" +
 	"  type: %[1]T\n" +
@@ -22,8 +22,8 @@ const expected = "" +
 	"  have: %v"
 
 // Equal affirms two comparable types are equal. Returns true if it is,
-// otherwise marks the test as failed, writes error message to the test log and
-// returns false.
+// otherwise marks the test as failed, writes an error message to the test log
+// and returns false.
 func Equal[T comparable](t core.T, want, have T) bool {
 	t.Helper()
 	if want != have {
@@ -34,7 +34,7 @@ func Equal[T comparable](t core.T, want, have T) bool {
 }
 
 // DeepEqual affirms "want" and "have" are equal using [reflect.DeepEqual].
-// Returns true if it is, otherwise marks the test as failed, writes error
+// Returns true if it is, otherwise marks the test as failed, writes an error
 // message to the test log and returns false.
 func DeepEqual(t core.T, want, have any) bool {
 	t.Helper()
@@ -46,7 +46,7 @@ func DeepEqual(t core.T, want, have any) bool {
 }
 
 // Nil affirms "have" is nil. Returns true if it is, otherwise marks the
-// test as failed, writes error message to the test log and returns false.
+// test as failed, writes an error message to the test log and returns false.
 func Nil(t core.T, have any) bool {
 	t.Helper()
 	if core.IsNil(have) {
@@ -57,8 +57,8 @@ func Nil(t core.T, have any) bool {
 }
 
 // NotNil affirms "have" is not nil. Returns true if it is not, otherwise
-// marks the test as failed, writes error message to the test log and returns
-// false.
+// marks the test as failed, writes an error message to the test log and
+// returns false.
 func NotNil(t core.T, have any) bool {
 	t.Helper()
 	if !core.IsNil(have) {
@@ -76,9 +76,9 @@ func NotNil(t core.T, have any) bool {
 	return false
 }
 
-// Panic affirms "fn" panics. When "fn" panicked, it returns pointer to a
-// string representation of the value used in panic(). When "fn" doesn't panic
-// it returns nil, marks the test as failed and writes error message to the
+// Panic affirms "fn" panics. When "fn" panicked, it returns a pointer to a
+// string representation of the value used in panic(). When "fn" doesn't panic,
+// it returns nil, marks the test as failed and writes an error message to the
 // test.
 func Panic(t core.T, fn func()) *string {
 	t.Helper()

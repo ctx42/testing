@@ -8,9 +8,9 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// ExitCode asserts "err" is pointer to [exec.ExitError] with exit code equal
+// ExitCode asserts "err" is a pointer to [exec.ExitError] with exit code equal
 // to "want". Returns true if it is, otherwise marks the test as failed, writes
-// error message to test log and returns false.
+// an error message to the test log and returns false.
 func ExitCode(t tester.T, want int, err error, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.ExitCode(want, err, opts...); e != nil {

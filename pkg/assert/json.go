@@ -9,8 +9,10 @@ import (
 )
 
 // JSON asserts that two JSON strings are equivalent. Returns true if they are,
-// otherwise marks the test as failed, writes error message to test log and
-// returns false.
+// otherwise marks the test as failed, writes an error message to the test log
+// and returns false.
+//
+// Example:
 //
 //	assert.JSON(t, `{"hello": "world"}`, `{"foo": "bar"}`)
 func JSON(t tester.T, want, have string, opts ...check.Option) bool {

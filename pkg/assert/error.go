@@ -9,7 +9,7 @@ import (
 )
 
 // Error asserts "err" is not nil. Returns true if it's, otherwise marks the
-// test as failed, writes error message to test log and returns false.
+// test as failed, writes an error message to the test log and returns false.
 func Error(t tester.T, err error, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.Error(err, opts...); e != nil {
@@ -20,7 +20,7 @@ func Error(t tester.T, err error, opts ...check.Option) bool {
 }
 
 // NoError asserts "err" is nil. Returns true if it is not, otherwise marks the
-// test as failed, writes error message to test log and returns false.
+// test as failed, writes an error message to the test log and returns false.
 func NoError(t tester.T, err error, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.NoError(err, opts...); e != nil {
@@ -31,8 +31,8 @@ func NoError(t tester.T, err error, opts ...check.Option) bool {
 }
 
 // ErrorIs asserts whether any error in "err" tree matches target. Returns true
-// if it does, otherwise marks the test as failed, writes error message to test
-// log and returns false.
+// if it does, otherwise marks the test as failed, writes an error message to
+// the test log and returns false.
 func ErrorIs(t tester.T, err, target error, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.ErrorIs(err, target, opts...); e != nil {
@@ -43,8 +43,9 @@ func ErrorIs(t tester.T, err, target error, opts ...check.Option) bool {
 }
 
 // ErrorAs finds the first error in "err" tree that matches target, and if one
-// is found, sets target to that error. Returns true if it does, otherwise
-// marks the test as failed, writes error message to test log and returns false.
+// is found, sets a target to that error. Returns true if it does, otherwise
+// marks the test as failed, writes an error message to the test log and
+// returns false.
 func ErrorAs(t tester.T, err error, target any, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.ErrorAs(err, target, opts...); e != nil {
@@ -55,8 +56,8 @@ func ErrorAs(t tester.T, err error, target any, opts ...check.Option) bool {
 }
 
 // ErrorEqual asserts "err" is not nil and its message equals to "want".
-// Returns true if it's, otherwise marks the test as failed, writes error
-// message to test log and returns false.
+// Returns true if it's, otherwise marks the test as failed, writes an error
+// message to the test log and returns false.
 func ErrorEqual(t tester.T, want string, err error, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.ErrorEqual(want, err, opts...); e != nil {
@@ -67,8 +68,8 @@ func ErrorEqual(t tester.T, want string, err error, opts ...check.Option) bool {
 }
 
 // ErrorContain asserts "err" is not nil and its message contains "want".
-// Returns true if it does, otherwise marks the test as failed, writes error
-// message to test log and returns false.
+// Returns true if it does, otherwise marks the test as failed, writes an error
+// message to the test log and returns false.
 func ErrorContain(t tester.T, want string, err error, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.ErrorContain(want, err, opts...); e != nil {
@@ -80,9 +81,9 @@ func ErrorContain(t tester.T, want string, err error, opts ...check.Option) bool
 
 // ErrorRegexp asserts "err" is not nil and its message matches the "want"
 // regex. Returns true if it does, otherwise marks the test as failed, writes
-// error message to test log and returns false.
+// an error message to the test log and returns false.
 //
-// The "want" can be either regular expression string or instance of
+// The "want" can be either a regular expression string or instance of
 // [regexp.Regexp]. The [fmt.Sprint] is used to get string representation of
 // have argument.
 func ErrorRegexp(t tester.T, want string, err error, opts ...check.Option) bool {

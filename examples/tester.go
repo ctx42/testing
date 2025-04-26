@@ -10,7 +10,7 @@ import (
 )
 
 // IsOdd asserts "have" is odd number. Returns true if it is, otherwise marks
-// the test as failed, writes error message to the test log and returns false.
+// the test as failed, writes an error message to the test log and returns false.
 func IsOdd(t tester.T, have int) bool {
 	t.Helper()
 	if have%2 == 0 {

@@ -11,14 +11,14 @@ import (
 )
 
 // Time asserts "want" and "have" dates are equal. Returns true if they are,
-// otherwise marks the test as failed, writes error message to test log and
-// returns false.
+// otherwise marks the test as failed, writes an error message to the test log
+// and returns false.
 //
-// The "want" and "have" might be date representations in form of string, int,
-// int64 or [time.Time]. For string representations the [Options.TimeFormat] is
-// used during parsing and the returned date is always in UTC. The int and
-// int64 types are interpreted as Unix Timestamp and the date returned is also
-// in UTC.
+// The "want" and "have" might be date representations in the form of a string,
+// int, int64 or [time.Time]. For string representations the
+// [check.Options.TimeFormat] is used during parsing and the returned date is
+// always in UTC. The int and int64 types are interpreted as Unix Timestamp,
+// and the date returned is also in UTC.
 func Time(t tester.T, want, have any, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.Time(want, have, opts...); e != nil {
@@ -29,14 +29,14 @@ func Time(t tester.T, want, have any, opts ...check.Option) bool {
 }
 
 // Exact asserts "want" and "have" dates are equal and are in the same timezone.
-// Returns true if they are, otherwise marks the test as failed, writes error
-// message to test log and returns false.
+// Returns true if they are, otherwise marks the test as failed, writes an
+// error message to the test log and returns false.
 //
-// The "want" and "have" might be date representations in form of string, int,
-// int64 or [time.Time]. For string representations the [Options.TimeFormat] is
-// used during parsing and the returned date is always in UTC. The int and
-// int64 types are interpreted as Unix Timestamp and the date returned is also
-// in UTC.
+// The "want" and "have" might be date representations in the form of a string,
+// int, int64 or [time.Time]. For string representations the
+// [check.Options.TimeFormat] is used during parsing and the returned date is
+// always in UTC. The int and int64 types are interpreted as Unix Timestamp,
+// and the date returned is also in UTC.
 func Exact(t tester.T, want, have any, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.Exact(want, have, opts...); e != nil {
@@ -47,13 +47,14 @@ func Exact(t tester.T, want, have any, opts ...check.Option) bool {
 }
 
 // Before asserts "date" is before "mark". Returns true if it's, otherwise
-// marks the test as failed, writes error message to test log and returns false.
+// marks the test as failed, writes an error message to the test log and
+// returns false.
 //
-// The "date" and "mark" might be date representations in form of string, int,
-// int64 or [time.Time]. For string representations the
+// The "date" and "mark" might be date representations in the form of string,
+// int, int64 or [time.Time]. For string representations the
 // [check.Options.TimeFormat] is used during parsing and the returned date is
-// always in UTC. The int and int64 types are interpreted as Unix Timestamp and
-// the date returned is also in UTC.
+// always in UTC. The int and int64 types are interpreted as Unix Timestamp,
+// and the date returned is also in UTC.
 func Before(t tester.T, date, mark any, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.Before(date, mark, opts...); e != nil {
@@ -64,13 +65,14 @@ func Before(t tester.T, date, mark any, opts ...check.Option) bool {
 }
 
 // After asserts "date" is after "mark". Returns true if it's, otherwise
-// marks the test as failed, writes error message to test log and returns false.
+// marks the test as failed, writes an error message to the test log and
+// returns false.
 //
-// The "date" and "mark" might be date representations in form of string, int,
-// int64 or [time.Time]. For string representations the
+// The "date" and "mark" might be date representations in the form of string,
+// int, int64 or [time.Time]. For string representations the
 // [check.Options.TimeFormat] is used during parsing and the returned date is
-// always in UTC. The int and int64 types are interpreted as Unix Timestamp and
-// the date returned is also in UTC.
+// always in UTC. The int and int64 types are interpreted as Unix Timestamp,
+// and the date returned is also in UTC.
 func After(t tester.T, date, mark time.Time, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.After(date, mark, opts...); e != nil {
@@ -81,14 +83,14 @@ func After(t tester.T, date, mark time.Time, opts ...check.Option) bool {
 }
 
 // BeforeOrEqual asserts "date" is equal or before "mark". Returns true if it's,
-// otherwise marks the test as failed, writes error message to test log and
-// returns false.
+// otherwise marks the test as failed, writes an error message to the test log
+// and returns false.
 //
-// The "date" and "mark" might be date representations in form of string, int,
-// int64 or [time.Time]. For string representations the
+// The "date" and "mark" might be date representations in the form of a string,
+// int, int64 or [time.Time]. For string representations the
 // [check.Options.TimeFormat] is used during parsing and the returned date is
-// always in UTC. The int and int64 types are interpreted as Unix Timestamp and
-// the date returned is also in UTC.
+// always in UTC. The int and int64 types are interpreted as Unix Timestamp,
+// and the date returned is also in UTC.
 func BeforeOrEqual(t tester.T, date, mark time.Time, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.BeforeOrEqual(date, mark, opts...); e != nil {
@@ -99,14 +101,14 @@ func BeforeOrEqual(t tester.T, date, mark time.Time, opts ...check.Option) bool 
 }
 
 // AfterOrEqual asserts "date" is equal or after "mark". Returns true if it's,
-// otherwise marks the test as failed, writes error message to test log and
-// returns false.
+// otherwise marks the test as failed, writes an error message to the test log
+// and returns false.
 //
-// The "date" and "mark" might be date representations in form of string, int,
-// int64 or [time.Time]. For string representations the
+// The "date" and "mark" might be date representations in the form of a string,
+// int, int64 or [time.Time]. For string representations the
 // [check.Options.TimeFormat] is used during parsing and the returned date is
-// always in UTC. The int and int64 types are interpreted as Unix Timestamp and
-// the date returned is also in UTC.
+// always in UTC. The int and int64 types are interpreted as Unix Timestamp,
+// and the date returned is also in UTC.
 func AfterOrEqual(t tester.T, date, mark any, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.AfterOrEqual(date, mark, opts...); e != nil {
@@ -117,17 +119,14 @@ func AfterOrEqual(t tester.T, date, mark any, opts ...check.Option) bool {
 }
 
 // Within asserts "want" and "have" dates are equal "within" given duration.
-// Returns true if they are, otherwise marks the test as failed, writes error
-// message to test log and returns false.
+// Returns true if they are, otherwise marks the test as failed, writes an
+// error message to the test log and returns false.
 //
-// The "want" and "have" might be date representations in form of string, int,
-// int64 or [time.Time]. For string representations the [Options.TimeFormat] is
-// used during parsing and the returned date is always in UTC. The int and
-// int64 types are interpreted as Unix Timestamp and the date returned is also
-// in UTC.
-//
-// The "within" might be duration representation in form of string, int, int64
-// or [time.Duration].
+// The "want" and "have" might be date representations in the form of a string,
+// int, int64 or [time.Time]. For string representations the
+// [check.Options.TimeFormat] is used during parsing and the returned date is
+// always in UTC. The int and int64 types are interpreted as Unix Timestamp,
+// and the date returned is also in UTC.
 func Within(t tester.T, want, within, have any, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.Within(want, within, have, opts...); e != nil {
@@ -138,13 +137,14 @@ func Within(t tester.T, want, within, have any, opts ...check.Option) bool {
 }
 
 // Recent asserts "have" is within [check.Options.Recent] from [time.Now].
-// Returns nil if it is, otherwise marks the test as failed, writes error
-// message to test log and returns false.
+// Returns nil if it is, otherwise marks the test as failed, writes an error
+// message to the test log and returns false.
 //
-// The "have" may represent date in form of a string, int, int64 or [time.Time].
-// For string representations the [check.Options.TimeFormat] is used during
-// parsing and the returned date is always in UTC. The int and int64 types are
-// interpreted as Unix Timestamp and the date returned is also in UTC.
+// The "have" may represent date in the form of a string, int, int64 or
+// [time.Time]. For string representations the [check.Options.TimeFormat] is
+// used during parsing and the returned date is always in UTC. The int and
+// int64 types are interpreted as Unix Timestamp, and the date returned is also
+// in UTC.
 func Recent(t tester.T, have any, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.Recent(have, opts...); e != nil {
@@ -155,8 +155,8 @@ func Recent(t tester.T, have any, opts ...check.Option) bool {
 }
 
 // Zone asserts "want" and "have" timezones are equal. Returns true if they are,
-// otherwise marks the test as failed, writes error message to test log and
-// returns false.
+// otherwise marks the test as failed, writes an error message to the test log
+// and returns false.
 func Zone(t tester.T, want, have *time.Location, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.Zone(want, have, opts...); e != nil {
@@ -167,10 +167,10 @@ func Zone(t tester.T, want, have *time.Location, opts ...check.Option) bool {
 }
 
 // Duration asserts "want" and "have" durations are equal. Returns true if they
-// are, otherwise marks the test as failed, writes error message to test log and
-// returns false.
+// are, otherwise marks the test as failed, writes an error message to the test
+// log and returns false.
 //
-// The "want" and "have" might be duration representation in form of string,
+// The "want" and "have" might be duration representation in the form of string,
 // int, int64 or [time.Duration].
 func Duration(t tester.T, want, have any, opts ...check.Option) bool {
 	t.Helper()
