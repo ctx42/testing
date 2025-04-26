@@ -81,6 +81,9 @@ func Test_Type(t *testing.T) {
 		have := Type(tspy, 1, uint(1))
 
 		// --- Then ---
+
+		// TODO(rz): does not make sense to have this here. It is never
+		//  executed. Check all other cases like this.
 		affirm.Equal(t, false, have)
 	})
 

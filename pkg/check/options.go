@@ -4,12 +4,19 @@
 package check
 
 import (
+	"fmt"
+	"log"
+	"maps"
+	"os"
 	"reflect"
 	"strconv"
 	"time"
 
 	"github.com/ctx42/testing/pkg/dump"
 )
+
+// globLog is a global logger used package-wide.
+var globLog = log.New(os.Stderr, "*** CHECK ", log.Llongfile)
 
 // Package wide default configuration.
 const (
@@ -41,6 +48,27 @@ var (
 	// DumpDepth is a configurable depth when dumping values in log messages.
 	DumpDepth = DefaultDumpDepth
 )
+
+// typeCheckers is the global map of custom checkers for given types.
+var typeCheckers map[reflect.Type]Check
+
+// RegisterTypeChecker globally registers a custom checker for a given type.
+// It panics if a checker for the same type is already registered.
+func RegisterTypeChecker(typ any, chk Check) {
+	if chk == nil {
+		panic("cannot register a nil checker")
+	}
+	if typeCheckers == nil {
+		typeCheckers = make(map[reflect.Type]Check)
+	}
+	rt := reflect.TypeOf(typ)
+	msg := fmt.Sprintf("Registering type checker for: %s", rt)
+	if _, ok := typeCheckers[rt]; ok {
+		panic("cannot overwrite an existing checker: " + msg)
+	}
+	_ = globLog.Output(2, msg)
+	typeCheckers[rt] = chk
+}
 
 // Check is signature for generic check function comparing two arguments
 // returning error if they are not. The returned error might be one or more
@@ -100,7 +128,12 @@ func WithTypeChecker(typ any, chk Check) Option {
 		if ops.TypeCheckers == nil {
 			ops.TypeCheckers = make(map[reflect.Type]Check)
 		}
-		ops.TypeCheckers[reflect.TypeOf(typ)] = chk
+		rt := reflect.TypeOf(typ)
+		if _, ok := typeCheckers[rt]; ok {
+			format := "Overwriting the global type checker for: %s"
+			_ = globLog.Output(2, fmt.Sprintf(format, rt))
+		}
+		ops.TypeCheckers[rt] = chk
 		return ops
 	}
 }
@@ -191,9 +224,10 @@ func DefaultOptions(opts ...Option) Options {
 			dump.WithTimeFormat(DumpTimeFormat),
 			dump.WithMaxDepth(DumpDepth),
 		),
-		Recent:     RecentDuration,
-		TimeFormat: ParseTimeFormat,
-		now:        time.Now,
+		Recent:       RecentDuration,
+		TimeFormat:   ParseTimeFormat,
+		TypeCheckers: maps.Clone(typeCheckers),
+		now:          time.Now,
 	}
 	return ops.set(opts)
 }

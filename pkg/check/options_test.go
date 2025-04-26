@@ -4,7 +4,11 @@
 package check
 
 import (
+	"bytes"
+	"errors"
+	"log"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -12,6 +16,62 @@ import (
 	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/pkg/dump"
 )
+
+func Test_RegisterTypeChecker(t *testing.T) {
+	t.Setenv("___", "___")
+	affirm.Nil(t, typeCheckers)
+	origLog := globLog
+	buf := &bytes.Buffer{}
+	globLog = log.New(buf, "", 0)
+	chk := func(_, _ any, _ ...Option) error { return errors.New("123456") }
+	t.Cleanup(func() { globLog = origLog; typeCheckers = nil })
+
+	t.Run("is registered", func(t *testing.T) {
+		// --- Given ---
+		type custom struct{}
+		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
+
+		// --- When ---
+		RegisterTypeChecker(custom{}, chk)
+
+		// --- Then ---
+		affirm.Equal(t, 1, len(typeCheckers))
+		wChk := core.Same(chk, typeCheckers[reflect.TypeOf(custom{})])
+		affirm.Equal(t, true, wChk)
+		wMsg := "Registering type checker for: check.custom\n"
+		affirm.Equal(t, wMsg, buf.String())
+	})
+
+	t.Run("panics if already registered", func(t *testing.T) {
+		// --- Given ---
+		type custom struct{}
+		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
+		typeCheckers = map[reflect.Type]Check{reflect.TypeOf(custom{}): chk}
+
+		// --- When ---
+		fn := func() { RegisterTypeChecker(custom{}, chk) }
+		msg := affirm.Panic(t, fn)
+
+		// --- Then ---
+		wMsg := "cannot overwrite an existing checker"
+		affirm.Equal(t, true, strings.Contains(*msg, wMsg))
+		affirm.Equal(t, "", buf.String())
+	})
+
+	t.Run("panics if the checker is nil", func(t *testing.T) {
+		// --- Given ---
+		type custom struct{}
+		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
+
+		// --- When ---
+		fn := func() { RegisterTypeChecker(custom{}, nil) }
+		msg := affirm.Panic(t, fn)
+
+		// --- Then ---
+		affirm.Equal(t, "cannot register a nil checker", *msg)
+		affirm.Equal(t, "", buf.String())
+	})
+}
 
 func Test_WithTrail(t *testing.T) {
 	// --- Given ---
@@ -72,16 +132,47 @@ func Test_WithDumper(t *testing.T) {
 }
 
 func Test_WithTypeChecker(t *testing.T) {
-	// --- Given ---
-	ops := Options{}
-	chk := func(want, have any, opts ...Option) error { return nil }
+	t.Setenv("___", "___")
+	affirm.Nil(t, typeCheckers)
+	origLog := globLog
+	buf := &bytes.Buffer{}
+	globLog = log.New(buf, "", 0)
+	chk := func(_, _ any, _ ...Option) error { return errors.New("123456") }
+	t.Cleanup(func() { globLog = origLog; typeCheckers = nil })
 
-	// --- When ---
-	have := WithTypeChecker(123, chk)(ops)
+	t.Run("setting", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{}
+		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
 
-	// --- Then ---
-	haveChk, _ := have.TypeCheckers[reflect.TypeOf(123)]
-	affirm.Equal(t, true, core.Same(chk, haveChk))
+		// --- When ---
+		have := WithTypeChecker(123, chk)(ops)
+
+		// --- Then ---
+		wChk := core.Same(chk, have.TypeCheckers[reflect.TypeOf(123)])
+		affirm.Equal(t, true, wChk)
+		affirm.Equal(t, "", buf.String())
+	})
+
+	t.Run("overwriting global checker", func(t *testing.T) {
+		// --- Given ---
+		type custom struct{}
+		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
+
+		RegisterTypeChecker(custom{}, chk) // The first call.
+		buf.Reset()                        // Test later the log is empty.
+
+		ops := Options{}
+
+		// --- When ---
+		have := WithTypeChecker(custom{}, chk)(ops)
+
+		// --- Then ---
+		wChk := core.Same(chk, have.TypeCheckers[reflect.TypeOf(custom{})])
+		affirm.Equal(t, true, wChk)
+		wMsg := "Overwriting the global type checker for: check.custom\n"
+		affirm.Equal(t, wMsg, buf.String())
+	})
 }
 
 func Test_WithTrailChecker(t *testing.T) {
@@ -211,6 +302,21 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, false, have.SkipUnexported)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
 		affirm.Equal(t, 10, reflect.ValueOf(have).NumField())
+	})
+
+	t.Run("TypeCheckers field is a clone of a global map", func(t *testing.T) {
+		// --- Given ---
+		t.Setenv("___", "___")
+		affirm.Nil(t, typeCheckers)
+		chk := func(_, _ any, _ ...Option) error { return errors.New("123456") }
+		t.Cleanup(func() { typeCheckers = nil })
+		typeCheckers = map[reflect.Type]Check{reflect.TypeOf(123): chk}
+
+		// --- When ---
+		have := DefaultOptions()
+
+		// --- Then ---
+		affirm.Equal(t, false, core.Same(typeCheckers, have.TypeCheckers))
 	})
 }
 

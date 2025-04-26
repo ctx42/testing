@@ -18,8 +18,8 @@ import (
 const expected = "" +
 	"expected values to be equal:\n" +
 	"  type: %[1]T\n" +
-	"  want: %[1]v\n" +
-	"  have: %v"
+	"  want: %#[1]v\n" +
+	"  have: %#v"
 
 // Equal affirms two comparable types are equal. Returns true if it is,
 // otherwise marks the test as failed, writes an error message to the test log

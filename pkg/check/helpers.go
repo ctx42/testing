@@ -19,7 +19,7 @@ var (
 	typByte       = reflect.TypeOf(byte(0))
 )
 
-// typeString returns type of the value as a string.
+// typeString returns a type of the value as a string.
 func typeString(val reflect.Value) string {
 	if !val.IsValid() {
 		return "<invalid>"
@@ -32,7 +32,7 @@ func isPrintableChar(v byte) bool {
 	return v >= 32 && v <= 126
 }
 
-// valToString returns string representation of the value.
+// valToString returns a string representation of the value.
 //
 // nolint: cyclop
 func valToString(key reflect.Value) string {

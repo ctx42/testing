@@ -92,6 +92,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 	}
 
 	if chk, ok := ops.TypeCheckers[wType]; ok {
+		// TODO(rz): Log we are using custom checker.
 		ops.logTrail()
 		return chk(wVal.Interface(), hVal.Interface(), opts...)
 	}
