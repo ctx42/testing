@@ -197,7 +197,7 @@ func ExampleEqual_slices() {
 	//             }
 }
 
-func ExampleEqual_customTrailCheckers() {
+func ExampleEqual_customTrailChecker() {
 	type T struct {
 		Str string
 		Any []any
@@ -213,6 +213,26 @@ func ExampleEqual_customTrailCheckers() {
 	want := T{Str: "abc", Any: []any{1, 2.123, "abc"}}
 	have := T{Str: "abc", Any: []any{1, 2.124, "abc"}}
 
+	err := check.Equal(want, have, opt)
+
+	fmt.Println(err)
+	// Output:
+	//  <nil>
+}
+
+func ExampleEqual_customTypeChecker() {
+	type T struct{ value float64 }
+
+	chk := func(want, have any, opts ...check.Option) error {
+		w := want.(T)
+		h := have.(T)
+		return check.Epsilon(w.value, h.value, 0.001, opts...)
+	}
+
+	opt := check.WithTypeChecker(T{}, chk)
+
+	want := T{value: 1.2345}
+	have := T{value: 1.2346}
 	err := check.Equal(want, have, opt)
 
 	fmt.Println(err)

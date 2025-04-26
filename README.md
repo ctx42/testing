@@ -1,6 +1,6 @@
 ![gopher.png](doc/gopher.png)
 
-This repository is work in progress open sourcing libraries I've created during 
+This repository is work in progress open-sourcing libraries I've created during 
 my time as a Go developer.
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/ctx42/testing)](https://goreportcard.com/report/github.com/ctx42/testing)
@@ -21,7 +21,7 @@ hear what you think! Any feedback is greatly appreciated.
   * [Installation](#installation)
   * [Packages](#packages)
     * [Main Packages](#main-packages)
-    * [Infrastructure Packets](#infrastructure-packets)
+    * [Supporting Packets](#supporting-packets)
 <!-- TOC -->
 
 # Introduction to Ctx42 Testing Module
@@ -77,9 +77,9 @@ Packages used in test cases.
 - Package [mock](pkg/mock) package provides primitives for writing interface mocks.
 - Package [must](pkg/must/README.md) provides basic test helpers which panic on error.
 
-### Infrastructure Packets
+### Supporting Packets
 
-Packages used to create custom checks, assertions and helpers.
+Packages are used to create custom checks, assertions, and helpers.
 
 - Package [dump](pkg/dump/README.md) provides configurable renderer of any type to a string.
 - Package [notice](pkg/notice/README.md) helps to create nicely formated assertion messages.
