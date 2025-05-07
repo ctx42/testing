@@ -41,7 +41,7 @@ func Text(t core.T, pth string) string {
 		if !started {
 			started = line == "---\n"
 			if !started && eof {
-				t.Fatal("golden file is missing \"---\" marker")
+				t.Fatal("golden file is missing the \"---\" marker")
 				return ""
 			}
 			continue

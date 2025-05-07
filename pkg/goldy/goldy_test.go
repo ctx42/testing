@@ -14,7 +14,7 @@ func Test_Text(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := Text(tspy, "testdata/text_case1.txt")
+		have := Text(tspy, "testdata/text_case1.gld")
 
 		// --- Then ---
 		affirm.Equal(t, "Content #1.\nContent #2.", have)
@@ -25,7 +25,7 @@ func Test_Text(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := Text(tspy, "testdata/text_case2.txt")
+		have := Text(tspy, "testdata/text_case2.gld")
 
 		// --- Then ---
 		affirm.Equal(t, "Content #1.\nContent #2.\n", have)
@@ -36,7 +36,7 @@ func Test_Text(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := Text(tspy, "testdata/text_case3.txt")
+		have := Text(tspy, "testdata/text_case3.gld")
 
 		// --- Then ---
 		affirm.Equal(t, "Content #1.\nContent #2.\n\n", have)
@@ -47,12 +47,12 @@ func Test_Text(t *testing.T) {
 		tspy := core.NewSpy().Capture()
 
 		// --- When ---
-		have := Text(tspy, "testdata/text_no_marker.txt")
+		have := Text(tspy, "testdata/text_no_marker.gld")
 
 		// --- Then ---
 		affirm.Equal(t, "", have)
 		affirm.Equal(t, true, tspy.Failed())
-		wMsg := "golden file is missing \"---\" marker"
+		wMsg := "golden file is missing the \"---\" marker"
 		affirm.Equal(t, true, strings.Contains(tspy.Log(), wMsg))
 	})
 

@@ -512,7 +512,7 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(0)
 
 		// --- Then ---
-		wMsg := goldy.Text(t, "testdata/satisfied_never.txt")
+		wMsg := goldy.Text(t, "testdata/satisfied_never.gld")
 		assert.ErrorEqual(t, wMsg, err)
 	})
 
@@ -530,7 +530,7 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(1)
 
 		// --- Then ---
-		wMsg := goldy.Text(t, "testdata/satisfied_too_few.txt")
+		wMsg := goldy.Text(t, "testdata/satisfied_too_few.gld")
 		assert.ErrorEqual(t, wMsg, err)
 	})
 
@@ -548,7 +548,7 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(3)
 
 		// --- Then ---
-		wMsg := goldy.Text(t, "testdata/satisfied_too_many.txt")
+		wMsg := goldy.Text(t, "testdata/satisfied_too_many.gld")
 		assert.ErrorEqual(t, wMsg, err)
 	})
 }
@@ -805,7 +805,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/check_req_mock_same.txt")
+		want := goldy.Text(t, "testdata/check_req_mock_same.gld")
 		assert.ErrorEqual(t, want, have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
@@ -821,7 +821,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/check_req_mock_same.txt")
+		want := goldy.Text(t, "testdata/check_req_mock_same.gld")
 		assert.ErrorEqual(t, want, have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
@@ -837,7 +837,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/check_req_many.txt")
+		want := goldy.Text(t, "testdata/check_req_many.gld")
 		assert.ErrorEqual(t, want, have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
@@ -855,7 +855,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(nil)
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/check_req_mock_other.txt")
+		want := goldy.Text(t, "testdata/check_req_mock_other.gld")
 		assert.ErrorEqual(t, want, have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})

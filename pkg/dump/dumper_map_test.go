@@ -68,7 +68,7 @@ func Test_mapDumper_tabular(t *testing.T) {
 			"default map[int]types.T1",
 			New(WithTimeFormat(TimeAsUnix)),
 			map[int]types.T1{0: {Int: 0}, 1: {Int: 1}},
-			goldy.Text(t, "testdata/map_of_structs.txt"),
+			goldy.Text(t, "testdata/map_of_structs.gld"),
 		},
 	}
 

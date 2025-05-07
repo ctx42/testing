@@ -75,7 +75,7 @@ func RegisterTypeChecker(typ any, chk Check) {
 // errors joined with [errors.Join].
 type Check func(want, have any, opts ...Option) error
 
-// Option represents [Check] option.
+// Option represents a [Check] option.
 type Option func(Options) Options
 
 // WithTrail is a [Check] option setting initial field/element/key breadcrumb

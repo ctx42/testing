@@ -10,7 +10,7 @@ import (
 func ExampleText() {
 	tspy := core.NewSpy()
 
-	content := goldy.Text(tspy, "testdata/text_case1.txt")
+	content := goldy.Text(tspy, "testdata/text_case1.gld")
 
 	fmt.Println(content)
 	// Output:
