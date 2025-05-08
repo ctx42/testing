@@ -512,11 +512,11 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(0)
 
 		// --- Then ---
-		wMsg := goldy.Text(t, "testdata/satisfied_never.gld")
-		assert.ErrorEqual(t, wMsg, err)
+		want := goldy.New(t, "testdata/satisfied_never.gld")
+		assert.ErrorEqual(t, want.String(), err)
 	})
 
-	t.Run("not satisfied when method called too few times", func(t *testing.T) {
+	t.Run("not satisfied when the method is called too few times", func(t *testing.T) {
 		// --- Given ---
 		call := &Call{
 			cStack:    cStack{Method: "Method"},
@@ -530,11 +530,11 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(1)
 
 		// --- Then ---
-		wMsg := goldy.Text(t, "testdata/satisfied_too_few.gld")
-		assert.ErrorEqual(t, wMsg, err)
+		want := goldy.New(t, "testdata/satisfied_too_few.gld")
+		assert.ErrorEqual(t, want.String(), err)
 	})
 
-	t.Run("not satisfied when method called too many times", func(t *testing.T) {
+	t.Run("not satisfied when the method is called too many times", func(t *testing.T) {
 		// --- Given ---
 		call := &Call{
 			cStack:    cStack{Method: "Method"},
@@ -548,8 +548,8 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(3)
 
 		// --- Then ---
-		wMsg := goldy.Text(t, "testdata/satisfied_too_many.gld")
-		assert.ErrorEqual(t, wMsg, err)
+		want := goldy.New(t, "testdata/satisfied_too_many.gld")
+		assert.ErrorEqual(t, want.String(), err)
 	})
 }
 
@@ -805,8 +805,8 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/check_req_mock_same.gld")
-		assert.ErrorEqual(t, want, have)
+		want := goldy.New(t, "testdata/check_req_mock_same.gld")
+		assert.ErrorEqual(t, want.String(), have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
 
@@ -821,8 +821,8 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/check_req_mock_same.gld")
-		assert.ErrorEqual(t, want, have)
+		want := goldy.New(t, "testdata/check_req_mock_same.gld")
+		assert.ErrorEqual(t, want.String(), have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
 
@@ -837,12 +837,12 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/check_req_many.gld")
-		assert.ErrorEqual(t, want, have)
+		want := goldy.New(t, "testdata/check_req_many.gld")
+		assert.ErrorEqual(t, want.String(), have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
 
-	t.Run("error missing form different mock", func(t *testing.T) {
+	t.Run("error missing from different mock", func(t *testing.T) {
 		// --- Given ---
 		mck0 := &Mock{}
 		pre01 := newCall("Pre01").withParent(mck0)
@@ -855,8 +855,8 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(nil)
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/check_req_mock_other.gld")
-		assert.ErrorEqual(t, want, have)
+		want := goldy.New(t, "testdata/check_req_mock_other.gld")
+		assert.ErrorEqual(t, want.String(), have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
 }

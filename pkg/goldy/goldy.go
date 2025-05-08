@@ -5,19 +5,33 @@ package goldy
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"io"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/ctx42/testing/internal/core"
 )
 
-// Text is a helper returning contents of a golden file at the given path. The
-// contents start after the mandatory marker "---" line, anything before it is
+// Marker denotes a separator between a comment and the content in a golden
+// test file.
+const Marker = "---\n"
+
+// Goldy represents golden file.
+type Goldy struct {
+	Path    string // Path to the golden file.
+	Comment string // Golden file comment.
+	Content []byte // Golden file content after the marker.
+	t       core.T // Test manager.
+}
+
+// New instantiates [Golden] based on the provided path to the golden file. The
+// contents start after the mandatory [Marker] line, anything before it is
 // ignored. It's customary to have short documentation about golden file
-// contents before the "marker".
-func Text(t core.T, pth string) string {
+// contents before the marker.
+func New(t core.T, pth string) *Goldy {
 	t.Helper()
 
 	// Open the file
@@ -27,28 +41,62 @@ func Text(t core.T, pth string) string {
 	}
 	defer func() { _ = fil.Close() }()
 
-	var started bool
-	var lines []string
+	mark := []byte(Marker)
+	gld := &Goldy{
+		Path:    pth,
+		Content: make([]byte, 0, 4*1024),
+		t:       t,
+	}
 
+	var started bool
 	rdr := bufio.NewReader(fil)
 	for {
-		line, err := rdr.ReadString('\n')
+		line, err := rdr.ReadBytes('\n')
 		eof := errors.Is(err, io.EOF)
 		if err != nil && !eof {
 			t.Fatalf("error reading file: %v", err)
-			return ""
+			return nil
 		}
 		if !started {
-			started = line == "---\n"
-			if !started && eof {
-				t.Fatal("golden file is missing the \"---\" marker")
-				return ""
+			started = bytes.Equal(line, mark)
+			if !started {
+				if eof {
+					m := strings.TrimSpace(Marker)
+					t.Fatalf("the golden file is missing the %q marker", m)
+					return nil
+				}
+				gld.Comment += string(line)
 			}
 			continue
 		}
-		lines = append(lines, line)
+		gld.Content = append(gld.Content, line...)
 		if eof {
-			return strings.Join(lines, "")
+			break
 		}
+	}
+	return gld
+}
+
+// String implements [fmt.Stringer] interface and returns golden file content as
+// string.
+func (gld *Goldy) String() string { return string(gld.Content) }
+
+// Bytes return clone of the [Goldy.Content].
+func (gld *Goldy) Bytes() []byte { return slices.Clone(gld.Content) }
+
+// Save saves the golden file to the [Goldy.Path].
+func (gld *Goldy) Save() {
+	gld.t.Helper()
+
+	buf := &bytes.Buffer{}
+	comment := gld.Comment
+	if !strings.HasSuffix(comment, "\n") {
+		comment += "\n"
+	}
+	buf.WriteString(comment)
+	buf.WriteString(Marker)
+	buf.Write(gld.Content)
+	if err := os.WriteFile(gld.Path, buf.Bytes(), 0600); err != nil {
+		gld.t.Fatalf("error writing golden file (%s): %v", gld.Path, err)
 	}
 }

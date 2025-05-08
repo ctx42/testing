@@ -318,8 +318,8 @@ func Test_Dump_Any(t *testing.T) {
 		have := New().Any(val)
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/struct_nested.gld")
-		affirm.Equal(t, want, have)
+		want := goldy.New(t, "testdata/struct_nested.gld")
+		affirm.Equal(t, want.String(), have)
 	})
 
 	t.Run("format nested slices indented twice", func(t *testing.T) {
@@ -351,7 +351,7 @@ func Test_Dump_Any(t *testing.T) {
 		have := dmp.Any(val)
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/struct_nested_with_indent.gld")
-		affirm.Equal(t, want, have)
+		want := goldy.New(t, "testdata/struct_nested_with_indent.gld")
+		affirm.Equal(t, want.String(), have)
 	})
 }

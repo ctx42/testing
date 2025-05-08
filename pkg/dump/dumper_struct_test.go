@@ -30,8 +30,8 @@ func Test_dumpStruct(t *testing.T) {
 		have := structDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/struct_simple.gld")
-		affirm.Equal(t, want, have)
+		want := goldy.New(t, "testdata/struct_simple.gld")
+		affirm.Equal(t, want.String(), have)
 	})
 
 	t.Run("simple flat & compact struct", func(t *testing.T) {
@@ -50,8 +50,8 @@ func Test_dumpStruct(t *testing.T) {
 		have := structDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/struct_simple_flat_compact.gld")
-		affirm.Equal(t, want, have)
+		want := goldy.New(t, "testdata/struct_simple_flat_compact.gld")
+		affirm.Equal(t, want.String(), have)
 	})
 
 	t.Run("multi level struct", func(t *testing.T) {
@@ -68,8 +68,8 @@ func Test_dumpStruct(t *testing.T) {
 		have := structDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/struct_multi_level.gld")
-		affirm.Equal(t, want, have)
+		want := goldy.New(t, "testdata/struct_multi_level.gld")
+		affirm.Equal(t, want.String(), have)
 	})
 
 	t.Run("multi level struct with indent", func(t *testing.T) {
@@ -86,8 +86,8 @@ func Test_dumpStruct(t *testing.T) {
 		have := structDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/struct_multi_level_indent.gld")
-		affirm.Equal(t, want, have)
+		want := goldy.New(t, "testdata/struct_multi_level_indent.gld")
+		affirm.Equal(t, want.String(), have)
 	})
 
 	t.Run("multi level flat & compact struct", func(t *testing.T) {
@@ -104,7 +104,7 @@ func Test_dumpStruct(t *testing.T) {
 		have := structDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
-		want := goldy.Text(t, "testdata/struct_multi_level_flat_compact.gld")
-		affirm.Equal(t, want, have)
+		want := goldy.New(t, "testdata/struct_multi_level_flat_compact.gld")
+		affirm.Equal(t, want.String(), have)
 	})
 }

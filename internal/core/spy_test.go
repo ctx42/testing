@@ -35,7 +35,7 @@ func Test_Spy_Capture(t *testing.T) {
 
 	// --- Then ---
 	if have != tspy {
-		t.Errorf("expected have to be the same instance as spy")
+		t.Errorf("expected `have` to be the same instance as spy")
 	}
 	if have.Messages == nil {
 		t.Errorf("expected Spy.Messages not to be nil")

@@ -36,7 +36,7 @@ type Spy struct {
 // NewSpy returns new instance of [Spy].
 func NewSpy() *Spy { return &Spy{} }
 
-// Capture turns on collection of messages when Error, Errorf, Fatal, and
+// Capture turns on the collection of messages when Error, Errorf, Fatal, and
 // Fatalf are called.
 func (spy *Spy) Capture() *Spy {
 	spy.Messages = &bytes.Buffer{}
