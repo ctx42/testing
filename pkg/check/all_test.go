@@ -12,17 +12,18 @@ import (
 
 // Flags for compiled test binary.
 //
-// When go runs tests it creates the binary with the test code pretty much in
+// When go runs tests, it creates the binary with the test code pretty much in
 // the same way it does compile the regular binaries, then this binary is run,
 // and as every other binary can take flags.
 //
-// Below are flags used to trigger specific behaviours when test binary is run.
+// Below are flags used to trigger specific behaviors when the test binary is
+// run.
 //
-// If any of the flags are used the test binary does not run tests.
+// If any of the flags are used, the test binary does not run tests.
 var (
-	// exitCodeFlag represents compiled test binary flag, when set to value
+	// exitCodeFlag represents a compiled test binary flag, when set to value
 	// greater or equal to 0 it will exit with that code without running tests.
-	// If any of the above flags are set the binary will print values and then
+	// If any of the above flags are set, the binary will print values and then
 	// exit.
 	exitCodeFlag int
 )
@@ -33,20 +34,22 @@ func init() {
 
 func TestMain(m *testing.M) {
 	flag.Parse()
-	// Exit with given code.
+	// Exit with the given code.
 	if exitCodeFlag != -1 {
 		os.Exit(exitCodeFlag)
 	}
 	os.Exit(m.Run())
 }
 
-// WithNow used to set custom function returning current time.
+// WithNow used to set a custom function returning current time.
 func WithNow(fn func() time.Time) Option {
 	return func(ops Options) Options {
 		ops.now = fn
 		return ops
 	}
 }
+
+// ================================= TESTS =====================================
 
 func Test_WithNow(t *testing.T) {
 	// --- Given ---

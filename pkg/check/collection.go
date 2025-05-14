@@ -48,7 +48,7 @@ func Has[T comparable](want T, bag []T, opts ...Option) error {
 		Append("slice", "%s", ops.Dumper.Any(bag))
 }
 
-// HasNo checks slice does not have "want" value. Returns nil if it doesn't,
+// HasNo checks slice does not have the "want" value. Returns nil if it doesn't,
 // otherwise it returns an error with a message indicating the expected and
 // actual values.
 func HasNo[T comparable](want T, set []T, opts ...Option) error {
@@ -65,9 +65,9 @@ func HasNo[T comparable](want T, set []T, opts ...Option) error {
 	return nil
 }
 
-// HasKey checks map has a key. If the key exists it returns its value and nil,
-// otherwise it returns zero value and an error with a message indicating the
-// expected and actual values.
+// HasKey checks the map has a key. If the key exists, it returns its value and
+// nil, otherwise it returns zero-value and an error with a message indicating
+// the expected and actual values.
 func HasKey[K comparable, V any](key K, set map[K]V, opts ...Option) (V, error) {
 	val, ok := set[key]
 	if ok {
@@ -95,9 +95,9 @@ func HasNoKey[K comparable, V any](key K, set map[K]V, opts ...Option) error {
 		Append("map", "%s", ops.Dumper.Any(set))
 }
 
-// HasKeyValue checks map has a key with given value. Returns nil if it doesn't,
-// otherwise it returns an error with a message indicating the expected and
-// actual values.
+// HasKeyValue checks the map has a key with a given value. Returns nil if it
+// doesn't, otherwise it returns an error with a message indicating the
+// expected and actual values.
 func HasKeyValue[K, V comparable](key K, want V, set map[K]V, opts ...Option) error {
 	have, err := HasKey(key, set, opts...)
 	if err != nil {
@@ -114,9 +114,10 @@ func HasKeyValue[K, V comparable](key K, want V, set map[K]V, opts ...Option) er
 		Have("%#v", have)
 }
 
-// SliceSubset checks the "have" is a subset "want". In other words all values
-// in "want" slice must be in "have" slice. Returns nil if it does, otherwise
-// returns an error with a message indicating the expected and actual values.
+// SliceSubset checks the "have" is a subset "want". In other words, all values
+// in the "want" slice must be in the "have" slice. Returns nil if it does,
+// otherwise returns an error with a message indicating the expected and actual
+// values.
 func SliceSubset[V comparable](want, have []V, opts ...Option) error {
 	var missing []V
 	for _, wantVal := range want {
@@ -142,11 +143,11 @@ func SliceSubset[V comparable](want, have []V, opts ...Option) error {
 		Append("missing values", "%s", ops.Dumper.Any(missing))
 }
 
-// MapSubset checks the "want" is a subset "have". In other words all keys and
-// their corresponding values in "want" map must be in "have" map. It is not an
-// error when "have" map has some other keys. Returns nil if "want" is a subset
-// of "have", otherwise it returns an error with a message indicating the
-// expected and actual values.
+// MapSubset checks the "want" is a subset "have". In other words, all keys and
+// their corresponding values in the "want" map must be in the "have" map. It
+// is not an error when the "have" map has some other keys. Returns nil if
+// "want" is a subset of "have", otherwise it returns an error with a message
+// indicating the expected and actual values.
 func MapSubset[K comparable, V any](want, have map[K]V, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 
@@ -155,20 +156,18 @@ func MapSubset[K comparable, V any](want, have map[K]V, opts ...Option) error {
 	var missing []string
 	for wKey, wVal := range want {
 		wKeyStr := valToString(reflect.ValueOf(wKey))
-		trail := ops.mapTrail(wKeyStr)
 		hVal, exist := have[wKey]
 		if !exist {
 			missing = append(missing, wKeyStr)
 			continue
 		}
-		kOps := ops
-		kOps.Trail = trail
+		kOps := ops.MapTrail(wKeyStr)
 		if err := Equal(wVal, hVal, WithOptions(kOps)); err != nil {
 			if ersM == nil {
 				ersM = make(map[string][]error)
 			}
-			order = append(order, trail)
-			ersM[trail] = append(ersM[trail], notice.Unwrap(err)...)
+			order = append(order, kOps.Trail)
+			ersM[kOps.Trail] = append(ersM[kOps.Trail], notice.Unwrap(err)...)
 		}
 	}
 
@@ -205,9 +204,7 @@ func MapsSubset[K comparable, V any](want, have []map[K]V, opts ...Option) error
 
 	var ers []error
 	for i := range want {
-		iOps := ops
-		trail := ops.arrTrail("slice", i)
-		iOps.Trail = trail
+		iOps := ops.ArrTrail("slice", i)
 		if err := MapSubset(want[i], have[i], WithOptions(iOps)); err != nil {
 			ers = append(ers, notice.Unwrap(err)...)
 		}

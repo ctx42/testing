@@ -282,10 +282,11 @@ func Within(want, within, have any, opts ...Option) error {
 // if it is, otherwise returns an error with a message indicating the expected
 // and actual values.
 //
-// The "have" may represent date in form of a string, int, int64 or [time.Time].
-// For string representations the [Options.TimeFormat] is used during parsing
-// and the returned date is always in UTC. The int and int64 types are
-// interpreted as Unix Timestamp and the date returned is also in UTC.
+// The "have" may represent date in the form of a string, int, int64 or
+// [time.Time]. For string representations the [Options.TimeFormat] is used
+// during parsing and the returned date is always in UTC. The int and int64
+// types are interpreted as Unix Timestamp, and the date returned is also in
+// UTC.
 func Recent(have any, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 	return Within(ops.now(), ops.Recent, have, opts...)
@@ -312,8 +313,8 @@ func Zone(want, have *time.Location, opts ...Option) error {
 // are, otherwise returns an error with a message indicating the expected and
 // actual values.
 //
-// The "want" and "have" may represent duration in form of a string, int, int64
-// or [time.Duration].
+// The "want" and "have" may represent duration in the form of a string, int,
+// int64 or [time.Duration].
 func Duration(want, have any, opts ...Option) error {
 	wDur, wStr, _, err := getDur(want, opts...)
 	if err != nil {

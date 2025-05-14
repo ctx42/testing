@@ -43,12 +43,12 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 
 	if i := slices.Index(ops.SkipTrails, ops.Trail); i >= 0 {
 		ops.Trail += " <skipped>"
-		ops.logTrail()
+		ops.LogTrail()
 		return nil
 	}
 
 	if !wVal.IsValid() && !hVal.IsValid() {
-		ops.logTrail()
+		ops.LogTrail()
 		return nil
 	}
 
@@ -60,14 +60,14 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 		if hVal.IsValid() {
 			hItf = hVal.Interface()
 		}
-		ops.logTrail()
+		ops.LogTrail()
 		return equalError(wItf, hItf, WithOptions(ops))
 	}
 
 	if !wVal.CanInterface() {
 		trail := ops.Trail
 		ops.Trail += " <skipped>"
-		ops.logTrail()
+		ops.LogTrail()
 		ops.Trail = trail
 		if ops.SkipUnexported {
 			return nil
@@ -82,36 +82,36 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 	wType := wVal.Type()
 	hType := hVal.Type()
 	if wType != hType {
-		ops.logTrail()
+		ops.LogTrail()
 		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
 	}
 
 	if chk, ok := ops.TrailCheckers[ops.Trail]; ok {
-		ops.logTrail()
+		ops.LogTrail()
 		return chk(wVal.Interface(), hVal.Interface(), WithOptions(ops))
 	}
 
 	if chk, ok := ops.TypeCheckers[wType]; ok {
 		// TODO(rz): Log we are using custom checker.
-		ops.logTrail()
+		ops.LogTrail()
 		return chk(wVal.Interface(), hVal.Interface(), opts...)
 	}
 
 	switch knd := wVal.Kind(); knd {
 	case reflect.Ptr:
 		if wType == typTimeLocPtr && hType == typTimeLocPtr {
-			ops.logTrail()
+			ops.LogTrail()
 			wZone := wVal.Interface().(*time.Location) // nolint: forcetypeassert
 			hZone := hVal.Interface().(*time.Location) // nolint: forcetypeassert
 			return Zone(wZone, hZone, WithOptions(ops))
 		}
 
 		if wVal.IsNil() && hVal.IsNil() {
-			ops.logTrail()
+			ops.LogTrail()
 			return nil
 		}
 		if wVal.IsNil() || hVal.IsNil() {
-			ops.logTrail()
+			ops.LogTrail()
 			wItf := wVal.Interface()
 			hItf := hVal.Interface()
 			return equalError(wItf, hItf, WithOptions(ops))
@@ -123,20 +123,16 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 		wTyp := wVal.Type()
 		hTyp := hVal.Type()
 		if wTyp == typTime && hTyp == typTime {
-			ops.logTrail()
+			ops.LogTrail()
 			return Time(wVal.Interface(), hVal.Interface(), opts...)
 		}
 		if wTyp == typTimeLoc && hTyp == typTimeLoc {
-			ops.logTrail()
+			ops.LogTrail()
 			wZone := wVal.Interface().(time.Location) // nolint: forcetypeassert
 			hZone := hVal.Interface().(time.Location) // nolint: forcetypeassert
 			return Zone(&wZone, &hZone, opts...)
 		}
 		typeName := wVal.Type().Name()
-
-		sOps := ops
-		trail := ops.structTrail(typeName, "")
-		sOps.Trail = trail
 
 		var ers []error
 		for i := 0; i < wVal.NumField(); i++ {
@@ -146,9 +142,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 				continue
 			}
 			wSF := wVal.Type().Field(i)
-			trail = sOps.structTrail("", wSF.Name)
-			iOps := sOps
-			iOps.Trail = trail
+			iOps := ops.StructTrail(typeName, wSF.Name)
 			if err := deepEqual(wfVal, hfVal, WithOptions(iOps)); err != nil {
 				ers = append(ers, notice.Unwrap(err)...)
 			}
@@ -157,7 +151,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 
 	case reflect.Slice, reflect.Array:
 		if wVal.Len() != hVal.Len() {
-			ops.logTrail()
+			ops.LogTrail()
 			wItf := wVal.Interface()
 			hItf := hVal.Interface()
 			return equalError(wItf, hItf, WithOptions(ops)).
@@ -165,16 +159,14 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 				Prepend("want len", "%d", wVal.Len())
 		}
 		if knd == reflect.Slice && wVal.Pointer() == hVal.Pointer() {
-			ops.logTrail()
+			ops.LogTrail()
 			return nil
 		}
 		var ers []error
 		for i := 0; i < wVal.Len(); i++ {
 			wiVal := wVal.Index(i)
 			hiVal := hVal.Index(i)
-			iOps := ops
-			trail := ops.arrTrail(knd.String(), i)
-			iOps.Trail = trail
+			iOps := ops.ArrTrail(knd.String(), i)
 			if err := deepEqual(wiVal, hiVal, WithOptions(iOps)); err != nil {
 				ers = append(ers, notice.Unwrap(err)...)
 			}
@@ -183,7 +175,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 
 	case reflect.Map:
 		if wVal.Len() != hVal.Len() {
-			ops.logTrail()
+			ops.LogTrail()
 			wItf := wVal.Interface()
 			hItf := hVal.Interface()
 			return equalError(wItf, hItf, WithOptions(ops)).
@@ -191,7 +183,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 				Prepend("want len", "%d", wVal.Len())
 		}
 		if wVal.Pointer() == hVal.Pointer() {
-			ops.logTrail()
+			ops.LogTrail()
 			return nil
 		}
 
@@ -204,9 +196,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 		for _, key := range keys {
 			wkVal := wVal.MapIndex(key)
 			hkVal := hVal.MapIndex(key)
-			kOps := ops
-			trail := ops.mapTrail(valToString(key))
-			kOps.Trail = trail
+			kOps := ops.MapTrail(valToString(key))
 			if !hkVal.IsValid() {
 				hItf := hVal.Interface()
 				err := equalError(hItf, nil, WithOptions(kOps))
@@ -225,14 +215,14 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 		return deepEqual(wElem, hElem, WithOptions(ops))
 
 	case reflect.Bool:
-		ops.logTrail()
+		ops.LogTrail()
 		if wVal.Bool() == hVal.Bool() {
 			return nil
 		}
 		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		ops.logTrail()
+		ops.LogTrail()
 		if wVal.Int() == hVal.Int() {
 			return nil
 		}
@@ -240,42 +230,42 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32,
 		reflect.Uint64:
-		ops.logTrail()
+		ops.LogTrail()
 		if wVal.Uint() == hVal.Uint() {
 			return nil
 		}
 		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
 
 	case reflect.Float32, reflect.Float64:
-		ops.logTrail()
+		ops.LogTrail()
 		if wVal.Float() == hVal.Float() {
 			return nil
 		}
 		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
 
 	case reflect.Complex64, reflect.Complex128:
-		ops.logTrail()
+		ops.LogTrail()
 		if wVal.Complex() == hVal.Complex() {
 			return nil
 		}
 		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
 
 	case reflect.String:
-		ops.logTrail()
+		ops.LogTrail()
 		if wVal.String() == hVal.String() {
 			return nil
 		}
 		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
 
 	case reflect.Chan, reflect.Func:
-		ops.logTrail()
+		ops.LogTrail()
 		if wVal.Pointer() == hVal.Pointer() {
 			return nil
 		}
 		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
 
 	default:
-		ops.logTrail()
+		ops.LogTrail()
 		// For types, we haven't explicitly handled, use DeepEqual.
 		if reflect.DeepEqual(wVal.Interface(), hVal.Interface()) {
 			return nil

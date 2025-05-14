@@ -320,14 +320,14 @@ func Test_DefaultOptions(t *testing.T) {
 	})
 }
 
-func Test_Options_logTrail(t *testing.T) {
+func Test_Options_LogTrail(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		list := make([]string, 0)
 		ops := Options{Trail: "abc", TrailLog: &list}
 
 		// --- When ---
-		have := ops.logTrail()
+		have := ops.LogTrail()
 
 		// --- Then ---
 		affirm.DeepEqual(t, []string{"abc"}, list)
@@ -341,7 +341,7 @@ func Test_Options_logTrail(t *testing.T) {
 		ops := Options{Trail: "", TrailLog: &list}
 
 		// --- When ---
-		have := ops.logTrail()
+		have := ops.LogTrail()
 
 		// --- Then ---
 		affirm.DeepEqual(t, []string{}, list)
@@ -354,14 +354,14 @@ func Test_Options_logTrail(t *testing.T) {
 		ops := Options{Trail: "abc"}
 
 		// --- When ---
-		have := ops.logTrail()
+		have := ops.LogTrail()
 
 		// --- Then ---
 		affirm.DeepEqual(t, have, ops)
 	})
 }
 
-func Test_Options_structTrail_tabular(t *testing.T) {
+func Test_Options_StructTrail_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -370,15 +370,15 @@ func Test_Options_structTrail_tabular(t *testing.T) {
 		fldName string
 		want    string
 	}{
-		{"no trail and type", "", "type", "", "type"},                         // 1
-		{"no trail and field", "", "", "field", "field"},                      // 2
-		{"no trail and type and field", "", "type", "field", "type.field"},    // 3
-		{"trail and type", "trail", "type", "", "trail"},                      // 4
-		{"trail and field", "trail", "", "field", "trail.field"},              // 5
-		{"trail and type and field", "trail", "type", "field", "trail.field"}, // 6
-		{"trail[] and type", "[]", "type", "", "[]"},                          // 7
-		{"trail[] and field", "[]", "", "field", "[].field"},                  // 8
-		{"trail[] and type and field", "[]", "type", "field", "[].field"},     // 9
+		{"no trail and type", "", "type", "", "type"},
+		{"no trail and field", "", "", "field", "field"},
+		{"no trail and type and field", "", "type", "field", "type.field"},
+		{"trail and type", "trail", "type", "", "trail"},
+		{"trail and field", "trail", "", "field", "trail.field"},
+		{"trail and type and field", "trail", "type", "field", "trail.field"},
+		{"trail[] and type", "[]", "type", "", "[]"},
+		{"trail[] and field", "[]", "", "field", "[].field"},
+		{"trail[] and type and field", "[]", "type", "field", "[].field"},
 	}
 
 	for _, tc := range tt {
@@ -387,16 +387,16 @@ func Test_Options_structTrail_tabular(t *testing.T) {
 			ops := Options{Trail: tc.trail}
 
 			// --- When ---
-			have := ops.structTrail(tc.typName, tc.fldName)
+			have := ops.StructTrail(tc.typName, tc.fldName)
 
 			// --- Then ---
 			affirm.Equal(t, ops.Trail, tc.trail)
-			affirm.Equal(t, tc.want, have)
+			affirm.Equal(t, tc.want, have.Trail)
 		})
 	}
 }
 
-func Test_Options_mapTrail_tabular(t *testing.T) {
+func Test_Options_MapTrail_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -404,7 +404,7 @@ func Test_Options_mapTrail_tabular(t *testing.T) {
 		key   string
 		want  string
 	}{
-		{"empty trail with key", "", "key", "map[key]"},
+		{"empty trail with a key", "", "key", "map[key]"},
 		{"trail ends with index", "[1]", "key", "[1]map[key]"},
 		{"trail ends with index", "[1]", "key", "[1]map[key]"},
 		{"not empty trail", "field", "key", "field[key]"},
@@ -416,16 +416,16 @@ func Test_Options_mapTrail_tabular(t *testing.T) {
 			ops := Options{Trail: tc.trail}
 
 			// --- When ---
-			have := ops.mapTrail(tc.key)
+			have := ops.MapTrail(tc.key)
 
 			// --- Then ---
 			affirm.Equal(t, ops.Trail, tc.trail)
-			affirm.Equal(t, tc.want, have)
+			affirm.Equal(t, tc.want, have.Trail)
 		})
 	}
 }
 
-func Test_Options_arrTrail_tabular(t *testing.T) {
+func Test_Options_ArrTrail_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -434,8 +434,8 @@ func Test_Options_arrTrail_tabular(t *testing.T) {
 		key   int
 		want  string
 	}{
-		{"empty trail with key", "", "", 1, "[1]"},
-		{"empty trail with key", "", "kind", 1, "<kind>[1]"},
+		{"empty trail with a key", "", "", 1, "[1]"},
+		{"empty trail with a key", "", "kind", 1, "<kind>[1]"},
 		{"trail ends with index", "[1]", "", 2, "[1][2]"},
 		{"not empty trail", "field", "", 1, "field[1]"},
 	}
@@ -446,11 +446,37 @@ func Test_Options_arrTrail_tabular(t *testing.T) {
 			ops := Options{Trail: tc.trail}
 
 			// --- When ---
-			have := ops.arrTrail(tc.kind, tc.key)
+			have := ops.ArrTrail(tc.kind, tc.key)
 
 			// --- Then ---
 			affirm.Equal(t, ops.Trail, tc.trail)
-			affirm.Equal(t, tc.want, have)
+			affirm.Equal(t, tc.want, have.Trail)
 		})
 	}
+}
+
+func Test_FieldName(t *testing.T) {
+	t.Run("empty trail", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{SkipUnexported: true}
+
+		// --- When ---
+		have := FieldName(ops, "myType")("myField")
+
+		// --- Then ---
+		affirm.Equal(t, "myType.myField", have(Options{}).Trail)
+		affirm.Equal(t, true, have(Options{}).SkipUnexported)
+	})
+
+	t.Run("existing trail", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{Trail: "ABC[1]", SkipUnexported: true}
+
+		// --- When ---
+		have := FieldName(ops, "myType")("myField")
+
+		// --- Then ---
+		affirm.Equal(t, "ABC[1].myField", have(Options{}).Trail)
+		affirm.Equal(t, true, have(Options{}).SkipUnexported)
+	})
 }

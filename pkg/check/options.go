@@ -78,8 +78,7 @@ type Check func(want, have any, opts ...Option) error
 // Option represents a [Check] option.
 type Option func(Options) Options
 
-// WithTrail is a [Check] option setting initial field/element/key breadcrumb
-// trail.
+// WithTrail is a [Check] option setting initial field/element/key trail.
 func WithTrail(pth string) Option {
 	return func(ops Options) Options {
 		ops.Trail = pth
@@ -241,15 +240,15 @@ func (ops Options) set(opts []Option) Options {
 	return dst
 }
 
-// logTrail logs non-empty [Options.Trail] to [Options.TrailLog].
-func (ops Options) logTrail() Options {
+// LogTrail logs non-empty [Options.Trail] to [Options.TrailLog].
+func (ops Options) LogTrail() Options {
 	if ops.TrailLog != nil && ops.Trail != "" {
 		*ops.TrailLog = append(*ops.TrailLog, ops.Trail)
 	}
 	return ops
 }
 
-// structTrail updates [Options.Trail] with struct type and/or field name
+// StructTrail updates [Options.Trail] with a struct type and/or field name
 // considering an already existing trail.
 //
 // Example trails:
@@ -258,21 +257,25 @@ func (ops Options) logTrail() Options {
 //	Type.Field.Field
 //	Type.Field[1].Field
 //	Type.Field["A"].Field
-func (ops Options) structTrail(typeName, fldName string) string {
+func (ops Options) StructTrail(typeName, fldName string) Options {
 	left := ops.Trail
 	if typeName != "" && ops.Trail == "" {
 		left = typeName
 	}
 	if left != "" && fldName != "" {
-		return left + "." + fldName
+		ops.Trail = left + "." + fldName
+		return ops
 	}
 	if left == "" && fldName != "" {
-		return fldName
+		ops.Trail = fldName
+		return ops
 	}
-	return left
+
+	ops.Trail = left
+	return ops
 }
 
-// mapTrail updates [Options.Trail] with trail of the map value considering
+// MapTrail updates [Options.Trail] with trail of the map value considering
 // already existing trails.
 //
 // Example trails:
@@ -281,7 +284,7 @@ func (ops Options) structTrail(typeName, fldName string) string {
 //	["A"]map[1]
 //	[1]map["A"]
 //	field["A"]
-func (ops Options) mapTrail(key string) string {
+func (ops Options) MapTrail(key string) Options {
 	next := ops.Trail
 	if ops.Trail == "" {
 		next = "map"
@@ -289,22 +292,50 @@ func (ops Options) mapTrail(key string) string {
 	if next[len(next)-1] == ']' {
 		next += "map"
 	}
-	next += "[" + key + "]"
-	return next
+	ops.Trail = next + "[" + key + "]"
+	return ops
 }
 
-// arrTrail updates [Options.Trail] with slice or array index considering
+// ArrTrail updates [Options.Trail] with slice or array index considering
 // already existing trail.
 //
 // Example trails:
 //
 //	arr[1]
 //	[1]
-func (ops Options) arrTrail(kind string, idx int) string {
+func (ops Options) ArrTrail(kind string, idx int) Options {
 	next := ops.Trail
 	if next == "" && kind != "" {
 		next = "<" + kind + ">"
 	}
-	next += "[" + strconv.Itoa(idx) + "]"
-	return next
+	ops.Trail = next + "[" + strconv.Itoa(idx) + "]"
+	return ops
+}
+
+// FieldName returns a helper function which updates [Options.Trail].
+//
+// It is useful when construction trails in custom struct checkers.
+//
+// Example:
+//
+//	func fileCheck(want, have any, opts ...check.Option) error {
+//		ops := check.DefaultOptions(opts...)
+//		if err := check.Type(file{}, have, check.WithOptions(ops)); err != nil {
+//			return err
+//		}
+//		w, h := want.(file), have.(file)
+//
+//		fName := check.FieldName(ops, "file")
+//		ers := []error{
+//			check.Equal(w.path, h.path, fName("path")),
+//			check.Equal(w.pks, h.pks, fName("pks")),
+//			// Not all fields are compared.
+//			check.Fields(4, w, fName("{field count}")),
+//		}
+//		return notice.Join(ers...)
+//	}
+func FieldName(ops Options, typeName string) func(fldName string) Option {
+	return func(fldName string) Option {
+		return WithOptions(ops.StructTrail(typeName, fldName))
+	}
 }
