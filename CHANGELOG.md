@@ -1,3 +1,20 @@
+## v0.7.0 (Fri, 16 May 2025 13:09:51 UTC)
+- Fix typo in the Dumper field name.
+- Improve dumping long multi line strings. Update documentation.
+- Update assertion functions documentation.
+- Improve documentation in the tester README.md file.
+- Improve documentation in the tester README.md file.
+- Add the ability to register global type checkers, add global logger to provide information about interesting events in the test log.
+- Update / add the custom type checker and global type checker documentation.
+- Simplify the way the panicking assertions and checks are tested, improve documentation and test log messages.
+- Code style.
+- By convention, all golden files should have gld extension.
+- Add new functionalities to the goldy package.
+- Refactor check.Options.Trail management and improve code consistency. Export methods on check.Options.Trail so external modules can use them in custom checkers.
+- Refactor goldy. Now, to open a file use Open function, the New function was added to create new golden files.
+- All check and assert functions must follow the same pattern of arguments first want value then have value.
+- Add mocker package.
+
 ## v0.6.0 (Fri, 18 Apr 2025 11:16:17 UTC)
 - Regenerate assert documentation TOC.
 - Link to specific package's README.md file from main README.md.
