@@ -512,7 +512,7 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(0)
 
 		// --- Then ---
-		want := goldy.New(t, "testdata/satisfied_never.gld")
+		want := goldy.Open(t, "testdata/satisfied_never.gld")
 		assert.ErrorEqual(t, want.String(), err)
 	})
 
@@ -530,7 +530,7 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(1)
 
 		// --- Then ---
-		want := goldy.New(t, "testdata/satisfied_too_few.gld")
+		want := goldy.Open(t, "testdata/satisfied_too_few.gld")
 		assert.ErrorEqual(t, want.String(), err)
 	})
 
@@ -548,7 +548,7 @@ func Test_Call_satisfied(t *testing.T) {
 		err := call.satisfied(3)
 
 		// --- Then ---
-		want := goldy.New(t, "testdata/satisfied_too_many.gld")
+		want := goldy.Open(t, "testdata/satisfied_too_many.gld")
 		assert.ErrorEqual(t, want.String(), err)
 	})
 }
@@ -805,7 +805,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := goldy.New(t, "testdata/check_req_mock_same.gld")
+		want := goldy.Open(t, "testdata/check_req_mock_same.gld")
 		assert.ErrorEqual(t, want.String(), have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
@@ -821,7 +821,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := goldy.New(t, "testdata/check_req_mock_same.gld")
+		want := goldy.Open(t, "testdata/check_req_mock_same.gld")
 		assert.ErrorEqual(t, want.String(), have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
@@ -837,7 +837,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(stk)
 
 		// --- Then ---
-		want := goldy.New(t, "testdata/check_req_many.gld")
+		want := goldy.Open(t, "testdata/check_req_many.gld")
 		assert.ErrorEqual(t, want.String(), have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})
@@ -855,7 +855,7 @@ func Test_Call_checkReq(t *testing.T) {
 		have := call.checkReq(nil)
 
 		// --- Then ---
-		want := goldy.New(t, "testdata/check_req_mock_other.gld")
+		want := goldy.Open(t, "testdata/check_req_mock_other.gld")
 		assert.ErrorEqual(t, want.String(), have)
 		assert.ErrorIs(t, have, ErrRequirements)
 	})

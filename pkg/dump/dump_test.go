@@ -318,7 +318,7 @@ func Test_Dump_Any(t *testing.T) {
 		have := New().Any(val)
 
 		// --- Then ---
-		want := goldy.New(t, "testdata/struct_nested.gld")
+		want := goldy.Open(t, "testdata/struct_nested.gld")
 		affirm.Equal(t, want.String(), have)
 	})
 
@@ -351,7 +351,7 @@ func Test_Dump_Any(t *testing.T) {
 		have := dmp.Any(val)
 
 		// --- Then ---
-		want := goldy.New(t, "testdata/struct_nested_with_indent.gld")
+		want := goldy.Open(t, "testdata/struct_nested_with_indent.gld")
 		affirm.Equal(t, want.String(), have)
 	})
 }

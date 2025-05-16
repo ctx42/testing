@@ -11,13 +11,13 @@ import (
 	"github.com/ctx42/testing/pkg/must"
 )
 
-func Test_New(t *testing.T) {
+func Test_Open(t *testing.T) {
 	t.Run("test runner set", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := New(tspy, "testdata/text_case1.gld")
+		have := Open(tspy, "testdata/text_case1.gld")
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(tspy, have.t))
@@ -28,7 +28,7 @@ func Test_New(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := New(tspy, "testdata/text_case1.gld")
+		have := Open(tspy, "testdata/text_case1.gld")
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
@@ -42,7 +42,7 @@ func Test_New(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := New(tspy, "testdata/text_case2.gld")
+		have := Open(tspy, "testdata/text_case2.gld")
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
@@ -56,7 +56,7 @@ func Test_New(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := New(tspy, "testdata/text_case3.gld")
+		have := Open(tspy, "testdata/text_case3.gld")
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
@@ -70,7 +70,7 @@ func Test_New(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := New(tspy, "testdata/text_case4.gld")
+		have := Open(tspy, "testdata/text_case4.gld")
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
@@ -84,7 +84,7 @@ func Test_New(t *testing.T) {
 		tspy := core.NewSpy().Capture()
 
 		// --- When ---
-		have := New(tspy, "testdata/text_no_marker.gld")
+		have := Open(tspy, "testdata/text_no_marker.gld")
 
 		// --- Then ---
 		affirm.Nil(t, have)
@@ -98,7 +98,7 @@ func Test_New(t *testing.T) {
 		tspy := core.NewSpy().Capture()
 
 		// --- When ---
-		have := New(tspy, "testdata/not-existing.txt")
+		have := Open(tspy, "testdata/not-existing.txt")
 
 		// --- Then ---
 		affirm.Nil(t, have)
@@ -107,6 +107,38 @@ func Test_New(t *testing.T) {
 		affirm.Equal(t, true, strings.Contains(tspy.Log(), wMsg))
 		wMsg = "testdata/not-existing.txt"
 		affirm.Equal(t, true, strings.Contains(tspy.Log(), wMsg))
+	})
+}
+
+func Test_New(t *testing.T) {
+	t.Run("open with string content", func(t *testing.T) {
+		// --- Given ---
+		pth := filepath.Join(t.TempDir(), "test.gld")
+		tspy := core.NewSpy()
+
+		// --- When ---
+		have := New(tspy, pth, "comment", "content")
+
+		// --- Then ---
+		affirm.Equal(t, pth, have.Path)
+		affirm.Equal(t, "comment", have.Comment)
+		affirm.DeepEqual(t, []byte("content"), have.Content)
+		affirm.Equal(t, true, core.Same(tspy, have.t))
+	})
+
+	t.Run("open with byte content", func(t *testing.T) {
+		// --- Given ---
+		pth := filepath.Join(t.TempDir(), "test.gld")
+		tspy := core.NewSpy()
+
+		// --- When ---
+		have := New(tspy, pth, "comment", []byte("content"))
+
+		// --- Then ---
+		affirm.Equal(t, pth, have.Path)
+		affirm.Equal(t, "comment", have.Comment)
+		affirm.DeepEqual(t, []byte("content"), have.Content)
+		affirm.Equal(t, true, core.Same(tspy, have.t))
 	})
 }
 

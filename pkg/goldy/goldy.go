@@ -19,6 +19,11 @@ import (
 // test file.
 const Marker = "---\n"
 
+// byteseq represents byte sequences.
+type byteseq interface {
+	~string | ~[]byte
+}
+
 // Goldy represents golden file.
 type Goldy struct {
 	Path    string // Path to the golden file.
@@ -27,11 +32,11 @@ type Goldy struct {
 	t       core.T // Test manager.
 }
 
-// New instantiates [Golden] based on the provided path to the golden file. The
-// contents start after the mandatory [Marker] line, anything before it is
+// Open instantiates [Golden] based on the provided path to the golden file.
+// The contents start after the mandatory [Marker] line, anything before it is
 // ignored. It's customary to have short documentation about golden file
 // contents before the marker.
-func New(t core.T, pth string) *Goldy {
+func Open(t core.T, pth string) *Goldy {
 	t.Helper()
 
 	// Open the file
@@ -75,6 +80,17 @@ func New(t core.T, pth string) *Goldy {
 		}
 	}
 	return gld
+}
+
+// New returns new instance of [Goldy].
+func New[C byteseq](t core.T, pth, comment string, content C) *Goldy {
+	t.Helper()
+	return &Goldy{
+		Path:    pth,
+		Comment: comment,
+		Content: append([]byte{}, content...),
+		t:       t,
+	}
 }
 
 // String implements [fmt.Stringer] interface and returns golden file content as
