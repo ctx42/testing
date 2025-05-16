@@ -140,7 +140,7 @@ func Test_ErrorIs(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, have)
-		wMsg := "expected err to have a target in its tree:\n" +
+		wMsg := "expected error to have a target in its tree:\n" +
 			"  trail: type.field\n" +
 			"   want: (*errors.errorString) err0\n" +
 			"   have: (*errors.errorString) err0"
@@ -168,7 +168,7 @@ func Test_ErrorIs_success_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			err := ErrorIs(tc.err, tc.target)
+			err := ErrorIs(tc.target, tc.err)
 
 			// --- Then ---
 			affirm.Nil(t, err)
@@ -201,7 +201,7 @@ func Test_ErrorIs_error_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- Given ---
-			const format = "expected err to have a target in its tree:\n" +
+			const format = "expected error to have a target in its tree:\n" +
 				"  want: (%s) %s\n" +
 				"  have: (%s) %s"
 
@@ -214,7 +214,7 @@ func Test_ErrorIs_error_tabular(t *testing.T) {
 			)
 
 			// --- When ---
-			err := ErrorIs(tc.have, tc.want)
+			err := ErrorIs(tc.want, tc.have)
 
 			// --- Then ---
 			affirm.NotNil(t, err)
@@ -229,7 +229,7 @@ func Test_ErrorAs(t *testing.T) {
 		var target *types.TPtr
 
 		// --- When ---
-		err := ErrorAs(&types.TPtr{Val: "A"}, &target)
+		err := ErrorAs(&target, &types.TPtr{Val: "A"})
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -241,7 +241,7 @@ func Test_ErrorAs(t *testing.T) {
 		var target *types.TPtr
 
 		// --- When ---
-		err := ErrorAs(nil, target)
+		err := ErrorAs(target, nil)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -254,11 +254,11 @@ func Test_ErrorAs(t *testing.T) {
 		var target types.TVal
 
 		// --- When ---
-		err := ErrorAs(&types.TPtr{Val: "A"}, &target)
+		err := ErrorAs(&target, &types.TPtr{Val: "A"})
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected err to have a target in its tree:\n" +
+		wMsg := "expected error to have a target in its tree:\n" +
 			"  want: (*types.TPtr) &types.TPtr{Val:\"A\"}\n" +
 			"  have: (*types.TVal) &types.TVal{Val:\"\"}"
 		affirm.Equal(t, wMsg, err.Error())
@@ -272,11 +272,11 @@ func Test_ErrorAs(t *testing.T) {
 		var target types.TVal
 
 		// --- When ---
-		err := ErrorAs(&types.TPtr{Val: "A"}, &target, opt)
+		err := ErrorAs(&target, &types.TPtr{Val: "A"}, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected err to have a target in its tree:\n" +
+		wMsg := "expected error to have a target in its tree:\n" +
 			"  trail: type.field\n" +
 			"   want: (*types.TPtr) &types.TPtr{Val:\"A\"}\n" +
 			"   have: (*types.TVal) &types.TVal{Val:\"\"}"

@@ -229,7 +229,7 @@ func Test_Call_Panic(t *testing.T) {
 
 		// --- Then ---
 		assert.Same(t, call, have)
-		assert.ErrorIs(t, ErrTst, have.panic.(error))
+		assert.ErrorIs(t, have.panic.(error), ErrTst)
 	})
 
 	t.Run("panics if proxy call", func(t *testing.T) {
@@ -418,7 +418,7 @@ func Test_Call_CanCall_tabular(t *testing.T) {
 			err := call.CanCall()
 
 			// --- Then ---
-			assert.ErrorIs(t, err, tc.want)
+			assert.ErrorIs(t, tc.want, err)
 		})
 	}
 }
@@ -807,7 +807,7 @@ func Test_Call_checkReq(t *testing.T) {
 		// --- Then ---
 		want := goldy.Open(t, "testdata/check_req_mock_same.gld")
 		assert.ErrorEqual(t, want.String(), have)
-		assert.ErrorIs(t, have, ErrRequirements)
+		assert.ErrorIs(t, ErrRequirements, have)
 	})
 
 	t.Run("error missing one of many from the same mock", func(t *testing.T) {
@@ -823,7 +823,7 @@ func Test_Call_checkReq(t *testing.T) {
 		// --- Then ---
 		want := goldy.Open(t, "testdata/check_req_mock_same.gld")
 		assert.ErrorEqual(t, want.String(), have)
-		assert.ErrorIs(t, have, ErrRequirements)
+		assert.ErrorIs(t, ErrRequirements, have)
 	})
 
 	t.Run("error missing many from the same mock", func(t *testing.T) {
@@ -839,7 +839,7 @@ func Test_Call_checkReq(t *testing.T) {
 		// --- Then ---
 		want := goldy.Open(t, "testdata/check_req_many.gld")
 		assert.ErrorEqual(t, want.String(), have)
-		assert.ErrorIs(t, have, ErrRequirements)
+		assert.ErrorIs(t, ErrRequirements, have)
 	})
 
 	t.Run("error missing from different mock", func(t *testing.T) {
@@ -857,7 +857,7 @@ func Test_Call_checkReq(t *testing.T) {
 		// --- Then ---
 		want := goldy.Open(t, "testdata/check_req_mock_other.gld")
 		assert.ErrorEqual(t, want.String(), have)
-		assert.ErrorIs(t, have, ErrRequirements)
+		assert.ErrorIs(t, ErrRequirements, have)
 	})
 }
 

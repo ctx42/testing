@@ -39,37 +39,37 @@ func NoError(err error, opts ...Option) error {
 		Have("%q", err.Error())
 }
 
-// ErrorIs checks whether any error in "err" tree matches target. Returns nil
-// if it's, otherwise returns an error with a message indicating the expected
-// and actual values.
-func ErrorIs(err, target error, opts ...Option) error {
-	if errors.Is(err, target) {
+// ErrorIs checks whether any error in "err" tree matches the "want" target.
+// Returns nil if it's, otherwise returns an error with a message indicating
+// the expected and actual values.
+func ErrorIs(want, err error, opts ...Option) error {
+	if errors.Is(err, want) {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected err to have a target in its tree").
+	return notice.New("expected error to have a target in its tree").
 		Trail(ops.Trail).
-		Want("(%T) %v", target, target).
+		Want("(%T) %v", want, want).
 		Have("(%T) %v", err, err)
 }
 
-// ErrorAs checks there is an error in the "err" tree that matches a target,
-// and if one is found, sets the target to that error. Returns nil if the
-// target is found, otherwise returns an error with a message indicating the
-// expected and actual values.
-func ErrorAs(err error, target any, opts ...Option) error {
+// ErrorAs checks there is an error in the "err" tree that matches the "want"
+// target, and if one is found, sets the target to that error. Returns nil if
+// the target is found, otherwise returns an error with a message indicating
+// the expected and actual values.
+func ErrorAs(want any, err error, opts ...Option) error {
 	if e := Error(err); e != nil {
 		return e
 	}
 	//goland:noinspection GoErrorsAs
-	if errors.As(err, target) {
+	if errors.As(err, want) {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected err to have a target in its tree").
+	return notice.New("expected error to have a target in its tree").
 		Trail(ops.Trail).
 		Want("(%T) %#v", err, err).
-		Have("(%T) %#v", target, target)
+		Have("(%T) %#v", want, want)
 }
 
 // ErrorEqual checks "err" is not nil and its message equals to "want". Returns

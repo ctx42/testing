@@ -885,7 +885,7 @@ func Test_Mock_Callable(t *testing.T) {
 		err := mck.Callable("NotExisting")
 
 		// --- Then ---
-		assert.ErrorIs(t, err, ErrNotFound)
+		assert.ErrorIs(t, ErrNotFound, err)
 	})
 
 	t.Run("error when not matching arguments given", func(t *testing.T) {
@@ -903,7 +903,7 @@ func Test_Mock_Callable(t *testing.T) {
 		err := mck.Callable("MethodIntVar", 7, 44)
 
 		// --- Then ---
-		assert.ErrorIs(t, err, ErrNotFound)
+		assert.ErrorIs(t, ErrNotFound, err)
 	})
 
 	t.Run("error when called again", func(t *testing.T) {
@@ -920,7 +920,7 @@ func Test_Mock_Callable(t *testing.T) {
 		err := mck.Callable("MethodIntVar", 42, 44)
 
 		// --- Then ---
-		assert.ErrorIs(t, err, ErrTooManyCalls)
+		assert.ErrorIs(t, ErrTooManyCalls, err)
 	})
 }
 
@@ -961,7 +961,7 @@ func Test_Mock_find(t *testing.T) {
 		have, err := mck.find("One", nil, nil)
 
 		// --- Then ---
-		assert.ErrorIs(t, err, ErrNotFound)
+		assert.ErrorIs(t, ErrNotFound, err)
 		wMsg := goldy.Open(t, "testdata/find_fail_arg_count.gld")
 		assert.ErrorEqual(t, wMsg.String(), err)
 		assert.Nil(t, have)
@@ -982,7 +982,7 @@ func Test_Mock_find(t *testing.T) {
 		have, err := mck.find("Two", nil, nil)
 
 		// --- Then ---
-		assert.ErrorIs(t, err, ErrNotFound)
+		assert.ErrorIs(t, ErrNotFound, err)
 		wMsg := goldy.Open(t, "testdata/find_call_fail_no_args.gld")
 		assert.ErrorEqual(t, wMsg.String(), err)
 		assert.Nil(t, have)
@@ -1003,7 +1003,7 @@ func Test_Mock_find(t *testing.T) {
 		have, err := mck.find("Two", []any{1, 2}, nil)
 
 		// --- Then ---
-		assert.ErrorIs(t, err, ErrNotFound)
+		assert.ErrorIs(t, ErrNotFound, err)
 		wMsg := goldy.Open(t, "testdata/find_call_fail_with_args.gld")
 		assert.ErrorEqual(t, wMsg.String(), err)
 		assert.Nil(t, have)
@@ -1025,7 +1025,7 @@ func Test_Mock_find(t *testing.T) {
 		have, err := mck.find("One", []any{1.0}, nil)
 
 		// --- Then ---
-		assert.ErrorIs(t, err, ErrNotFound)
+		assert.ErrorIs(t, ErrNotFound, err)
 		wMsg := goldy.Open(t, "testdata/find_call_fail_arg_type.gld")
 		assert.ErrorEqual(t, wMsg.String(), err)
 		assert.Nil(t, have)
@@ -1088,7 +1088,7 @@ func Test_Mock_find(t *testing.T) {
 		have, err := mck.find("MethodIntVar", []any{1, 2, 3}, nil)
 
 		// --- Then ---
-		assert.ErrorIs(t, err, ErrNotFound)
+		assert.ErrorIs(t, ErrNotFound, err)
 		wMsg := goldy.Open(t, "testdata/find_fail_variadic_arg_count.gld")
 		assert.ErrorEqual(t, wMsg.String(), err)
 		assert.Nil(t, have)
@@ -1132,7 +1132,7 @@ func Test_Mock_find(t *testing.T) {
 		have, err := mck.find("MethodIntVar", []any{10, 4}, nil)
 
 		// --- Then ---
-		assert.ErrorIs(t, err, ErrNotFound)
+		assert.ErrorIs(t, ErrNotFound, err)
 		wMsg := goldy.Open(t, "testdata/find_fail_panicking_matcher.gld")
 		assert.ErrorEqual(t, wMsg.String(), err)
 		assert.Nil(t, have)
@@ -1257,7 +1257,7 @@ func Test_Mock_find(t *testing.T) {
 		have, err := mck.find("Wrap", nil, nil)
 
 		// --- Then ---
-		assert.ErrorIs(t, err, ErrTooManyCalls)
+		assert.ErrorIs(t, ErrTooManyCalls, err)
 		wMsg := goldy.Open(t, "testdata/find_fail_too_many_calls.gld")
 		assert.ErrorEqual(t, wMsg.String(), err)
 		assert.Nil(t, have)
@@ -1279,7 +1279,7 @@ func Test_Mock_find(t *testing.T) {
 		have, err := mck.find("Zero", nil, stack)
 
 		// --- Then ---
-		assert.ErrorIs(t, err, ErrNotFound)
+		assert.ErrorIs(t, ErrNotFound, err)
 		wMsg := goldy.Open(t, "testdata/find_fail_with_stack.gld")
 		assert.ErrorEqual(t, wMsg.String(), err)
 		assert.Nil(t, have)

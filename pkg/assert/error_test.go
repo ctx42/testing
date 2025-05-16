@@ -110,7 +110,7 @@ func Test_ErrorIs(t *testing.T) {
 		err2 := fmt.Errorf("wrap: %w %w", err0, err1)
 
 		// --- When ---
-		have := ErrorIs(tspy, err2, err1)
+		have := ErrorIs(tspy, err1, err2)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -120,14 +120,14 @@ func Test_ErrorIs(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
-		tspy.ExpectLogContain("expected err to have a target in its tree")
+		tspy.ExpectLogContain("expected error to have a target in its tree")
 		tspy.Close()
 
 		err0 := errors.New("err0")
 		err1 := errors.New("err1")
 
 		// --- When ---
-		msg := affirm.Panic(t, func() { ErrorIs(tspy, err0, err1) })
+		msg := affirm.Panic(t, func() { ErrorIs(tspy, err1, err0) })
 
 		// --- Then ---
 		affirm.Equal(t, tester.FailNowMsg, *msg)
@@ -145,7 +145,7 @@ func Test_ErrorIs(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		msg := affirm.Panic(t, func() { ErrorIs(tspy, err0, err1, opt) })
+		msg := affirm.Panic(t, func() { ErrorIs(tspy, err1, err0, opt) })
 
 		// --- Then ---
 		affirm.Equal(t, tester.FailNowMsg, *msg)
@@ -159,7 +159,7 @@ func Test_ErrorAs(t *testing.T) {
 		tspy := tester.New(t).Close()
 
 		// --- When ---
-		have := ErrorAs(tspy, &types.TPtr{Val: "A"}, &target)
+		have := ErrorAs(tspy, &target, &types.TPtr{Val: "A"})
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -176,7 +176,7 @@ func Test_ErrorAs(t *testing.T) {
 		var target types.TVal
 
 		// --- When ---
-		have := ErrorAs(tspy, &types.TPtr{Val: "A"}, &target)
+		have := ErrorAs(tspy, &target, &types.TPtr{Val: "A"})
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -194,7 +194,7 @@ func Test_ErrorAs(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := ErrorAs(tspy, &types.TPtr{Val: "A"}, &target, opt)
+		have := ErrorAs(tspy, &target, &types.TPtr{Val: "A"}, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

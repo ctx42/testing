@@ -30,25 +30,25 @@ func NoError(t tester.T, err error, opts ...check.Option) bool {
 	return true
 }
 
-// ErrorIs asserts whether any error in "err" tree matches target. Returns true
-// if it does, otherwise marks the test as failed, writes an error message to
-// the test log and returns false.
-func ErrorIs(t tester.T, err, target error, opts ...check.Option) bool {
+// ErrorIs asserts whether any error in "err" tree matches the "want" target.
+// Returns true if it does, otherwise marks the test as failed, writes an error
+// message to the test log and returns false.
+func ErrorIs(t tester.T, want, err error, opts ...check.Option) bool {
 	t.Helper()
-	if e := check.ErrorIs(err, target, opts...); e != nil {
+	if e := check.ErrorIs(want, err, opts...); e != nil {
 		t.Fatal(e)
 		return false
 	}
 	return true
 }
 
-// ErrorAs finds the first error in "err" tree that matches target, and if one
-// is found, sets a target to that error. Returns true if it does, otherwise
-// marks the test as failed, writes an error message to the test log and
-// returns false.
-func ErrorAs(t tester.T, err error, target any, opts ...check.Option) bool {
+// ErrorAs finds the first error in "err" tree that matches the "want" target,
+// and if one is found, sets a target to that error. Returns true if it does,
+// otherwise marks the test as failed, writes an error message to the test log
+// and returns false.
+func ErrorAs(t tester.T, want any, err error, opts ...check.Option) bool {
 	t.Helper()
-	if e := check.ErrorAs(err, target, opts...); e != nil {
+	if e := check.ErrorAs(want, err, opts...); e != nil {
 		t.Error(e)
 		return false
 	}
@@ -56,7 +56,7 @@ func ErrorAs(t tester.T, err error, target any, opts ...check.Option) bool {
 }
 
 // ErrorEqual asserts "err" is not nil and its message equals to "want".
-// Returns true if it's, otherwise marks the test as failed, writes an error
+// Returns true if it is, otherwise marks the test as failed, writes an error
 // message to the test log and returns false.
 func ErrorEqual(t tester.T, want string, err error, opts ...check.Option) bool {
 	t.Helper()

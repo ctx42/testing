@@ -231,7 +231,7 @@ type Spy struct {
 //
 //		// --- Then ---
 //		tspy.AssertExpectations()
-//		assert.ErrorIs(t, fil.Close(), os.ErrClosed)
+//		assert.ErrorIs(t, os.ErrClosed, fil.Close())
 //	})
 //
 // If the optional argument expectHelpers is provided the [Spy.ExpectHelpers]
