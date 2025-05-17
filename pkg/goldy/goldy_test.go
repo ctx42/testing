@@ -17,7 +17,7 @@ func Test_Open(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := Open(tspy, "testdata/text_case1.gld")
+		have := Open(tspy, "testdata/test_case1.gld")
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(tspy, have.t))
@@ -28,11 +28,11 @@ func Test_Open(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := Open(tspy, "testdata/text_case1.gld")
+		have := Open(tspy, "testdata/test_case1.gld")
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
-		affirm.Equal(t, "testdata/text_case1.gld", have.Path)
+		affirm.Equal(t, "testdata/test_case1.gld", have.Path)
 		affirm.Equal(t, "No new line at the end.\n", have.Comment)
 		affirm.Equal(t, "Content #1.\nContent #2.", have.String())
 	})
@@ -42,11 +42,11 @@ func Test_Open(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := Open(tspy, "testdata/text_case2.gld")
+		have := Open(tspy, "testdata/test_case2.gld")
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
-		affirm.Equal(t, "testdata/text_case2.gld", have.Path)
+		affirm.Equal(t, "testdata/test_case2.gld", have.Path)
 		affirm.Equal(t, "New line at the end of file.\n", have.Comment)
 		affirm.Equal(t, "Content #1.\nContent #2.\n", have.String())
 	})
@@ -56,11 +56,11 @@ func Test_Open(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := Open(tspy, "testdata/text_case3.gld")
+		have := Open(tspy, "testdata/test_case3.gld")
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
-		affirm.Equal(t, "testdata/text_case3.gld", have.Path)
+		affirm.Equal(t, "testdata/test_case3.gld", have.Path)
 		affirm.Equal(t, "Multiple new lines at the file end.\n", have.Comment)
 		affirm.Equal(t, "Content #1.\nContent #2.\n\n", have.String())
 	})
@@ -70,11 +70,11 @@ func Test_Open(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := Open(tspy, "testdata/text_case4.gld")
+		have := Open(tspy, "testdata/test_case4.gld")
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
-		affirm.Equal(t, "testdata/text_case4.gld", have.Path)
+		affirm.Equal(t, "testdata/test_case4.gld", have.Path)
 		affirm.Equal(t, "Multiple\ncomment\nlines.\n", have.Comment)
 		affirm.Equal(t, "Content #1.\nContent #2.\n", have.String())
 	})
@@ -84,7 +84,7 @@ func Test_Open(t *testing.T) {
 		tspy := core.NewSpy().Capture()
 
 		// --- When ---
-		have := Open(tspy, "testdata/text_no_marker.gld")
+		have := Open(tspy, "testdata/test_no_marker.gld")
 
 		// --- Then ---
 		affirm.Nil(t, have)

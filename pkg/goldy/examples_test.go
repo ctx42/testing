@@ -7,12 +7,12 @@ import (
 	"github.com/ctx42/testing/pkg/goldy"
 )
 
-func ExampleNew() {
+func ExampleOpen() {
 	tspy := core.NewSpy()
 
-	content := goldy.Open(tspy, "testdata/text_case1.gld")
+	gld := goldy.Open(tspy, "testdata/test_case1.gld")
 
-	fmt.Println(content)
+	fmt.Println(gld.String())
 	// Output:
 	// Content #1.
 	// Content #2.

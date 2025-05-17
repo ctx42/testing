@@ -160,6 +160,6 @@ func Test_Single(t *testing.T) {
 		msg := affirm.Panic(t, func() { Single(fn()) })
 
 		// --- Then ---
-		affirm.Equal(t, "expected single result", *msg)
+		affirm.Equal(t, "expected a single result", *msg)
 	})
 }

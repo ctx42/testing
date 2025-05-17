@@ -7,10 +7,6 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// TODO(rz): test this. Add list dir assertion?
-// TODO(rz): document this in a readme file maybe with excelidraw image
-//  explaining the versions.
-
 // Module represents a test module used in tests.
 //
 // Uses:
@@ -129,6 +125,7 @@ func (mod *Module) goSum() string {
 	default:
 		mod.t.Fatalf("unknown test project version: %s", mod.Version)
 	}
+
 	return code
 }
 

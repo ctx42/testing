@@ -33,7 +33,7 @@ func Values[T, TT any](val0 T, val1 TT, err error) (T, TT) {
 	return val0, val1
 }
 
-// Nil is a helper function which panics if an error is not nil.
+// Nil is a helper function that panics if an error is not nil.
 func Nil(err error) {
 	if err != nil {
 		panic(err)
@@ -41,7 +41,7 @@ func Nil(err error) {
 }
 
 // First returns the first element in the slice or T's zero value if the slice
-// is empty. It panics with value of err if err is not nil.
+// is empty. It panics with the value of the "err" if it is not nil.
 func First[T any](s []T, err error) T {
 	v, err := single(s, err)
 	if errors.Is(err, errExpSingle) {
@@ -54,8 +54,8 @@ func First[T any](s []T, err error) T {
 }
 
 // Single returns the first element in the slice or T's zero value if the slice
-// is empty. It panics with value of err if err is not nil or with value of
-// errExpSingle if slices has more than one element.
+// is empty. It panics with the value of "err" if it is not nil or with the
+// value of errExpSingle if slices have more than one element.
 func Single[T any](s []T, err error) T {
 	v, err := single(s, err)
 	if err != nil {
@@ -66,11 +66,11 @@ func Single[T any](s []T, err error) T {
 
 // errExpSingle is an error returned when [single] receives a slice with more
 // than one element and nil err.
-var errExpSingle = errors.New("expected single result")
+var errExpSingle = errors.New("expected a single result")
 
 // single returns the first element in the slice or T's zero value if the slice
 // is empty. It returns T's zero value and error if err is not nil. If slice has
-// more than one element it returns the first element and errExpSingle error.
+// more than one element, it returns the first element and errExpSingle error.
 func single[T any](s []T, err error) (T, error) {
 	var t T
 	if err != nil {

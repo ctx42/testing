@@ -1,7 +1,5 @@
 package cases
 
-// TODO(rz): generate mock for Massive interface.
-
 // Massive embeds all cases.
 type Massive interface {
 	Case00

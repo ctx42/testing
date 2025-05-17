@@ -10,9 +10,6 @@ import (
 	"time"
 )
 
-// TODO(rz): make very detailed code review of this file. Check if all the types
-//  are required.
-
 // WAW represents Europe/Warsaw timezone.
 var WAW *time.Location
 
