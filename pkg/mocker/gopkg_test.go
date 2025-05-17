@@ -8,6 +8,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ctx42/testing/internal/tstmod"
@@ -319,6 +320,9 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 	wd := must.Value(os.Getwd())
 	mod1 := tstmod.New(t, "v1")
 	mod2 := tstmod.New(t, "v2")
+
+	// TODO(rz):
+	t.Logf("--> Environ:\n %s", strings.Join(os.Environ(), "\n"))
 
 	tt := []struct {
 		testN string
