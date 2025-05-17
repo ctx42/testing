@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// Formats to used by [GetTimeDumper].
+// Formats used by [GetTimeDumper].
 const (
 	TimeAsRFC3339  = ""         // Formats time as [time.RFC3339Nano].
 	TimeAsUnix     = "<unix>"   // Formats time as Unix timestamp (seconds).

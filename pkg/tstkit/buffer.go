@@ -64,7 +64,7 @@ func (buf *Buffer) Kind() string { return buf.kind }
 
 // SkipExamine disables the cleanup requirement for the test to examine the
 // buffer. This is useful when the buffer is [WetBuffer] but we do not want to
-// examine what was written to it
+// examine what was written to it. Implements fluent interface.
 func (buf *Buffer) SkipExamine() *Buffer {
 	buf.mx.Lock()
 	defer buf.mx.Unlock()

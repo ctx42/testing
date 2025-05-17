@@ -180,11 +180,6 @@ func toLowerSnakeCase(camel string) string {
 // files) in the specified directory. It does not recurse into subdirectories.
 // The returned paths are absolute.
 func findSources(dir string) ([]string, error) {
-	var err error
-	if dir, err = filepath.Abs(dir); err != nil {
-		return nil, err
-	}
-
 	f, err := os.Open(dir)
 	if err != nil {
 		return nil, err

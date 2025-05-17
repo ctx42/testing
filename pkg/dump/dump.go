@@ -11,6 +11,8 @@ import (
 
 // Strings used by dump package to indicate special values.
 const (
+	// TODO(rz): Should be exported so can be used by other packages.
+	//  Search <empty> to see usages e.g. in tstkit.
 	valNil        = "nil"       // The [reflect.Value] is nil.
 	valAddr       = "<addr>"    // The [reflect.Value] is an address.
 	valFunc       = "<func>"    // The [reflect.Value] is a function.
@@ -64,10 +66,11 @@ var nilVal = reflect.ValueOf(nil)
 // Dumper represents function signature for value dumpers.
 type Dumper func(dmp Dump, level int, val reflect.Value) string
 
-// Option represents [NewConfig] option.
+// Option represents a [NewConfig] option.
 type Option func(*Dump)
 
-// WithFlat is option for [New] which makes [Dump] display values in one line.
+// WithFlat is an option for [New] which makes [Dump] display values in one
+// line.
 func WithFlat(dmp *Dump) { dmp.Flat = true }
 
 // WithFlatStrings configures the maximum length of strings to be represented
@@ -79,14 +82,15 @@ func WithFlatStrings(n int) Option {
 	return func(dmp *Dump) { dmp.FlatStrings = n }
 }
 
-// WithCompact is option for [New] which makes [Dump] display values without
+// WithCompact is an option for [New] which makes [Dump] display values without
 // unnecessary whitespaces.
 func WithCompact(dmp *Dump) { dmp.Compact = true }
 
-// WithPtrAddr is option for [New] which makes [Dump] display pointer addresses.
+// WithPtrAddr is an option for [New] which makes [Dump] display pointer
+// addresses.
 func WithPtrAddr(dmp *Dump) { dmp.PtrAddr = true }
 
-// WithTimeFormat is option for [New] which makes [Dump] display [time.Time]
+// WithTimeFormat is an option for [New] which makes [Dump] display [time.Time]
 // using given format. The format might be standard Go time formating layout or
 // one of the custom values - see [Dump.TimeFormat] for more details.
 func WithTimeFormat(format string) Option {
@@ -98,19 +102,19 @@ func WithDumper(typ any, dumper Dumper) Option {
 	return func(dmp *Dump) { dmp.Dumpers[reflect.TypeOf(typ)] = dumper }
 }
 
-// WithMaxDepth is option for [New] which controls maximum nesting when
+// WithMaxDepth is an option for [New] which controls maximum nesting when
 // bumping recursive types.
 func WithMaxDepth(maximum int) Option {
 	return func(dmp *Dump) { dmp.MaxDepth = maximum }
 }
 
-// WithIndent is option for [New] which sets additional indentation to apply to
-// dumped values.
+// WithIndent is an option for [New] which sets additional indentation to apply
+// to dumped values.
 func WithIndent(n int) Option {
 	return func(dmp *Dump) { dmp.Indent = n }
 }
 
-// WithTabWidth is option for [New] setting tab width in spaces.
+// WithTabWidth is an option for [New] setting tab width in spaces.
 func WithTabWidth(n int) Option {
 	return func(dmp *Dump) { dmp.TabWidth = n }
 }

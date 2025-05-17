@@ -310,61 +310,59 @@ func Test_toLowerSnakeCase_tabular(t *testing.T) {
 func Test_findSources(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- When ---
-		wd := must.Value(os.Getwd())
-		have, err := findSources("testdata/ignored")
+		dir := filepath.Join(must.Value(os.Getwd()), "testdata/ignored")
+		have, err := findSources(dir)
 
 		// --- Then ---
 		assert.NoError(t, err)
 		want := []string{
-			filepath.Join(wd, "testdata/ignored/pkg.go"),
-			filepath.Join(wd, "testdata/ignored/with_main.go"),
+			filepath.Join(dir, "pkg.go"),
+			filepath.Join(dir, "with_main.go"),
 		}
 		assert.Equal(t, want, have)
 	})
 
 	t.Run("does not recurse", func(t *testing.T) {
 		// --- When ---
-		wd := must.Value(os.Getwd())
-		have, err := findSources("testdata/pkga")
+		dir := filepath.Join(must.Value(os.Getwd()), "testdata/pkga")
+		have, err := findSources(dir)
 
 		// --- Then ---
 		assert.NoError(t, err)
-		want := []string{filepath.Join(wd, "testdata/pkga/helper.go")}
+		want := []string{filepath.Join(dir, "helper.go")}
 		assert.Equal(t, want, have)
 	})
 
 	t.Run("does not return test files", func(t *testing.T) {
 		// --- When ---
-		wd := must.Value(os.Getwd())
-		have, err := findSources("testdata/pkgb")
+		dir := filepath.Join(must.Value(os.Getwd()), "testdata/pkgb")
+		have, err := findSources(dir)
 
 		// --- Then ---
 		assert.NoError(t, err)
-		want := []string{filepath.Join(wd, "testdata/pkgb/helper.go")}
+		want := []string{filepath.Join(dir, "helper.go")}
 		assert.Equal(t, want, have)
 	})
 
-	t.Run("error when path is not a directory", func(t *testing.T) {
+	t.Run("error when the path is not a directory", func(t *testing.T) {
 		// --- When ---
-		wd := must.Value(os.Getwd())
-		have, err := findSources("testdata/pkga/helper.go")
+		dir := filepath.Join(must.Value(os.Getwd()), "testdata/pkga/helper.go")
+		have, err := findSources(dir)
 
 		// --- Then ---
 		assert.ErrorContain(t, "not a directory", err)
-		want := filepath.Join(wd, "testdata/pkga/helper.go")
-		assert.ErrorContain(t, want, err)
+		assert.ErrorContain(t, dir, err)
 		assert.Nil(t, have)
 	})
 
 	t.Run("error when directory doesnt exist", func(t *testing.T) {
 		// --- When ---
-		wd := must.Value(os.Getwd())
-		have, err := findSources("testdata/not-existing")
+		dir := filepath.Join(must.Value(os.Getwd()), "testdata/not-existing")
+		have, err := findSources(dir)
 
 		// --- Then ---
 		assert.ErrorIs(t, fs.ErrNotExist, err)
-		want := filepath.Join(wd, "testdata/not-existing")
-		assert.ErrorContain(t, want, err)
+		assert.ErrorContain(t, dir, err)
 		assert.Nil(t, have)
 	})
 }

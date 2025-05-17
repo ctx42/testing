@@ -11,7 +11,7 @@ type EqualCase struct {
 	Desc     string // The case description.
 	Val0     any    // The first value.
 	Val1     any    // The second value.
-	AreEqual bool   // Are the values equal.
+	AreEqual bool   // Are the values equal?
 }
 
 // EqualCases returns cases to test equality.

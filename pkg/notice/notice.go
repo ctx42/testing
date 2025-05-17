@@ -34,11 +34,11 @@ const trail = "trail"
 //	  have: have 1
 const ContinuationHeader = " ---"
 
-// ErrNotice is sentinel error which is automatically wrapped by all instances
-// of [Notice] unless changed with [Notice.Wrap] method.
+// ErrNotice is a sentinel error automatically wrapped by all instances of
+// [Notice] unless changed with [Notice.Wrap] method.
 var ErrNotice = errors.New("notice error")
 
-// Notice represents structured notice message consisting of a header and
+// Notice represents a structured notice message consisting of a header and
 // multiple named rows giving context to it.
 //
 // nolint: errname
@@ -59,7 +59,7 @@ func New(header string, args ...any) *Notice {
 
 // From returns instance of [Notice] if it is in err's tree. If prefix is not
 // empty header will be prefixed with the first element in the slice. If err is
-// not instance of [Notice] it will create a new one and wrap err.
+// not an instance of [Notice], it will create a new one and wrap the "err".
 func From(err error, prefix ...string) *Notice {
 	var e *Notice
 	if errors.As(err, &e) {
@@ -86,9 +86,7 @@ func (msg *Notice) SetHeader(header string, args ...any) *Notice {
 }
 
 // Append appends a new row with the specified name and value build using
-// [fmt.Sprintf] from format and args. If a row with the same name already
-// exists, it is moved to the end of the [Notice.Order] slice. Implements
-// fluent interface.
+// [fmt.Sprintf] from format and args. Implements fluent interface.
 func (msg *Notice) Append(name, format string, args ...any) *Notice {
 	fn := func(row Row) bool { return row.Name == name }
 	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
@@ -109,9 +107,7 @@ func (msg *Notice) AppendRow(desc ...Row) *Notice {
 }
 
 // Prepend prepends a new row with the specified name and value built using
-// [fmt.Sprintf] from format and args. If a row with the same name already
-// exists, it is moved to the beginning of the [Notice.Order] slice.
-// Implements fluent interface.
+// [fmt.Sprintf] from format and args. Implements fluent interface.
 func (msg *Notice) Prepend(name, format string, args ...any) *Notice {
 	fn := func(row Row) bool { return row.Name == name }
 	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
@@ -128,7 +124,7 @@ func (msg *Notice) Prepend(name, format string, args ...any) *Notice {
 }
 
 // Trail adds trail row if "tr" is not empty string. If the trail row already
-// exists it overwrites it. Implements fluent interface.
+// exists, it overwrites it. Implements fluent interface.
 //
 // Trail examples:
 //
@@ -143,13 +139,13 @@ func (msg *Notice) Trail(tr string) *Notice {
 }
 
 // Want uses Append method to append a row with "want" name. If the "want" row
-// already exists it will just replace its value.
+// already exists, it will just replace its value.
 func (msg *Notice) Want(format string, args ...any) *Notice {
 	return msg.Append("want", format, args...)
 }
 
 // Have uses Append method to append a row with "have" name. If the "have" row
-// already exists it will just replace its value.
+// already exists, it will just replace its value.
 func (msg *Notice) Have(format string, args ...any) *Notice {
 	return msg.Append("have", format, args...)
 }

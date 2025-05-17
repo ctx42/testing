@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Formats to used by [GetDurDumper].
+// Formats used by [GetDurDumper].
 const (
 	DurAsString  = ""          // Same format as [time.Duration.String].
 	DurAsSeconds = "<seconds>" // Duration as seconds float.
@@ -27,7 +27,7 @@ func GetDurDumper(format string) Dumper {
 }
 
 // DurDumperString requires val to be dereferenced representation of
-// [reflect.Duration] and returns its string representation in format defined
+// [time.Duration] and returns its string representation in format defined
 // by [Dump] configuration.
 func DurDumperString(dmp Dump, lvl int, val reflect.Value) string {
 	tim := val.Interface().(time.Duration) // nolint: forcetypeassert
@@ -36,7 +36,7 @@ func DurDumperString(dmp Dump, lvl int, val reflect.Value) string {
 }
 
 // DurDumperSeconds requires val to be dereferenced representation of
-// [reflect.Duration] and returns its string representation in format defined
+// [time.Duration] and returns its string representation in format defined
 // by [Dump] configuration.
 func DurDumperSeconds(dmp Dump, lvl int, val reflect.Value) string {
 	tim := val.Interface().(time.Duration) // nolint: forcetypeassert
