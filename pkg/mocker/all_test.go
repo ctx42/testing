@@ -105,7 +105,12 @@ func fileCheck(want, have any, opts ...check.Option) error {
 func modCache(dir string) string {
 	mod := os.Getenv("GOMODCACHE")
 	if mod == "" {
-		mod = filepath.Join(os.Getenv("GOPATH"), "pkg/mod")
+		mod = os.Getenv("GOPATH")
+		if mod == "" {
+			mod = filepath.Join(os.Getenv("HOME"), "go", "pkg", "mod")
+		} else {
+			mod = filepath.Join(mod, "pkg", "mod")
+		}
 	}
 	return filepath.Join(mod, dir)
 }
