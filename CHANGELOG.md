@@ -1,3 +1,9 @@
+## v0.7.1 (Sat, 17 May 2025 10:01:03 UTC)
+- Code style / documentation.
+- Figure out paths on github.
+- Figure out paths on GitHub, update GitHub workflows.
+- Update documentation. Add TODOs for GitHub Actions.
+
 ## v0.7.0 (Fri, 16 May 2025 13:09:51 UTC)
 - Fix typo in the Dumper field name.
 - Improve dumping long multi line strings. Update documentation.
