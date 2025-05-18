@@ -1,5 +1,5 @@
 <!-- TOC -->
-* [Dump Package](#dump-package)
+* [The `bump` Package](#the-bump-package)
   * [Basic Usage](#basic-usage)
   * [Configuration Options](#configuration-options)
     * [Flat Output](#flat-output)
@@ -11,7 +11,7 @@
 * [Conclusion](#conclusion)
 <!-- TOC -->
 
-# Dump Package
+# The `bump` Package
 
 The `dump` package is a utility that serializes any Go value into its string
 representation.
