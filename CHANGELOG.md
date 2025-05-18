@@ -1,3 +1,7 @@
+## v0.8.0 (Sun, 18 May 2025 14:23:21 UTC)
+- Add tstkit package.
+- Update documentation and code style.
+
 ## v0.7.1 (Sat, 17 May 2025 10:01:03 UTC)
 - Code style / documentation.
 - Figure out paths on github.
