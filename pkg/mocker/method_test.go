@@ -4,8 +4,10 @@
 package mocker
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/ctx42/testing/internal/diff"
 	"github.com/ctx42/testing/pkg/assert"
 	"github.com/ctx42/testing/pkg/goldy"
 )
@@ -60,7 +62,17 @@ func Test_method_generate(t *testing.T) {
 		have := met.generate("MyMock")
 
 		// --- Then ---
-		assert.Equal(t, goldy.Open(t, gfp).String(), have)
+		want := goldy.Open(t, gfp).String()
+
+		// TODO(rz):
+		edits := diff.Strings(want, have)
+		u, err := diff.ToUnified("have", "want", want, edits, 1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Println(u)
+
+		// assert.Equal(t, want, have)
 	})
 }
 
