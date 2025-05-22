@@ -14,20 +14,20 @@ import (
 //   - [reflect.Chan]
 //
 // Returns [valErrUsage] ("<dump-usage-error>") string if kind cannot be
-// matched. It requires val to be dereferenced value and returns its string
-// representation in format defined by [Dump] configuration.
+// matched. It requires val to be a dereferenced value and returns its string
+// representation in the format defined by [Dump] configuration.
 func chanDumper(dmp Dump, lvl int, val reflect.Value) string {
 	var str string
 	switch val.Kind() {
 	case reflect.Chan:
-		ptrAddr := valAddr
+		ptrAddr := ValAddr
 		if dmp.PtrAddr {
 			ptr := reflect.ValueOf(val.Pointer())
 			ptrAddr = hexPtrDumper(dmp, lvl, ptr)
 		}
 		str = fmt.Sprintf("(%s)(%s)", val.Type(), ptrAddr)
 	default:
-		str = valErrUsage
+		str = ValErrUsage
 	}
 
 	prn := NewPrinter(dmp)

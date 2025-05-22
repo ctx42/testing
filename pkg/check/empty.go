@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/ctx42/testing/internal/core"
+	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/notice"
 )
 
@@ -31,7 +32,7 @@ func Empty(have any, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 	return notice.New("expected argument to be empty").
 		Trail(ops.Trail).
-		Want("<empty>").
+		Want(dump.ValEmpty).
 		Have("%#v", have)
 }
 

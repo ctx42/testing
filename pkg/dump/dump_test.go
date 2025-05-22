@@ -188,8 +188,8 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 		{"array", New(WithFlat, WithCompact), [2]int{}, "[2]int{0,0}"},
 		{"chan", New(WithFlat, WithCompact), make(chan int), "(chan int)(<addr>)"},
 		{"func", New(WithFlat, WithCompact), func() {}, "<func>(<addr>)"},
-		{"interface nil", New(WithFlat, WithCompact), itfNil, valNil},
-		{"any nil", New(WithFlat, WithCompact), aAnyNil, valNil},
+		{"interface nil", New(WithFlat, WithCompact), itfNil, ValNil},
+		{"any nil", New(WithFlat, WithCompact), aAnyNil, ValNil},
 		{"interface val", New(WithFlat, WithCompact), itfVal, `{Val:""}`},
 		{"interface ptr", New(WithFlat, WithCompact), itfPtr, `{Val:""}`},
 		{
@@ -246,7 +246,7 @@ func Test_Dump_Any(t *testing.T) {
 		have := dmp.Any(itfNil)
 
 		// --- Then ---
-		affirm.Equal(t, valNil, have)
+		affirm.Equal(t, ValNil, have)
 	})
 
 	t.Run("slice of slices of any", func(t *testing.T) {

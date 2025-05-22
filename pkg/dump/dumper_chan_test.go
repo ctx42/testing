@@ -59,7 +59,7 @@ func Test_chanDumper(t *testing.T) {
 		have := chanDumper(dmp, 0, val)
 
 		// --- Then ---
-		affirm.Equal(t, valErrUsage, have)
+		affirm.Equal(t, ValErrUsage, have)
 	})
 
 	t.Run("usage error uses level", func(t *testing.T) {
@@ -71,7 +71,7 @@ func Test_chanDumper(t *testing.T) {
 		have := chanDumper(dmp, 2, val)
 
 		// --- Then ---
-		affirm.Equal(t, "    "+valErrUsage, have)
+		affirm.Equal(t, "    "+ValErrUsage, have)
 	})
 
 	t.Run("print pointer address", func(t *testing.T) {

@@ -41,7 +41,7 @@ func Test_complexDumper(t *testing.T) {
 		have := complexDumper(dmp, 0, reflect.ValueOf(123))
 
 		// --- Then ---
-		affirm.Equal(t, valErrUsage, have)
+		affirm.Equal(t, ValErrUsage, have)
 	})
 
 	t.Run("invalid usage uses level", func(t *testing.T) {
@@ -52,7 +52,7 @@ func Test_complexDumper(t *testing.T) {
 		have := complexDumper(dmp, 1, reflect.ValueOf(123))
 
 		// --- Then ---
-		affirm.Equal(t, "  "+valErrUsage, have)
+		affirm.Equal(t, "  "+ValErrUsage, have)
 	})
 
 	t.Run("uses indent and level", func(t *testing.T) {
@@ -63,6 +63,6 @@ func Test_complexDumper(t *testing.T) {
 		have := complexDumper(dmp, 1, reflect.ValueOf(123))
 
 		// --- Then ---
-		affirm.Equal(t, "      "+valErrUsage, have)
+		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
 }

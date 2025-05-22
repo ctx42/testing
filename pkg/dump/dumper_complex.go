@@ -15,15 +15,15 @@ import (
 //   - [reflect.Complex128]
 //
 // Returns [valErrUsage] ("<dump-usage-error>") string if kind cannot be
-// matched. It requires val to be dereferenced value and returns its string
-// representation in format defined by [Dump] configuration.
+// matched. It requires val to be a dereferenced value and returns its string
+// representation in the format defined by [Dump] configuration.
 func complexDumper(dmp Dump, lvl int, val reflect.Value) string {
 	var str string
 	switch val.Kind() {
 	case reflect.Complex64, reflect.Complex128:
 		str = fmt.Sprintf("%v", val.Interface())
 	default:
-		str = valErrUsage
+		str = ValErrUsage
 	}
 
 	prn := NewPrinter(dmp)

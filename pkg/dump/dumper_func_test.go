@@ -60,7 +60,7 @@ func Test_funcDumper(t *testing.T) {
 		have := funcDumper(dmp, 0, val)
 
 		// --- Then ---
-		affirm.Equal(t, valErrUsage, have)
+		affirm.Equal(t, ValErrUsage, have)
 	})
 
 	t.Run("print pointer address", func(t *testing.T) {
@@ -86,6 +86,6 @@ func Test_funcDumper(t *testing.T) {
 		have := funcDumper(dmp, 1, val)
 
 		// --- Then ---
-		affirm.Equal(t, "      "+valErrUsage, have)
+		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
 }

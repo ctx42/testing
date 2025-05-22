@@ -11,17 +11,14 @@ import (
 
 // Strings used by dump package to indicate special values.
 const (
-	// TODO(rz): Should be exported so can be used by other packages.
-	//  Search <empty> to see usages e.g. in tstkit.
-	valNil        = "nil"       // The [reflect.Value] is nil.
-	valAddr       = "<addr>"    // The [reflect.Value] is an address.
-	valFunc       = "<func>"    // The [reflect.Value] is a function.
-	valChan       = "<chan>"    // The [reflect.Value] is a channel.
-	valInvalid    = "<invalid>" // The [reflect.Value] is invalid.
-	valMaxNesting = "<...>"     // The maximum nesting reached.
-
-	// The [reflect.Value] is unexpected in the given context.
-	valErrUsage = "<dump-usage-error>"
+	ValNil        = "nil"                // The [reflect.Value] is nil.
+	ValAddr       = "<addr>"             // The [reflect.Value] is an address.
+	ValFunc       = "<func>"             // The [reflect.Value] is a function.
+	ValChan       = "<chan>"             // The [reflect.Value] is a channel.
+	ValInvalid    = "<invalid>"          // The [reflect.Value] is invalid.
+	ValMaxNesting = "<...>"              // The maximum nesting reached.
+	ValEmpty      = "<empty>"            // Empty value.
+	ValErrUsage   = "<dump-usage-error>" // The [reflect.Value] is unexpected in the given context.
 )
 
 // Package wide default configuration.
@@ -228,7 +225,7 @@ func (dmp Dump) Value(val reflect.Value) string {
 // nolint: cyclop
 func (dmp Dump) value(lvl int, val reflect.Value) string {
 	if lvl > dmp.MaxDepth {
-		return valMaxNesting
+		return ValMaxNesting
 	}
 
 	var str string // One or more lines representing passed value.
@@ -242,9 +239,9 @@ func (dmp Dump) value(lvl int, val reflect.Value) string {
 
 	switch valKnd {
 	case reflect.Invalid:
-		str = valInvalid
+		str = ValInvalid
 		if nilVal == val { // nolint: govet
-			str = valNil
+			str = ValNil
 		}
 
 	case reflect.Bool, reflect.Int:
@@ -288,7 +285,7 @@ func (dmp Dump) value(lvl int, val reflect.Value) string {
 
 	case reflect.Pointer:
 		if val.IsNil() {
-			str = valNil
+			str = ValNil
 		} else {
 			str = dmp.value(lvl, val.Elem())
 		}

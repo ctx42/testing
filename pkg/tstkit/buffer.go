@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"sync"
 
+	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/notice"
 	"github.com/ctx42/testing/pkg/tester"
 )
@@ -145,7 +146,7 @@ func DryBuffer(t tester.T, names ...string) *Buffer {
 		defer buf.mx.Unlock()
 		if out := buf.string(false); out != "" {
 			msg := notice.New("expected buffer to be empty").
-				Want("%s", "<empty>").
+				Want("%s", dump.ValEmpty).
 				Have("%s", out)
 			if buf.name != "" {
 				_ = msg.Prepend("name", "%s", buf.name)
