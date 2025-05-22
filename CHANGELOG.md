@@ -1,3 +1,11 @@
+## v0.9.0 (Thu, 22 May 2025 14:29:15 UTC)
+- Add clocks to tstkit package.
+- Update workflow.
+- Improve dumping structs with multi-line string fields.
+- Export dump special values.
+- Bring to the project code from https://github.com/golang/tools/tree/master/internal/diff and clean it up with some customizations.
+- Implement diff in check and dump packages.
+
 ## v0.8.0 (Sun, 18 May 2025 14:23:21 UTC)
 - Add tstkit package.
 - Update documentation and code style.
