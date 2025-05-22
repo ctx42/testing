@@ -35,7 +35,7 @@ func arrayDumper(dmp Dump, lvl int, val reflect.Value) string {
 	for i := 0; i < num; i++ {
 		last := i == num-1
 
-		sub := dmp.value(lvl+1, val.Index(i))
+		sub, _ := dmp.value(lvl+1, val.Index(i))
 		prn.Write(sub)
 		prn.Comma(last).Sep(last).NL()
 	}

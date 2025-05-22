@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// DefaultContextLines is the number of unchanged lines of surrounding context
+// DefaultContextLines is the number of unchanged lines surrounding context
 // displayed by Unified. Use ToUnified to specify a different value.
 const DefaultContextLines = 3
 
@@ -37,6 +37,16 @@ func ToUnified(oldLabel, newLabel, content string, edits []Edit, contextLines in
 		return "", err
 	}
 	return u.String(), nil
+}
+
+// CtxToUnified is a modified version of ToUnified  function to match Ctx42
+// requirements.
+func CtxToUnified(oldLabel, newLabel, content string, edits []Edit, contextLines int) (string, error) {
+	u, err := toUnified(oldLabel, newLabel, content, edits, contextLines)
+	if err != nil {
+		return "", err
+	}
+	return u.CtxString(), nil
 }
 
 // unified represents a set of edits as a unified diff.
@@ -253,6 +263,72 @@ func (u unified) String() string {
 			}
 			if !strings.HasSuffix(l.content, "\n") {
 				_, _ = fmt.Fprintf(b, "\n\\ No newline at end of file\n")
+			}
+		}
+	}
+	return b.String()
+}
+
+// CtxString is a modified version of the String method to match Ctx42
+// requirements.
+//
+// nolint: cyclop
+func (u unified) CtxString() string {
+	if len(u.hunks) == 0 {
+		return ""
+	}
+	b := new(strings.Builder)
+	// nolint: gocritic
+	// _, _ = fmt.Fprintf(b, "--- %s\n", u.from)
+	// _, _ = fmt.Fprintf(b, "+++ %s\n", u.to)
+	for _, hunk := range u.hunks {
+		fromCount, toCount := 0, 0
+		for _, l := range hunk.lines {
+			switch l.kind {
+			case opDelete:
+				fromCount++
+			case opInsert:
+				toCount++
+			default:
+				fromCount++
+				toCount++
+			}
+		}
+		_, _ = fmt.Fprint(b, "@@")
+
+		switch {
+		case fromCount > 1:
+			_, _ = fmt.Fprintf(b, " -%d,%d", hunk.fromLine, fromCount)
+		case hunk.fromLine == 1 && fromCount == 0:
+			// Match odd GNU diff -u behavior adding to the empty file.
+			_, _ = fmt.Fprintf(b, " -0,0")
+		default:
+			_, _ = fmt.Fprintf(b, " -%d", hunk.fromLine)
+		}
+
+		switch {
+		case toCount > 1:
+			_, _ = fmt.Fprintf(b, " +%d,%d", hunk.toLine, toCount)
+		case hunk.toLine == 1 && toCount == 0:
+			// Match odd GNU diff -u behavior adding to an empty file.
+			_, _ = fmt.Fprintf(b, " +0,0")
+		default:
+			_, _ = fmt.Fprintf(b, " +%d", hunk.toLine)
+		}
+		_, _ = fmt.Fprint(b, " @@\n")
+
+		for _, l := range hunk.lines {
+			switch l.kind {
+			case opDelete:
+				_, _ = fmt.Fprintf(b, "-%s", l.content)
+			case opInsert:
+				_, _ = fmt.Fprintf(b, "+%s", l.content)
+			default:
+				_, _ = fmt.Fprintf(b, " %s", l.content)
+			}
+			if !strings.HasSuffix(l.content, "\n") {
+				// 	_, _ = fmt.Fprintf(b, "\n\\ No newline at end of file\n")
+				_, _ = fmt.Fprintf(b, "\n")
 			}
 		}
 	}

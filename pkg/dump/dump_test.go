@@ -355,3 +355,123 @@ func Test_Dump_Any(t *testing.T) {
 		affirm.Equal(t, want.String(), have)
 	})
 }
+
+func Test_Dump_Diff_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		opts    []Option
+		wantIn  string
+		haveIn  string
+		wantOut string
+		haveOut string
+		diffOut string
+	}{
+		{"same strings", nil, "abc", "abc", `"abc"`, `"abc"`, ""},
+		{
+			"same multi-line strings",
+			nil,
+			"a\nb\nc",
+			"a\nb\nc",
+			`"a\nb\nc"`,
+			`"a\nb\nc"`,
+			"",
+		},
+		{
+			"different multi-line strings",
+			nil,
+			"a\nb\nc",
+			"a\nx\nc",
+			`"a\nb\nc"`,
+			`"a\nx\nc"`,
+			"" +
+				"@@ -1,3 +1,3 @@\n" +
+				" a\n" +
+				"-x\n" +
+				"+b\n" +
+				" c",
+		},
+		{
+			"want is single line have is multi line",
+			nil,
+			"abc",
+			"a\nb\nc",
+			`"abc"`,
+			`"a\nb\nc"`,
+			"" +
+				"@@ -1,3 +1 @@\n" +
+				"-a\n" +
+				"-b\n" +
+				"-c\n" +
+				"+abc",
+		},
+		{
+			"want is multi-line have is single line",
+			nil,
+			"a\nb\nc",
+			"abc",
+			`"a\nb\nc"`,
+			`"abc"`,
+			"" +
+				"@@ -1 +1,3 @@\n" +
+				"-abc\n" +
+				"+a\n" +
+				"+b\n" +
+				"+c",
+		},
+		{
+			"both multi-line strings end with a new line",
+			nil,
+			"a\nb\nc\n",
+			"abc",
+			`"a\nb\nc\n"`,
+			`"abc"`,
+			"" +
+				"@@ -1 +1,3 @@\n" +
+				"-abc\n" +
+				"+a\n" +
+				"+b\n" +
+				"+c",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- Given ---
+			dmp := New(tc.opts...)
+
+			// --- When ---
+			wantOut, haveOut, diffOut := dmp.Diff(tc.wantIn, tc.haveIn)
+
+			// --- Then ---
+			affirm.Equal(t, tc.wantOut, wantOut)
+			affirm.Equal(t, tc.haveOut, haveOut)
+			affirm.Equal(t, tc.diffOut, diffOut)
+		})
+	}
+}
+
+func Test_Dump_forDiff(t *testing.T) {
+	t.Run("changes Flat and Compact configuration", func(t *testing.T) {
+		// --- Given ---
+		val := []int{1, 2, 3}
+		dmp := Dump{
+			Flat:        true,
+			FlatStrings: 10,
+			Compact:     true,
+			MaxDepth:    Depth,
+			Indent:      Indent,
+			TabWidth:    TabWidth,
+		}
+
+		// --- When ---
+		have, haveKnd := dmp.forDiff(val)
+
+		// --- Then ---
+		affirm.Equal(t, "{\n  1,\n  2,\n  3,\n}", have)
+		affirm.Equal(t, reflect.Slice, haveKnd)
+		affirm.Equal(t, true, dmp.Flat)
+		affirm.Equal(t, 10, dmp.FlatStrings)
+		affirm.Equal(t, true, dmp.Compact)
+	})
+}

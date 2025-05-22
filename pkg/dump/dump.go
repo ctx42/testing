@@ -6,7 +6,11 @@ package dump
 
 import (
 	"reflect"
+	"strconv"
+	"strings"
 	"time"
+
+	"github.com/ctx42/testing/internal/diff"
 )
 
 // Strings used by dump package to indicate special values.
@@ -212,32 +216,80 @@ func New(opts ...Option) Dump {
 
 // Any dumps any value to its string representation.
 func (dmp Dump) Any(val any) string {
-	return dmp.value(0, reflect.ValueOf(val))
+	str, _ := dmp.value(0, reflect.ValueOf(val))
+	return str
+}
+
+// Diff compares two values and returns their formatted representations and
+// diff. The first result is the formatted "want" value, the second is the
+// formatted "have" value, and the third is the unified diff if they differ. If
+// the values are identical, the diff result will be an empty string.
+func (dmp Dump) Diff(want, have any) (string, string, string) {
+	// Format values for display.
+	wStr, _ := dmp.value(0, reflect.ValueOf(want))
+	hStr, _ := dmp.value(0, reflect.ValueOf(have))
+	if wStr == hStr {
+		return wStr, hStr, ""
+	}
+
+	// Format values for diff.
+	wuStr, _ := dmp.forDiff(want)
+	huStr, _ := dmp.forDiff(have)
+	wMlStr := strings.Contains(wuStr, "\n")
+	hMlStr := strings.Contains(huStr, "\n")
+
+	if !wMlStr && !hMlStr {
+		return wStr, hStr, ""
+	}
+
+	if wStr == ValNil || hStr == ValNil {
+		return wStr, hStr, ""
+	}
+
+	edits := diff.Strings(huStr, wuStr)
+	// Error can't happen: edits are consistent.
+	unified, _ := diff.CtxToUnified("want", "have", huStr, edits, 2)
+	return wStr, hStr, strings.TrimRight(unified, "\n")
+}
+
+// forDiff prepares a value for diffing by formatting it into a string. Returns
+// the string representation of the value and its kind.
+func (dmp Dump) forDiff(val any) (string, reflect.Kind) {
+	dmp.Flat = false
+	dmp.FlatStrings = 0
+	dmp.Compact = false
+
+	str, knd := dmp.value(0, reflect.ValueOf(val))
+	if s, err := strconv.Unquote(str); err == nil {
+		str = s
+	}
+	return str, knd
 }
 
 // Value dumps a [reflect.Value] representation of a value as a string.
 func (dmp Dump) Value(val reflect.Value) string {
-	return dmp.value(0, val)
+	str, _ := dmp.value(0, val)
+	return str
 }
 
 // value dumps given a value as a string.
 //
 // nolint: cyclop
-func (dmp Dump) value(lvl int, val reflect.Value) string {
+func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 	if lvl > dmp.MaxDepth {
-		return ValMaxNesting
+		return ValMaxNesting, reflect.Invalid
 	}
 
 	var str string // One or more lines representing passed value.
 
-	valKnd := val.Kind()
-	if valKnd != reflect.Invalid {
+	knd := val.Kind()
+	if knd != reflect.Invalid {
 		if fn, ok := dmp.Dumpers[val.Type()]; ok {
-			return fn(dmp, lvl, val)
+			return fn(dmp, lvl, val), knd
 		}
 	}
 
-	switch valKnd {
+	switch knd {
 	case reflect.Invalid:
 		str = ValInvalid
 		if nilVal == val { // nolint: govet
@@ -278,7 +330,7 @@ func (dmp Dump) value(lvl int, val reflect.Value) string {
 		str = funcDumper(dmp, lvl, val)
 
 	case reflect.Interface:
-		str = dmp.value(lvl, val.Elem())
+		str, knd = dmp.value(lvl, val.Elem())
 
 	case reflect.Map:
 		str = mapDumper(dmp, lvl, val)
@@ -287,7 +339,7 @@ func (dmp Dump) value(lvl int, val reflect.Value) string {
 		if val.IsNil() {
 			str = ValNil
 		} else {
-			str = dmp.value(lvl, val.Elem())
+			str, knd = dmp.value(lvl, val.Elem())
 		}
 
 	case reflect.Slice:
@@ -303,5 +355,5 @@ func (dmp Dump) value(lvl int, val reflect.Value) string {
 		str = hexPtrDumper(dmp, lvl, val)
 	}
 
-	return str
+	return str, knd
 }
