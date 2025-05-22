@@ -67,10 +67,10 @@ func Test_Equal_one_argument_invalid(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "expected values to be equal:\n" +
-			"       want: nil\n" +
-			"       have: 123\n" +
 			"  want type: <nil>\n" +
-			"  have type: int"
+			"  have type: int\n" +
+			"       want: nil\n" +
+			"       have: 123"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -81,10 +81,10 @@ func Test_Equal_one_argument_invalid(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "expected values to be equal:\n" +
-			"       want: 123\n" +
-			"       have: nil\n" +
 			"  want type: int\n" +
-			"  have type: <nil>"
+			"  have type: <nil>\n" +
+			"       want: 123\n" +
+			"       have: nil"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -100,10 +100,10 @@ func Test_Equal_one_argument_invalid(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "expected values to be equal:\n" +
 			"      trail: type.field\n" +
-			"       want: 123\n" +
-			"       have: nil\n" +
 			"  want type: int\n" +
-			"  have type: <nil>"
+			"  have type: <nil>\n" +
+			"       want: 123\n" +
+			"       have: nil"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
@@ -117,10 +117,10 @@ func Test_Equal_not_matching_types(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "expected values to be equal:\n" +
-			"       want: 123\n" +
-			"       have: \"abc\"\n" +
 			"  want type: int\n" +
-			"  have type: string"
+			"  have type: string\n" +
+			"       want: 123\n" +
+			"       have: \"abc\""
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -136,17 +136,17 @@ func Test_Equal_not_matching_types(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "expected values to be equal:\n" +
 			"      trail: type.field\n" +
-			"       want: 123\n" +
-			"       have: \"abc\"\n" +
 			"  want type: int\n" +
-			"  have type: string"
+			"  have type: string\n" +
+			"       want: 123\n" +
+			"       have: \"abc\""
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 }
 
 func Test_Equal_custom_trail_checkers(t *testing.T) {
-	t.Run("custom checker not used", func(t *testing.T) {
+	t.Run("custom checker is not used", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []Option{
@@ -155,7 +155,7 @@ func Test_Equal_custom_trail_checkers(t *testing.T) {
 			WithTrailChecker("type.field", Exact),
 		}
 
-		// Both are define the same time in different timezone.
+		// Both are defining the same time in different timezone.
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 4, 4, 5, 0, types.WAW)
 
@@ -805,7 +805,14 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 			"      have:\n" +
 			"            []int{\n" +
 			"              1,\n" +
-			"            }"
+			"            }\n" +
+			"      diff:\n" +
+			"            @@ -1,3 +1,4 @@\n" +
+			"             []int{\n" +
+			"            -  1,\n" +
+			"            +  1,\n" +
+			"            +  2,\n" +
+			"             }"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
@@ -904,14 +911,14 @@ func Test_Equal_kind_Map(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "expected values to be equal:\n" +
 			"      trail: map[2]\n" +
+			"  want type: map[int]int\n" +
+			"  have type: <nil>\n" +
 			"       want:\n" +
 			"             map[int]int{\n" +
 			"               1: 42,\n" +
 			"               3: 44,\n" +
 			"             }\n" +
-			"       have: nil\n" +
-			"  want type: map[int]int\n" +
-			"  have type: <nil>"
+			"       have: nil"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.DeepEqual(t, []string{"map[1]"}, trail)
 	})
@@ -943,7 +950,15 @@ func Test_Equal_kind_Map(t *testing.T) {
 			"              1: 42,\n" +
 			"              2: 43,\n" +
 			"              3: 44,\n" +
-			"            }"
+			"            }\n" +
+			"      diff:\n" +
+			"            @@ -1,5 +1,4 @@\n" +
+			"             map[int]int{\n" +
+			"               1: 42,\n" +
+			"            -  2: 43,\n" +
+			"            -  3: 44,\n" +
+			"            +  2: 44,\n" +
+			"             }"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
@@ -1379,7 +1394,7 @@ func Test_equalError(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("does not override already set byte dumper", func(t *testing.T) {
+	t.Run("it does not override the already set byte dumper", func(t *testing.T) {
 		// --- Given ---
 		w := byte('A')
 		h := byte('B')
@@ -1407,10 +1422,43 @@ func Test_equalError(t *testing.T) {
 
 		// --- Then ---
 		wMsg := "expected values to be equal:\n" +
-			"       want: 0x41 ('A')\n" +
-			"       have: 42\n" +
 			"  want type: uint8\n" +
-			"  have type: int"
+			"  have type: int\n" +
+			"       want: 0x41 ('A')\n" +
+			"       have: 42"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("shows diff", func(t *testing.T) {
+		// --- Given ---
+		w := []int{1, 2, 3}
+		h := []int{1, 2, 4}
+		ops := DefaultOptions()
+
+		// --- When ---
+		err := equalError(w, h, WithOptions(ops))
+
+		// --- Then ---
+		wMsg := "expected values to be equal:\n" +
+			"  want:\n" +
+			"        []int{\n" +
+			"          1,\n" +
+			"          2,\n" +
+			"          3,\n" +
+			"        }\n" +
+			"  have:\n" +
+			"        []int{\n" +
+			"          1,\n" +
+			"          2,\n" +
+			"          4,\n" +
+			"        }\n" +
+			"  diff:\n" +
+			"        @@ -2,4 +2,4 @@\n" +
+			"           1,\n" +
+			"           2,\n" +
+			"        -  4,\n" +
+			"        +  3,\n" +
+			"         }"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }

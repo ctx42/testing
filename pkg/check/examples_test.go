@@ -69,10 +69,10 @@ func ExampleEqual_wrongTypes() {
 	// Output:
 	//  expected values to be equal:
 	//       trail: type.field
-	//        want: 42
-	//        have: 0x2a ('*')
 	//   want type: int
 	//   have type: uint8
+	//        want: 42
+	//        have: 0x2a ('*')
 }
 
 func ExampleEqual_structs() {
@@ -131,6 +131,8 @@ func ExampleEqual_maps() {
 	// Output:
 	// expected values to be equal:
 	//       trail: map[2]
+	//   want type: map[int]check_test.T
+	//   have type: <nil>
 	//        want:
 	//              map[int]check_test.T{
 	//                1: {
@@ -141,8 +143,6 @@ func ExampleEqual_maps() {
 	//                },
 	//              }
 	//        have: nil
-	//   want type: map[int]check_test.T
-	//   have type: <nil>
 }
 
 func ExampleEqual_arrays() {
@@ -154,6 +154,8 @@ func ExampleEqual_arrays() {
 	fmt.Println(err)
 	// Output:
 	// expected values to be equal:
+	//   want type: [3]int
+	//   have type: [4]int
 	//        want:
 	//              [3]int{
 	//                1,
@@ -167,8 +169,16 @@ func ExampleEqual_arrays() {
 	//                3,
 	//                4,
 	//              }
-	//   want type: [3]int
-	//   have type: [4]int
+	//        diff:
+	//              @@ -1,6 +1,5 @@
+	//              -[4]int{
+	//              +[3]int{
+	//                 1,
+	//                 2,
+	//              -  3,
+	//              -  4,
+	//              +  3,
+	//               }
 }
 
 func ExampleEqual_slices() {
@@ -195,6 +205,14 @@ func ExampleEqual_slices() {
 	//               3,
 	//               4,
 	//             }
+	//       diff:
+	//             @@ -2,5 +2,4 @@
+	//                1,
+	//                2,
+	//             -  3,
+	//             -  4,
+	//             +  3,
+	//              }
 }
 
 func ExampleEqual_customTrailChecker() {

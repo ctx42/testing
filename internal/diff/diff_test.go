@@ -113,7 +113,7 @@ func TestLineEdits(t *testing.T) {
 	}
 }
 
-// TODO(rz):
+// INFO(rz): We do not want to be depended on patch program.
 // func TestToUnified(t *testing.T) {
 // 	testenv.NeedsTool(t, "patch")
 // 	for _, tc := range difftest.TestCases {

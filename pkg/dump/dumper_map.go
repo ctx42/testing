@@ -44,11 +44,11 @@ func mapDumper(dmp Dump, lvl int, val reflect.Value) string {
 	for i, key := range keys {
 		last := i == num-1
 
-		sub := dmp.value(lvl+1, key)
+		sub, _ := dmp.value(lvl+1, key)
 		prn.Write(sub)
 		prn.Write(":").Space()
 
-		sub = dmp.value(lvl+1, val.MapIndex(key))
+		sub, _ = dmp.value(lvl+1, val.MapIndex(key))
 		sub = strings.TrimLeft(sub, " \t")
 
 		dmp.PrintType = true

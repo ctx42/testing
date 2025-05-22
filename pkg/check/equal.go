@@ -286,16 +286,19 @@ func equalError(want, have any, opts ...Option) *notice.Notice {
 		ops.Dumper.Dumpers[typByte] = dumpByte
 	}
 
-	msg := notice.New("expected values to be equal").
-		Trail(ops.Trail).
-		Want("%s", ops.Dumper.Any(want)).
-		Have("%s", ops.Dumper.Any(have))
-
+	msg := notice.New("expected values to be equal").Trail(ops.Trail)
 	if wTyp != "" {
 		_ = msg.
 			Append("want type", "%s", wTyp).
 			Append("have type", "%s", hTyp)
 	}
+
+	wStr, hStr, diff := ops.Dumper.Diff(want, have)
+	_ = msg.Want("%s", wStr).Have("%s", hStr)
+	if diff != "" {
+		_ = msg.Append("diff", "%s", diff)
+	}
+
 	return msg
 }
 
