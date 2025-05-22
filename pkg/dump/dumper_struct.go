@@ -9,9 +9,11 @@ import (
 )
 
 // mapDumper requires val to be dereferenced representation of [reflect.Struct]
-// and returns its string representation in format defined by [Dump]
+// and returns its string representation in the format defined by [Dump]
 // configuration.
 func structDumper(dmp Dump, lvl int, val reflect.Value) string {
+	dmp.flatStrings = true
+
 	prn := NewPrinter(dmp)
 	prn.Tab(dmp.Indent + lvl)
 	vTyp := val.Type()

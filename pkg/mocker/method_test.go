@@ -45,8 +45,6 @@ func Test_method_generate(t *testing.T) {
 		assert.Equal(t, goldy.Open(t, gfp).String(), have)
 	})
 
-	// TODO(rz): this is excellent example for diff usage when golden_method
-	//  does not match the actual output.
 	t.Run("without args with returns", func(t *testing.T) {
 		// --- Given ---
 		gfp := "testdata/golden_method/without_arg_with_ret.gld"

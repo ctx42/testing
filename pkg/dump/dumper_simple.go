@@ -38,11 +38,17 @@ func simpleDumper(dmp Dump, lvl int, val reflect.Value) string {
 	switch val.Kind() {
 	case reflect.String:
 		length := val.Len()
-		format = `"%v"`
-		if dmp.Flat || (dmp.FlatStrings > 0 && length <= dmp.FlatStrings) {
+		switch {
+		case dmp.flatStrings:
 			format = `%#v`
-		} else if strings.Contains(v.(string), "\n") { // nolint: forcetypeassert
+		case dmp.Flat:
+			format = `%#v`
+		case dmp.FlatStrings > 0 && length <= dmp.FlatStrings:
+			format = `%#v`
+		case strings.Contains(v.(string), "\n"):
 			format = "%v"
+		default:
+			format = `"%v"`
 		}
 
 	case reflect.Float32:

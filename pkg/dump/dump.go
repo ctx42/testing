@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: (c) 2025 Rafal Zajac <rzajac@gmail.com>
 // SPDX-License-Identifier: MIT
 
-// Package dump can render string representation of any value.
+// Package dump can render a string representation of any value.
 package dump
 
 import (
@@ -20,7 +20,7 @@ const (
 	valInvalid    = "<invalid>" // The [reflect.Value] is invalid.
 	valMaxNesting = "<...>"     // The maximum nesting reached.
 
-	// The [reflect.Value] is unexpected in given context.
+	// The [reflect.Value] is unexpected in the given context.
 	valErrUsage = "<dump-usage-error>"
 )
 
@@ -29,17 +29,17 @@ const (
 	// DefaultTimeFormat is default format for parsing time strings.
 	DefaultTimeFormat = time.RFC3339Nano
 
-	// DefaultDepth is default depth when dumping values recursively.
+	// DefaultDepth is the default depth when dumping values recursively.
 	DefaultDepth = 6
 
 	// DefaultIndent is default additional indent when dumping values.
 	DefaultIndent = 0
 
-	// DefaultTabWith is default tab width in spaces.
+	// DefaultTabWith is the default tab width in spaces.
 	DefaultTabWith = 2
 )
 
-// Package wide configuration.
+// Package-wide configuration.
 var (
 	// TimeFormat is configurable format for dumping [time.Time] values.
 	TimeFormat = DefaultTimeFormat
@@ -47,10 +47,10 @@ var (
 	// Depth is configurable depth when dumping values recursively.
 	Depth = DefaultDepth
 
-	// Indent is configurable additional indent when dumping values.
+	// Indent is a configurable additional indent when dumping values.
 	Indent = DefaultIndent
 
-	// TabWidth is configurable tab width in spaces.
+	// TabWidth is a configurable tab width in spaces.
 	TabWidth = DefaultTabWith
 )
 
@@ -77,7 +77,7 @@ func WithFlat(dmp *Dump) { dmp.Flat = true }
 // as flat in the output. Strings longer than the specified length may be
 // formatted differently, depending on the configuration. This option is
 // similar to [WithFlat] but applies specifically to strings based on their
-// length.
+// length. Set to zero to turn this feature off.
 func WithFlatStrings(n int) Option {
 	return func(dmp *Dump) { dmp.FlatStrings = n }
 }
@@ -91,8 +91,8 @@ func WithCompact(dmp *Dump) { dmp.Compact = true }
 func WithPtrAddr(dmp *Dump) { dmp.PtrAddr = true }
 
 // WithTimeFormat is an option for [New] which makes [Dump] display [time.Time]
-// using given format. The format might be standard Go time formating layout or
-// one of the custom values - see [Dump.TimeFormat] for more details.
+// using a given format. The format might be a standard Go time formating
+// layout or one of the custom values - see [Dump.TimeFormat] for more details.
 func WithTimeFormat(format string) Option {
 	return func(dmp *Dump) { dmp.TimeFormat = format }
 }
@@ -176,6 +176,11 @@ type Dump struct {
 
 	// Default tab with in spaces.
 	TabWidth int
+
+	// In cases of nested structures like structs, we want to force string
+	// fields to be dumped in flat representation. This value has the same
+	// meaning as the Flat option.
+	flatStrings bool
 }
 
 // New returns new instance of [Dump].

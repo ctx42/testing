@@ -1,0 +1,6 @@
+Multi-line string struct fields should always be printed as flat.
+---
+{
+  F0: 1,
+  F1: "a\nb\nc\n",
+}
