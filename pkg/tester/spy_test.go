@@ -58,7 +58,7 @@ func Test_find_match(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("not contains success", func(t *testing.T) {
+	t.Run("not contain success", func(t *testing.T) {
 		// --- Given ---
 		ent := &find{strategy: NotContains, want: "jkl"}
 
@@ -2000,6 +2000,36 @@ func Test_Spy_Logf(t *testing.T) {
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
 		affirm.Equal(t, true, spy.panicked)
+	})
+}
+
+func Test_Spy_ExamineLog(t *testing.T) {
+	t.Run("empty log", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+
+		// --- When ---
+		have := spy.ExamineLog()
+
+		// --- Then ---
+		affirm.Equal(t, "", have)
+	})
+
+	t.Run("with log messages", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0).Close()
+		spy.Logf("msg %d", 0)
+		spy.Logf("msg %d", 1)
+
+		// --- When ---
+		have := spy.ExamineLog()
+
+		// --- Then ---
+		affirm.Equal(t, "msg 0\nmsg 1", have)
 	})
 }
 

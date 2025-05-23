@@ -27,7 +27,8 @@ const (
 	closeCall                      // Call to [Spy.Close] method.
 )
 
-// Strategy is strategy of matching logs produced by Helper Under Test (HUT).
+// Strategy is the strategy of matching logs produced by Helper Under Test
+// (HUT).
 type Strategy string
 
 // Log matching strategies.
@@ -178,8 +179,8 @@ type Spy struct {
 	// Actual messages sent to the mocked test runner Log and Logf methods.
 	haveLogMgs []string
 
-	// When set to true it will not trigger an assertion error if haveLogMgs is
-	// not empty and wantLogMgs is empty.
+	// When set to true, it will not trigger an assertion error if haveLogMgs
+	// is not empty and wantLogMgs is empty.
 	ignoreLog bool
 
 	// Test runner which we use for reporting errors when Spy expectations
@@ -596,6 +597,14 @@ func (spy *Spy) logf(format string, args ...any) {
 	spy.checkState(mockedCall)
 	msg := fmt.Sprintf(format, args...)
 	spy.haveLogMgs = append(spy.haveLogMgs, msg)
+}
+
+// ExamineLog returns so far logged messages.
+func (spy *Spy) ExamineLog() string {
+	spy.tt.Helper()
+	spy.mx.Lock()
+	defer spy.mx.Unlock()
+	return strings.Join(spy.haveLogMgs, "\n")
 }
 
 // ExpectedNames sets expectation the HUT should call [Spy.Name] cnt number of
