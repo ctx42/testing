@@ -1,3 +1,7 @@
+## v0.10.0 (Fri, 23 May 2025 09:20:29 UTC)
+- Update tester.Spy documentation and wording.
+- Add tester.Spy.ExamineLog method.
+
 ## v0.9.0 (Thu, 22 May 2025 14:29:15 UTC)
 - Add clocks to tstkit package.
 - Update workflow.
