@@ -1,3 +1,6 @@
+## v0.10.2 (Fri, 23 May 2025 12:14:43 UTC)
+- The diff field in check.Within error is always in relation to "want" time. Improve documentation.
+
 ## v0.10.1 (Fri, 23 May 2025 11:25:05 UTC)
 - Code style.
 
