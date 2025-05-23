@@ -664,7 +664,7 @@ func Test_Within(t *testing.T) {
 			"          want: 2000-01-02T03:04:05Z\n" +
 			"          have: 2001-01-02T03:04:05Z\n" +
 			"  max diff +/-: 1000s\n" +
-			"     have diff: 8784h0m0s"
+			"     have diff: -8784h0m0s"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -718,7 +718,7 @@ func Test_Within(t *testing.T) {
 			"          want: 2000-01-02T03:04:05Z\n" +
 			"          have: 2000-01-02T03:04:06.5Z\n" +
 			"  max diff +/-: 1s\n" +
-			"     have diff: 1.5s"
+			"     have diff: -1.5s"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }
@@ -776,7 +776,7 @@ func Test_Recent(t *testing.T) {
 			"          want: 2000-01-02T03:04:05Z\n" +
 			"          have: 2000-01-02T03:04:16Z\n" +
 			"  max diff +/-: 10s\n" +
-			"     have diff: 11s"
+			"     have diff: -11s"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -795,7 +795,7 @@ func Test_Recent(t *testing.T) {
 			"          want: 2000-01-02T03:04:05Z\n" +
 			"          have: 2000-01-02T03:03:54Z\n" +
 			"  max diff +/-: 10s\n" +
-			"     have diff: -11s"
+			"     have diff: 11s"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -830,7 +830,7 @@ func Test_Recent(t *testing.T) {
 			"          want: 2000-01-02T03:04:05Z\n" +
 			"          have: 2000-01-02T03:03:54Z\n" +
 			"  max diff +/-: 10s\n" +
-			"     have diff: -11s"
+			"     have diff: 11s"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }
