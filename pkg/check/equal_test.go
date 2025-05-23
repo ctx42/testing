@@ -511,7 +511,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.DeepEqual(t, wTrail, trail)
 	})
 
-	t.Run("error private fields must be skipped", func(t *testing.T) {
+	t.Run("error - private fields must be skipped", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []Option{WithTrailLog(&trail)}
@@ -1319,7 +1319,7 @@ func Test_NotEqual(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error with bytes", func(t *testing.T) {
+	t.Run("error - with bytes", func(t *testing.T) {
 		// --- When ---
 		err := NotEqual(byte(42), byte(42))
 
@@ -1464,7 +1464,7 @@ func Test_equalError(t *testing.T) {
 }
 
 func Test_dumpByte(t *testing.T) {
-	t.Run("success printable", func(t *testing.T) {
+	t.Run("printable", func(t *testing.T) {
 		// --- Given ---
 		dmp := dump.New()
 		val := reflect.ValueOf(byte(42))
@@ -1476,7 +1476,7 @@ func Test_dumpByte(t *testing.T) {
 		affirm.Equal(t, "0x2a ('*')", have)
 	})
 
-	t.Run("success not printable", func(t *testing.T) {
+	t.Run("not printable", func(t *testing.T) {
 		// --- Given ---
 		dmp := dump.New()
 		val := reflect.ValueOf(byte(1))

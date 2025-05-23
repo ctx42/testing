@@ -18,7 +18,7 @@ func Test_FileExist(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error does not exist", func(t *testing.T) {
+	t.Run("error - does not exist", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -33,7 +33,7 @@ func Test_FileExist(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error is a directory", func(t *testing.T) {
+	t.Run("error - is a directory", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 

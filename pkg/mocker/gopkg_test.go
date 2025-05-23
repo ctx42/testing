@@ -56,7 +56,7 @@ func Test_gopkg_resolve(t *testing.T) {
 		assert.Equal(t, &gopkg{resolved: true}, pkg)
 	})
 
-	t.Run("error getModInfo not existing package", func(t *testing.T) {
+	t.Run("error - getModInfo not existing package", func(t *testing.T) {
 		// --- Given ---
 		pkg := newPkg("testdata/not-existing", "")
 
@@ -280,7 +280,7 @@ func Test_gopkg_getPkgInfo_tabular(t *testing.T) {
 }
 
 func Test_gopkg_getModInfo(t *testing.T) {
-	t.Run("error not existing directory", func(t *testing.T) {
+	t.Run("error - not existing directory", func(t *testing.T) {
 		// --- Given ---
 		wd := must.Value(os.Getwd())
 		pkg := &gopkg{wd: filepath.Join(wd, "testdata/not-existing")}
@@ -292,7 +292,7 @@ func Test_gopkg_getModInfo(t *testing.T) {
 		assert.ErrorIs(t, ErrUnkPkg, err)
 	})
 
-	t.Run("error directory is not part of a go module", func(t *testing.T) {
+	t.Run("error - directory is not part of a go module", func(t *testing.T) {
 		// --- When ---
 		pkg := &gopkg{wd: t.TempDir()}
 
@@ -303,7 +303,7 @@ func Test_gopkg_getModInfo(t *testing.T) {
 		assert.ErrorIs(t, ErrUnkPkg, err)
 	})
 
-	t.Run("error unknown module", func(t *testing.T) {
+	t.Run("error - unknown module", func(t *testing.T) {
 		// --- When ---
 		pkg := &gopkg{pkgPath: "example.com/test"}
 
@@ -532,7 +532,7 @@ func Test_gopkg_parse(t *testing.T) {
 		assert.Len(t, 2, pkg.files)
 	})
 
-	t.Run("error unknown directory", func(t *testing.T) {
+	t.Run("error - unknown directory", func(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/not-existing")
 		pkg := &gopkg{pkgDir: dir}
@@ -545,7 +545,7 @@ func Test_gopkg_parse(t *testing.T) {
 		assert.ErrorContain(t, dir, err)
 	})
 
-	t.Run("error parsing ast", func(t *testing.T) {
+	t.Run("error - parsing ast", func(t *testing.T) {
 		// --- Given ---
 		mod := tstmod.New(t, "v1")
 		pth := mod.WriteFile("invalid.go", "")
@@ -576,7 +576,7 @@ func Test_gopkg_findType(t *testing.T) {
 		assert.Equal(t, "Concrete", hTyp.Name.String())
 	})
 
-	t.Run("error parsing package", func(t *testing.T) {
+	t.Run("error - parsing package", func(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/not-existing")
 		pkg := &gopkg{pkgDir: dir}
@@ -591,7 +591,7 @@ func Test_gopkg_findType(t *testing.T) {
 		assert.Nil(t, hTyp)
 	})
 
-	t.Run("error unknown type", func(t *testing.T) {
+	t.Run("error - unknown type", func(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/cases")
 		pkg := &gopkg{pkgDir: dir}
@@ -622,7 +622,7 @@ func Test_gopkg_findItf(t *testing.T) {
 		assert.NotNil(t, hItf)
 	})
 
-	t.Run("error type alias from the same package", func(t *testing.T) {
+	t.Run("error - type alias from the same package", func(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/cases")
 		pkg := &gopkg{pkgDir: dir}
@@ -636,7 +636,7 @@ func Test_gopkg_findItf(t *testing.T) {
 		assert.Nil(t, hItf)
 	})
 
-	t.Run("error type alias from the other package", func(t *testing.T) {
+	t.Run("error - type alias from the other package", func(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/cases")
 		pkg := &gopkg{pkgDir: dir}
@@ -650,7 +650,7 @@ func Test_gopkg_findItf(t *testing.T) {
 		assert.Nil(t, hItf)
 	})
 
-	t.Run("error parsing package", func(t *testing.T) {
+	t.Run("error - parsing package", func(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/not-existing")
 		pkg := &gopkg{pkgDir: dir}
@@ -665,7 +665,7 @@ func Test_gopkg_findItf(t *testing.T) {
 		assert.Nil(t, hItf)
 	})
 
-	t.Run("error when type is not an interface", func(t *testing.T) {
+	t.Run("error - when type is not an interface", func(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/cases")
 		pkg := &gopkg{pkgDir: dir}
@@ -680,7 +680,7 @@ func Test_gopkg_findItf(t *testing.T) {
 		assert.Nil(t, hItf)
 	})
 
-	t.Run("error unknown type", func(t *testing.T) {
+	t.Run("error - unknown type", func(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/cases")
 		pkg := &gopkg{pkgDir: dir}

@@ -23,7 +23,7 @@ func Test_Open(t *testing.T) {
 		affirm.Equal(t, true, core.Same(tspy, have.t))
 	})
 
-	t.Run("success case 1", func(t *testing.T) {
+	t.Run("case 1", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy()
 
@@ -37,7 +37,7 @@ func Test_Open(t *testing.T) {
 		affirm.Equal(t, "Content #1.\nContent #2.", have.String())
 	})
 
-	t.Run("success case 2", func(t *testing.T) {
+	t.Run("case 2", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy()
 
@@ -51,7 +51,7 @@ func Test_Open(t *testing.T) {
 		affirm.Equal(t, "Content #1.\nContent #2.\n", have.String())
 	})
 
-	t.Run("success case 3", func(t *testing.T) {
+	t.Run("case 3", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy()
 
@@ -65,7 +65,7 @@ func Test_Open(t *testing.T) {
 		affirm.Equal(t, "Content #1.\nContent #2.\n\n", have.String())
 	})
 
-	t.Run("success case 4", func(t *testing.T) {
+	t.Run("case 4", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy()
 
@@ -79,7 +79,7 @@ func Test_Open(t *testing.T) {
 		affirm.Equal(t, "Content #1.\nContent #2.\n", have.String())
 	})
 
-	t.Run("error no marker", func(t *testing.T) {
+	t.Run("error - no marker", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy().Capture()
 
@@ -208,7 +208,7 @@ func Test_Goldy_Save(t *testing.T) {
 		affirm.Equal(t, want, string(have))
 	})
 
-	t.Run("error when the file cannot be written", func(t *testing.T) {
+	t.Run("error - when the file cannot be written", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy().Capture()
 		pth := filepath.Join(t.TempDir(), "sub-dir", "/golden.gld")

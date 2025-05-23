@@ -140,7 +140,7 @@ func Test_NotNil(t *testing.T) {
 func Test_Panic(t *testing.T) {
 	const expMsg = "expected values to be equal:\n  want: %q\n  have: %q"
 
-	t.Run("success string message", func(t *testing.T) {
+	t.Run("string message", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy()
 
@@ -172,7 +172,7 @@ func Test_Panic(t *testing.T) {
 		}
 	})
 
-	t.Run("success other type", func(t *testing.T) {
+	t.Run("other type", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy()
 
@@ -188,7 +188,7 @@ func Test_Panic(t *testing.T) {
 		}
 	})
 
-	t.Run("success function panics with nil", func(t *testing.T) {
+	t.Run("function panics with nil", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy()
 
@@ -205,7 +205,7 @@ func Test_Panic(t *testing.T) {
 		}
 	})
 
-	t.Run("error function does not panic", func(t *testing.T) {
+	t.Run("error - function does not panic", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy()
 

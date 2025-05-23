@@ -25,7 +25,7 @@ func Test_find_match(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error equal", func(t *testing.T) {
+	t.Run("error - equal", func(t *testing.T) {
 		// --- Given ---
 		ent := &find{strategy: Equal, want: "abc def ghi"}
 
@@ -47,7 +47,7 @@ func Test_find_match(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error contains", func(t *testing.T) {
+	t.Run("error - contains", func(t *testing.T) {
 		// --- Given ---
 		ent := &find{strategy: Contains, want: "def"}
 
@@ -69,7 +69,7 @@ func Test_find_match(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error not contains", func(t *testing.T) {
+	t.Run("error - not contains", func(t *testing.T) {
 		// --- Given ---
 		ent := &find{strategy: NotContains, want: "def"}
 
@@ -91,7 +91,7 @@ func Test_find_match(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error regexp", func(t *testing.T) {
+	t.Run("error - regexp", func(t *testing.T) {
 		// --- Given ---
 		ent := &find{strategy: Regexp, want: "abc def ghi"}
 
@@ -113,7 +113,7 @@ func Test_find_match(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error unknown as equal", func(t *testing.T) {
+	t.Run("error - unknown as equal", func(t *testing.T) {
 		// --- Given ---
 		ent := &find{strategy: "unknown", want: "abc def ghi"}
 
@@ -2571,7 +2571,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		assertSpyHasMgs(t, spy, 0)
 	})
 
-	t.Run("error ExpectSkipped", func(t *testing.T) {
+	t.Run("error - ExpectSkipped", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
 

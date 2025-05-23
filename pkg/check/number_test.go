@@ -10,7 +10,7 @@ import (
 )
 
 func Test_Epsilon(t *testing.T) {
-	t.Run("success - float64", func(t *testing.T) {
+	t.Run("float64", func(t *testing.T) {
 		// --- When ---
 		err := Epsilon(42.0, 0.11, 41.9)
 
@@ -18,7 +18,7 @@ func Test_Epsilon(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("success - int", func(t *testing.T) {
+	t.Run("int", func(t *testing.T) {
 		// --- When ---
 		err := Epsilon(42, 1, 41)
 
@@ -26,7 +26,7 @@ func Test_Epsilon(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("success - int64", func(t *testing.T) {
+	t.Run("int64", func(t *testing.T) {
 		// --- When ---
 		err := Epsilon(int64(42), int64(5), int64(47))
 
@@ -34,7 +34,7 @@ func Test_Epsilon(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error with float64", func(t *testing.T) {
+	t.Run("error - float64", func(t *testing.T) {
 		// --- When ---
 		err := Epsilon(42.0, 0.11, 39.9)
 
@@ -48,7 +48,7 @@ func Test_Epsilon(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error with uint", func(t *testing.T) {
+	t.Run("error - uint", func(t *testing.T) {
 		// --- When ---
 		err := Epsilon(uint(42), uint(4), uint(47))
 

@@ -224,7 +224,7 @@ func Test_file_findPackage(t *testing.T) {
 		assert.Equal(t, &gopkg{alias: "a1", pkgName: "n1", resolved: true}, have)
 	})
 
-	t.Run("error not found", func(t *testing.T) {
+	t.Run("error - empty packages", func(t *testing.T) {
 		// --- Given ---
 		res := &resolver{}
 		fil := &file{ast: &ast.File{}}
@@ -237,7 +237,7 @@ func Test_file_findPackage(t *testing.T) {
 		assert.Nil(t, have)
 	})
 
-	t.Run("error not found", func(t *testing.T) {
+	t.Run("error - not found", func(t *testing.T) {
 		// --- Given ---
 		res := &resolver{}
 		fil := &file{

@@ -45,7 +45,7 @@ func Test_Mocker_Generate(t *testing.T) {
 		assert.Equal(t, gld.String(), string(have))
 	})
 
-	t.Run("error configuration", func(t *testing.T) {
+	t.Run("error - configuration", func(t *testing.T) {
 		// --- Given ---
 		mck := New()
 
@@ -56,7 +56,7 @@ func Test_Mocker_Generate(t *testing.T) {
 		assert.ErrorEqual(t, "interface name is required for mocking", err)
 	})
 
-	t.Run("error unknown interface", func(t *testing.T) {
+	t.Run("error - unknown interface", func(t *testing.T) {
 		// --- Given ---
 		opts := []Option{
 			WithTgtOutput(&bytes.Buffer{}), // Do not create the output file.
@@ -70,7 +70,7 @@ func Test_Mocker_Generate(t *testing.T) {
 		assert.ErrorIs(t, ErrUnkType, err)
 	})
 
-	t.Run("error not an interface", func(t *testing.T) {
+	t.Run("error - not an interface", func(t *testing.T) {
 		// --- Given ---
 		opts := []Option{
 			WithTgtOutput(&bytes.Buffer{}), // Do not create the output file.
@@ -86,7 +86,7 @@ func Test_Mocker_Generate(t *testing.T) {
 		assert.ErrorContain(t, "Concrete is not an interface", err)
 	})
 
-	t.Run("error not an interface alias type", func(t *testing.T) {
+	t.Run("error - not an interface alias type", func(t *testing.T) {
 		// --- Given ---
 		opts := []Option{
 			WithTgtOutput(&bytes.Buffer{}), // Do not create the output file.
@@ -102,7 +102,7 @@ func Test_Mocker_Generate(t *testing.T) {
 		assert.ErrorContain(t, "Alias is not an interface", err)
 	})
 
-	t.Run("error empty interface", func(t *testing.T) {
+	t.Run("error - empty interface", func(t *testing.T) {
 		// --- Given ---
 		opts := []Option{
 			WithTgtOutput(&bytes.Buffer{}), // Do not create the output file.
@@ -117,7 +117,7 @@ func Test_Mocker_Generate(t *testing.T) {
 		assert.ErrorIs(t, ErrNoMethods, err)
 	})
 
-	t.Run("error an any interface", func(t *testing.T) {
+	t.Run("error - an any interface", func(t *testing.T) {
 		// --- Given ---
 		opts := []Option{
 			WithTgtOutput(&bytes.Buffer{}), // Do not create the output file.

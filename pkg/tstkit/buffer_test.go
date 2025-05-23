@@ -209,7 +209,7 @@ func Test_DryBuffer(t *testing.T) {
 		assert.NotNil(t, buf)
 	})
 
-	t.Run("error buffer written", func(t *testing.T) {
+	t.Run("error - buffer written", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t, 2)
 		tspy.ExpectCleanups(1)
@@ -249,7 +249,7 @@ func Test_DryBuffer(t *testing.T) {
 		assert.NotNil(t, buf)
 	})
 
-	t.Run("error buffer named and written to", func(t *testing.T) {
+	t.Run("error - buffer named and written to", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t, 2)
 		tspy.ExpectCleanups(1)
@@ -302,7 +302,7 @@ func Test_WetBuffer(t *testing.T) {
 		assert.Equal(t, "abc", buf.String())
 	})
 
-	t.Run("error buffer written to but not examined", func(t *testing.T) {
+	t.Run("error - buffer written to but not examined", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t, 2)
 		tspy.ExpectCleanups(1)
@@ -320,7 +320,7 @@ func Test_WetBuffer(t *testing.T) {
 		assert.NotNil(t, buf)
 	})
 
-	t.Run("error named buffer written to but not examined", func(t *testing.T) {
+	t.Run("error - named buffer written to but not examined", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t, 2)
 		tspy.ExpectCleanups(1)
@@ -353,7 +353,7 @@ func Test_WetBuffer(t *testing.T) {
 		assert.NotNil(t, buf)
 	})
 
-	t.Run("error buffer is not written to", func(t *testing.T) {
+	t.Run("error - buffer is not written to", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t, 2)
 		tspy.ExpectCleanups(1)
@@ -369,7 +369,7 @@ func Test_WetBuffer(t *testing.T) {
 		assert.NotNil(t, buf)
 	})
 
-	t.Run("error buffer named and not written to", func(t *testing.T) {
+	t.Run("error - buffer named and not written to", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t, 2)
 		tspy.ExpectCleanups(1)

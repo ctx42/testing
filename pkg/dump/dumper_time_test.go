@@ -161,7 +161,7 @@ func Test_TimeDumperUnix(t *testing.T) {
 }
 
 func Test_TimeDumperDate(t *testing.T) {
-	t.Run("success UTC", func(t *testing.T) {
+	t.Run("UTC", func(t *testing.T) {
 		// --- Given ---
 		dmp := New()
 		tim := time.Date(2000, 1, 2, 3, 4, 5, 6, time.UTC)
@@ -175,7 +175,7 @@ func Test_TimeDumperDate(t *testing.T) {
 		affirm.Equal(t, want, have)
 	})
 
-	t.Run("success non UTC timezone", func(t *testing.T) {
+	t.Run("non UTC timezone", func(t *testing.T) {
 		// --- Given ---
 		dmp := New()
 		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW)
@@ -190,7 +190,7 @@ func Test_TimeDumperDate(t *testing.T) {
 		affirm.Equal(t, want, have)
 	})
 
-	t.Run("success compact", func(t *testing.T) {
+	t.Run("compact", func(t *testing.T) {
 		// --- Given ---
 		dmp := New(WithCompact)
 		tim := time.Date(2000, 1, 2, 3, 4, 5, 6, time.UTC)

@@ -9,7 +9,7 @@ import (
 )
 
 func Test_Count(t *testing.T) {
-	t.Run("error unsupported what type", func(t *testing.T) {
+	t.Run("error - unsupported what type", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -23,7 +23,7 @@ func Test_Count(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error unsupported where type", func(t *testing.T) {
+	t.Run("error - unsupported where type", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -194,7 +194,7 @@ func Test_Type_error_tabular(t *testing.T) {
 }
 
 func Test_Fields(t *testing.T) {
-	t.Run("success zero fields", func(t *testing.T) {
+	t.Run("zero fields", func(t *testing.T) {
 		// --- Given ---
 		s := struct{}{}
 
@@ -205,7 +205,7 @@ func Test_Fields(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("success value object", func(t *testing.T) {
+	t.Run("value object", func(t *testing.T) {
 		// --- When ---
 		err := Fields(7, types.TA{})
 
@@ -237,7 +237,7 @@ func Test_Fields(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error not struct", func(t *testing.T) {
+	t.Run("error - not struct", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 

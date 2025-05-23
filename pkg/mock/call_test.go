@@ -207,7 +207,7 @@ func Test_Call_Return(t *testing.T) {
 }
 
 func Test_Call_Panic(t *testing.T) {
-	t.Run("success with string", func(t *testing.T) {
+	t.Run("with string", func(t *testing.T) {
 		// --- Given ---
 		call := newCall("Zero")
 
@@ -219,7 +219,7 @@ func Test_Call_Panic(t *testing.T) {
 		assert.Equal(t, "message", have.panic)
 	})
 
-	t.Run("success with error", func(t *testing.T) {
+	t.Run("with error", func(t *testing.T) {
 		// --- Given ---
 		ErrTst := errors.New("test")
 		call := newCall("Zero")
@@ -795,7 +795,7 @@ func Test_Call_checkReq(t *testing.T) {
 		assert.NoError(t, have)
 	})
 
-	t.Run("error missing one from the same mock", func(t *testing.T) {
+	t.Run("error - missing one from the same mock", func(t *testing.T) {
 		// --- Given ---
 		pre1 := newCall("Pre1", 1)
 		stk := []string{"line0", "line1", "line2"}
@@ -810,7 +810,7 @@ func Test_Call_checkReq(t *testing.T) {
 		assert.ErrorIs(t, ErrRequirements, have)
 	})
 
-	t.Run("error missing one of many from the same mock", func(t *testing.T) {
+	t.Run("error - missing one of many from the same mock", func(t *testing.T) {
 		// --- Given ---
 		pre0 := newCall("Pre0", 1).satisfy()
 		pre1 := newCall("Pre1", 1)
@@ -826,7 +826,7 @@ func Test_Call_checkReq(t *testing.T) {
 		assert.ErrorIs(t, ErrRequirements, have)
 	})
 
-	t.Run("error missing many from the same mock", func(t *testing.T) {
+	t.Run("error - missing many from the same mock", func(t *testing.T) {
 		// --- Given ---
 		pre0 := newCall("Pre0", 1)
 		pre1 := newCall("Pre1", 1)
@@ -842,7 +842,7 @@ func Test_Call_checkReq(t *testing.T) {
 		assert.ErrorIs(t, ErrRequirements, have)
 	})
 
-	t.Run("error missing from different mock", func(t *testing.T) {
+	t.Run("error - missing from different mock", func(t *testing.T) {
 		// --- Given ---
 		mck0 := &Mock{}
 		pre01 := newCall("Pre01").withParent(mck0)

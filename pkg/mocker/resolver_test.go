@@ -80,7 +80,7 @@ func Test_resolver(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("error package not found", func(t *testing.T) {
+	t.Run("error - package not found", func(t *testing.T) {
 		// --- Given ---
 		res := &resolver{}
 		pkg := &gopkg{

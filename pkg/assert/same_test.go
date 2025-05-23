@@ -13,7 +13,7 @@ import (
 )
 
 func Test_Same(t *testing.T) {
-	t.Run("success pointers", func(t *testing.T) {
+	t.Run("pointers", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 		ptr0 := &types.TPtr{Val: "0"}
@@ -25,7 +25,7 @@ func Test_Same(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error want is value", func(t *testing.T) {
+	t.Run("error - want is value", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -42,7 +42,7 @@ func Test_Same(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("error have is value", func(t *testing.T) {
+	t.Run("error - have is value", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -59,7 +59,7 @@ func Test_Same(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("error not same pointers", func(t *testing.T) {
+	t.Run("error - not same pointers", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()

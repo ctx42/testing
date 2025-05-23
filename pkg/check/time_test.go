@@ -159,7 +159,7 @@ func Test_Exact(t *testing.T) {
 		affirm.Equal(t, true, want.Equal(have))
 	})
 
-	t.Run("error not exact date", func(t *testing.T) {
+	t.Run("error - not exact date", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
@@ -177,7 +177,7 @@ func Test_Exact(t *testing.T) {
 		affirm.Equal(t, false, want.Equal(have))
 	})
 
-	t.Run("error not exact date want is string", func(t *testing.T) {
+	t.Run("error - not exact date want is string", func(t *testing.T) {
 		// --- Given ---
 		have := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 
@@ -193,7 +193,7 @@ func Test_Exact(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error not exact date have is string", func(t *testing.T) {
+	t.Run("error - not exact date have is string", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 
@@ -209,7 +209,7 @@ func Test_Exact(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error not exact timezone", func(t *testing.T) {
+	t.Run("error - not exact timezone", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 4, 4, 5, 0, types.WAW)
@@ -761,7 +761,7 @@ func Test_Recent(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error not recent in the future", func(t *testing.T) {
+	t.Run("error - not recent in the future", func(t *testing.T) {
 		// --- Given ---
 		now := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		opt := WithNow(func() time.Time { return now })
@@ -780,7 +780,7 @@ func Test_Recent(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error not recent in the past", func(t *testing.T) {
+	t.Run("error - not recent in the past", func(t *testing.T) {
 		// --- Given ---
 		now := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		opt := WithNow(func() time.Time { return now })
@@ -887,7 +887,7 @@ func Test_Duration(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error not equal", func(t *testing.T) {
+	t.Run("error - not equal", func(t *testing.T) {
 		// --- When ---
 		err := Duration("1000s", "2000s")
 
@@ -1159,7 +1159,7 @@ func Test_getDur(t *testing.T) {
 		affirm.Equal(t, true, errors.Is(err, ErrDurParse))
 	})
 
-	t.Run("error unsupported type", func(t *testing.T) {
+	t.Run("error - unsupported type", func(t *testing.T) {
 		// --- When ---
 		haveDur, haveStr, haveRep, err := getDur(true)
 

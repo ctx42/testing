@@ -37,7 +37,7 @@ func Test_Len(t *testing.T) {
 		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
-	t.Run("error when want is greater than the actual length", func(t *testing.T) {
+	t.Run("error - when want is greater than the actual length", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()

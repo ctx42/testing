@@ -192,7 +192,7 @@ func Test_newConfig(t *testing.T) {
 		assert.Equal(t, filepath.Join(wd, "my_super_mock.go"), have.tgtFilename)
 	})
 
-	t.Run("error interface name is required", func(t *testing.T) {
+	t.Run("error - interface name is required", func(t *testing.T) {
 		// --- When ---
 		_, err := newConfig("")
 
@@ -200,7 +200,7 @@ func Test_newConfig(t *testing.T) {
 		assert.ErrorEqual(t, "interface name is required for mocking", err)
 	})
 
-	t.Run("error invalid source", func(t *testing.T) {
+	t.Run("error - invalid source", func(t *testing.T) {
 		// --- When ---
 		_, err := newConfig("TstItf", WithSrc("!!!"))
 
@@ -208,7 +208,7 @@ func Test_newConfig(t *testing.T) {
 		assert.ErrorIs(t, ErrUnkPkg, err)
 	})
 
-	t.Run("error invalid target", func(t *testing.T) {
+	t.Run("error - invalid target", func(t *testing.T) {
 		// --- When ---
 		_, err := newConfig("TstItf", WithTgt("!!!"))
 
@@ -216,7 +216,7 @@ func Test_newConfig(t *testing.T) {
 		assert.ErrorIs(t, ErrUnkPkg, err)
 	})
 
-	t.Run("error cannot set filename and output", func(t *testing.T) {
+	t.Run("error - cannot set filename and output", func(t *testing.T) {
 		// --- When ---
 		buf := &bytes.Buffer{}
 		opts := []Option{WithTgtFilename("file.go"), WithTgtOutput(buf)}

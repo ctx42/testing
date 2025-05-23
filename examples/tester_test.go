@@ -10,7 +10,7 @@ import (
 )
 
 func Test_IsOdd(t *testing.T) {
-	t.Run("error is not odd number", func(t *testing.T) {
+	t.Run("error - is not an odd number", func(t *testing.T) {
 		// --- Given ---
 
 		// Set up the spy with expectations
@@ -29,7 +29,7 @@ func Test_IsOdd(t *testing.T) {
 		tspy.AssertExpectations() // Ensure all expectations were met.
 	})
 
-	t.Run("success is odd number", func(t *testing.T) {
+	t.Run("is an odd number", func(t *testing.T) {
 		// Given
 		tspy := tester.New(t)
 		tspy.Close()

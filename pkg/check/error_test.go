@@ -295,7 +295,7 @@ func Test_ErrorEqual(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("success with format", func(t *testing.T) {
+	t.Run("with format", func(t *testing.T) {
 		// --- When ---
 		err := ErrorEqual("e00", errors.New("e00"))
 
@@ -303,7 +303,7 @@ func Test_ErrorEqual(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("success with percent in want", func(t *testing.T) {
+	t.Run("with percent in want", func(t *testing.T) {
 		// --- When ---
 		err := ErrorEqual("e0%", errors.New("e0%"))
 
@@ -434,7 +434,7 @@ func Test_ErrorContain(t *testing.T) {
 }
 
 func Test_ErrorRegexp(t *testing.T) {
-	t.Run("success string", func(t *testing.T) {
+	t.Run("string", func(t *testing.T) {
 		// --- When ---
 		err := ErrorRegexp("def", errors.New("abc def ghi"))
 
@@ -442,7 +442,7 @@ func Test_ErrorRegexp(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("success regex", func(t *testing.T) {
+	t.Run("regex", func(t *testing.T) {
 		// --- Given ---
 		rx := regexp.MustCompile(".* def .*")
 
@@ -453,7 +453,7 @@ func Test_ErrorRegexp(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("success regex", func(t *testing.T) {
+	t.Run("regex", func(t *testing.T) {
 		// --- When ---
 		err := ErrorRegexp("ghi$", errors.New("abc def ghi"))
 

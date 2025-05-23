@@ -513,7 +513,7 @@ func Test_SliceSubset(t *testing.T) {
 }
 
 func Test_MapSubset(t *testing.T) {
-	t.Run("success map is subset", func(t *testing.T) {
+	t.Run("map is subset", func(t *testing.T) {
 		// --- Given ---
 		want := map[string]string{
 			"KEY0": "VAL0",
@@ -530,7 +530,7 @@ func Test_MapSubset(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error missing keys", func(t *testing.T) {
+	t.Run("error - missing keys", func(t *testing.T) {
 		// --- Given ---
 		want := map[string]string{
 			"KEY0": "VAL0",
@@ -554,7 +554,7 @@ func Test_MapSubset(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error wrong values", func(t *testing.T) {
+	t.Run("error - wrong values", func(t *testing.T) {
 		// --- Given ---
 		want := map[string]string{
 			"KEY0": "VAL0",
@@ -577,7 +577,7 @@ func Test_MapSubset(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error missing and wrong values", func(t *testing.T) {
+	t.Run("error - missing and wrong values", func(t *testing.T) {
 		// --- Given ---
 		want := map[string]string{
 			"KEY0": "VAL0",
@@ -604,7 +604,7 @@ func Test_MapSubset(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error multiple not matching values", func(t *testing.T) {
+	t.Run("error - multiple not matching values", func(t *testing.T) {
 		// --- Given ---
 		want := map[int]int{
 			0: 10,
@@ -651,7 +651,7 @@ func Test_MapsSubset(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error have has fewer indexes", func(t *testing.T) {
+	t.Run("error - have has fewer indexes", func(t *testing.T) {
 		// --- Given ---
 		want := []map[string]string{
 			{"KEY0": "VAL0"},
@@ -674,7 +674,7 @@ func Test_MapsSubset(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error wrong values", func(t *testing.T) {
+	t.Run("error - wrong values", func(t *testing.T) {
 		// --- Given ---
 		want := []map[string]string{
 			{"KEY0": "VAL0", "KEY1": "VALA"},

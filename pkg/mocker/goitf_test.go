@@ -48,7 +48,7 @@ func Test_goitf_find(t *testing.T) {
 		assert.Nil(t, have)
 	})
 
-	t.Run("error when interface without methods", func(t *testing.T) {
+	t.Run("error - when interface without methods", func(t *testing.T) {
 		// --- Given ---
 		itf := &goitf{}
 

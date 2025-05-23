@@ -344,7 +344,7 @@ func Test_findSources(t *testing.T) {
 		assert.Equal(t, want, have)
 	})
 
-	t.Run("error when the path is not a directory", func(t *testing.T) {
+	t.Run("error - when the path is not a directory", func(t *testing.T) {
 		// --- When ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/pkga/helper.go")
 		have, err := findSources(dir)
@@ -355,7 +355,7 @@ func Test_findSources(t *testing.T) {
 		assert.Nil(t, have)
 	})
 
-	t.Run("error when directory doesnt exist", func(t *testing.T) {
+	t.Run("error - when directory doesnt exist", func(t *testing.T) {
 		// --- When ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/not-existing")
 		have, err := findSources(dir)

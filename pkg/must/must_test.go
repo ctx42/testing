@@ -90,7 +90,7 @@ func Test_First(t *testing.T) {
 		affirm.Equal(t, T{}, have)
 	})
 
-	t.Run("error not nil", func(t *testing.T) {
+	t.Run("error - not nil", func(t *testing.T) {
 		// --- Given ---
 		fn := func() ([]T, error) { return nil, errors.New("test msg") }
 
@@ -140,7 +140,7 @@ func Test_Single(t *testing.T) {
 		affirm.Equal(t, T{}, have)
 	})
 
-	t.Run("error not nil", func(t *testing.T) {
+	t.Run("error - not nil", func(t *testing.T) {
 		// --- Given ---
 		fn := func() ([]T, error) { return nil, errors.New("test msg") }
 
