@@ -185,7 +185,7 @@ func Test_Equal_custom_trail_checkers(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected same timezone:\n" +
+		wMsg := "expected timezone:\n" +
 			"  trail: type.field\n" +
 			"   want: UTC\n" +
 			"   have: Europe/Warsaw"
@@ -212,7 +212,7 @@ func Test_Equal_custom_type_checkers(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected same timezone:\n" +
+		wMsg := "expected timezone:\n" +
 			"  trail: type.field\n" +
 			"   want: UTC\n" +
 			"   have: Europe/Warsaw"
@@ -450,7 +450,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected same timezone:\n" +
+		wMsg := "expected timezone:\n" +
 			"  trail: type\n" +
 			"   want: Europe/Warsaw\n" +
 			"   have: Europe/Paris"
@@ -470,7 +470,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		err := Equal(want, have, opts...)
 
 		// --- Then ---
-		wMsg := "expected same timezone:\n" +
+		wMsg := "expected timezone:\n" +
 			"  trail: TLoc.Loc\n" +
 			"   want: Europe/Warsaw\n" +
 			"   have: UTC"

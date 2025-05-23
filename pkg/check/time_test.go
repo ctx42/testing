@@ -219,7 +219,7 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected same timezone:\n" +
+		wMsg := "expected timezone:\n" +
 			"  want: UTC\n" +
 			"  have: Europe/Warsaw"
 		affirm.Equal(t, wMsg, err.Error())
@@ -855,7 +855,7 @@ func Test_Zone(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected same timezone:\n" +
+		wMsg := "expected timezone:\n" +
 			"  want: UTC\n" +
 			"  have: Europe/Warsaw"
 		affirm.Equal(t, wMsg, err.Error())
@@ -870,7 +870,7 @@ func Test_Zone(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected same timezone:\n" +
+		wMsg := "expected timezone:\n" +
 			"  trail: type.field\n" +
 			"   want: UTC\n" +
 			"   have: Europe/Warsaw"

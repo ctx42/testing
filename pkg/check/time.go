@@ -310,7 +310,7 @@ func Zone(want, have *time.Location, opts ...Option) error {
 	}
 
 	ops := DefaultOptions(opts...)
-	return notice.New("expected same timezone").
+	return notice.New("expected timezone").
 		Trail(ops.Trail).
 		Want("%s", want.String()).
 		Have("%s", have.String())
