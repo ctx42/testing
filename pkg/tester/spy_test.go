@@ -364,7 +364,7 @@ func Test_Spy_ExpectError(t *testing.T) {
 		// --- Then ---
 		msg := affirm.Panic(t, func() { spy.ExpectError() })
 		affirm.NotNil(t, msg)
-		want := "cannot use ExpectError and ExpectFail in the same time"
+		want := "cannot use ExpectError and ExpectFail at the same time"
 		affirm.Equal(t, want, *msg)
 		affirm.Equal(t, true, spy.panicked)
 	})
@@ -549,7 +549,7 @@ func Test_Spy_ExpectFatal(t *testing.T) {
 		// --- Then ---
 		msg := affirm.Panic(t, func() { spy.ExpectFatal() })
 		affirm.NotNil(t, msg)
-		want := "cannot use ExpectFatal and ExpectFail in the same time"
+		want := "cannot use ExpectFatal and ExpectFail at the same time"
 		affirm.Equal(t, want, *msg)
 		affirm.Equal(t, true, spy.panicked)
 	})
@@ -2143,7 +2143,7 @@ func Test_Spy_ExpectFail(t *testing.T) {
 		// --- Then ---
 		msg := affirm.Panic(t, func() { spy.ExpectFail() })
 		affirm.NotNil(t, msg)
-		want := "cannot use ExpectFail and ExpectFatal in the same time"
+		want := "cannot use ExpectFail and ExpectFatal at the same time"
 		affirm.Equal(t, want, *msg)
 		affirm.Equal(t, true, spy.panicked)
 	})
@@ -2160,7 +2160,7 @@ func Test_Spy_ExpectFail(t *testing.T) {
 		// --- Then ---
 		msg := affirm.Panic(t, func() { spy.ExpectFail() })
 		affirm.NotNil(t, msg)
-		want := "cannot use ExpectFail and ExpectError in the same time"
+		want := "cannot use ExpectFail and ExpectError at the same time"
 		affirm.Equal(t, want, *msg)
 		affirm.Equal(t, true, spy.panicked)
 	})
