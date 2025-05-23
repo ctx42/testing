@@ -1,3 +1,6 @@
+## v0.10.3 (Fri, 23 May 2025 13:54:12 UTC)
+- Improve check.Zone error message.
+
 ## v0.10.2 (Fri, 23 May 2025 12:14:43 UTC)
 - The diff field in check.Within error is always in relation to "want" time. Improve documentation.
 
