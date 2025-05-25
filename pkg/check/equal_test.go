@@ -583,11 +583,13 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
-			"expected values to be equal:\n" +
+			"multiple expectations violated:\n" +
+			"  error: expected values to be equal\n" +
 			"  trail: TIntStr.Int\n" +
 			"   want: 42\n" +
 			"   have: 44\n" +
-			" ---\n" +
+			"      ---\n" +
+			"  error: expected values to be equal\n" +
 			"  trail: TIntStr.Str\n" +
 			"   want: \"abc\"\n" +
 			"   have: \"xyz\""
@@ -851,11 +853,13 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
-			"expected values to be equal:\n" +
+			"multiple expectations violated:\n" +
+			"  error: expected values to be equal\n" +
 			"  trail: <slice>[0]\n" +
 			"   want: 1\n" +
 			"   have: 2\n" +
-			" ---\n" +
+			"      ---\n" +
+			"  error: expected values to be equal\n" +
 			"  trail: <slice>[1]\n" +
 			"   want: 2\n" +
 			"   have: 3"
@@ -1001,11 +1005,13 @@ func Test_Equal_kind_Map(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
-			"expected values to be equal:\n" +
+			"multiple expectations violated:\n" +
+			"  error: expected values to be equal\n" +
 			"  trail: type.field[1]\n" +
 			"   want: 42\n" +
 			"   have: 44\n" +
-			" ---\n" +
+			"      ---\n" +
+			"  error: expected values to be equal\n" +
 			"  trail: type.field[2]\n" +
 			"   want: 44\n" +
 			"   have: 42"

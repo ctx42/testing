@@ -151,7 +151,7 @@ func SliceSubset[V comparable](want, have []V, opts ...Option) error {
 func MapSubset[K comparable, V any](want, have map[K]V, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 
-	var ersM map[string][]error
+	var err error
 	var order []string
 	var missing []string
 	for wKey, wVal := range want {
@@ -162,30 +162,28 @@ func MapSubset[K comparable, V any](want, have map[K]V, opts ...Option) error {
 			continue
 		}
 		kOps := ops.MapTrail(wKeyStr)
-		if err := Equal(wVal, hVal, WithOptions(kOps)); err != nil {
-			if ersM == nil {
-				ersM = make(map[string][]error)
-			}
+		if e := Equal(wVal, hVal, WithOptions(kOps)); e != nil {
 			order = append(order, kOps.Trail)
-			ersM[kOps.Trail] = append(ersM[kOps.Trail], notice.Unwrap(err)...)
+			err = notice.Join(err, e) // TODO(rz):
 		}
 	}
 
-	var ers []error
-	sort.Strings(order)
-	for _, trail := range order {
-		ers = append(ers, ersM[trail]...)
-	}
+	// TODO(rz): make sure the same order.
+
+	// var ers []error
+	// sort.Strings(order)
+	// for _, trail := range order {
+	// 	ers = append(ers, ersM[trail]...)
+	// }
 
 	if len(missing) > 0 {
 		sort.Strings(missing)
-		err := notice.New(`expected "have" map to have key(s)`).
+		msg := notice.New(`expected "have" map to have key(s)`).
 			SetTrail(ops.Trail).
 			Append("missing key(s)", "%s", strings.Join(missing, ", "))
-		ers = append(ers, err)
+		err = notice.Join(err, msg) // TODO(rz): add just rows.
 	}
-
-	return notice.Join(ers...)
+	return err
 }
 
 // MapsSubset checks all the "want" maps are subsets of corresponding "have"
@@ -202,12 +200,15 @@ func MapsSubset[K comparable, V any](want, have []map[K]V, opts ...Option) error
 			Have("%d", len(have))
 	}
 
-	var ers []error
+	// TODO(rz): rename all of those to msg. Now its just one message with
+	//  multiple sections.
+	var err error
 	for i := range want {
 		iOps := ops.ArrTrail("slice", i)
-		if err := MapSubset(want[i], have[i], WithOptions(iOps)); err != nil {
-			ers = append(ers, notice.Unwrap(err)...)
+		if e := MapSubset(want[i], have[i], WithOptions(iOps)); e != nil {
+			err = notice.Join(err, e) // TODO(rz):
+			// ers = append(ers, notice.Unwrap(err)...)
 		}
 	}
-	return notice.Join(ers...)
+	return err
 }

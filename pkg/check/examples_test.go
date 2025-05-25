@@ -88,11 +88,13 @@ func ExampleEqual_structs() {
 
 	fmt.Println(err)
 	// Output:
-	// expected values to be equal:
+	// multiple expectations violated:
+	//   error: expected values to be equal
 	//   trail: T.Int
 	//    want: 2
 	//    have: 1
-	//  ---
+	//       ---
+	//   error: expected values to be equal
 	//   trail: T.Str
 	//    want: "xyz"
 	//    have: "abc"

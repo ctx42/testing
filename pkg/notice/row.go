@@ -5,7 +5,6 @@ package notice
 
 import (
 	"fmt"
-	"strings"
 )
 
 // Row represents [Notice] row.
@@ -25,9 +24,5 @@ func (r Row) String() string { return fmt.Sprintf(r.Format, r.Args...) }
 
 // PadName left pads row name with spaces to be requested length.
 func (r Row) PadName(length int) string {
-	l := len(r.Name)
-	if length > l {
-		return strings.Repeat(" ", length-l) + r.Name
-	}
-	return r.Name
+	return Pad(r.Name, length)
 }

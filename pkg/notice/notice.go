@@ -11,47 +11,44 @@ import (
 	"strings"
 )
 
-// trail represents a row name with special meaning representing a trail (path)
-// to the field / element or key the notice message is about.
-//
-// Trail examples:
-//
-//   - Type
-//   - Type[1].Field
-//   - Type["key"].Field
-const trail = "trail"
+const (
+	// trail represents the header name containing the field trail (path) name.
+	trail = "trail"
 
-// ContinuationHeader is a special [Notice.Header] separating notices with the
-// same header.
-//
-// Example:
-//
-//	header:
-//	  want: want 0
-//	  have: have 0
-//	 ---
-//	  want: want 1
-//	  have: have 1
-const ContinuationHeader = " ---"
+	// multiHeader is a header for multiple notices.
+	multiHeader = "multiple expectations violated"
+)
 
 // ErrNotice is a sentinel error automatically wrapped by all instances of
 // [Notice] unless changed with the [Notice.Wrap] method.
 var ErrNotice = errors.New("notice error")
 
-// Notice represents a structured notice message consisting of a header and
-// multiple named rows giving context to it.
+// Notice represents a structured expectation violation message consisting of a
+// header, trail and multiple named rows with context.
 //
 // nolint: errname
 type Notice struct {
-	Header string         // Header message.
+	Header string // Header message.
+
+	// Is a trail to the field, element or key the notice message is about.
+	Trail string
+
 	Rows   []Row          // Context rows.
 	Meta   map[string]any // Useful metadata.
 	err    error          // Base error (default: [ErrNotice]).
+	parent *Notice        // Patent message in the chain.
+	child  *Notice        // Child message in the chain.
 }
 
-// New creates a new [Notice] with the specified header which is constructed
-// using [fmt.Sprintf] from format and args. By default, the base error is
-// set to [ErrNotice].
+// New creates a new [Notice] with a header formatted using [fmt.Sprintf] from
+// the provided format string and optional arguments. The resulting [Notice]
+// has its base error set to [ErrNotice]. The header is set by calling. If no
+// arguments are provided, the format string is used as-is.
+//
+// Example:
+//
+//	n := New("header: %s", "name") // Header: "header: name"
+//	n := New("generic error")      // Header: "generic error"
 func New(header string, args ...any) *Notice {
 	msg := &Notice{err: ErrNotice}
 	return msg.SetHeader(header, args...)
@@ -62,8 +59,10 @@ func New(header string, args ...any) *Notice {
 // If "err" is not an instance of [Notice], it will create a new one and wrap
 // the "err".
 func From(err error, prefix ...string) *Notice {
-	var e *Notice
-	if errors.As(err, &e) {
+	if err == nil {
+		return nil
+	}
+	if e, ok := err.(*Notice); ok {
 		if len(prefix) > 0 {
 			e.Header = fmt.Sprintf("[%s] %s", prefix[0], e.Header)
 		}
@@ -116,11 +115,7 @@ func (msg *Notice) Prepend(name, format string, args ...any) *Notice {
 		msg.Rows[idx].Args = args
 		return msg
 	}
-	var idx int
-	if len(msg.Rows) != 0 && msg.Rows[0].Name == trail {
-		idx = 1
-	}
-	msg.Rows = slices.Insert(msg.Rows, idx, NewRow(name, format, args...))
+	msg.Rows = slices.Insert(msg.Rows, 0, NewRow(name, format, args...))
 	return msg
 }
 
@@ -132,11 +127,9 @@ func (msg *Notice) Prepend(name, format string, args ...any) *Notice {
 //   - Type
 //   - Type[1].Field
 //   - Type["key"].Field
-func (msg *Notice) SetTrail(tr string) *Notice {
-	if tr == "" {
-		return msg
-	}
-	return msg.Prepend(trail, "%s", tr)
+func (msg *Notice) SetTrail(trail string) *Notice {
+	msg.Trail = trail
+	return msg
 }
 
 // Want uses the Append method to append a row with the "want" name. If the
@@ -172,35 +165,91 @@ func (msg *Notice) Remove(name string) *Notice {
 
 func (msg *Notice) Is(target error) bool { return errors.Is(msg.err, target) }
 
+// Parent sets parent of the current notice.
+func (msg *Notice) Parent(parent *Notice) *Notice {
+	msg.parent = parent
+	parent.child = msg
+	return msg
+}
+
 // Notice returns a formatted string representation of the Notice.
 func (msg *Notice) Error() string {
-	m := msg.Header
-	if len(msg.Rows) > 0 {
-		if msg.Header != ContinuationHeader {
-			m += ":"
+	mgs := msg.collect()
+
+	var longest int
+	for _, m := range mgs {
+		if ln := m.longestName(); longest < ln {
+			longest = ln
 		}
-		m += "\n"
 	}
-	longest := msg.longestName()
-	for i := range msg.Rows {
-		row := msg.Rows[i]
-		name := row.PadName(longest)
-		value := row.String()
-		format := "  %s: %s"
-		if idx := strings.IndexByte(value, '\n'); idx >= 0 {
-			if idx == 0 {
-				format = "  %s:%s"
-			} else {
-				format = "  %s:\n%s"
+
+	buf := &strings.Builder{}
+	multiMsg := len(mgs) > 1
+
+	if multiMsg {
+		if longest < len("error") {
+			longest = len("error")
+		}
+		buf.WriteString(multiHeader)
+		buf.WriteString(":\n")
+	}
+
+	for im, m := range mgs {
+		lastMsg := im == len(mgs)-1
+
+		rows := m.Rows
+		if m.Trail != "" {
+			rows = append([]Row{NewRow(trail, "%s", m.Trail)}, m.Rows...)
+		}
+
+		if multiMsg {
+			buf.WriteString("  ")
+			buf.WriteString(Pad("error", longest))
+			buf.WriteString(": ")
+			buf.WriteString(m.Header)
+		} else {
+			buf.WriteString(m.Header)
+		}
+
+		if len(rows) > 0 {
+			if !multiMsg {
+				buf.WriteString(":")
 			}
-			value = Indent(len(name)+4, ' ', value)
+			buf.WriteString("\n")
 		}
-		m += fmt.Sprintf(format, name, value)
-		if i < len(msg.Rows)-1 {
-			m += "\n"
+
+		for ir, r := range rows {
+			lastRow := ir == len(rows)-1
+			name := r.PadName(longest)
+			value := r.String()
+
+			buf.WriteString("  ")
+			buf.WriteString(name)
+			buf.WriteString(":")
+
+			if idx := strings.IndexByte(value, '\n'); idx >= 0 {
+				value = Indent(len(name)+4, ' ', value)
+				if idx != 0 {
+					buf.WriteString("\n")
+				}
+			} else {
+				buf.WriteString(" ")
+			}
+			buf.WriteString(value)
+
+			if !lastRow {
+				buf.WriteString("\n")
+			}
+		}
+
+		if !lastMsg {
+			buf.WriteString("\n")
+			buf.WriteString(Pad("---", longest+4))
+			buf.WriteString("\n")
 		}
 	}
-	return m
+
+	return buf.String()
 }
 
 // MetaSet sets data. To get it back, use the [Notice.MetaLookup] method.
@@ -225,10 +274,63 @@ func (msg *Notice) MetaLookup(key string) (any, bool) {
 // longestName returns the longest row name in [Notice.Rows].
 func (msg *Notice) longestName() int {
 	var maxLen int
+	if msg.Trail != "" {
+		maxLen = len(trail)
+	}
 	for _, row := range msg.Rows {
 		if maxLen < len(row.Name) {
 			maxLen = len(row.Name)
 		}
 	}
 	return maxLen
+}
+
+// root returns root of the notice chain, if the current notice instance is the
+// root, it will return self.
+func (msg *Notice) root() *Notice {
+	if msg.parent == nil {
+		return msg
+	}
+	return msg.parent.root()
+}
+
+// collect collects all the notices in the chain starting with the root notice.
+func (msg *Notice) collect() []*Notice {
+	root := msg.root()
+	var mgs []*Notice
+	for {
+		mgs = append(mgs, root)
+		if root.child == nil {
+			break
+		}
+		root = root.child
+	}
+	return mgs
+}
+
+// Join joins multiple notices into one. Returns the last not nil joined notice.
+func Join(ers ...error) error {
+	// TODO(rz): test this.
+	if len(ers) == 0 {
+		return nil
+	}
+
+	var err *Notice
+	for _, next := range ers {
+		if next == nil {
+			continue
+		}
+		ne := From(next)
+		if err == nil {
+			err = ne
+			continue
+		}
+		err = ne.Parent(err)
+	}
+
+	// TODO(rz): how to test this?
+	if err == nil {
+		return nil
+	}
+	return err
 }

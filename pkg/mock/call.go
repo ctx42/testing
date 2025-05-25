@@ -329,8 +329,7 @@ func (c *Call) satisfied(haveCalls int) error {
 // checkReq verifies that all prerequisites for a method call are met. The
 // stack parameter should contain the stack trace from where the method was
 // invoked.
-func (c *Call) checkReq(cs []string) error {
-	var ers []error
+func (c *Call) checkReq(cs []string) (err error) {
 	for _, req := range c.requires {
 		if req.Satisfied() {
 			continue
@@ -356,9 +355,9 @@ func (c *Call) checkReq(cs []string) error {
 		if len(cs) > 0 {
 			_ = msg.Append("stack", "%s", strings.Join(cs, "\n"))
 		}
-		ers = append(ers, msg)
+		err = notice.Join(err, msg)
 	}
-	return notice.Join(ers...)
+	return err
 }
 
 // call represents a call to the mocked method with arguments. Returns
