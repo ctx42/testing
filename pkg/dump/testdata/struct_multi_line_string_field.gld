@@ -1,4 +1,4 @@
-Multi-line string struct fields should always be printed as flat.
+Multiline string struct fields should always be printed as flat.
 ---
 {
   F0: 1,

@@ -232,23 +232,40 @@ func (dmp Dump) Diff(want, have any) (string, string, string) {
 		return wStr, hStr, ""
 	}
 
-	// Format values for diff.
-	wuStr, _ := dmp.forDiff(want)
-	huStr, _ := dmp.forDiff(have)
-	wMlStr := strings.Contains(wuStr, "\n")
-	hMlStr := strings.Contains(huStr, "\n")
-
-	if !wMlStr && !hMlStr {
-		return wStr, hStr, ""
-	}
-
 	if wStr == ValNil || hStr == ValNil {
 		return wStr, hStr, ""
 	}
 
-	edits := diff.Strings(huStr, wuStr)
+	// If one of the values is multiline, force the other to be as well.
+	wMlStr := strings.Contains(wStr, "\n")
+	hMlStr := strings.Contains(hStr, "\n")
+	if wMlStr != hMlStr {
+		dmp2 := dmp
+		dmp2.Flat = false
+		dmp2.FlatStrings = 0
+		if wMlStr {
+			hStr, _ = dmp2.value(0, reflect.ValueOf(have))
+			hMlStr = true
+		} else {
+			wStr, _ = dmp2.value(0, reflect.ValueOf(want))
+			wMlStr = true
+		}
+	}
+
+	// Format values for diff.
+	wDiffStr, _ := dmp.forDiff(want)
+	hDiffStr, _ := dmp.forDiff(have)
+	wDiffMlStr := strings.Contains(wDiffStr, "\n")
+	hDiffMlStr := strings.Contains(hDiffStr, "\n")
+
+	// If both values are not multiline, don't show diff.
+	if !wDiffMlStr && !hDiffMlStr {
+		return wStr, hStr, ""
+	}
+
+	edits := diff.Strings(hDiffStr, wDiffStr)
 	// Error can't happen: edits are consistent.
-	unified, _ := diff.CtxToUnified("want", "have", huStr, edits, 2)
+	unified, _ := diff.CtxToUnified("want", "have", hDiffStr, edits, 2)
 	return wStr, hStr, strings.TrimRight(unified, "\n")
 }
 

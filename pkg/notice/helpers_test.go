@@ -4,7 +4,6 @@
 package notice
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
@@ -78,6 +77,37 @@ func Test_Indent(t *testing.T) {
 	})
 }
 
+func Test_TrialCmp_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		a    string
+		b    string
+		want int
+	}{
+		{"both empty", "", "", 0},
+		{"2", "", "A", -1},
+		{"3", "A", "", 1},
+		{"equal", "ABC", "ABC", 0},
+		{"5", "ABC", "XYZ", -1},
+		{"6", "XYZ", "ABC", 1},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- Given ---
+			a := New("header").SetTrail(tc.a)
+			b := New("header").SetTrail(tc.b)
+
+			// --- When ---
+			have := TrialCmp(a, b)
+
+			// --- Then ---
+			affirm.Equal(t, tc.want, have)
+		})
+	}
+}
+
 func Test_Pad_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
@@ -104,204 +134,157 @@ func Test_Pad_tabular(t *testing.T) {
 	}
 }
 
-func Test_Unwrap(t *testing.T) {
-	t.Run("unwrap multiple", func(t *testing.T) {
+func Test_SortNotices(t *testing.T) {
+	t.Run("nil chain", func(t *testing.T) {
 		// --- Given ---
-		err0 := errors.New("e0")
-		err1 := errors.New("e1")
-		ers := errors.Join(err0, err1)
+		var head *Notice
 
 		// --- When ---
-		have := Unwrap(ers)
-
-		// --- Then ---
-		affirm.DeepEqual(t, []error{err0, err1}, have)
-	})
-
-	t.Run("unwrap not multi error", func(t *testing.T) {
-		// --- Given ---
-		err := errors.New("e0")
-
-		// --- When ---
-		have := Unwrap(err)
-
-		// --- Then ---
-		affirm.DeepEqual(t, []error{err}, have)
-	})
-
-	t.Run("unwrap nil", func(t *testing.T) {
-		// --- When ---
-		have := Unwrap(nil)
-
-		// --- Then ---
-		affirm.Nil(t, have)
-		affirm.Equal(t, 0, len(have))
-	})
-}
-
-func Test_Join(t *testing.T) {
-	t.Run("single error", func(t *testing.T) {
-		// --- Given ---
-		e := errors.New("e")
-
-		// --- When ---
-		have := Join(e)
-
-		// --- Then ---
-		affirm.Equal(t, true, core.Same(e, have))
-	})
-
-	t.Run("joined errors", func(t *testing.T) {
-		// --- Given ---
-		e0 := errors.New("e0")
-		e1 := errors.New("e1")
-		msg := errors.Join(e0, e1)
-
-		// --- When ---
-		have := Join(msg)
-
-		// --- Then ---
-		affirm.Equal(t, false, core.Same(msg, have))
-		ers := have.(multi).Unwrap() // nolint: errorlint
-		affirm.Equal(t, 2, len(ers))
-		affirm.Equal(t, true, core.Same(e0, ers[0]))
-		affirm.Equal(t, true, core.Same(e1, ers[1]))
-	})
-
-	t.Run("joined and single errors", func(t *testing.T) {
-		// --- Given ---
-		e0 := errors.New("e0")
-		e1 := errors.New("e1")
-		ej := errors.Join(e0, e1)
-		e2 := errors.New("e2")
-
-		// --- When ---
-		have := Join(ej, e2)
-
-		// --- Then ---
-		ers := have.(multi).Unwrap() // nolint: errorlint
-		affirm.Equal(t, 3, len(ers))
-		affirm.Equal(t, true, core.Same(e0, ers[0]))
-		affirm.Equal(t, true, core.Same(e1, ers[1]))
-		affirm.Equal(t, true, core.Same(e2, ers[2]))
-	})
-
-	t.Run("nil errors", func(t *testing.T) {
-		// --- Given ---
-		e0 := errors.New("e0")
-		e1 := errors.New("e1")
-		ej := errors.Join(e0, e1)
-		e2 := errors.New("e2")
-
-		// --- When ---
-		have := Join(ej, nil, e2)
-
-		// --- Then ---
-		ers := have.(multi).Unwrap() // nolint: errorlint
-		affirm.Equal(t, 3, len(ers))
-		affirm.Equal(t, true, core.Same(e0, ers[0]))
-		affirm.Equal(t, true, core.Same(e1, ers[1]))
-		affirm.Equal(t, true, core.Same(e2, ers[2]))
-	})
-
-	t.Run("nil error", func(t *testing.T) {
-		// --- When ---
-		have := Join(nil)
+		have := SortNotices(head, TrialCmp)
 
 		// --- Then ---
 		affirm.Nil(t, have)
 	})
-}
 
-func Test_multi_Error(t *testing.T) {
-	t.Run("multiple errors with consecutive headers", func(t *testing.T) {
+	t.Run("single node", func(t *testing.T) {
 		// --- Given ---
-		msg0 := New("header").Want("%s", "want 0").Have("%s", "have 0")
-		msg1 := New("header").Want("%s", "want 1").Have("%s", "have 1")
-		me := Join(errors.Join(msg0, msg1))
+		msg := New("header").SetTrail("a")
 
 		// --- When ---
-		have := me.Error()
+		have := SortNotices(msg, TrialCmp)
 
 		// --- Then ---
-		wMsg := "" +
-			"header:\n" +
-			"  want: want 0\n" +
-			"  have: have 0\n" +
-			" ---\n" +
-			"  want: want 1\n" +
-			"  have: have 1"
-		affirm.Equal(t, wMsg, have)
+		affirm.Equal(t, true, core.Same(msg, have))
+		affirm.Equal(t, "a", have.Trail)
+		affirm.Nil(t, have.prev)
+		affirm.Nil(t, have.next)
 	})
 
-	t.Run("multiple errors without consecutive headers", func(t *testing.T) {
+	t.Run("two sorted nodes", func(t *testing.T) {
 		// --- Given ---
-		msg0 := New("header").Want("%s", "want 0").Have("%s", "have 0")
-		msg1 := New("other").Want("%s", "want 1").Have("%s", "have 1")
-		msg2 := New("header").Want("%s", "want 2").Have("%s", "have 2")
-		me := Join(errors.Join(msg0, msg1, msg2))
+		msgA := New("hdrA").SetTrail("A")
+		msgB := New("hdrB").SetTrail("B")
+		_ = Join(msgA, msgB)
 
 		// --- When ---
-		have := me.Error()
+		have := SortNotices(msgA, TrialCmp)
 
 		// --- Then ---
-		wMsg := "" +
-			"header:\n" +
-			"  want: want 0\n" +
-			"  have: have 0\n" +
-			"\n" +
-			"other:\n" +
-			"  want: want 1\n" +
-			"  have: have 1\n" +
-			"\n" +
-			"header:\n" +
-			"  want: want 2\n" +
-			"  have: have 2"
-		affirm.Equal(t, wMsg, have)
+		affirm.Equal(t, true, core.Same(msgB, have))
+		affirm.Equal(t, "| hdrA (A) -> hdrB (B)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrB (B) -> hdrA (A)", REV(have))
 	})
 
-	t.Run("not notice error", func(t *testing.T) {
+	t.Run("two unsorted nodes", func(t *testing.T) {
 		// --- Given ---
-		msg0 := New("header").Want("%s", "want 0").Have("%s", "have 0")
-		msg1 := errors.New("not notice")
-		msg2 := New("header").Want("%s", "want 2").Have("%s", "have 2")
-		me := Join(errors.Join(msg0, msg1, msg2))
+		msgA := New("hdrA").SetTrail("A")
+		msgB := New("hdrB").SetTrail("B")
+		_ = Join(msgB, msgA)
 
 		// --- When ---
-		have := me.Error()
+		have := SortNotices(msgB, TrialCmp)
 
 		// --- Then ---
-		wMsg := "header:\n" +
-			"  want: want 0\n" +
-			"  have: have 0\n" +
-			"\n" +
-			"not notice\n" +
-			"\n" +
-			"header:\n" +
-			"  want: want 2\n" +
-			"  have: have 2"
-		affirm.Equal(t, wMsg, have)
+		affirm.Equal(t, true, core.Same(msgB, have))
+		affirm.Equal(t, "| hdrA (A) -> hdrB (B)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrB (B) -> hdrA (A)", REV(have))
 	})
 
-	t.Run("multiple errors serialized multiple times", func(t *testing.T) {
+	t.Run("three nodes with equal sort values", func(t *testing.T) {
 		// --- Given ---
-		msg0 := New("header").Want("%s", "want 0").Have("%s", "have 0")
-		msg1 := New("header").Want("%s", "want 1").Have("%s", "have 1")
-		me := Join(errors.Join(msg0, msg1))
+		msgA0 := New("hdr0").SetTrail("A")
+		msgA1 := New("hdr1").SetTrail("A")
+		msgA2 := New("hdr2").SetTrail("A")
+		_ = Join(msgA0, msgA1, msgA2)
 
 		// --- When ---
-		have0 := me.Error()
-		have1 := me.Error()
+		have := SortNotices(msgA0, TrialCmp)
 
 		// --- Then ---
-		wMsg := "" +
-			"header:\n" +
-			"  want: want 0\n" +
-			"  have: have 0\n" +
-			" ---\n" +
-			"  want: want 1\n" +
-			"  have: have 1"
-		affirm.Equal(t, wMsg, have0)
-		affirm.Equal(t, have0, have1)
+		affirm.Equal(t, true, core.Same(msgA2, have))
+		affirm.Equal(t, "| hdr0 (A) -> hdr1 (A) -> hdr2 (A)", FWD(have.Head()))
+		affirm.Equal(t, "| hdr2 (A) -> hdr1 (A) -> hdr0 (A)", REV(have))
+	})
+
+	t.Run("chain starts with a couple of equal sort values", func(t *testing.T) {
+		// --- Given ---
+		msgA0 := New("hdr0").SetTrail("A")
+		msgA1 := New("hdr1").SetTrail("A")
+		msgB := New("hdrB").SetTrail("B")
+		_ = Join(msgA0, msgA1, msgB)
+
+		// --- When ---
+		have := SortNotices(msgA0, TrialCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgB, have))
+		affirm.Equal(t, "| hdr0 (A) -> hdr1 (A) -> hdrB (B)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrB (B) -> hdr1 (A) -> hdr0 (A)", REV(have))
+	})
+
+	t.Run("three nodes unsorted", func(t *testing.T) {
+		// --- Given ---
+		msgA := New("hdrA").SetTrail("A")
+		msgB := New("hdrB").SetTrail("B")
+		msgC := New("hdrC").SetTrail("C")
+		_ = Join(msgC, msgA, msgB)
+
+		// --- When ---
+		have := SortNotices(msgC, TrialCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgC, have))
+		affirm.Equal(t, "| hdrA (A) -> hdrB (B) -> hdrC (C)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrC (C) -> hdrB (B) -> hdrA (A)", REV(have))
+	})
+
+	t.Run("nodes unsorted with repetitions", func(t *testing.T) {
+		// --- Given ---
+		msgA := New("hdrA").SetTrail("A")
+		msgB0 := New("hdrB0").SetTrail("B")
+		msgB1 := New("hdrB1").SetTrail("B")
+		msgC := New("hdrC").SetTrail("C")
+		_ = Join(msgC, msgA, msgB0, msgB1)
+
+		// --- When ---
+		have := SortNotices(msgC, TrialCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgC, have))
+		affirm.Equal(t, "| hdrA (A) -> hdrB0 (B) -> hdrB1 (B) -> hdrC (C)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrC (C) -> hdrB1 (B) -> hdrB0 (B) -> hdrA (A)", REV(have))
+	})
+
+	t.Run("nodes unsorted with repetitions 2", func(t *testing.T) {
+		// --- Given ---
+		msgA := New("hdrA").SetTrail("A")
+		msgB0 := New("hdrB0").SetTrail("B")
+		msgB1 := New("hdrB1").SetTrail("B")
+		msgC := New("hdrC").SetTrail("C")
+		_ = Join(msgB0, msgC, msgA, msgB1)
+
+		// --- When ---
+		have := SortNotices(msgB0, TrialCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgC, have))
+		affirm.Equal(t, "| hdrA (A) -> hdrB0 (B) -> hdrB1 (B) -> hdrC (C)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrC (C) -> hdrB1 (B) -> hdrB0 (B) -> hdrA (A)", REV(have))
+	})
+
+	t.Run("nodes with empty sort values", func(t *testing.T) {
+		// --- Given ---
+		msg0 := New("hdr0").SetTrail("")
+		msgA := New("hdrA").SetTrail("A")
+		msg1 := New("hdr2").SetTrail("")
+		_ = Join(msg0, msgA, msg1)
+
+		// --- When ---
+		have := SortNotices(msg0, TrialCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgA, have))
+		affirm.Equal(t, "| hdr0 () -> hdr2 () -> hdrA (A)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrA (A) -> hdr2 () -> hdr0 ()", REV(have))
 	})
 }

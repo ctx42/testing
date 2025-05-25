@@ -59,7 +59,7 @@ fmt.Println(msg.MetaLookup("key"))
 }
 ```
 
-For more examples see [examples_test.go](examples_test.go) file.
+For more examples see the [examples_test.go](examples_test.go) file.
 
 ## Indenting Lines
 

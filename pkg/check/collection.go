@@ -151,8 +151,7 @@ func SliceSubset[V comparable](want, have []V, opts ...Option) error {
 func MapSubset[K comparable, V any](want, have map[K]V, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 
-	var ersM map[string][]error
-	var order []string
+	var err error
 	var missing []string
 	for wKey, wVal := range want {
 		wKeyStr := valToString(reflect.ValueOf(wKey))
@@ -162,30 +161,23 @@ func MapSubset[K comparable, V any](want, have map[K]V, opts ...Option) error {
 			continue
 		}
 		kOps := ops.MapTrail(wKeyStr)
-		if err := Equal(wVal, hVal, WithOptions(kOps)); err != nil {
-			if ersM == nil {
-				ersM = make(map[string][]error)
-			}
-			order = append(order, kOps.Trail)
-			ersM[kOps.Trail] = append(ersM[kOps.Trail], notice.Unwrap(err)...)
+		if e := Equal(wVal, hVal, WithOptions(kOps)); e != nil {
+			err = notice.Join(err, e)
 		}
 	}
 
-	var ers []error
-	sort.Strings(order)
-	for _, trail := range order {
-		ers = append(ers, ersM[trail]...)
+	if err != nil {
+		err = notice.SortNotices(notice.From(err).Head(), notice.TrialCmp)
 	}
 
 	if len(missing) > 0 {
 		sort.Strings(missing)
-		err := notice.New(`expected "have" map to have key(s)`).
+		msg := notice.New("expected the map to have keys").
 			SetTrail(ops.Trail).
-			Append("missing key(s)", "%s", strings.Join(missing, ", "))
-		ers = append(ers, err)
+			Append("keys", "%s", strings.Join(missing, ", "))
+		err = notice.Join(err, msg)
 	}
-
-	return notice.Join(ers...)
+	return err
 }
 
 // MapsSubset checks all the "want" maps are subsets of corresponding "have"
@@ -202,12 +194,12 @@ func MapsSubset[K comparable, V any](want, have []map[K]V, opts ...Option) error
 			Have("%d", len(have))
 	}
 
-	var ers []error
+	var err error
 	for i := range want {
 		iOps := ops.ArrTrail("slice", i)
-		if err := MapSubset(want[i], have[i], WithOptions(iOps)); err != nil {
-			ers = append(ers, notice.Unwrap(err)...)
+		if e := MapSubset(want[i], have[i], WithOptions(iOps)); e != nil {
+			err = notice.Join(err, e)
 		}
 	}
-	return notice.Join(ers...)
+	return err
 }

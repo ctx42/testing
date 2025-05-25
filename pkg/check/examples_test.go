@@ -88,11 +88,13 @@ func ExampleEqual_structs() {
 
 	fmt.Println(err)
 	// Output:
-	// expected values to be equal:
+	// multiple expectations violated:
+	//   error: expected values to be equal
 	//   trail: T.Int
 	//    want: 2
 	//    have: 1
-	//  ---
+	//       ---
+	//   error: expected values to be equal
 	//   trail: T.Str
 	//    want: "xyz"
 	//    have: "abc"
@@ -118,9 +120,7 @@ func ExampleEqual_recursiveStructs() {
 }
 
 func ExampleEqual_maps() {
-	type T struct {
-		Str string
-	}
+	type T struct{ Str string }
 
 	want := map[int]T{1: {Str: "abc"}, 2: {Str: "xyz"}}
 	have := map[int]T{1: {Str: "abc"}, 3: {Str: "xyz"}}
@@ -169,16 +169,6 @@ func ExampleEqual_arrays() {
 	//                3,
 	//                4,
 	//              }
-	//        diff:
-	//              @@ -1,6 +1,5 @@
-	//              -[4]int{
-	//              +[3]int{
-	//                 1,
-	//                 2,
-	//              -  3,
-	//              -  4,
-	//              +  3,
-	//               }
 }
 
 func ExampleEqual_slices() {

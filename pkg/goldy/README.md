@@ -43,7 +43,7 @@ treated as documentation and ignored, while everything after it is returned as
 the test data.
 
 ```text
-This is multi-line documentation about the golden file’s contents. It explains
+This is multiline documentation about the golden file’s contents. It explains
 what the file contains and why it’s used. Documenting golden files helps keep
 tests maintainable.
 ---

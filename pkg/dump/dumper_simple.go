@@ -40,38 +40,39 @@ func simpleDumper(dmp Dump, lvl int, val reflect.Value) string {
 		length := val.Len()
 		switch {
 		case dmp.flatStrings:
-			format = `%#v`
+			format = `%q`
 		case dmp.Flat:
-			format = `%#v`
+			format = `%q`
 		case dmp.FlatStrings > 0 && length <= dmp.FlatStrings:
-			format = `%#v`
+			format = `%q`
 		case strings.Contains(val.String(), "\n"):
 			format = "%v"
 		default:
-			format = `"%v"`
+			format = "%q"
 		}
 
 	case reflect.Float32:
-		format = `%s`
+		format = "%s"
 		f := float64(v.(float32)) // nolint: forcetypeassert
 		v = strconv.FormatFloat(f, 'f', -1, 32)
 
 	case reflect.Float64:
-		format = `%s`
+		format = "%s"
 		f := v.(float64) // nolint: forcetypeassert
 		v = strconv.FormatFloat(f, 'f', -1, 64)
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		format = `%d`
+		format = "%d"
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32,
 		reflect.Uint64:
-		format = `%d`
+		format = "%d"
 
 	default:
-		format = `%v`
+		format = "%v"
 	}
 
 	prn := NewPrinter(dmp)
-	return prn.Tab(dmp.Indent + lvl).Write(fmt.Sprintf(format, v)).String()
+	str := fmt.Sprintf(format, v)
+	return prn.Tab(dmp.Indent + lvl).Write(str).String()
 }

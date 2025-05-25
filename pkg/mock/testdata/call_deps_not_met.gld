@@ -1,6 +1,7 @@
 Logs a message when a mocked method is called before its required dependencies.
 ---
-[mock] unexpected method call:
+multiple expectations violated:
+           error: [mock] unexpected method call
           method: Two(int) string
    expected args:
                   0: 2
@@ -8,7 +9,8 @@ Logs a message when a mocked method is called before its required dependencies.
    expected args:
                   0: 0
             from: the same mock
- ---
+               ---
+           error: [mock] unexpected method call
           method: Two(int) string
    expected args:
                   0: 2

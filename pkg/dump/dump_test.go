@@ -361,15 +361,15 @@ func Test_Dump_Diff_tabular(t *testing.T) {
 		testN string
 
 		opts    []Option
-		wantIn  string
-		haveIn  string
+		wantIn  any
+		haveIn  any
 		wantOut string
 		haveOut string
 		diffOut string
 	}{
 		{"same strings", nil, "abc", "abc", `"abc"`, `"abc"`, ""},
 		{
-			"same multi-line strings",
+			"same multiline strings",
 			nil,
 			"a\nb\nc",
 			"a\nb\nc",
@@ -378,7 +378,7 @@ func Test_Dump_Diff_tabular(t *testing.T) {
 			"",
 		},
 		{
-			"different multi-line strings",
+			"different multiline strings",
 			nil,
 			"a\nb\nc",
 			"a\nx\nc",
@@ -406,7 +406,7 @@ func Test_Dump_Diff_tabular(t *testing.T) {
 				"+abc",
 		},
 		{
-			"want is multi-line have is single line",
+			"want is multiline have is single line",
 			nil,
 			"a\nb\nc",
 			"abc",
@@ -420,7 +420,7 @@ func Test_Dump_Diff_tabular(t *testing.T) {
 				"+c",
 		},
 		{
-			"both multi-line strings end with a new line",
+			"both multiline strings end with a new line",
 			nil,
 			"a\nb\nc\n",
 			"abc",
@@ -432,6 +432,68 @@ func Test_Dump_Diff_tabular(t *testing.T) {
 				"+a\n" +
 				"+b\n" +
 				"+c",
+		},
+		{
+			"want is multiline then both should be",
+			[]Option{WithFlatStrings(6)},
+			"a\nb\nc\nd",
+			"a\nb\nc\n",
+			"a\nb\nc\nd",
+			"a\nb\nc\n",
+			"" +
+				"@@ -2,2 +2,3 @@\n" +
+				" b\n" +
+				" c\n" +
+				"+d",
+		},
+		{
+			"have multiline then both should be",
+			[]Option{WithFlatStrings(6)},
+			"a\nb\nc\n",
+			"a\nb\nc\nd",
+			"a\nb\nc\n",
+			"a\nb\nc\nd",
+			"" +
+				"@@ -2,3 +2,2 @@\n" +
+				" b\n" +
+				" c\n" +
+				"-d",
+		},
+		{
+			"both nil",
+			[]Option{WithFlatStrings(6)},
+			nil,
+			nil,
+			"nil",
+			"nil",
+			"",
+		},
+		{
+			"want is nil",
+			nil,
+			nil,
+			"a\nb\nc",
+			"nil",
+			`"a\nb\nc"`,
+			"",
+		},
+		{
+			"have is nil",
+			nil,
+			"a\nb\nc",
+			nil,
+			`"a\nb\nc"`,
+			"nil",
+			"",
+		},
+		{
+			"both values are different and not multiline",
+			nil,
+			"abc",
+			"xyz",
+			`"abc"`,
+			`"xyz"`,
+			"",
 		},
 	}
 

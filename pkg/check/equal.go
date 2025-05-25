@@ -4,7 +4,6 @@
 package check
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"slices"
@@ -21,7 +20,7 @@ import (
 func Equal(want, have any, opts ...Option) error {
 	wVal := reflect.ValueOf(want)
 	hVal := reflect.ValueOf(have)
-	return notice.Join(deepEqual(wVal, hVal, opts...))
+	return deepEqual(wVal, hVal, opts...)
 }
 
 // NotEqual checks both values are not equal using. Returns nil if they are not,
@@ -134,7 +133,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 		}
 		typeName := wVal.Type().Name()
 
-		var ers []error
+		var err error
 		for i := 0; i < wVal.NumField(); i++ {
 			wfVal := wVal.Field(i)
 			hfVal := hVal.Field(i)
@@ -143,11 +142,11 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 			}
 			wSF := wVal.Type().Field(i)
 			iOps := ops.StructTrail(typeName, wSF.Name)
-			if err := deepEqual(wfVal, hfVal, WithOptions(iOps)); err != nil {
-				ers = append(ers, notice.Unwrap(err)...)
+			if e := deepEqual(wfVal, hfVal, WithOptions(iOps)); e != nil {
+				err = notice.Join(err, e)
 			}
 		}
-		return errors.Join(ers...)
+		return err
 
 	case reflect.Slice, reflect.Array:
 		if wVal.Len() != hVal.Len() {
@@ -162,16 +161,16 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 			ops.LogTrail()
 			return nil
 		}
-		var ers []error
+		var err error
 		for i := 0; i < wVal.Len(); i++ {
 			wiVal := wVal.Index(i)
 			hiVal := hVal.Index(i)
 			iOps := ops.ArrTrail(knd.String(), i)
-			if err := deepEqual(wiVal, hiVal, WithOptions(iOps)); err != nil {
-				ers = append(ers, notice.Unwrap(err)...)
+			if e := deepEqual(wiVal, hiVal, WithOptions(iOps)); e != nil {
+				err = notice.Join(err, e)
 			}
 		}
-		return errors.Join(ers...)
+		return err
 
 	case reflect.Map:
 		if wVal.Len() != hVal.Len() {
@@ -192,22 +191,22 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 			return valToString(keys[i]) < valToString(keys[j])
 		})
 
-		var ers []error
+		var err error
 		for _, key := range keys {
 			wkVal := wVal.MapIndex(key)
 			hkVal := hVal.MapIndex(key)
 			kOps := ops.MapTrail(valToString(key))
 			if !hkVal.IsValid() {
 				hItf := hVal.Interface()
-				err := equalError(hItf, nil, WithOptions(kOps))
-				ers = append(ers, notice.Unwrap(err)...)
+				e := equalError(hItf, nil, WithOptions(kOps))
+				err = notice.Join(err, e)
 				continue
 			}
-			if err := deepEqual(wkVal, hkVal, WithOptions(kOps)); err != nil {
-				ers = append(ers, notice.Unwrap(err)...)
+			if e := deepEqual(wkVal, hkVal, WithOptions(kOps)); e != nil {
+				err = notice.Join(err, e)
 			}
 		}
-		return errors.Join(ers...)
+		return err
 
 	case reflect.Interface:
 		wElem := wVal.Elem()
@@ -295,10 +294,14 @@ func equalError(want, have any, opts ...Option) *notice.Notice {
 
 	wStr, hStr, diff := ops.Dumper.Diff(want, have)
 	_ = msg.Want("%s", wStr).Have("%s", hStr)
-	if diff != "" {
+
+	var assignable bool
+	if want != nil && have != nil {
+		assignable = reflect.TypeOf(want).AssignableTo(reflect.TypeOf(have))
+	}
+	if diff != "" && assignable {
 		_ = msg.Append("diff", "%s", diff)
 	}
-
 	return msg
 }
 

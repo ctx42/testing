@@ -108,7 +108,7 @@ func Test_dumpStruct(t *testing.T) {
 		affirm.Equal(t, want.String(), have)
 	})
 
-	t.Run("struct with a multi-line string field value", func(t *testing.T) {
+	t.Run("struct with a multiline string field value", func(t *testing.T) {
 		// --- Given ---
 		s := struct {
 			F0 int

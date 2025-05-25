@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-// ClockStartingAt returns function with the same signature as [time.Now] and
-// returning time as if the current time was set to given value.
+// ClockStartingAt returns the function with the same signature as [time.Now]
+// and returning time as if the current time was set to the given value.
 func ClockStartingAt(tim time.Time) func() time.Time {
 	now := time.Now()
 	guard := sync.Mutex{}
@@ -20,7 +20,7 @@ func ClockStartingAt(tim time.Time) func() time.Time {
 	}
 }
 
-// ClockFixed returns function with the same signature as [time.Now] which
+// ClockFixed returns the function with the same signature as [time.Now] which
 // always returns the given time.
 func ClockFixed(tim time.Time) func() time.Time {
 	return func() time.Time {
@@ -28,8 +28,8 @@ func ClockFixed(tim time.Time) func() time.Time {
 	}
 }
 
-// ClockDeterministic returns function with the same signature as [time.Now]
-// and returning time advancing by given tick with every call no matter now
+// ClockDeterministic returns the function with the same signature as [time.Now]
+// and returning time advancing by the given tick with every call no matter how
 // fast or slow you call it.
 func ClockDeterministic(start time.Time, tick time.Duration) func() time.Time {
 	now := start.Add(-tick)

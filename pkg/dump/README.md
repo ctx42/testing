@@ -52,7 +52,7 @@ fmt.Println(have)
 //	}
 ```
 
-The default dump renders the struct in a nicely formatted, multi-line string.
+The default dump renders the struct in a nicely formatted, multiline string.
 Fields are listed in the order they’re declared in the struct, ensuring
 consistent output for reliable comparisons.
 
