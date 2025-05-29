@@ -141,7 +141,8 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected equal dates:\n" +
+		wMsg := "" +
+			"expected equal dates:\n" +
 			"  trail: type.field\n" +
 			"   want: 2000-01-02T03:04:05Z\n" +
 			"   have: 2000-01-02T03:04:06Z ( 2000-01-02T04:04:06+01:00 )\n" +
@@ -174,7 +175,8 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected equal dates:\n" +
+		wMsg := "" +
+			"expected equal dates:\n" +
 			"  want: 2000-01-02T03:04:05Z\n" +
 			"  have: 2000-01-02T03:04:06Z\n" +
 			"  diff: -1s"
@@ -191,7 +193,8 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected equal dates:\n" +
+		wMsg := "" +
+			"expected equal dates:\n" +
 			"  want: 2000-01-02T03:04:05Z\n" +
 			"  have: 2000-01-02T03:04:06Z\n" +
 			"  diff: -1s"
@@ -207,7 +210,8 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected equal dates:\n" +
+		wMsg := "" +
+			"expected equal dates:\n" +
 			"  want: 2000-01-02T03:04:06Z\n" +
 			"  have: 2000-01-02T03:04:05Z\n" +
 			"  diff: 1s"
@@ -224,7 +228,7 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected timezone:\n" +
+		wMsg := "expected timezones to be equal:\n" +
 			"  want: UTC\n" +
 			"  have: Europe/Warsaw"
 		affirm.Equal(t, wMsg, err.Error())
@@ -237,7 +241,8 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[want] failed to parse time:\n" +
+		wMsg := "" +
+			"[want] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: 2022-02-18"
 		affirm.Equal(t, wMsg, err.Error())
@@ -249,7 +254,8 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[have] failed to parse time:\n" +
+		wMsg := "" +
+			"[have] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: 2022-02-18"
 		affirm.Equal(t, wMsg, err.Error())
@@ -266,7 +272,8 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected equal dates:\n" +
+		wMsg := "" +
+			"expected equal dates:\n" +
 			"  trail: type.field\n" +
 			"   want: 2000-01-02T03:04:05Z\n" +
 			"   have: 2000-01-02T03:04:06Z\n" +
@@ -299,7 +306,8 @@ func Test_Before(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected date to be before mark:\n" +
+		wMsg := "" +
+			"expected date to be before mark:\n" +
 			"  date: 2000-01-02T03:04:05Z\n" +
 			"  mark: 2000-01-02T03:04:05Z\n" +
 			"  diff: 0s"
@@ -316,7 +324,8 @@ func Test_Before(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected date to be before mark:\n" +
+		wMsg := "" +
+			"expected date to be before mark:\n" +
 			"  date: 2000-01-02T03:04:06Z\n" +
 			"  mark: 2000-01-02T03:04:05Z\n" +
 			"  diff: 1s"
@@ -329,7 +338,8 @@ func Test_Before(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[date] failed to parse time:\n" +
+		wMsg := "" +
+			"[date] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: abc"
 		affirm.Equal(t, wMsg, err.Error())
@@ -341,7 +351,8 @@ func Test_Before(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[mark] failed to parse time:\n" +
+		wMsg := "" +
+			"[mark] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: abc"
 		affirm.Equal(t, wMsg, err.Error())
@@ -358,7 +369,8 @@ func Test_Before(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected date to be before mark:\n" +
+		wMsg := "" +
+			"expected date to be before mark:\n" +
 			"  trail: type.field\n" +
 			"   date: 2000-01-02T03:04:06Z\n" +
 			"   mark: 2000-01-02T03:04:05Z\n" +
@@ -390,7 +402,8 @@ func Test_After(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected date to be after mark:\n" +
+		wMsg := "" +
+			"expected date to be after mark:\n" +
 			"  date: 2000-01-02T03:04:05Z\n" +
 			"  mark: 2000-01-02T03:04:05Z\n" +
 			"  diff: 0s"
@@ -407,7 +420,8 @@ func Test_After(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected date to be after mark:\n" +
+		wMsg := "" +
+			"expected date to be after mark:\n" +
 			"  date: 2000-01-02T03:04:05Z\n" +
 			"  mark: 2001-01-02T03:04:05Z\n" +
 			"  diff: -8784h0m0s"
@@ -420,7 +434,8 @@ func Test_After(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[date] failed to parse time:\n" +
+		wMsg := "" +
+			"[date] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: abc"
 		affirm.Equal(t, wMsg, err.Error())
@@ -432,7 +447,8 @@ func Test_After(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[mark] failed to parse time:\n" +
+		wMsg := "" +
+			"[mark] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: abc"
 		affirm.Equal(t, wMsg, err.Error())
@@ -449,7 +465,8 @@ func Test_After(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected date to be after mark:\n" +
+		wMsg := "" +
+			"expected date to be after mark:\n" +
 			"  trail: type.field\n" +
 			"   date: 2000-01-02T03:04:05Z\n" +
 			"   mark: 2001-01-02T03:04:05Z\n" +
@@ -493,7 +510,8 @@ func Test_BeforeOrEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected date to be equal or before mark:\n" +
+		wMsg := "" +
+			"expected date to be equal or before mark:\n" +
 			"  date: 2000-01-02T03:04:06Z\n" +
 			"  mark: 2000-01-02T03:04:05Z\n" +
 			"  diff: 1s"
@@ -506,7 +524,8 @@ func Test_BeforeOrEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[date] failed to parse time:\n" +
+		wMsg := "" +
+			"[date] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: abc"
 		affirm.Equal(t, wMsg, err.Error())
@@ -518,7 +537,8 @@ func Test_BeforeOrEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[mark] failed to parse time:\n" +
+		wMsg := "" +
+			"[mark] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: abc"
 		affirm.Equal(t, wMsg, err.Error())
@@ -535,7 +555,8 @@ func Test_BeforeOrEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected date to be equal or before mark:\n" +
+		wMsg := "" +
+			"expected date to be equal or before mark:\n" +
 			"  trail: type.field\n" +
 			"   date: 2000-01-02T03:04:06Z\n" +
 			"   mark: 2000-01-02T03:04:05Z\n" +
@@ -579,7 +600,8 @@ func Test_AfterOrEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected date to be equal or after mark:\n" +
+		wMsg := "" +
+			"expected date to be equal or after mark:\n" +
 			"  date: 2000-01-02T03:04:04Z\n" +
 			"  mark: 2000-01-02T03:04:05Z\n" +
 			"  diff: -1s"
@@ -592,7 +614,8 @@ func Test_AfterOrEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[date] failed to parse time:\n" +
+		wMsg := "" +
+			"[date] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: abc"
 		affirm.Equal(t, wMsg, err.Error())
@@ -604,7 +627,8 @@ func Test_AfterOrEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[mark] failed to parse time:\n" +
+		wMsg := "" +
+			"[mark] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: abc"
 		affirm.Equal(t, wMsg, err.Error())
@@ -621,7 +645,8 @@ func Test_AfterOrEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected date to be equal or after mark:\n" +
+		wMsg := "" +
+			"expected date to be equal or after mark:\n" +
 			"  trail: type.field\n" +
 			"   date: 2000-01-02T03:04:04Z\n" +
 			"   mark: 2000-01-02T03:04:05Z\n" +
@@ -679,7 +704,8 @@ func Test_Within(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[want] failed to parse time:\n" +
+		wMsg := "" +
+			"[want] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: 2022-02-18"
 		affirm.Equal(t, wMsg, err.Error())
@@ -701,7 +727,8 @@ func Test_Within(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[have] failed to parse time:\n" +
+		wMsg := "" +
+			"[have] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: 2022-02-18"
 		affirm.Equal(t, wMsg, err.Error())
@@ -718,7 +745,8 @@ func Test_Within(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected dates to be within:\n" +
+		wMsg := "" +
+			"expected dates to be within:\n" +
 			"         trail: type.field\n" +
 			"          want: 2000-01-02T03:04:05Z\n" +
 			"          have: 2000-01-02T03:04:06.5Z\n" +
@@ -777,7 +805,8 @@ func Test_Recent(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected dates to be within:\n" +
+		wMsg := "" +
+			"expected dates to be within:\n" +
 			"          want: 2000-01-02T03:04:05Z\n" +
 			"          have: 2000-01-02T03:04:16Z\n" +
 			"  max diff +/-: 10s\n" +
@@ -796,7 +825,8 @@ func Test_Recent(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected dates to be within:\n" +
+		wMsg := "" +
+			"expected dates to be within:\n" +
 			"          want: 2000-01-02T03:04:05Z\n" +
 			"          have: 2000-01-02T03:03:54Z\n" +
 			"  max diff +/-: 10s\n" +
@@ -810,7 +840,8 @@ func Test_Recent(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[have] failed to parse time:\n" +
+		wMsg := "" +
+			"[have] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: 2022-02-18"
 		affirm.Equal(t, wMsg, err.Error())
@@ -830,7 +861,8 @@ func Test_Recent(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected dates to be within:\n" +
+		wMsg := "" +
+			"expected dates to be within:\n" +
 			"         trail: type.field\n" +
 			"          want: 2000-01-02T03:04:05Z\n" +
 			"          have: 2000-01-02T03:03:54Z\n" +
@@ -860,7 +892,8 @@ func Test_Zone(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected timezone:\n" +
+		wMsg := "" +
+			"expected timezones to be equal:\n" +
 			"  want: UTC\n" +
 			"  have: Europe/Warsaw"
 		affirm.Equal(t, wMsg, err.Error())
@@ -875,7 +908,8 @@ func Test_Zone(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected timezone:\n" +
+		wMsg := "" +
+			"expected timezones to be equal:\n" +
 			"  trail: type.field\n" +
 			"   want: UTC\n" +
 			"   have: Europe/Warsaw"
@@ -898,7 +932,8 @@ func Test_Duration(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected equal time durations:\n" +
+		wMsg := "" +
+			"expected equal time durations:\n" +
 			"  want: 1000s\n" +
 			"  have: 2000s"
 		affirm.Equal(t, wMsg, err.Error())
@@ -933,7 +968,8 @@ func Test_Duration(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected equal time durations:\n" +
+		wMsg := "" +
+			"expected equal time durations:\n" +
 			"  trail: type.field\n" +
 			"   want: 1s\n" +
 			"   have: 2s"
@@ -1015,7 +1051,8 @@ func Test_getTime(t *testing.T) {
 		affirm.Equal(t, true, haveTim.IsZero())
 		affirm.Equal(t, "2000-01-02", haveStr)
 		affirm.Equal(t, timeTypeStr, haveRep)
-		wMsg := "failed to parse time:\n" +
+		wMsg := "" +
+			"failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05Z07:00\n" +
 			"   value: 2000-01-02"
 		affirm.Equal(t, wMsg, err.Error())
@@ -1033,7 +1070,8 @@ func Test_getTime(t *testing.T) {
 		affirm.Equal(t, true, have.IsZero())
 		affirm.Equal(t, "2000-01-02", haveStr)
 		affirm.Equal(t, timeTypeStr, haveRep)
-		wMsg := "failed to parse time:\n" +
+		wMsg := "" +
+			"failed to parse time:\n" +
 			"  format: \n" +
 			"   value: 2000-01-02\n" +
 			"   error: extra text: \"2000-01-02\""
@@ -1172,7 +1210,8 @@ func Test_getDur(t *testing.T) {
 		affirm.Equal(t, time.Duration(0), haveDur)
 		affirm.Equal(t, "true", haveStr)
 		affirm.Equal(t, "", haveRep)
-		wMsg := "failed to parse duration:\n" +
+		wMsg := "" +
+			"failed to parse duration:\n" +
 			"  cause: not supported duration type"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.Equal(t, true, errors.Is(err, ErrDurType))
@@ -1189,7 +1228,8 @@ func Test_getDur(t *testing.T) {
 		affirm.Equal(t, time.Duration(0), haveDur)
 		affirm.Equal(t, "true", haveStr)
 		affirm.Equal(t, "", haveRep)
-		wMsg := "failed to parse duration:\n" +
+		wMsg := "" +
+			"failed to parse duration:\n" +
 			"  trail: type.field\n" +
 			"  cause: not supported duration type"
 		affirm.Equal(t, wMsg, err.Error())

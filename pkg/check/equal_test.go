@@ -181,7 +181,7 @@ func Test_Equal_custom_trail_checkers(t *testing.T) {
 			WithTrailChecker("type.field", Exact),
 		}
 
-		// Both are define the same time in different timezone.
+		// Both are defining the same time in different timezone.
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 4, 4, 5, 0, types.WAW)
 
@@ -191,7 +191,7 @@ func Test_Equal_custom_trail_checkers(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
-			"expected timezone:\n" +
+			"expected timezones to be equal:\n" +
 			"  trail: type.field\n" +
 			"   want: UTC\n" +
 			"   have: Europe/Warsaw"
@@ -201,7 +201,7 @@ func Test_Equal_custom_trail_checkers(t *testing.T) {
 }
 
 func Test_Equal_custom_type_checkers(t *testing.T) {
-	t.Run("use custom type checker", func(t *testing.T) {
+	t.Run("use the custom type checker", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []Option{
@@ -219,7 +219,7 @@ func Test_Equal_custom_type_checkers(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
-			"expected timezone:\n" +
+			"expected timezones to be equal:\n" +
 			"  trail: type.field\n" +
 			"   want: UTC\n" +
 			"   have: Europe/Warsaw"
@@ -227,7 +227,7 @@ func Test_Equal_custom_type_checkers(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("use custom checker with nils", func(t *testing.T) {
+	t.Run("use the custom checker with nils", func(t *testing.T) {
 		// --- Given ---
 		var want, have = 1, 2
 
@@ -461,7 +461,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
-			"expected timezone:\n" +
+			"expected timezones to be equal:\n" +
 			"  trail: type\n" +
 			"   want: Europe/Warsaw\n" +
 			"   have: Europe/Paris"
@@ -482,7 +482,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 		// --- Then ---
 		wMsg := "" +
-			"expected timezone:\n" +
+			"expected timezones to be equal:\n" +
 			"  trail: TLoc.Loc\n" +
 			"   want: Europe/Warsaw\n" +
 			"   have: UTC"
