@@ -66,7 +66,8 @@ func Test_Equal_one_argument_invalid(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want type: <nil>\n" +
 			"  have type: int\n" +
 			"       want: nil\n" +
@@ -80,7 +81,8 @@ func Test_Equal_one_argument_invalid(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want type: int\n" +
 			"  have type: <nil>\n" +
 			"       want: 123\n" +
@@ -98,7 +100,8 @@ func Test_Equal_one_argument_invalid(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"      trail: type.field\n" +
 			"  want type: int\n" +
 			"  have type: <nil>\n" +
@@ -116,7 +119,8 @@ func Test_Equal_not_matching_types(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want type: int\n" +
 			"  have type: string\n" +
 			"       want: 123\n" +
@@ -134,7 +138,8 @@ func Test_Equal_not_matching_types(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"      trail: type.field\n" +
 			"  want type: int\n" +
 			"  have type: string\n" +
@@ -185,7 +190,8 @@ func Test_Equal_custom_trail_checkers(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected timezone:\n" +
+		wMsg := "" +
+			"expected timezone:\n" +
 			"  trail: type.field\n" +
 			"   want: UTC\n" +
 			"   have: Europe/Warsaw"
@@ -212,7 +218,8 @@ func Test_Equal_custom_type_checkers(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected timezone:\n" +
+		wMsg := "" +
+			"expected timezone:\n" +
 			"  trail: type.field\n" +
 			"   want: UTC\n" +
 			"   have: Europe/Warsaw"
@@ -305,7 +312,8 @@ func Test_Equal_kind_Ptr(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: type\n" +
 			"   want: 123\n" +
 			"   have: nil"
@@ -327,7 +335,8 @@ func Test_Equal_kind_Ptr(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: type\n" +
 			"   want: nil\n" +
 			"   have: 123"
@@ -397,7 +406,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		err := Equal(want, have, opts...)
 
 		// --- Then ---
-		wMsg := "expected equal dates:\n" +
+		wMsg := "" +
+			"expected equal dates:\n" +
 			"  trail: type\n" +
 			"   want: 2000-01-02T03:04:05Z\n" +
 			"   have: 2001-01-02T03:04:05Z\n" +
@@ -450,7 +460,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected timezone:\n" +
+		wMsg := "" +
+			"expected timezone:\n" +
 			"  trail: type\n" +
 			"   want: Europe/Warsaw\n" +
 			"   have: Europe/Paris"
@@ -470,7 +481,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		err := Equal(want, have, opts...)
 
 		// --- Then ---
-		wMsg := "expected timezone:\n" +
+		wMsg := "" +
+			"expected timezone:\n" +
 			"  trail: TLoc.Loc\n" +
 			"   want: Europe/Warsaw\n" +
 			"   have: UTC"
@@ -547,7 +559,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: TIntPrv.Int\n" +
 			"   want: 42\n" +
 			"   have: 44"
@@ -569,7 +582,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: TIntStr.Int\n" +
 			"   want: 42\n" +
 			"   have: 44\n" +
@@ -581,7 +595,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.DeepEqual(t, []string{"TIntStr.Int", "TIntStr.Str"}, trail)
 	})
 
-	t.Run("not equal when want is nil struct pointer", func(t *testing.T) {
+	t.Run("not equal when want is the nil struct pointer", func(t *testing.T) {
 		// --- Given ---
 		var want *types.TA
 		have := &types.TA{Str: "abc"}
@@ -590,7 +604,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		err := Equal(want, have)
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want: nil\n" +
 			"  have:\n" +
 			"        {\n" +
@@ -613,7 +628,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		err := Equal(want, have)
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want:\n" +
 			"        {\n" +
 			"          Int: 0,\n" +
@@ -640,7 +656,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: TNested.STAp[0].TAp.Int\n" +
 			"   want: 42\n" +
 			"   have: 44"
@@ -753,7 +770,8 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		err := Equal(want, have, opts...)
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: <slice>[1]\n" +
 			"   want: 2\n" +
 			"   have: 7"
@@ -773,7 +791,8 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		err := Equal(want, have, opts...)
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: <array>[1]\n" +
 			"   want: 2\n" +
 			"   have: 7"
@@ -793,7 +812,8 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		err := Equal(want, have, opts...)
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"     trail: type.field\n" +
 			"  want len: 2\n" +
 			"  have len: 1\n" +
@@ -830,7 +850,8 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: <slice>[0]\n" +
 			"   want: 1\n" +
 			"   have: 2\n" +
@@ -888,7 +909,8 @@ func Test_Equal_kind_Map(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: map[1]\n" +
 			"   want: 42\n" +
 			"   have: 44"
@@ -909,7 +931,8 @@ func Test_Equal_kind_Map(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"      trail: map[2]\n" +
 			"  want type: map[int]int\n" +
 			"  have type: <nil>\n" +
@@ -936,7 +959,8 @@ func Test_Equal_kind_Map(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"     trail: type.field\n" +
 			"  want len: 2\n" +
 			"  have len: 3\n" +
@@ -976,7 +1000,8 @@ func Test_Equal_kind_Map(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: type.field[1]\n" +
 			"   want: 42\n" +
 			"   have: 44\n" +

@@ -21,7 +21,8 @@ func Test_Len(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected []int length:\n" +
+		wMsg := "" +
+			"expected []int length:\n" +
 			"  trail: type.field\n" +
 			"   want: 1\n" +
 			"   have: 2"
@@ -166,7 +167,8 @@ func Test_Has(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected slice to have a value:\n" +
+		wMsg := "" +
+			"expected slice to have a value:\n" +
 			"   want: 42\n" +
 			"  slice:\n" +
 			"         []int{\n" +
@@ -187,7 +189,8 @@ func Test_Has(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected slice to have a value:\n" +
+		wMsg := "" +
+			"expected slice to have a value:\n" +
 			"  trail: type.field\n" +
 			"   want: 42\n" +
 			"  slice:\n" +
@@ -221,7 +224,8 @@ func Test_HasNo(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected slice not to have value:\n" +
+		wMsg := "" +
+			"expected slice not to have value:\n" +
 			"   want: 2\n" +
 			"  index: 1\n" +
 			"  slice:\n" +
@@ -243,7 +247,8 @@ func Test_HasNo(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected slice not to have value:\n" +
+		wMsg := "" +
+			"expected slice not to have value:\n" +
 			"  trail: type.field\n" +
 			"   want: 2\n" +
 			"  index: 1\n" +
@@ -291,7 +296,8 @@ func Test_HasKey(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, 0, haveValue)
 		affirm.NotNil(t, err)
-		wMsg := "expected map to have a key:\n" +
+		wMsg := "" +
+			"expected map to have a key:\n" +
 			"  key: \"X\"\n" +
 			"  map:\n" +
 			"       map[string]int{\n" +
@@ -312,7 +318,8 @@ func Test_HasKey(t *testing.T) {
 		// --- Then ---
 		affirm.Nil(t, haveValue)
 		affirm.NotNil(t, err)
-		wMsg := "expected map to have a key:\n" +
+		wMsg := "" +
+			"expected map to have a key:\n" +
 			"  key: \"X\"\n" +
 			"  map: map[string]any(nil)"
 		affirm.Equal(t, wMsg, err.Error())
@@ -329,7 +336,8 @@ func Test_HasKey(t *testing.T) {
 		// --- Then ---
 		affirm.Nil(t, haveValue)
 		affirm.NotNil(t, err)
-		wMsg := "expected map to have a key:\n" +
+		wMsg := "" +
+			"expected map to have a key:\n" +
 			"  trail: type.field\n" +
 			"    key: \"X\"\n" +
 			"    map: map[string]any(nil)"
@@ -358,7 +366,8 @@ func Test_HasNoKey(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected map not to have a key:\n" +
+		wMsg := "" +
+			"expected map not to have a key:\n" +
 			"    key: \"B\"\n" +
 			"  value: 2\n" +
 			"    map:\n" +
@@ -380,7 +389,8 @@ func Test_HasNoKey(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected map not to have a key:\n" +
+		wMsg := "" +
+			"expected map not to have a key:\n" +
 			"  trail: type.field\n" +
 			"    key: \"B\"\n" +
 			"  value: 2\n" +
@@ -416,7 +426,8 @@ func Test_HasKeyValue(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected map to have a key with a value:\n" +
+		wMsg := "" +
+			"expected map to have a key with a value:\n" +
 			"  trail: type.field\n" +
 			"    key: \"B\"\n" +
 			"   want: 100\n" +
@@ -434,7 +445,8 @@ func Test_HasKeyValue(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected map to have a key:\n  trail: type.field\n" +
+		wMsg := "" +
+			"expected map to have a key:\n  trail: type.field\n" +
 			"    key: \"X\"\n" +
 			"    map:\n" +
 			"         map[string]int{\n" +
@@ -481,7 +493,8 @@ func Test_SliceSubset(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected \"want\" slice to be a subset of \"have\" slice:\n" +
+		wMsg := "" +
+			"expected \"want\" slice to be a subset of \"have\" slice:\n" +
 			"  missing values:\n" +
 			"                  []int{\n" +
 			"                    9,\n" +
@@ -501,7 +514,8 @@ func Test_SliceSubset(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected \"want\" slice to be a subset of \"have\" slice:\n" +
+		wMsg := "" +
+			"expected \"want\" slice to be a subset of \"have\" slice:\n" +
 			"           trail: type.field\n" +
 			"  missing values:\n" +
 			"                  []int{\n" +
@@ -548,7 +562,8 @@ func Test_MapSubset(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected \"have\" map to have key(s):\n" +
+		wMsg := "" +
+			"expected \"have\" map to have key(s):\n" +
 			"           trail: type.field\n" +
 			"  missing key(s): \"KEY2\""
 		affirm.Equal(t, wMsg, err.Error())
@@ -570,7 +585,8 @@ func Test_MapSubset(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: map[\"KEY1\"]\n" +
 			"   want: \"VALA\"\n" +
 			"   have: \"VAL1\""
@@ -594,7 +610,8 @@ func Test_MapSubset(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: map[\"KEY1\"]\n" +
 			"   want: \"VALA\"\n" +
 			"   have: \"VAL1\"\n" +
@@ -620,7 +637,8 @@ func Test_MapSubset(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: map[0]\n" +
 			"   want: 10\n" +
 			"   have: 100\n" +
@@ -667,7 +685,8 @@ func Test_MapsSubset(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected slices of the same length:\n" +
+		wMsg := "" +
+			"expected slices of the same length:\n" +
 			"  trail: type.field\n" +
 			"   want: 2\n" +
 			"   have: 1"
@@ -690,7 +709,8 @@ func Test_MapsSubset(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: <slice>[0]map[\"KEY1\"]\n" +
 			"   want: \"VALA\"\n" +
 			"   have: \"VAL1\"\n" +

@@ -18,8 +18,6 @@ import (
 
 func Test_newPkg(t *testing.T) {
 	t.Run("empty import path", func(t *testing.T) {
-		// --- Given ---
-
 		// --- When ---
 		have := newPkg("/dir", "")
 
@@ -28,8 +26,6 @@ func Test_newPkg(t *testing.T) {
 	})
 
 	t.Run("with import path", func(t *testing.T) {
-		// --- Given ---
-
 		// --- When ---
 		have := newPkg("/dir", "github.com/ctx42/testing/pkg/mocker")
 

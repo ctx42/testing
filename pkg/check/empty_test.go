@@ -25,7 +25,8 @@ func Test_Empty(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected argument to be empty:\n" +
+		wMsg := "" +
+			"expected argument to be empty:\n" +
 			"  want: <empty>\n" +
 			"  have: \"abc\""
 		affirm.Equal(t, wMsg, err.Error())
@@ -40,7 +41,8 @@ func Test_Empty(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected argument to be empty:\n" +
+		wMsg := "" +
+			"expected argument to be empty:\n" +
 			"  trail: type.field\n" +
 			"   want: <empty>\n" +
 			"   have: \"abc\""
@@ -95,7 +97,8 @@ func Test_NotEmpty(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected non-empty value:\n" +
+		wMsg := "" +
+			"expected non-empty value:\n" +
 			"  trail: type.field"
 		affirm.Equal(t, wMsg, err.Error())
 	})

@@ -37,7 +37,8 @@ func Test_True(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected value to be true:\n" +
+		wMsg := "" +
+			"expected value to be true:\n" +
 			"  trail: type.field"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -71,7 +72,8 @@ func Test_False(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected value to be false:\n" +
+		wMsg := "" +
+			"expected value to be false:\n" +
 			"  trail: type.field"
 		affirm.Equal(t, wMsg, err.Error())
 	})

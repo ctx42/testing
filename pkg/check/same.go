@@ -35,7 +35,7 @@ func Same(want, have any, opts ...Option) error {
 func NotSame(want, have any, opts ...Option) error {
 	if Same(want, have) == nil {
 		ops := DefaultOptions(opts...)
-		return notice.New("expected not same pointers").
+		return notice.New("expected different pointers").
 			Trail(ops.Trail).
 			Want("%p %#v", want, want).
 			Have("%p %#v", have, have)

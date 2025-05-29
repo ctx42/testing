@@ -21,13 +21,13 @@ func JSON(want, have string, opts ...Option) error {
 
 	ops := DefaultOptions(opts...)
 	if err := json.Unmarshal([]byte(want), &wantItf); err != nil {
-		return notice.New("did not expect unmarshalling error").
+		return notice.New("did not expect the unmarshalling error").
 			Trail(ops.Trail).
 			Append("argument", "want").
 			Append("error", "%s", err)
 	}
 	if err := json.Unmarshal([]byte(have), &haveItf); err != nil {
-		return notice.New("did not expect unmarshalling error").
+		return notice.New("did not expect the unmarshalling error").
 			Trail(ops.Trail).
 			Append("argument", "have").
 			Append("error", "%s", err)

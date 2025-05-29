@@ -36,7 +36,8 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected equal dates:\n" +
+		wMsg := "" +
+			"expected equal dates:\n" +
 			"  want: 2000-01-02T03:04:05Z\n" +
 			"  have: 2000-01-02T03:04:06Z ( 2000-01-02T04:04:06+01:00 )\n" +
 			"  diff: -1s"
@@ -63,7 +64,8 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected equal dates:\n" +
+		wMsg := "" +
+			"expected equal dates:\n" +
 			"  want: 2000-01-02T02:04:05Z ( 2000-01-02T03:04:05+01:00 )\n" +
 			"  have: 2000-01-02T02:04:04Z\n" +
 			"  diff: 1s"
@@ -79,7 +81,8 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected equal dates:\n" +
+		wMsg := "" +
+			"expected equal dates:\n" +
 			"  want: 2000-01-02T02:04:04Z\n" +
 			"  have: 2000-01-02T02:04:05Z ( 2000-01-02T03:04:05+01:00 )\n" +
 			"  diff: -1s"
@@ -92,7 +95,8 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[want] failed to parse time:\n" +
+		wMsg := "" +
+			"[want] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: 2022-02-18"
 		affirm.Equal(t, wMsg, err.Error())
@@ -104,7 +108,8 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[have] failed to parse time:\n" +
+		wMsg := "" +
+			"[have] failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05.999999999Z07:00\n" +
 			"   value: 2022-02-18"
 		affirm.Equal(t, wMsg, err.Error())

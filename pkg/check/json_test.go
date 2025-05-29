@@ -51,7 +51,8 @@ func Test_JSON(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "did not expect unmarshalling error:\n" +
+		wMsg := "" +
+			"did not expect the unmarshalling error:\n" +
 			"     trail: type.field\n" +
 			"  argument: want\n" +
 			"     error: invalid character '!' looking for beginning of " +
@@ -70,7 +71,8 @@ func Test_JSON(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "did not expect unmarshalling error:\n" +
+		wMsg := "" +
+			"did not expect the unmarshalling error:\n" +
 			"     trail: type.field\n" +
 			"  argument: have\n" +
 			"     error: invalid character '!' looking for beginning of " +

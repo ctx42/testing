@@ -18,7 +18,8 @@ func Test_Count(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected argument \"what\" to be string got int:\n" +
+		wMsg := "" +
+			"expected argument \"what\" to be string got int:\n" +
 			"  trail: type.field"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -32,7 +33,8 @@ func Test_Count(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "unsupported \"where\" type: int:\n" +
+		wMsg := "" +
+			"unsupported \"where\" type: int:\n" +
 			"  trail: type.field"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -46,7 +48,8 @@ func Test_Count(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected string to contain substrings:\n" +
+		wMsg := "" +
+			"expected string to contain substrings:\n" +
 			"       trail: type.field\n" +
 			"  want count: 2\n" +
 			"  have count: 3\n" +
@@ -99,7 +102,8 @@ func Test_Count_error_tabular(t *testing.T) {
 
 			// --- Then ---
 			affirm.NotNil(t, err)
-			wMsg := "expected string to contain substrings:\n" +
+			wMsg := "" +
+				"expected string to contain substrings:\n" +
 				"  want count: %d\n" +
 				"  have count: %d\n" +
 				"        what: %q\n" +
@@ -120,7 +124,8 @@ func Test_Type(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected same types:\n" +
+		wMsg := "" +
+			"expected same types:\n" +
 			"  trail: type.field\n" +
 			"   want: int\n" +
 			"   have: float64"
@@ -230,7 +235,8 @@ func Test_Fields(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected struct to have number of fields:\n" +
+		wMsg := "" +
+			"expected struct to have number of fields:\n" +
 			"  trail: type.field\n" +
 			"   want: 1\n" +
 			"   have: 7"
@@ -246,7 +252,8 @@ func Test_Fields(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected struct type:\n" +
+		wMsg := "" +
+			"expected struct type:\n" +
 			"     trail: type.field\n" +
 			"  got type: int"
 		affirm.Equal(t, wMsg, err.Error())

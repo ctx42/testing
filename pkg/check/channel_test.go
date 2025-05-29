@@ -47,7 +47,8 @@ func Test_ChannelWillClose(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "timeout waiting for channel to close:\n" +
+		wMsg := "" +
+			"timeout waiting for channel to close:\n" +
 			"   trail: type.field\n" +
 			"  within: 5ms"
 		affirm.Equal(t, wMsg, err.Error())

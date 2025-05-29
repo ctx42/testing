@@ -153,7 +153,7 @@ func Test_NotSame(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected not same pointers:\n" +
+		wMsg := "expected different pointers:\n" +
 			"  want: %p &types.TPtr{Val:\"0\"}\n" +
 			"  have: %p &types.TPtr{Val:\"0\"}"
 		wMsg = fmt.Sprintf(wMsg, ptr0, ptr0)
@@ -171,7 +171,7 @@ func Test_NotSame(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected not same pointers:\n" +
+		wMsg := "expected different pointers:\n" +
 			"  trail: type.field\n" +
 			"   want: %p &types.TPtr{Val:\"0\"}\n" +
 			"   have: %p &types.TPtr{Val:\"0\"}"
