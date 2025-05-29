@@ -29,6 +29,15 @@ func Indent(n int, r rune, lns string) string {
 	return strings.Join(rows, "\n")
 }
 
+// Pad left pads the string with spaces.
+func Pad(str string, length int) string {
+	l := len(str)
+	if length > l {
+		return strings.Repeat(" ", length-l) + str
+	}
+	return str
+}
+
 // Unwrap unwraps joined errors. Returns nil if err is nil, unwraps only
 // non-nil errors.
 func Unwrap(err error) []error {

@@ -78,6 +78,32 @@ func Test_Indent(t *testing.T) {
 	})
 }
 
+func Test_Pad_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		str    string
+		length int
+		want   string
+	}{
+		{"empty string zero pad", "", 0, ""},
+		{"empty string with pad", "", 3, "   "},
+		{"string with pad longer than string length", "abc", 5, "  abc"},
+		{"string with pad equal to string length", "abc", 3, "abc"},
+		{"string with pad shorter than string length", "abc", 2, "abc"},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := Pad(tc.str, tc.length)
+
+			// --- Then ---
+			affirm.Equal(t, tc.want, have)
+		})
+	}
+}
+
 func Test_Unwrap(t *testing.T) {
 	t.Run("unwrap multiple", func(t *testing.T) {
 		// --- Given ---
