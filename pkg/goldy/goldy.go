@@ -99,6 +99,12 @@ func (gld *Goldy) String() string { return string(gld.Content) }
 // Bytes return clone of the [Goldy.Content].
 func (gld *Goldy) Bytes() []byte { return slices.Clone(gld.Content) }
 
+// SetContent is a helper function to set content from a string.
+func (gld *Goldy) SetContent(str string) *Goldy {
+	gld.Content = []byte(str)
+	return gld
+}
+
 // Save saves the golden file to the [Goldy.Path].
 func (gld *Goldy) Save() {
 	gld.t.Helper()

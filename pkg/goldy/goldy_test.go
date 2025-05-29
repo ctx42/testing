@@ -165,6 +165,18 @@ func Test_Goldy_Bytes(t *testing.T) {
 	affirm.Equal(t, false, core.Same(gld.Content, have))
 }
 
+func Test_Goldy_SetContent(t *testing.T) {
+	// --- Given ---
+	gld := &Goldy{Content: []byte("content")}
+
+	// --- When ---
+	have := gld.SetContent("abc")
+
+	// --- Then ---
+	affirm.DeepEqual(t, []byte("abc"), have.Content)
+	affirm.Equal(t, true, core.Same(gld, have))
+}
+
 func Test_Goldy_Save(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
