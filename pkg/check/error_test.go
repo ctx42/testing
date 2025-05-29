@@ -61,7 +61,7 @@ func Test_NoError(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "expected the error to be nil:\n" +
-			"  want: <nil>\n" +
+			"  want: nil\n" +
 			"  have: \"e0\""
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -77,7 +77,7 @@ func Test_NoError(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "expected the error to be nil:\n" +
 			"  trail: type.field\n" +
-			"   want: <nil>\n" +
+			"   want: nil\n" +
 			"   have: \"e0\""
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -92,7 +92,7 @@ func Test_NoError(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "expected the error to be nil:\n" +
-			"  want: <nil>\n" +
+			"  want: nil\n" +
 			"  have: *types.TPtr"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -109,7 +109,7 @@ func Test_NoError(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "expected the error to be nil:\n" +
 			"  trail: type.field\n" +
-			"   want: <nil>\n" +
+			"   want: nil\n" +
 			"   have: *types.TPtr"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -124,7 +124,7 @@ func Test_NoError(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "expected the error to be nil:\n" +
-			"  want: <nil>\n" +
+			"  want: nil\n" +
 			"  have: \"\""
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -317,7 +317,7 @@ func Test_ErrorEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error message to be:\n" +
+		wMsg := "expected the error message to be:\n" +
 			"  want: \"e1\"\n" +
 			"  have: \"e0\""
 		affirm.Equal(t, wMsg, err.Error())
@@ -332,7 +332,7 @@ func Test_ErrorEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error message to be:\n" +
+		wMsg := "expected the error message to be:\n" +
 			"  trail: type.field\n" +
 			"   want: \"e1\"\n" +
 			"   have: \"e0\""
@@ -345,7 +345,7 @@ func Test_ErrorEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error message to be:\n" +
+		wMsg := "expected the error message to be:\n" +
 			"  want: \"e1\"\n" +
 			"  have: <nil>"
 		affirm.Equal(t, wMsg, err.Error())
@@ -367,7 +367,7 @@ func Test_ErrorContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error message to contain:\n" +
+		wMsg := "expected the error message to contain:\n" +
 			"  want: \"xyz\"\n" +
 			"  have: \"abc def ghi\""
 		affirm.Equal(t, wMsg, err.Error())
@@ -382,7 +382,7 @@ func Test_ErrorContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error message to contain:\n" +
+		wMsg := "expected the error message to contain:\n" +
 			"  trail: type.field\n" +
 			"   want: \"xyz\"\n" +
 			"   have: \"abc def ghi\""
@@ -467,7 +467,7 @@ func Test_ErrorRegexp(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error message to match regexp:\n" +
+		wMsg := "expected the error message to match regexp:\n" +
 			"  regexp: ^xyz\n" +
 			"    have: \"abc def ghi\""
 		affirm.Equal(t, wMsg, err.Error())
@@ -482,7 +482,7 @@ func Test_ErrorRegexp(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error message to match regexp:\n" +
+		wMsg := "expected the error message to match regexp:\n" +
 			"   trail: type.field\n" +
 			"  regexp: ^xyz\n" +
 			"    have: \"abc def ghi\""
@@ -495,7 +495,7 @@ func Test_ErrorRegexp(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error message to match regexp:\n" +
+		wMsg := "expected the error message to match regexp:\n" +
 			"  error: \"error parsing regexp: missing closing ]: `[a-z`\""
 		affirm.Equal(t, wMsg, err.Error())
 	})

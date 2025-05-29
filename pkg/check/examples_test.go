@@ -29,7 +29,7 @@ func ExampleNoError() {
 	fmt.Println(err)
 	// Output:
 	// expected the error to be nil:
-	//   want: <nil>
+	//   want: nil
 	//   have: "test error"
 }
 
@@ -42,7 +42,7 @@ func ExampleNoError_withTrail() {
 	// Output:
 	// expected the error to be nil:
 	//   trail: type.field
-	//    want: <nil>
+	//    want: nil
 	//    have: "test error"
 }
 
@@ -57,7 +57,7 @@ func ExampleNoError_changeMessage() {
 	// Output:
 	// [prefix] expected the error to be nil:
 	//     trail: type.field
-	//      want: <nil>
+	//      want: nil
 	//      have: "test error"
 	//   context: wow
 }

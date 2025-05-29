@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ctx42/testing/internal/core"
+	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/notice"
 )
 
@@ -30,16 +31,16 @@ func NoError(err error, opts ...Option) error {
 	if is, _ := core.IsNil(err); is {
 		return notice.New(mHeader).
 			SetTrail(ops.Trail).
-			Want("<nil>").
+			Want(dump.ValNil).
 			Have("%T", err)
 	}
 	return notice.New(mHeader).
 		SetTrail(ops.Trail).
-		Want("<nil>").
+		Want(dump.ValNil).
 		Have("%q", err.Error())
 }
 
-// ErrorIs checks whether any error in "err" tree matches the "want" target.
+// ErrorIs checks whether any error in the "err" tree matches the "want" target.
 // Returns nil if it's, otherwise returns an error with a message indicating
 // the expected and actual values.
 func ErrorIs(want, err error, opts ...Option) error {
@@ -86,7 +87,7 @@ func ErrorEqual(want string, err error, opts ...Option) error {
 	}
 
 	ops := DefaultOptions(opts...)
-	return notice.New("expected error message to be").
+	return notice.New("expected the error message to be").
 		SetTrail(ops.Trail).
 		Want("%q", want).
 		Have("%#v", have)
@@ -110,7 +111,7 @@ func ErrorContain(want string, err error, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 	var have any
 	have = err.Error()
-	return notice.New("expected error message to contain").
+	return notice.New("expected the error message to contain").
 		SetTrail(ops.Trail).
 		Want("%q", want).
 		Have("%#v", have)
@@ -120,7 +121,7 @@ func ErrorContain(want string, err error, opts ...Option) error {
 // Returns nil if it is, otherwise it returns an error with a message
 // indicating the expected and actual values.
 //
-// The "want" can be either regular expression string or instance of
+// The "want" can be either a regular expression string or instance of
 // [regexp.Regexp]. The [fmt.Sprint] is used to get string representation of
 // have argument.
 func ErrorRegexp(want any, err error, opts ...Option) error {
@@ -135,7 +136,7 @@ func ErrorRegexp(want any, err error, opts ...Option) error {
 		ops := DefaultOptions(opts...)
 		return notice.From(e).
 			SetTrail(ops.Trail).
-			SetHeader("expected error message to match regexp")
+			SetHeader("expected the error message to match regexp")
 	}
 	return nil
 }
