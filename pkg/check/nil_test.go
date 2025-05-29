@@ -25,7 +25,7 @@ func Test_Nil(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "expected value to be nil:\n" +
-			"  want: <nil>\n" +
+			"  want: nil\n" +
 			"  have: 42"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -41,7 +41,7 @@ func Test_Nil(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "expected value to be nil:\n" +
 			"  trail: type.field\n" +
-			"   want: <nil>\n" +
+			"   want: nil\n" +
 			"   have: 42"
 		affirm.Equal(t, wMsg, err.Error())
 	})

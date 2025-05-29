@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ctx42/testing/pkg/dump"
 )
 
 // Types for some of the built-in types.
@@ -72,7 +74,7 @@ func valToString(key reflect.Value) string {
 
 	case reflect.Ptr:
 		if key.IsNil() {
-			return "<nil>"
+			return dump.ValNil
 		} else {
 			return "*" + valToString(key.Elem())
 		}

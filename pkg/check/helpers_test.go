@@ -91,7 +91,7 @@ func Test_valToString_tabular(t *testing.T) {
 		{"struct", types.TA{}, "types.TA"},
 		{"nil interface", nilItf, "<invalid>"},
 		{"non-nil interface", itf, "types.TVal"},
-		{"nil pointer", nilPtr, "<nil>"},
+		{"nil pointer", nilPtr, "nil"},
 		{"non-nil pointer", ptr, "*types.TPtr"},
 
 		{"complex64", complex(float32(1.0), float32(2.0)), "(1+2i)"},
