@@ -1,3 +1,3 @@
 module github.com/ctx42/testing
 
-go 1.24.0
+go 1.24

@@ -201,7 +201,7 @@ avoiding conflicts with the `pkg` package.
 
 ## Generate
 
-From the root of your Go module, execute:
+From the Root of your Go module, execute:
 
 ```shell
 go generate ./...

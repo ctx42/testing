@@ -143,7 +143,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 			wSF := wVal.Type().Field(i)
 			iOps := ops.StructTrail(typeName, wSF.Name)
 			if e := deepEqual(wfVal, hfVal, WithOptions(iOps)); e != nil {
-				err = notice.Join(err, e) // TODO(rz):
+				err = notice.Join(err, e)
 			}
 		}
 		return err
@@ -167,7 +167,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 			hiVal := hVal.Index(i)
 			iOps := ops.ArrTrail(knd.String(), i)
 			if e := deepEqual(wiVal, hiVal, WithOptions(iOps)); e != nil {
-				err = notice.Join(err, e) // TODO(rz):
+				err = notice.Join(err, e)
 			}
 		}
 		return err
@@ -199,11 +199,11 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 			if !hkVal.IsValid() {
 				hItf := hVal.Interface()
 				e := equalError(hItf, nil, WithOptions(kOps))
-				err = notice.Join(err, e) // TODO(rz):
+				err = notice.Join(err, e)
 				continue
 			}
 			if e := deepEqual(wkVal, hkVal, WithOptions(kOps)); e != nil {
-				err = notice.Join(err, e) // TODO(rz):
+				err = notice.Join(err, e)
 			}
 		}
 		return err

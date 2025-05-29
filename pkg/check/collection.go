@@ -152,7 +152,6 @@ func MapSubset[K comparable, V any](want, have map[K]V, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 
 	var err error
-	var order []string
 	var missing []string
 	for wKey, wVal := range want {
 		wKeyStr := valToString(reflect.ValueOf(wKey))
@@ -163,25 +162,20 @@ func MapSubset[K comparable, V any](want, have map[K]V, opts ...Option) error {
 		}
 		kOps := ops.MapTrail(wKeyStr)
 		if e := Equal(wVal, hVal, WithOptions(kOps)); e != nil {
-			order = append(order, kOps.Trail)
-			err = notice.Join(err, e) // TODO(rz):
+			err = notice.Join(err, e)
 		}
 	}
 
-	// TODO(rz): make sure the same order.
-
-	// var ers []error
-	// sort.Strings(order)
-	// for _, trail := range order {
-	// 	ers = append(ers, ersM[trail]...)
-	// }
+	if err != nil {
+		err = notice.SortNotices(notice.From(err).Head(), notice.TrialCmp)
+	}
 
 	if len(missing) > 0 {
 		sort.Strings(missing)
-		msg := notice.New(`expected "have" map to have key(s)`).
+		msg := notice.New("expected the map to have keys").
 			SetTrail(ops.Trail).
-			Append("missing key(s)", "%s", strings.Join(missing, ", "))
-		err = notice.Join(err, msg) // TODO(rz): add just rows.
+			Append("keys", "%s", strings.Join(missing, ", "))
+		err = notice.Join(err, msg)
 	}
 	return err
 }
@@ -200,14 +194,11 @@ func MapsSubset[K comparable, V any](want, have []map[K]V, opts ...Option) error
 			Have("%d", len(have))
 	}
 
-	// TODO(rz): rename all of those to msg. Now its just one message with
-	//  multiple sections.
 	var err error
 	for i := range want {
 		iOps := ops.ArrTrail("slice", i)
 		if e := MapSubset(want[i], have[i], WithOptions(iOps)); e != nil {
-			err = notice.Join(err, e) // TODO(rz):
-			// ers = append(ers, notice.Unwrap(err)...)
+			err = notice.Join(err, e)
 		}
 	}
 	return err

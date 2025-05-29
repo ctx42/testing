@@ -25,10 +25,6 @@ func IsNil(have any) (isNil, isWrapped bool) {
 	if have == nil {
 		return true, false
 	}
-
-	// TODO(rz): Maybe checking for nil should return true only if this is
-	//   actual not wrapped nil.
-	// TODO(rz): this should return: (isWrapped bool, isActualNil bool)
 	val := reflect.ValueOf(have)
 	kind := val.Kind()
 	if kind >= reflect.Chan && kind <= reflect.Slice {

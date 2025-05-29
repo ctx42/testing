@@ -23,8 +23,8 @@ func Test_New(t *testing.T) {
 			affirm.Nil(t, msg.Rows)
 			affirm.Nil(t, msg.Meta)
 			affirm.Equal(t, true, errors.Is(msg.err, ErrNotice))
-			affirm.Nil(t, msg.parent)
-			affirm.Nil(t, msg.child)
+			affirm.Nil(t, msg.prev)
+			affirm.Nil(t, msg.next)
 		})
 
 	})
@@ -39,8 +39,8 @@ func Test_New(t *testing.T) {
 		affirm.Nil(t, msg.Rows)
 		affirm.Nil(t, msg.Meta)
 		affirm.Equal(t, true, errors.Is(msg.err, ErrNotice))
-		affirm.Nil(t, msg.parent)
-		affirm.Nil(t, msg.child)
+		affirm.Nil(t, msg.prev)
+		affirm.Nil(t, msg.next)
 	})
 }
 
@@ -472,22 +472,6 @@ func Test_Notice_Remove(t *testing.T) {
 	})
 }
 
-func Test_Notice_Parent(t *testing.T) {
-	// --- Given ---
-	msg0 := New("header0").Want("%d", 42).Have("%d", 44)
-	msg1 := New("header1").Want("%d", 11).Have("%d", 7)
-
-	// --- When ---
-	have := msg1.Parent(msg0)
-
-	// --- Then ---
-	affirm.Equal(t, true, core.Same(msg1, have))
-	affirm.Nil(t, msg0.parent)
-	affirm.Equal(t, true, core.Same(msg0.child, msg1))
-	affirm.Equal(t, true, core.Same(msg1.parent, msg0))
-	affirm.Nil(t, msg1.child)
-}
-
 func Test_Notice_Is(t *testing.T) {
 	t.Run("is", func(t *testing.T) {
 		// --- Given ---
@@ -749,7 +733,7 @@ func Test_Notice_MetaLookup(t *testing.T) {
 	})
 }
 
-func Test_longestName(t *testing.T) {
+func Test_Notice_longest(t *testing.T) {
 	t.Run("empty trail", func(t *testing.T) {
 		// --- Given ---
 		msg := &Notice{
@@ -761,7 +745,7 @@ func Test_longestName(t *testing.T) {
 		}
 
 		// --- When ---
-		have := msg.longestName()
+		have := msg.longest()
 
 		// --- Then ---
 		affirm.DeepEqual(t, 3, have)
@@ -779,7 +763,7 @@ func Test_longestName(t *testing.T) {
 		}
 
 		// --- When ---
-		have := msg.longestName()
+		have := msg.longest()
 
 		// --- Then ---
 		affirm.DeepEqual(t, 5, have)
@@ -796,20 +780,36 @@ func Test_longestName(t *testing.T) {
 		}
 
 		// --- When ---
-		have := msg.longestName()
+		have := msg.longest()
 
 		// --- Then ---
 		affirm.DeepEqual(t, 9, have)
 	})
 }
 
-func Test_Notice_root(t *testing.T) {
+func Test_Notice_Chain(t *testing.T) {
+	// --- Given ---
+	msg0 := New("header0").Want("%d", 42).Have("%d", 44)
+	msg1 := New("header1").Want("%d", 11).Have("%d", 7)
+
+	// --- When ---
+	have := msg1.Chain(msg0)
+
+	// --- Then ---
+	affirm.Equal(t, true, core.Same(msg1, have))
+	affirm.Nil(t, msg0.prev)
+	affirm.Equal(t, true, core.Same(msg0.next, msg1))
+	affirm.Equal(t, true, core.Same(msg1.prev, msg0))
+	affirm.Nil(t, msg1.next)
+}
+
+func Test_Notice_Head(t *testing.T) {
 	t.Run("without parent", func(t *testing.T) {
 		// --- Given ---
 		msg := &Notice{}
 
 		// --- When ---
-		have := msg.root()
+		have := msg.Head()
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
@@ -823,7 +823,59 @@ func Test_Notice_root(t *testing.T) {
 		_ = Join(msg0, msg1, msg2)
 
 		// --- When ---
-		have := msg2.root()
+		have := msg2.Head()
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg0, have))
+	})
+}
+
+func Test_Notice_Next(t *testing.T) {
+	t.Run("no next in the chain", func(t *testing.T) {
+		// --- Given ---
+		msg := &Notice{}
+
+		// --- When ---
+		have := msg.Next()
+
+		// --- Then ---
+		affirm.Nil(t, have)
+	})
+
+	t.Run("next", func(t *testing.T) {
+		// --- Given ---
+		msg0 := New("header0")
+		msg1 := New("header1")
+		_ = Join(msg0, msg1)
+
+		// --- When ---
+		have := msg0.Next()
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg1, have))
+	})
+}
+
+func Test_Notice_Prev(t *testing.T) {
+	t.Run("no previous in the chain", func(t *testing.T) {
+		// --- Given ---
+		msg := &Notice{}
+
+		// --- When ---
+		have := msg.Prev()
+
+		// --- Then ---
+		affirm.Nil(t, have)
+	})
+
+	t.Run("previous", func(t *testing.T) {
+		// --- Given ---
+		msg0 := New("header0")
+		msg1 := New("header1")
+		_ = Join(msg0, msg1)
+
+		// --- When ---
+		have := msg1.Prev()
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg0, have))
@@ -879,7 +931,9 @@ func Test_Join(t *testing.T) {
 		have := Join(nil, nil, nil)
 
 		// --- Then ---
-		affirm.Nil(t, have)
+		isNil, isWrapped := core.IsNil(have)
+		affirm.Equal(t, true, isNil)
+		affirm.Equal(t, false, isWrapped)
 	})
 
 	t.Run("join two errors", func(t *testing.T) {
@@ -892,8 +946,8 @@ func Test_Join(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg1, have))
-		affirm.Equal(t, true, core.Same(msg0.child, msg1))
-		affirm.Equal(t, true, core.Same(msg1.parent, msg0))
+		affirm.Equal(t, true, core.Same(msg0.next, msg1))
+		affirm.Equal(t, true, core.Same(msg1.prev, msg0))
 	})
 
 	t.Run("skip nil errors errors", func(t *testing.T) {
@@ -906,9 +960,7 @@ func Test_Join(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg1, have))
-		affirm.Equal(t, true, core.Same(msg0.child, msg1))
-		affirm.Equal(t, true, core.Same(msg1.parent, msg0))
+		affirm.Equal(t, true, core.Same(msg0.next, msg1))
+		affirm.Equal(t, true, core.Same(msg1.prev, msg0))
 	})
-
-	// TODO(rz): add more cases.
 }

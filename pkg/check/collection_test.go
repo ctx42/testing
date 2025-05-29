@@ -563,9 +563,9 @@ func Test_MapSubset(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
-			"expected \"have\" map to have key(s):\n" +
-			"           trail: type.field\n" +
-			"  missing key(s): \"KEY2\""
+			"expected the map to have keys:\n" +
+			"  trail: type.field\n" +
+			"   keys: \"KEY2\""
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -612,13 +612,13 @@ func Test_MapSubset(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"multiple expectations violated:\n" +
-			"           error: expected values to be equal\n" +
-			"           trail: map[\"KEY1\"]\n" +
-			"            want: \"VALA\"\n" +
-			"            have: \"VAL1\"\n" +
-			"               ---\n" +
-			"           error: expected \"have\" map to have key(s)\n" +
-			"  missing key(s): \"KEY2\""
+			"  error: expected values to be equal\n" +
+			"  trail: map[\"KEY1\"]\n" +
+			"   want: \"VALA\"\n" +
+			"   have: \"VAL1\"\n" +
+			"      ---\n" +
+			"  error: expected the map to have keys\n" +
+			"   keys: \"KEY2\""
 		affirm.Equal(t, wMsg, err.Error())
 	})
 

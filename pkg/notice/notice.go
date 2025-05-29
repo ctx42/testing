@@ -33,11 +33,11 @@ type Notice struct {
 	// Is a trail to the field, element or key the notice message is about.
 	Trail string
 
-	Rows   []Row          // Context rows.
-	Meta   map[string]any // Useful metadata.
-	err    error          // Base error (default: [ErrNotice]).
-	parent *Notice        // Patent message in the chain.
-	child  *Notice        // Child message in the chain.
+	Rows []Row          // Context rows.
+	Meta map[string]any // Useful metadata.
+	err  error          // Base error (default: [ErrNotice]).
+	prev *Notice        // Next message in the chain.
+	next *Notice        // Previous message in the chain.
 }
 
 // New creates a new [Notice] with a header formatted using [fmt.Sprintf] from
@@ -62,7 +62,7 @@ func From(err error, prefix ...string) *Notice {
 	if err == nil {
 		return nil
 	}
-	if e, ok := err.(*Notice); ok {
+	if e, ok := err.(*Notice); ok { // nolint: errorlint
 		if len(prefix) > 0 {
 			e.Header = fmt.Sprintf("[%s] %s", prefix[0], e.Header)
 		}
@@ -165,20 +165,15 @@ func (msg *Notice) Remove(name string) *Notice {
 
 func (msg *Notice) Is(target error) bool { return errors.Is(msg.err, target) }
 
-// Parent sets parent of the current notice.
-func (msg *Notice) Parent(parent *Notice) *Notice {
-	msg.parent = parent
-	parent.child = msg
-	return msg
-}
-
 // Notice returns a formatted string representation of the Notice.
+//
+// nolint: gocognit, cyclop
 func (msg *Notice) Error() string {
 	mgs := msg.collect()
 
 	var longest int
 	for _, m := range mgs {
-		if ln := m.longestName(); longest < ln {
+		if ln := m.longest(); longest < ln {
 			longest = ln
 		}
 	}
@@ -271,8 +266,10 @@ func (msg *Notice) MetaLookup(key string) (any, bool) {
 	return val, ok
 }
 
-// longestName returns the longest row name in [Notice.Rows].
-func (msg *Notice) longestName() int {
+// The longest returns the length of the longest row name among all [Notice.Rows]
+// and the [Notice.Trail] string. If there are no rows and the trail is empty,
+// it returns 0.
+func (msg *Notice) longest() int {
 	var maxLen int
 	if msg.Trail != "" {
 		maxLen = len(trail)
@@ -285,32 +282,45 @@ func (msg *Notice) longestName() int {
 	return maxLen
 }
 
-// root returns root of the notice chain, if the current notice instance is the
-// root, it will return self.
-func (msg *Notice) root() *Notice {
-	if msg.parent == nil {
-		return msg
-	}
-	return msg.parent.root()
+// Chain adds the current [Notice] as next in the chain after "prev" and
+// returns the current instance.
+func (msg *Notice) Chain(prev *Notice) *Notice {
+	msg.prev = prev
+	prev.next = msg
+	return msg
 }
 
-// collect collects all the notices in the chain starting with the root notice.
+// Head returns the head of the notice chain, if the current notice instance is
+// the head, it returns self.
+func (msg *Notice) Head() *Notice {
+	if msg.prev == nil {
+		return msg
+	}
+	return msg.prev.Head()
+}
+
+// Next returns the next [Notice] in the chain or nil.
+func (msg *Notice) Next() *Notice { return msg.next }
+
+// Prev returns the previous [Notice] in the chain or nil.
+func (msg *Notice) Prev() *Notice { return msg.prev }
+
+// collect collects all the notices in the chain starting with the Head notice.
 func (msg *Notice) collect() []*Notice {
-	root := msg.root()
+	head := msg.Head()
 	var mgs []*Notice
 	for {
-		mgs = append(mgs, root)
-		if root.child == nil {
+		mgs = append(mgs, head)
+		if head.next == nil {
 			break
 		}
-		root = root.child
+		head = head.next
 	}
 	return mgs
 }
 
 // Join joins multiple notices into one. Returns the last not nil joined notice.
 func Join(ers ...error) error {
-	// TODO(rz): test this.
 	if len(ers) == 0 {
 		return nil
 	}
@@ -325,10 +335,8 @@ func Join(ers ...error) error {
 			err = ne
 			continue
 		}
-		err = ne.Parent(err)
+		err = ne.Chain(err)
 	}
-
-	// TODO(rz): how to test this?
 	if err == nil {
 		return nil
 	}

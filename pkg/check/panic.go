@@ -11,7 +11,7 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// TestFunc is signature used by check functions dealing with panics.
+// TestFunc is a signature used by check functions dealing with panics.
 type TestFunc func()
 
 // Panic checks "fn" panics. Returns nil if it does, otherwise it returns an
@@ -32,7 +32,7 @@ func NoPanic(fn TestFunc, opts ...Option) error {
 		return notice.New("func should not panic").
 			SetTrail(ops.Trail).
 			Append("panic value", "%v", val).
-			Append("panic stack", "\n%s", notice.Indent(2, ' ', stack))
+			Append("panic stack", "%s", notice.Indent(2, ' ', stack))
 	}
 	return nil
 }
@@ -61,14 +61,14 @@ func PanicContain(want string, fn TestFunc, opts ...Option) error {
 			SetTrail(ops.Trail).
 			Append("substring", "%q", want).
 			Append("panic value", "%v", val).
-			Append("panic stack", "\n%s", notice.Indent(2, ' ', stack))
+			Append("panic stack", "%s", notice.Indent(2, ' ', stack))
 	}
 	return nil
 }
 
-// PanicMsg checks "fn" panics, and returns the recovered panic value as a
-// string. If function didn't panic, it returns nil and an error with a
-// detailed message indicating the expected behaviour.
+// PanicMsg checks "fn" panics and returns the recovered panic value as a
+// string. If the function doesn't panic, it returns nil and an error with a
+// detailed message indicating the expected behavior.
 func PanicMsg(fn TestFunc, opts ...Option) (*string, error) {
 	val, stack := core.WillPanic(fn)
 	if stack == "" {
