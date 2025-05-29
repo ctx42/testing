@@ -27,7 +27,7 @@ func NoError(err error, opts ...Option) error {
 	}
 	ops := DefaultOptions(opts...)
 	const mHeader = "expected the error to be nil"
-	if core.IsNil(err) {
+	if is, _ := core.IsNil(err); is {
 		return notice.New(mHeader).
 			SetTrail(ops.Trail).
 			Want("<nil>").
@@ -96,7 +96,7 @@ func ErrorEqual(want string, err error, opts ...Option) error {
 // Returns nil if it's, otherwise it returns an error with a message indicating
 // the expected and actual values.
 func ErrorContain(want string, err error, opts ...Option) error {
-	if core.IsNil(err) {
+	if is, _ := core.IsNil(err); is {
 		ops := DefaultOptions(opts...)
 		return notice.New("expected error not to be nil").
 			SetTrail(ops.Trail).
@@ -124,7 +124,7 @@ func ErrorContain(want string, err error, opts ...Option) error {
 // [regexp.Regexp]. The [fmt.Sprint] is used to get string representation of
 // have argument.
 func ErrorRegexp(want any, err error, opts ...Option) error {
-	if core.IsNil(err) {
+	if is, _ := core.IsNil(err); is {
 		ops := DefaultOptions(opts...)
 		return notice.New("expected error not to be nil").
 			SetTrail(ops.Trail).

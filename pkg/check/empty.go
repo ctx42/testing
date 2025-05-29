@@ -38,7 +38,7 @@ func Empty(have any, opts ...Option) error {
 
 // isEmpty returns true if "have" is empty.
 func isEmpty(have any) bool {
-	if core.IsNil(have) {
+	if is, _ := core.IsNil(have); is {
 		return true
 	}
 

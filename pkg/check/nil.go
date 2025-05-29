@@ -11,7 +11,7 @@ import (
 // Nil checks "have" is nil. Returns nil if it's, otherwise returns an error
 // with a message indicating the expected and actual values.
 func Nil(have any, opts ...Option) error {
-	if core.IsNil(have) {
+	if is, _ := core.IsNil(have); is {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
@@ -27,7 +27,7 @@ func Nil(have any, opts ...Option) error {
 //
 // The returned error might be one or more errors joined with [errors.Join].
 func NotNil(have any, opts ...Option) error {
-	if !core.IsNil(have) {
+	if is, _ := core.IsNil(have); !is {
 		return nil
 	}
 	ops := DefaultOptions(opts...)

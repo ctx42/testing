@@ -575,7 +575,7 @@ func Test_Notice_Error(t *testing.T) {
 	})
 }
 
-func Test_Notice_SetData(t *testing.T) {
+func Test_Notice_MetaSet(t *testing.T) {
 	t.Run("set", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header")

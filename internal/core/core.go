@@ -15,17 +15,22 @@ import (
 
 var nilVal = reflect.ValueOf(nil)
 
-// IsNil returns true if "have" is nil.
-func IsNil(have any) bool {
+// IsNil checks whether the provided interface is actual nil or wrapped nil.
+// Actual nil means the interface itself has no type or value (have == nil). A
+// wrapped nil means the interface holds a nil value of a concrete type
+// (e.g., a nil pointer or slice). It returns two booleans:
+//   - isNil: true if the interface is actual nil.
+//   - isWrapped: true if the interface holds a nil value of a type.
+func IsNil(have any) (isNil, isWrapped bool) {
 	if have == nil {
-		return true
+		return true, false
 	}
 	val := reflect.ValueOf(have)
 	kind := val.Kind()
-	if kind >= reflect.Chan && kind <= reflect.Slice && val.IsNil() {
-		return true
+	if kind >= reflect.Chan && kind <= reflect.Slice {
+		return val.IsNil(), true
 	}
-	return false
+	return false, false
 }
 
 // WillPanic returns not empty stack trace if the passed function panicked when
