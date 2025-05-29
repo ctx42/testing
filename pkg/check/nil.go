@@ -21,9 +21,8 @@ func Nil(have any, opts ...Option) error {
 		Have("%s", ops.Dumper.Any(have))
 }
 
-// NotNil checks if "have" is not nil. Returns nil if it is not nil,
-// otherwise returns an error with a message indicating the expected and
-// actual values.
+// NotNil checks if "have" is not nil. Returns nil if it is not nil, otherwise
+// returns an error with a message indicating the expected and actual values.
 //
 // The returned error might be one or more errors joined with [errors.Join].
 func NotNil(have any, opts ...Option) error {
