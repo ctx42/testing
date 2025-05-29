@@ -40,7 +40,7 @@ func Test_NewMock(t *testing.T) {
 		tspy.Finish()
 		assert.Len(t, 0, mck.expected)
 		assert.Len(t, 0, mck.calls)
-		assert.Equal(t, 0, len(mck.data))
+		assert.Equal(t, 0, len(mck.meta))
 		assert.True(t, mck.stack)
 		assert.False(t, mck.failed)
 		assert.Same(t, tspy, mck.t)
@@ -80,57 +80,54 @@ func Test_NewMock(t *testing.T) {
 	})
 }
 
-func Test_Mock_SetData_GetData(t *testing.T) {
-	t.Run("does not return nil", func(t *testing.T) {
+func Test_Mock_MetaSetAll(t *testing.T) {
+	t.Run("map key set", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
+		mck := &Mock{}
 
 		// --- When ---
-		have := mck.GetData()
+		mck.MetaSetAll(map[string]any{"A": 1})
+
+		// --- Then ---
+		assert.Equal(t, map[string]any{"A": 1}, mck.meta)
+	})
+
+	t.Run("overrides", func(t *testing.T) {
+		// --- Given ---
+		mck := &Mock{meta: map[string]any{"A": 1}}
+
+		// --- When ---
+		meta := map[string]any{"B": 2}
+		mck.MetaSetAll(meta)
+
+		// --- Then ---
+		assert.Equal(t, map[string]any{"B": 2}, mck.meta)
+		assert.Same(t, meta, mck.meta)
+	})
+}
+
+func Test_Mock_MetaAll(t *testing.T) {
+	t.Run("does not return nil", func(t *testing.T) {
+		// --- Given ---
+		mck := &Mock{}
+
+		// --- When ---
+		have := mck.MetaAll()
 
 		// --- Then ---
 		assert.NotNil(t, have)
 	})
 
-	t.Run("map key set", func(t *testing.T) {
+	t.Run("returns same map", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		mck := NewMock(tspy)
-		data := mck.GetData()
+		meta := map[string]any{"A": 1}
+		mck := &Mock{meta: meta}
 
 		// --- When ---
-		data["key"] = 123
+		have := mck.MetaAll()
 
 		// --- Then ---
-		have := mck.GetData()
-		assert.Equal(t, 123, have["key"])
-	})
-
-	t.Run("set and get", func(t *testing.T) {
-		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(1)
-		tspy.Close()
-
-		data := map[string]any{
-			"k0": "v0",
-			"k1": 123,
-			"k2": true,
-		}
-		mck := NewMock(tspy)
-
-		// --- When ---
-		mck.SetData(data)
-
-		// --- Then ---
-		assert.Equal(t, data, mck.GetData())
+		assert.Same(t, meta, have)
 	})
 }
 

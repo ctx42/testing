@@ -68,16 +68,16 @@ type Mock struct {
 	// Calls made on the mock.
 	calls []cStack
 
-	// Data holds any data that might be useful for testing. Mock ignores it
+	// Holds any data that might be useful for testing. The Mock ignores it,
 	// allowing you to do whatever you like with it.
-	data map[string]any
+	meta map[string]any
 
-	// When true error log messages will contain stack traces.
+	// When true, error log messages will contain stack traces.
 	// It is mostly useful during tests. I don't see any reason why someone
 	// would want to set it to false. Do you?
 	stack bool
 
-	// Set to true if mock is in failed state.
+	// Set to true if mock is in a failed state.
 	failed bool
 
 	// Guards the Mock fields.
@@ -98,23 +98,23 @@ func NewMock(t tester.T, opts ...Option) *Mock {
 	return mck
 }
 
-// SetData sets data that might be useful for testing. The Mock ignores it. To
-// get it back call GetData method.
-func (mck *Mock) SetData(data map[string]any) {
+// MetaSetAll sets data that might be useful for testing. The [Mock] ignores it.
+// To get it back, call [Mock.MetaAll] method.
+func (mck *Mock) MetaSetAll(data map[string]any) {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
-	mck.data = data
+	mck.meta = data
 }
 
-// GetData returns data that might be useful for testing (see SetData method).
-func (mck *Mock) GetData() map[string]any {
+// MetaAll returns data that might be useful for testing (see [Mock.MetaSetAll]
+// method).
+func (mck *Mock) MetaAll() map[string]any {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
-	mck.t.Helper()
-	if mck.data == nil {
-		mck.data = make(map[string]any)
+	if mck.meta == nil {
+		mck.meta = make(map[string]any)
 	}
-	return mck.data
+	return mck.meta
 }
 
 // On adds method call expectation for the interface being mocked.
