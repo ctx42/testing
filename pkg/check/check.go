@@ -24,7 +24,7 @@ func Count(count int, what, where any, opts ...Option) error {
 			ops := DefaultOptions(opts...)
 			const mHeader = "expected argument \"what\" to be string got %T"
 			return notice.New(mHeader, what).
-				Trail(ops.Trail)
+				SetTrail(ops.Trail)
 		}
 		haveCnt := strings.Count(src, subT)
 		if count == haveCnt {
@@ -33,7 +33,7 @@ func Count(count int, what, where any, opts ...Option) error {
 
 		ops := DefaultOptions(opts...)
 		return notice.New("expected string to contain substrings").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("want count", "%d", count).
 			Append("have count", "%d", haveCnt).
 			Append("what", "%q", what).
@@ -42,7 +42,7 @@ func Count(count int, what, where any, opts ...Option) error {
 
 	ops := DefaultOptions(opts...)
 	return notice.New("unsupported \"where\" type: %T", where).
-		Trail(ops.Trail)
+		SetTrail(ops.Trail)
 }
 
 // Type checks that both arguments are of the same type. Returns nil if they
@@ -56,7 +56,7 @@ func Type(want, have any, opts ...Option) error {
 	}
 	ops := DefaultOptions(opts...)
 	return notice.New("expected same types").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("%T", want).
 		Have("%T", have)
 }
@@ -69,7 +69,7 @@ func Fields(want int, s any, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 	if sVal.Kind() != reflect.Struct {
 		return notice.New("expected struct type").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("got type", "%T", s)
 	}
 
@@ -79,7 +79,7 @@ func Fields(want int, s any, opts ...Option) error {
 	}
 
 	return notice.New("expected struct to have number of fields").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("%d", want).
 		Have("%d", have)
 }

@@ -17,7 +17,7 @@ func Error(err error, opts ...Option) error {
 		return nil // nolint: nilerr
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected non-nil error").Trail(ops.Trail)
+	return notice.New("expected non-nil error").SetTrail(ops.Trail)
 }
 
 // NoError checks "err" is nil. Returns error it's not nil.
@@ -29,12 +29,12 @@ func NoError(err error, opts ...Option) error {
 	const mHeader = "expected the error to be nil"
 	if core.IsNil(err) {
 		return notice.New(mHeader).
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Want("<nil>").
 			Have("%T", err)
 	}
 	return notice.New(mHeader).
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("<nil>").
 		Have("%q", err.Error())
 }
@@ -48,7 +48,7 @@ func ErrorIs(want, err error, opts ...Option) error {
 	}
 	ops := DefaultOptions(opts...)
 	return notice.New("expected error to have a target in its tree").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("(%T) %v", want, want).
 		Have("(%T) %v", err, err)
 }
@@ -67,7 +67,7 @@ func ErrorAs(want any, err error, opts ...Option) error {
 	}
 	ops := DefaultOptions(opts...)
 	return notice.New("expected error to have a target in its tree").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("(%T) %#v", err, err).
 		Have("(%T) %#v", want, want)
 }
@@ -87,7 +87,7 @@ func ErrorEqual(want string, err error, opts ...Option) error {
 
 	ops := DefaultOptions(opts...)
 	return notice.New("expected error message to be").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("%q", want).
 		Have("%#v", have)
 }
@@ -99,7 +99,7 @@ func ErrorContain(want string, err error, opts ...Option) error {
 	if core.IsNil(err) {
 		ops := DefaultOptions(opts...)
 		return notice.New("expected error not to be nil").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Want("<non-nil>").
 			Have("%T", err)
 	}
@@ -111,7 +111,7 @@ func ErrorContain(want string, err error, opts ...Option) error {
 	var have any
 	have = err.Error()
 	return notice.New("expected error message to contain").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("%q", want).
 		Have("%#v", have)
 }
@@ -127,14 +127,14 @@ func ErrorRegexp(want any, err error, opts ...Option) error {
 	if core.IsNil(err) {
 		ops := DefaultOptions(opts...)
 		return notice.New("expected error not to be nil").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Want("<non-nil>").
 			Have("%T", err)
 	}
 	if e := Regexp(want, err.Error()); e != nil {
 		ops := DefaultOptions(opts...)
 		return notice.From(e).
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			SetHeader("expected error message to match regexp")
 	}
 	return nil

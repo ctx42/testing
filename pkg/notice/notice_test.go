@@ -234,7 +234,7 @@ func Test_Notice_Prepend(t *testing.T) {
 
 	t.Run("prepend when trail row exists", func(t *testing.T) {
 		// --- Given ---
-		msg := New("header").Trail("type.field")
+		msg := New("header").SetTrail("type.field")
 
 		// --- When ---
 		_ = msg.Prepend("second", "%d", 2)
@@ -264,13 +264,13 @@ func Test_Notice_Prepend(t *testing.T) {
 }
 
 //goland:noinspection GoDirectComparisonOfErrors
-func Test_Notice_Trail(t *testing.T) {
+func Test_Notice_SetTrail(t *testing.T) {
 	t.Run("add as first row", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header")
 
 		// --- When ---
-		have := msg.Trail("type.field")
+		have := msg.SetTrail("type.field")
 
 		// --- Then ---
 		affirm.Equal(t, true, msg == have)
@@ -283,7 +283,7 @@ func Test_Notice_Trail(t *testing.T) {
 		msg := New("header").Prepend("first", "%d", 1)
 
 		// --- When ---
-		_ = msg.Trail("type.field")
+		_ = msg.SetTrail("type.field")
 
 		// --- Then ---
 		wRows := []Row{
@@ -298,7 +298,7 @@ func Test_Notice_Trail(t *testing.T) {
 		msg := New("header").Prepend("first", "%d", 1)
 
 		// --- When ---
-		_ = msg.Trail("")
+		_ = msg.SetTrail("")
 
 		// --- Then ---
 		wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
@@ -307,10 +307,10 @@ func Test_Notice_Trail(t *testing.T) {
 
 	t.Run("setting trail again changes it", func(t *testing.T) {
 		// --- Given ---
-		msg := New("header").Trail("type.field0")
+		msg := New("header").SetTrail("type.field0")
 
 		// --- When ---
-		_ = msg.Trail("type.field1")
+		_ = msg.SetTrail("type.field1")
 
 		// --- Then ---
 		wRows := []Row{{Name: trail, Format: "%s", Args: []any{"type.field1"}}}

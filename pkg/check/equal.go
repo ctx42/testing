@@ -73,7 +73,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 			return nil
 		}
 		return notice.New("cannot compare values").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("cause", "%s", "value cannot be used without panicking").
 			Append("hint", "%s", "use WithSkipTrail or WithSkipUnexported "+
 				"option to skip this field")
@@ -286,7 +286,7 @@ func equalError(want, have any, opts ...Option) *notice.Notice {
 		ops.Dumper.Dumpers[typByte] = dumpByte
 	}
 
-	msg := notice.New("expected values to be equal").Trail(ops.Trail)
+	msg := notice.New("expected values to be equal").SetTrail(ops.Trail)
 	if wTyp != "" {
 		_ = msg.
 			Append("want type", "%s", wTyp).

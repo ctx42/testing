@@ -78,7 +78,7 @@ func Time(want, have any, opts ...Option) error {
 	diff := wTim.Sub(hTim)
 	wantFmt, haveFmt := formatDates(wTim, wStr, hTim, hStr)
 	return notice.New("expected equal dates").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("%s", wantFmt).
 		Have("%s", haveFmt).
 		Append("diff", "%s", diff.String())
@@ -108,7 +108,7 @@ func Exact(want, have any, opts ...Option) error {
 		ops := DefaultOptions(opts...)
 		wantFmt, haveFmt := formatDates(wTim, wStr, hTim, hStr)
 		return notice.New("expected equal dates").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Want("%s", wantFmt).
 			Have("%s", haveFmt).
 			Append("diff", "%s", diff.String())
@@ -142,7 +142,7 @@ func Before(date, mark any, opts ...Option) error {
 	markFmt, dateFmt := formatDates(mTim, mStr, dTim, dStr)
 	ops := DefaultOptions(opts...)
 	return notice.New("expected date to be before mark").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Append("date", "%s", dateFmt).
 		Append("mark", "%s", markFmt).
 		Append("diff", "%s", diff.String())
@@ -173,7 +173,7 @@ func After(date, mark any, opts ...Option) error {
 	markFmt, dateFmt := formatDates(mTim, mStr, dTim, dStr)
 	ops := DefaultOptions(opts...)
 	return notice.New("expected date to be after mark").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Append("date", "%s", dateFmt).
 		Append("mark", "%s", markFmt).
 		Append("diff", "%s", diff.String())
@@ -205,7 +205,7 @@ func BeforeOrEqual(date, mark any, opts ...Option) error {
 	markFmt, dateFmt := formatDates(mTim, mStr, dTim, dStr)
 	ops := DefaultOptions(opts...)
 	return notice.New("expected date to be equal or before mark").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Append("date", "%s", dateFmt).
 		Append("mark", "%s", markFmt).
 		Append("diff", "%s", diff.String())
@@ -237,7 +237,7 @@ func AfterOrEqual(date, mark any, opts ...Option) error {
 	markFmt, dateFmt := formatDates(mTim, mStr, dTim, dStr)
 	ops := DefaultOptions(opts...)
 	return notice.New("expected date to be equal or after mark").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Append("date", "%s", dateFmt).
 		Append("mark", "%s", markFmt).
 		Append("diff", "%s", diff.String())
@@ -278,7 +278,7 @@ func Within(want, within, have any, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 
 	return notice.New("expected dates to be within").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("%s", wantFmt).
 		Have("%s", haveFmt).
 		Append("max diff +/-", "%s", durStr).
@@ -311,7 +311,7 @@ func Zone(want, have *time.Location, opts ...Option) error {
 
 	ops := DefaultOptions(opts...)
 	return notice.New("expected timezone").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("%s", want.String()).
 		Have("%s", have.String())
 }
@@ -337,7 +337,7 @@ func Duration(want, have any, opts ...Option) error {
 	}
 	ops := DefaultOptions(opts...)
 	return notice.New("expected equal time durations").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("%s", wStr).
 		Have("%s", hStr)
 }
@@ -408,7 +408,7 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 		var pe *time.ParseError
 		if errors.As(err, &pe) {
 			msg := notice.New("failed to parse time").
-				Trail(ops.Trail).
+				SetTrail(ops.Trail).
 				Append("format", "%s", ops.TimeFormat).
 				Append("value", "%s", pe.Value).
 				Wrap(ErrTimeParse)
@@ -430,7 +430,7 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 	default:
 		str := fmt.Sprintf("%v", val)
 		msg := notice.New("failed to parse time").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("cause", "%s", ErrTimeType).
 			Wrap(ErrTimeType)
 		return time.Time{}, str, "", msg
@@ -456,7 +456,7 @@ func getDur(dur any, opts ...Option) (time.Duration, string, durRep, error) {
 
 		ops := DefaultOptions(opts...)
 		msg := notice.New("failed to parse duration").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("value", "%s", dur).
 			Wrap(ErrDurParse)
 		return 0, val, durTypeStr, msg
@@ -473,7 +473,7 @@ func getDur(dur any, opts ...Option) (time.Duration, string, durRep, error) {
 		str := fmt.Sprintf("%v", val)
 		ops := DefaultOptions(opts...)
 		msg := notice.New("failed to parse duration").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("cause", "%s", ErrDurType).
 			Wrap(ErrDurType)
 		return 0, str, "", msg

@@ -35,7 +35,7 @@ func Zero(have any, opts ...Option) error {
 func zeroError(have any, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 	return notice.New("expected argument to be zero value").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("<zero>").
 		Have("%#v", have)
 }
@@ -49,7 +49,7 @@ func NotZero(have any, opts ...Option) error {
 	}
 	ops := DefaultOptions(opts...)
 	return notice.New("expected argument not to be zero value").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("<non-zero>").
 		Have("%#v", have)
 }

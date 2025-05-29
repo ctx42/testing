@@ -13,7 +13,7 @@ func True(have bool, opts ...Option) error {
 	if !have {
 		ops := DefaultOptions(opts...)
 		return notice.New("expected value to be true").
-			Trail(ops.Trail)
+			SetTrail(ops.Trail)
 	}
 	return nil
 }
@@ -24,7 +24,7 @@ func False(have bool, opts ...Option) error {
 	if have {
 		ops := DefaultOptions(opts...)
 		return notice.New("expected value to be false").
-			Trail(ops.Trail)
+			SetTrail(ops.Trail)
 	}
 	return nil
 }

@@ -24,7 +24,7 @@ func Len(want int, have any, opts ...Option) (err error) {
 	if want != cnt {
 		ops := DefaultOptions(opts...)
 		msg := notice.New("expected %T length", have).
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Want("%d", want).
 			Have("%d", cnt).
 			SetData("len", cnt)
@@ -43,7 +43,7 @@ func Has[T comparable](want T, bag []T, opts ...Option) error {
 	}
 	ops := DefaultOptions(opts...)
 	return notice.New("expected slice to have a value").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("%#v", want).
 		Append("slice", "%s", ops.Dumper.Any(bag))
 }
@@ -56,7 +56,7 @@ func HasNo[T comparable](want T, set []T, opts ...Option) error {
 		if want == got {
 			ops := DefaultOptions(opts...)
 			return notice.New("expected slice not to have value").
-				Trail(ops.Trail).
+				SetTrail(ops.Trail).
 				Want("%#v", want).
 				Append("index", "%d", i).
 				Append("slice", "%s", ops.Dumper.Any(set))
@@ -75,7 +75,7 @@ func HasKey[K comparable, V any](key K, set map[K]V, opts ...Option) (V, error) 
 	}
 	ops := DefaultOptions(opts...)
 	return val, notice.New("expected map to have a key").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Append("key", "%#v", key).
 		Append("map", "%s", ops.Dumper.Any(set))
 }
@@ -89,7 +89,7 @@ func HasNoKey[K comparable, V any](key K, set map[K]V, opts ...Option) error {
 	}
 	ops := DefaultOptions(opts...)
 	return notice.New("expected map not to have a key").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Append("key", "%#v", key).
 		Append("value", "%#v", val).
 		Append("map", "%s", ops.Dumper.Any(set))
@@ -108,7 +108,7 @@ func HasKeyValue[K, V comparable](key K, want V, set map[K]V, opts ...Option) er
 	}
 	ops := DefaultOptions(opts...)
 	return notice.New("expected map to have a key with a value").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Append("key", "%#v", key).
 		Want("%#v", want).
 		Have("%#v", have)
@@ -139,7 +139,7 @@ func SliceSubset[V comparable](want, have []V, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 	const hHeader = "expected \"want\" slice to be a subset of \"have\" slice"
 	return notice.New(hHeader).
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Append("missing values", "%s", ops.Dumper.Any(missing))
 }
 
@@ -180,7 +180,7 @@ func MapSubset[K comparable, V any](want, have map[K]V, opts ...Option) error {
 	if len(missing) > 0 {
 		sort.Strings(missing)
 		err := notice.New(`expected "have" map to have key(s)`).
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("missing key(s)", "%s", strings.Join(missing, ", "))
 		ers = append(ers, err)
 	}
@@ -197,7 +197,7 @@ func MapsSubset[K comparable, V any](want, have []map[K]V, opts ...Option) error
 	if len(want) != len(have) {
 		msg := "expected slices of the same length"
 		return notice.New(msg).
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Want("%d", len(want)).
 			Have("%d", len(have))
 	}

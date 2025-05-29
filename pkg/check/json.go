@@ -22,13 +22,13 @@ func JSON(want, have string, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 	if err := json.Unmarshal([]byte(want), &wantItf); err != nil {
 		return notice.New("did not expect the unmarshalling error").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("argument", "want").
 			Append("error", "%s", err)
 	}
 	if err := json.Unmarshal([]byte(have), &haveItf); err != nil {
 		return notice.New("did not expect the unmarshalling error").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("argument", "have").
 			Append("error", "%s", err)
 	}
@@ -37,7 +37,7 @@ func JSON(want, have string, opts ...Option) error {
 		w, _ := json.Marshal(wantItf) // nolint:errchkjson
 		h, _ := json.Marshal(haveItf) // nolint:errchkjson
 		return notice.New("expected JSON strings to be equal").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Want("%v", string(w)).
 			Have("%v", string(h))
 	}

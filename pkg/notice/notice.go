@@ -124,15 +124,15 @@ func (msg *Notice) Prepend(name, format string, args ...any) *Notice {
 	return msg
 }
 
-// Trail adds trail row if "tr" is not an empty string. If the trail row
+// SetTrail adds trail row if "tr" is not an empty string. If the trail row
 // already exists, it overwrites it. Implements fluent interface.
 //
-// Trail examples:
+// SetTrail examples:
 //
 //   - Type
 //   - Type[1].Field
 //   - Type["key"].Field
-func (msg *Notice) Trail(tr string) *Notice {
+func (msg *Notice) SetTrail(tr string) *Notice {
 	if tr == "" {
 		return msg
 	}

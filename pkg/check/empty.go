@@ -31,7 +31,7 @@ func Empty(have any, opts ...Option) error {
 	}
 	ops := DefaultOptions(opts...)
 	return notice.New("expected argument to be empty").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want(dump.ValEmpty).
 		Have("%#v", have)
 }
@@ -71,5 +71,5 @@ func NotEmpty(have any, opts ...Option) error {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected non-empty value").Trail(ops.Trail)
+	return notice.New("expected non-empty value").SetTrail(ops.Trail)
 }

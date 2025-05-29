@@ -19,7 +19,7 @@ type TestFunc func()
 func Panic(fn TestFunc, opts ...Option) error {
 	if _, stack := core.WillPanic(fn); stack == "" {
 		ops := DefaultOptions(opts...)
-		return notice.New("func should panic").Trail(ops.Trail)
+		return notice.New("func should panic").SetTrail(ops.Trail)
 	}
 	return nil
 }
@@ -30,7 +30,7 @@ func NoPanic(fn TestFunc, opts ...Option) error {
 	if val, stack := core.WillPanic(fn); stack != "" {
 		ops := DefaultOptions(opts...)
 		return notice.New("func should not panic").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("panic value", "%v", val).
 			Append("panic stack", "\n%s", notice.Indent(2, ' ', stack))
 	}
@@ -58,7 +58,7 @@ func PanicContain(want string, fn TestFunc, opts ...Option) error {
 	if !strings.Contains(msg, want) {
 		ops := DefaultOptions(opts...)
 		return notice.New("func should panic with string containing").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("substring", "%q", want).
 			Append("panic value", "%v", val).
 			Append("panic stack", "\n%s", notice.Indent(2, ' ', stack))
@@ -73,7 +73,7 @@ func PanicMsg(fn TestFunc, opts ...Option) (*string, error) {
 	val, stack := core.WillPanic(fn)
 	if stack == "" {
 		ops := DefaultOptions(opts...)
-		return nil, notice.New("func should panic").Trail(ops.Trail)
+		return nil, notice.New("func should panic").SetTrail(ops.Trail)
 	}
 	var msg string
 	switch v := val.(type) {

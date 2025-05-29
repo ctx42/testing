@@ -19,18 +19,18 @@ func FileExist(pth string, opts ...Option) error {
 		ops := DefaultOptions(opts...)
 		if os.IsNotExist(err) {
 			return notice.New("expected path to an existing file").
-				Trail(ops.Trail).
+				SetTrail(ops.Trail).
 				Append("path", "%s", pth)
 		}
 		return notice.New("expected os.Lstat to succeed").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("path", "%s", pth).
 			Append("error", "%s", err)
 	}
 	if inf.IsDir() {
 		ops := DefaultOptions(opts...)
 		return notice.New("expected path to be existing file").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("path", "%s", pth)
 	}
 	return nil
@@ -46,20 +46,20 @@ func NoFileExist(pth string, opts ...Option) error {
 		}
 		ops := DefaultOptions(opts...)
 		return notice.New("expected os.Lstat to succeed").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("path", "%s", pth).
 			Append("error", "%s", err)
 	}
 	if inf.IsDir() {
 		ops := DefaultOptions(opts...)
 		return notice.New("expected path to be not existing file").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("path", "%s", pth)
 	}
 
 	ops := DefaultOptions(opts...)
 	return notice.New("expected path to not existing file").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Append("path", "%s", pth)
 }
 
@@ -78,7 +78,7 @@ func FileContain[T Content](want T, pth string, opts ...Option) error {
 	if err != nil {
 		ops := DefaultOptions(opts...)
 		return notice.New("expected no error reading file").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("path", "%s", pth).
 			Append("error", "%s", err)
 	}
@@ -88,7 +88,7 @@ func FileContain[T Content](want T, pth string, opts ...Option) error {
 
 	ops := DefaultOptions(opts...)
 	return notice.New("expected file to contain string").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Append("path", "%s", pth).
 		Want("%q", want)
 }
@@ -103,20 +103,20 @@ func DirExist(pth string, opts ...Option) error {
 		if os.IsNotExist(err) {
 			ops := DefaultOptions(opts...)
 			return notice.New("expected path to an existing directory").
-				Trail(ops.Trail).
+				SetTrail(ops.Trail).
 				Append("path", "%s", pth)
 		}
 
 		ops := DefaultOptions(opts...)
 		return notice.New("expected os.Lstat to succeed").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("path", "%s", pth).
 			Append("error", "%s", err)
 	}
 	if !inf.IsDir() {
 		ops := DefaultOptions(opts...)
 		return notice.New("expected path to be existing directory").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("path", "%s", pth)
 	}
 	return nil
@@ -134,19 +134,19 @@ func NoDirExist(pth string, opts ...Option) error {
 
 		ops := DefaultOptions(opts...)
 		return notice.New("expected os.Lstat to succeed").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("path", "%s", pth).
 			Append("error", "%s", err)
 	}
 	if !inf.IsDir() {
 		ops := DefaultOptions(opts...)
 		return notice.New("expected path to be not existing directory").
-			Trail(ops.Trail).
+			SetTrail(ops.Trail).
 			Append("path", "%s", pth)
 	}
 
 	ops := DefaultOptions(opts...)
 	return notice.New("expected path to not existing directory").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Append("path", "%s", pth)
 }

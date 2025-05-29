@@ -131,7 +131,7 @@ func ExampleNotice_AppendRow() {
 
 func ExampleNotice_Prepend() {
 	msg := notice.New("expected values to be equal").
-		Trail("type.field").
+		SetTrail("type.field").
 		Want("%s", "abc").
 		Have("%s", "xyz").
 		Prepend("name", "%d", 5)
@@ -145,9 +145,9 @@ func ExampleNotice_Prepend() {
 	//    have: xyz
 }
 
-func ExampleNotice_Trail() {
+func ExampleNotice_SetTrail() {
 	msg := notice.New("expected values to be equal").
-		Trail("type.field").
+		SetTrail("type.field").
 		Want("%s", "abc").
 		Have("%s", "xyz")
 

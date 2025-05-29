@@ -30,7 +30,7 @@ func Epsilon[T constraints.Number](want, epsilon, have T, opts ...Option) error 
 	deltaFmt := strconv.FormatFloat(fDelta, 'f', -1, 64)
 	diffFmt := strconv.FormatFloat(diff, 'f', -1, 64)
 	return notice.New("expected numbers to be within given epsilon").
-		Trail(ops.Trail).
+		SetTrail(ops.Trail).
 		Want("%s", wantFmt).
 		Have("%s", haveFmt).
 		Append("epsilon", "%s", deltaFmt).
