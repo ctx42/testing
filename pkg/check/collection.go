@@ -17,7 +17,7 @@ func Len(want int, have any, opts ...Option) (err error) {
 	vv := reflect.ValueOf(have)
 	defer func() {
 		if e := recover(); e != nil {
-			err = notice.New("cannot execute len(%T)", have).SetData("len", 0)
+			err = notice.New("cannot execute len(%T)", have).MetaSet("len", 0)
 		}
 	}()
 	cnt := vv.Len()
@@ -27,7 +27,7 @@ func Len(want int, have any, opts ...Option) (err error) {
 			SetTrail(ops.Trail).
 			Want("%d", want).
 			Have("%d", cnt).
-			SetData("len", cnt)
+			MetaSet("len", cnt)
 		return msg
 	}
 	return nil

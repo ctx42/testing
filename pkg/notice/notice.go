@@ -45,7 +45,7 @@ var ErrNotice = errors.New("notice error")
 type Notice struct {
 	Header string         // Header message.
 	Rows   []Row          // Context rows.
-	Data   map[string]any // Any useful data attached to the Notice.
+	Meta   map[string]any // Useful metadata.
 	err    error          // Base error (default: [ErrNotice]).
 }
 
@@ -203,22 +203,22 @@ func (msg *Notice) Error() string {
 	return m
 }
 
-// SetData sets data. To get it back use [Notice.GetData] method.
-func (msg *Notice) SetData(key string, val any) *Notice {
-	if msg.Data == nil {
-		msg.Data = make(map[string]any)
+// MetaSet sets data. To get it back, use the [Notice.MetaLookup] method.
+func (msg *Notice) MetaSet(key string, val any) *Notice {
+	if msg.Meta == nil {
+		msg.Meta = make(map[string]any)
 	}
-	msg.Data[key] = val
+	msg.Meta[key] = val
 	return msg
 }
 
-// GetData returns data set by [Notice.SetData]. Returns nil and false if the
-// key was never set.
-func (msg *Notice) GetData(key string) (any, bool) {
-	if msg.Data == nil {
+// MetaLookup returns the data set by [Notice.MetaSet]. Returns nil and false
+// if the key was never set.
+func (msg *Notice) MetaLookup(key string) (any, bool) {
+	if msg.Meta == nil {
 		return nil, false
 	}
-	val, ok := msg.Data[key]
+	val, ok := msg.Meta[key]
 	return val, ok
 }
 

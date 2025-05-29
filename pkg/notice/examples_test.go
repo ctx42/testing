@@ -184,13 +184,13 @@ func ExampleNotice_Unwrap() {
 	// Output: my error
 }
 
-func ExampleNotice_SetData() {
+func ExampleNotice_MetaSet() {
 	msg := notice.New("expected values to be equal").
 		Want("%s", "abc").
 		Have("%s", "xyz").
-		SetData("key", 123)
+		MetaSet("key", 123)
 
-	fmt.Println(msg.GetData("key"))
+	fmt.Println(msg.MetaLookup("key"))
 	// Output: 123 true
 }
 

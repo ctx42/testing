@@ -12,8 +12,7 @@ import (
 func True(have bool, opts ...Option) error {
 	if !have {
 		ops := DefaultOptions(opts...)
-		return notice.New("expected value to be true").
-			SetTrail(ops.Trail)
+		return notice.New("expected value to be true").SetTrail(ops.Trail)
 	}
 	return nil
 }
@@ -23,8 +22,7 @@ func True(have bool, opts ...Option) error {
 func False(have bool, opts ...Option) error {
 	if have {
 		ops := DefaultOptions(opts...)
-		return notice.New("expected value to be false").
-			SetTrail(ops.Trail)
+		return notice.New("expected value to be false").SetTrail(ops.Trail)
 	}
 	return nil
 }

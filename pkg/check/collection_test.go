@@ -139,7 +139,7 @@ func Test_Len_error_tabular(t *testing.T) {
 
 			var msg *notice.Notice
 			affirm.Equal(t, true, errors.As(err, &msg))
-			cnt, ok := msg.GetData("len")
+			cnt, ok := msg.MetaLookup("len")
 			affirm.Equal(t, true, ok)
 			affirm.Equal(t, tc.actual, cnt.(int))
 		})

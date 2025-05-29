@@ -18,7 +18,7 @@ func Len(t tester.T, want int, have any, opts ...check.Option) bool {
 	t.Helper()
 	if e := check.Len(want, have, opts...); e != nil {
 		var cnt int
-		if val, ok := notice.From(e).GetData("len"); ok {
+		if val, ok := notice.From(e).MetaLookup("len"); ok {
 			cnt = val.(int) // nolint: forcetypeassert
 		}
 		if want > cnt {

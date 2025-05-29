@@ -23,8 +23,7 @@ func Count(count int, what, where any, opts ...Option) error {
 		if subT, ok = what.(string); !ok {
 			ops := DefaultOptions(opts...)
 			const mHeader = "expected argument \"what\" to be string got %T"
-			return notice.New(mHeader, what).
-				SetTrail(ops.Trail)
+			return notice.New(mHeader, what).SetTrail(ops.Trail)
 		}
 		haveCnt := strings.Count(src, subT)
 		if count == haveCnt {

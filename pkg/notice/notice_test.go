@@ -575,33 +575,55 @@ func Test_Notice_Error(t *testing.T) {
 	})
 }
 
-//goland:noinspection GoDirectComparisonOfErrors
-func Test_Notice_SetData_GetData(t *testing.T) {
-	t.Run("set data and get data", func(t *testing.T) {
+func Test_Notice_SetData(t *testing.T) {
+	t.Run("set", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header")
 
 		// --- When ---
-		have := msg.SetData("key", "value")
+		have := msg.MetaSet("A", 0)
 
 		// --- Then ---
-		affirm.Equal(t, true, msg == have)
+		want := map[string]any{"A": 0}
+		affirm.DeepEqual(t, want, have.Meta)
+	})
 
-		val, ok := have.GetData("key")
-		affirm.Equal(t, true, ok)
-		affirm.Equal(t, "value", val)
+	t.Run("overwrite", func(t *testing.T) {
+		// --- Given ---
+		msg := New("header").MetaSet("A", 0)
+
+		// --- When ---
+		have := msg.MetaSet("A", 1)
+
+		// --- Then ---
+		want := map[string]any{"A": 1}
+		affirm.DeepEqual(t, want, have.Meta)
+	})
+}
+
+func Test_Notice_MetaLookup(t *testing.T) {
+	t.Run("get existing key", func(t *testing.T) {
+		// --- Given ---
+		msg := &Notice{Meta: map[string]any{"A": 0}}
+
+		// --- When ---
+		haveVal, haveOK := msg.MetaLookup("A")
+
+		// --- Then ---
+		affirm.Equal(t, 0, haveVal)
+		affirm.Equal(t, true, haveOK)
 	})
 
 	t.Run("get not existing key", func(t *testing.T) {
 		// --- Given ---
-		msg := New("header")
+		msg := &Notice{Meta: map[string]any{"A": 0}}
 
 		// --- When ---
-		haveVal, haveOK := msg.GetData("key")
+		haveVal, haveOK := msg.MetaLookup("B")
 
 		// --- Then ---
-		affirm.Equal(t, false, haveOK)
 		affirm.Nil(t, haveVal)
+		affirm.Equal(t, false, haveOK)
 	})
 }
 
