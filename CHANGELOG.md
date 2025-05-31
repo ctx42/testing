@@ -1,3 +1,17 @@
+## v0.11.0 (Sat, 31 May 2025 15:27:15 UTC)
+- Better error messages, code style.
+- Rename notice.Notice.Trail() to notice.Notice.SetTrail() to match notice.Notice.SetHeader().
+- Rename notice.Notice.{SetData, GetData}() to notice.Notice.{MetaSet, MetaLookup}() to match future metadata interface.
+- Improve check.Zone error message.
+- Add helper method goldy.Goldy.SetContent setting golden file content from a string.
+- Add notice.Pad helper function.
+- The core.IsNil can now detect if the nil is wrapped nil.
+- Rename Mock.SetData to Mock.MetaSetAll, Mock.GetData to Mock.MetaAll.
+- Improve check.NoError error messages, improve check package error messages.
+- Prefer "nil" instead of "<nil>" in error messages.
+- Code style.
+- Improve readability and ease of use in notice.Notice when displaying and creating multi-message instances. Improve value dumps in error messages. Update documentation.
+
 ## v0.10.3 (Fri, 23 May 2025 13:54:12 UTC)
 - Improve check.Zone error message.
 
