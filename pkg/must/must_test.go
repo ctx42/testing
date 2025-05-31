@@ -66,17 +66,17 @@ func Test_Nil(t *testing.T) {
 }
 
 func Test_First(t *testing.T) {
-	type T struct{ v int }
+	type T struct{ V int }
 
 	t.Run("one element no error", func(t *testing.T) {
 		// --- Given ---
-		fn := func() ([]T, error) { return []T{{v: 1}}, nil } // nolint:unparam
+		fn := func() ([]T, error) { return []T{{V: 1}}, nil } // nolint:unparam
 
 		// --- When ---
 		have := First(fn())
 
 		// --- Then ---
-		affirm.Equal(t, T{v: 1}, have)
+		affirm.Equal(t, T{V: 1}, have)
 	})
 
 	t.Run("zero elements no error", func(t *testing.T) {
@@ -104,29 +104,29 @@ func Test_First(t *testing.T) {
 	t.Run("more than one element no error", func(t *testing.T) {
 		// --- Given ---
 		fn := func() ([]T, error) { // nolint:unparam
-			return []T{{v: 1}, {v: 2}}, nil
+			return []T{{V: 1}, {V: 2}}, nil
 		}
 
 		// --- When ---
 		have := First(fn())
 
 		// --- Then ---
-		affirm.Equal(t, T{v: 1}, have)
+		affirm.Equal(t, T{V: 1}, have)
 	})
 }
 
 func Test_Single(t *testing.T) {
-	type T struct{ v int }
+	type T struct{ V int }
 
 	t.Run("one element no error", func(t *testing.T) {
 		// --- Given ---
-		fn := func() ([]T, error) { return []T{{v: 1}}, nil } // nolint:unparam
+		fn := func() ([]T, error) { return []T{{V: 1}}, nil } // nolint:unparam
 
 		// --- When ---
 		have := Single(fn())
 
 		// --- Then ---
-		affirm.Equal(t, T{v: 1}, have)
+		affirm.Equal(t, T{V: 1}, have)
 	})
 
 	t.Run("zero elements no error", func(t *testing.T) {
@@ -153,7 +153,7 @@ func Test_Single(t *testing.T) {
 
 	t.Run("more than one element no error", func(t *testing.T) {
 		// --- Given ---
-		s := []T{{v: 1}, {v: 2}}
+		s := []T{{V: 1}, {V: 2}}
 		fn := func() ([]T, error) { return s, nil } // nolint: unparam
 
 		// --- When ---

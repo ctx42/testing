@@ -12,7 +12,7 @@ import (
 	"github.com/ctx42/testing/internal/types"
 )
 
-func Test_Nil_ZENValues_tabular(t *testing.T) {
+func Test_IsNil_tabular_ZENValues(t *testing.T) {
 	for _, tc := range cases.ZENValues() {
 		t.Run("Nil "+tc.Desc, func(t *testing.T) {
 			// --- When ---
@@ -194,7 +194,7 @@ func Test_Same_tabular(t *testing.T) {
 		{"map nil same type both", mA, mB, true},
 
 		{"chanel same", c0, c0, true},
-		{"chanel not same", c0, c1, false},
+		{"chanel not the same", c0, c1, false},
 		{"chanel nil want", nil, c1, false},
 		{"chanel nil var want", mNil0, c1, false},
 		{"chanel nil have", c0, nil, false},

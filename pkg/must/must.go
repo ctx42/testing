@@ -4,15 +4,15 @@
 // Package must provide a set of helper functions which panic on error.
 //
 // Functions are designed to simplify error handling in test code by panicking
-// on errors, reduce boilerplate, and error checking in test cases.
+// on errors, reducing boilerplate, and error checking in test cases.
 package must
 
 import (
 	"errors"
 )
 
-// Value is a helper for functions returning (T, error) panicking if returned
-// error is not nil. Example:
+// Value is a helper for functions returning (T, error) panicking if the
+// returned error is not nil. Example:
 //
 //	fil := Value(os.Open("file.txt"))
 func Value[T any](val T, err error) T {
@@ -22,8 +22,10 @@ func Value[T any](val T, err error) T {
 	return val
 }
 
-// Values is a helper for functions returning (T1, T2, error) panicking if
-// returned error is not nil. Example:
+// Values is a helper for functions returning (T1, T2, error) panicking if the
+// returned error is not nil.
+//
+// Example:
 //
 //	t1, t2 := Values(DoSomething())
 func Values[T, TT any](val0 T, val1 TT, err error) (T, TT) {
@@ -69,8 +71,9 @@ func Single[T any](s []T, err error) T {
 var errExpSingle = errors.New("expected a single result")
 
 // single returns the first element in the slice or T's zero value if the slice
-// is empty. It returns T's zero value and error if err is not nil. If slice has
-// more than one element, it returns the first element and errExpSingle error.
+// is empty. It returns T's zero value and error if err is not nil. If a slice
+// has more than one element, it returns the first element and errExpSingle
+// error.
 func single[T any](s []T, err error) (T, error) {
 	var t T
 	if err != nil {

@@ -39,13 +39,13 @@ func Pad(str string, length int) string {
 // TrialCmp is a comparison function for sorting Notice instances by their
 // Trail values. It returns:
 //
-//	-1 "a" should come before "b"
-//	 0 equal
-//	 1 "a" should come after "b"
-func TrialCmp(a, b *Notice) int {
-	if a.Trail < b.Trail {
+//	-1 if x is less than y,
+//	 0 if x equals y,
+//	+1 if x is greater than y.
+func TrialCmp(x, y *Notice) int {
+	if x.Trail < y.Trail {
 		return -1
-	} else if a.Trail > b.Trail {
+	} else if x.Trail > y.Trail {
 		return 1
 	}
 	return 0

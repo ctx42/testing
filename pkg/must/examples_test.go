@@ -10,7 +10,7 @@ import (
 func ExampleFirst() {
 	type Row struct{ Name string }
 
-	// Query to database returning rows.
+	// Query to a database returning rows.
 	query := func() ([]Row, error) {
 		return []Row{{"a"}, {"b"}}, nil
 	}
@@ -26,12 +26,12 @@ func ExampleFirst() {
 func ExampleSingle() {
 	type Row struct{ Name string }
 
-	// Query to database returning rows.
+	// Query to a database returning rows.
 	query := func() ([]Row, error) {
 		return []Row{{"a"}}, nil
 	}
 
-	// Will panic if database returned more than one error.
+	// Will panic if a database returned more than one error.
 	have := must.Single(query())
 
 	fmt.Println(have)

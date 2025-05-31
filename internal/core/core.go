@@ -17,8 +17,9 @@ var nilVal = reflect.ValueOf(nil)
 
 // IsNil checks whether the provided interface is actual nil or wrapped nil.
 // Actual nil means the interface itself has no type or value (have == nil). A
-// wrapped nil means the interface holds a nil value of a concrete type
-// (e.g., a nil pointer or slice). It returns two booleans:
+// wrapped nil means the interface holds a nil value of a concrete type (e.g.,
+// a nil pointer or slice). It returns two booleans:
+//
 //   - isNil: true if the interface is actual nil.
 //   - isWrapped: true if the interface holds a nil value of a type.
 func IsNil(have any) (isNil, isWrapped bool) {
