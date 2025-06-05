@@ -1,3 +1,8 @@
+## v0.12.0 (Thu, 05 Jun 2025 13:11:42 UTC)
+- Code style.
+- Expose dumpers implemented in the dumper package, improve test coverage and code documentation.
+- Make check.Equal work in the very similar way to reflect.DeepEqual when checking not exported fields.
+
 ## v0.11.0 (Sat, 31 May 2025 15:27:15 UTC)
 - Better error messages, code style.
 - Rename notice.Notice.Trail() to notice.Notice.SetTrail() to match notice.Notice.SetHeader().
