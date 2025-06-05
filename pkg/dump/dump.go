@@ -205,7 +205,7 @@ func New(opts ...Option) Dump {
 	}
 
 	if _, ok := dmp.Dumpers[typLocation]; !ok {
-		dmp.Dumpers[typLocation] = zoneDumper
+		dmp.Dumpers[typLocation] = ZoneDumper
 	}
 
 	if _, ok := dmp.Dumpers[typDur]; !ok {
@@ -270,7 +270,7 @@ func (dmp Dump) Diff(want, have any) (string, string, string) {
 }
 
 // forDiff prepares a value for diffing by formatting it into a string. Returns
-// the string representation of the value and its kind.
+// the string representation of the value and kind.
 func (dmp Dump) forDiff(val any) (string, reflect.Kind) {
 	dmp.Flat = false
 	dmp.FlatStrings = 0
@@ -314,43 +314,43 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 		}
 
 	case reflect.Bool, reflect.Int:
-		str = simpleDumper(dmp, lvl, val)
+		str = SimpleDumper(dmp, lvl, val)
 
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		str = simpleDumper(dmp, lvl, val)
+		str = SimpleDumper(dmp, lvl, val)
 
 	case reflect.Uint:
-		str = simpleDumper(dmp, lvl, val)
+		str = SimpleDumper(dmp, lvl, val)
 
 	case reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		str = simpleDumper(dmp, lvl, val)
+		str = SimpleDumper(dmp, lvl, val)
 
 	case reflect.Uint8:
-		str = hexPtrDumper(dmp, lvl, val)
+		str = HexPtrDumper(dmp, lvl, val)
 
 	case reflect.Uintptr:
-		str = hexPtrDumper(dmp, lvl, val)
+		str = HexPtrDumper(dmp, lvl, val)
 
 	case reflect.Float32, reflect.Float64:
-		str = simpleDumper(dmp, lvl, val)
+		str = SimpleDumper(dmp, lvl, val)
 
 	case reflect.Complex64, reflect.Complex128:
-		str = complexDumper(dmp, lvl, val)
+		str = ComplexDumper(dmp, lvl, val)
 
 	case reflect.Array:
-		str = arrayDumper(dmp, lvl, val)
+		str = ArrayDumper(dmp, lvl, val)
 
 	case reflect.Chan:
-		str = chanDumper(dmp, lvl, val)
+		str = ChanDumper(dmp, lvl, val)
 
 	case reflect.Func:
-		str = funcDumper(dmp, lvl, val)
+		str = FuncDumper(dmp, lvl, val)
 
 	case reflect.Interface:
 		str, knd = dmp.value(lvl, val.Elem())
 
 	case reflect.Map:
-		str = mapDumper(dmp, lvl, val)
+		str = MapDumper(dmp, lvl, val)
 
 	case reflect.Pointer:
 		if val.IsNil() {
@@ -360,16 +360,16 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 		}
 
 	case reflect.Slice:
-		str = sliceDumper(dmp, lvl, val)
+		str = SliceDumper(dmp, lvl, val)
 
 	case reflect.String:
-		str = simpleDumper(dmp, lvl, val)
+		str = SimpleDumper(dmp, lvl, val)
 
 	case reflect.Struct:
-		str = structDumper(dmp, lvl, val)
+		str = StructDumper(dmp, lvl, val)
 
 	case reflect.UnsafePointer:
-		str = hexPtrDumper(dmp, lvl, val)
+		str = HexPtrDumper(dmp, lvl, val)
 	}
 
 	return str, knd

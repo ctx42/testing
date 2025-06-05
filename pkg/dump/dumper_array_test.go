@@ -11,7 +11,20 @@ import (
 	"github.com/ctx42/testing/internal/types"
 )
 
-func Test_arrayDumper_tabular(t *testing.T) {
+func Test_ArrayDumper(t *testing.T) {
+	t.Run("error - invalid kind", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(1))
+
+		// --- When ---
+		have := ArrayDumper(dmp, 2, reflect.ValueOf(123))
+
+		// --- Then ---
+		affirm.Equal(t, "      "+ValErrUsage, have)
+	})
+}
+
+func Test_ArrayDumper_tabular(t *testing.T) {
 	var nilArr [2]int
 
 	tt := []struct {
@@ -70,6 +83,16 @@ func Test_arrayDumper_tabular(t *testing.T) {
 			"[2]any{nil, nil}",
 		},
 		{
+			"flat array empty any",
+			(func() Dump {
+				dmp := New(WithFlat)
+				dmp.UseAny = false
+				return dmp
+			})(),
+			[2]any{},
+			"[2]interface {}{nil, nil}",
+		},
+		{
 			"flat array of map[string]int",
 			New(WithFlat),
 			[...]map[string]int{
@@ -101,7 +124,7 @@ func Test_arrayDumper_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := arrayDumper(tc.dmp, 0, reflect.ValueOf(tc.val))
+			have := ArrayDumper(tc.dmp, 0, reflect.ValueOf(tc.val))
 
 			// --- Then ---
 			affirm.Equal(t, tc.want, have)

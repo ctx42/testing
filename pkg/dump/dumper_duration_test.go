@@ -92,6 +92,17 @@ func Test_DurDumperString(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "      \"1s\"", have)
 	})
+
+	t.Run("error - invalid type", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(1))
+
+		// --- When ---
+		have := DurDumperString(dmp, 2, reflect.ValueOf(123))
+
+		// --- Then ---
+		affirm.Equal(t, ValErrUsage, have)
+	})
 }
 
 func Test_DurDumperSeconds(t *testing.T) {
@@ -145,5 +156,16 @@ func Test_DurDumperSeconds(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "      1", have)
+	})
+
+	t.Run("error - invalid type", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(1))
+
+		// --- When ---
+		have := DurDumperSeconds(dmp, 2, reflect.ValueOf(123))
+
+		// --- Then ---
+		affirm.Equal(t, ValErrUsage, have)
 	})
 }

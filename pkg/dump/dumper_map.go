@@ -10,14 +10,19 @@ import (
 	"strings"
 )
 
-// mapDumper requires val to be dereferenced representation of [reflect.Map]
-// and returns its string representation in format defined by [Dump]
-// configuration.
+// MapDumper is a generic dumper for maps. It expects val to represent the
+// [reflect.Map] kind. Returns [valErrUsage] ("<dump-usage-error>") string if
+// the kind cannot be matched. It returns string representation in the format
+// defined by [Dump] configuration.
 //
 // nolint: cyclop
-func mapDumper(dmp Dump, lvl int, val reflect.Value) string {
+func MapDumper(dmp Dump, lvl int, val reflect.Value) string {
 	prn := NewPrinter(dmp)
 	prn.Tab(dmp.Indent + lvl)
+
+	if val.Kind() != reflect.Map {
+		return prn.Write(ValErrUsage).String()
+	}
 
 	if dmp.PrintType {
 		keyTyp := val.Type().Key()

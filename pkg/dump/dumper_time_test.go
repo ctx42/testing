@@ -45,6 +45,12 @@ func Test_GetTimeDumper_tabular(t *testing.T) {
 			`"03:04:05"`,
 		},
 		{
+			"TimeAsGoString",
+			TimeAsGoString,
+			time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW),
+			`time.Date(2000, time.January, 2, 3, 4, 5, 0, time.Location("Europe/Warsaw"))`,
+		},
+		{
 			"unsupported",
 			"abc",
 			time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW),
@@ -105,6 +111,18 @@ func Test_TimeDumperFmt(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "      \"2000-01-02\"", have)
 	})
+
+	t.Run("error - invalid type", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(1))
+		dumper := TimeDumperFmt(time.DateOnly)
+
+		// --- When ---
+		have := dumper(dmp, 2, reflect.ValueOf(123))
+
+		// --- Then ---
+		affirm.Equal(t, "      "+ValErrUsage, have)
+	})
 }
 
 func Test_TimeDumperUnix(t *testing.T) {
@@ -157,6 +175,17 @@ func Test_TimeDumperUnix(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "      946778645", have)
+	})
+
+	t.Run("error - invalid type", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(1))
+
+		// --- When ---
+		have := TimeDumperUnix(dmp, 2, reflect.ValueOf(123))
+
+		// --- Then ---
+		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
 }
 
@@ -243,5 +272,16 @@ func Test_TimeDumperDate(t *testing.T) {
 		// --- Then ---
 		want := "      time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)"
 		affirm.Equal(t, want, have)
+	})
+
+	t.Run("error - invalid type", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(1))
+
+		// --- When ---
+		have := TimeDumperDate(dmp, 2, reflect.ValueOf(123))
+
+		// --- Then ---
+		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
 }

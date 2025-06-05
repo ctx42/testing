@@ -26,20 +26,30 @@ func GetDurDumper(format string) Dumper {
 	}
 }
 
-// DurDumperString requires val to be dereferenced representation of
-// [time.Duration] and returns its string representation in format defined
-// by [Dump] configuration.
+// DurDumperString requires val to be a value representing [time.Duration].
+// Returns [valErrUsage] ("<dump-usage-error>") string if the type cannot be
+// matched. It returns string representation in the format defined by [Dump]
+// configuration.
 func DurDumperString(dmp Dump, lvl int, val reflect.Value) string {
-	tim := val.Interface().(time.Duration) // nolint: forcetypeassert
+	tim, ok := val.Interface().(time.Duration)
+	if !ok {
+		prn := NewPrinter(dmp)
+		return prn.Write(ValErrUsage).String()
+	}
 	val = reflect.ValueOf(tim.String())
-	return simpleDumper(dmp, lvl, val)
+	return SimpleDumper(dmp, lvl, val)
 }
 
 // DurDumperSeconds requires val to be dereferenced representation of
-// [time.Duration] and returns its string representation in format defined
-// by [Dump] configuration.
+// [time.Duration]. Returns [valErrUsage] ("<dump-usage-error>") string if the
+// type cannot be matched. It returns string representation in the format
+// // defined by [Dump] configuration.
 func DurDumperSeconds(dmp Dump, lvl int, val reflect.Value) string {
-	tim := val.Interface().(time.Duration) // nolint: forcetypeassert
+	tim, ok := val.Interface().(time.Duration)
+	if !ok {
+		prn := NewPrinter(dmp)
+		return prn.Write(ValErrUsage).String()
+	}
 	val = reflect.ValueOf(tim.Seconds())
-	return simpleDumper(dmp, lvl, val)
+	return SimpleDumper(dmp, lvl, val)
 }

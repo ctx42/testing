@@ -13,7 +13,7 @@ import (
 	"github.com/ctx42/testing/pkg/goldy"
 )
 
-func Test_dumpStruct(t *testing.T) {
+func Test_StructDumper(t *testing.T) {
 	t.Run("simple struct", func(t *testing.T) {
 		// --- Given ---
 		s := types.TA{
@@ -27,7 +27,7 @@ func Test_dumpStruct(t *testing.T) {
 		dmp := New()
 
 		// --- When ---
-		have := structDumper(dmp, 0, reflect.ValueOf(s))
+		have := StructDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
 		want := goldy.Open(t, "testdata/struct_simple.gld")
@@ -47,7 +47,7 @@ func Test_dumpStruct(t *testing.T) {
 		dmp := New(WithFlat, WithCompact)
 
 		// --- When ---
-		have := structDumper(dmp, 0, reflect.ValueOf(s))
+		have := StructDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
 		want := goldy.Open(t, "testdata/struct_simple_flat_compact.gld")
@@ -65,7 +65,7 @@ func Test_dumpStruct(t *testing.T) {
 		dmp := New()
 
 		// --- When ---
-		have := structDumper(dmp, 0, reflect.ValueOf(s))
+		have := StructDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
 		want := goldy.Open(t, "testdata/struct_multi_level.gld")
@@ -83,7 +83,7 @@ func Test_dumpStruct(t *testing.T) {
 		dmp := New(WithIndent(2))
 
 		// --- When ---
-		have := structDumper(dmp, 0, reflect.ValueOf(s))
+		have := StructDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
 		want := goldy.Open(t, "testdata/struct_multi_level_indent.gld")
@@ -101,7 +101,7 @@ func Test_dumpStruct(t *testing.T) {
 		dmp := New(WithFlat, WithCompact)
 
 		// --- When ---
-		have := structDumper(dmp, 0, reflect.ValueOf(s))
+		have := StructDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
 		want := goldy.Open(t, "testdata/struct_multi_level_flat_compact.gld")
@@ -120,10 +120,21 @@ func Test_dumpStruct(t *testing.T) {
 		dmp := New(WithFlatStrings(0))
 
 		// --- When ---
-		have := structDumper(dmp, 0, reflect.ValueOf(s))
+		have := StructDumper(dmp, 0, reflect.ValueOf(s))
 
 		// --- Then ---
 		want := goldy.Open(t, "testdata/struct_multi_line_string_field.gld")
 		affirm.Equal(t, want.String(), have)
+	})
+
+	t.Run("error - invalid type", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(1))
+
+		// --- When ---
+		have := StructDumper(dmp, 2, reflect.ValueOf(123))
+
+		// --- Then ---
+		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
 }

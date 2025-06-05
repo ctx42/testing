@@ -13,7 +13,59 @@ import (
 	"github.com/ctx42/testing/internal/types"
 )
 
-func Test_hexPtrDumper_tabular(t *testing.T) {
+func Test_HexPtrDumper(t *testing.T) {
+	t.Run("Uintptr without addresses", func(t *testing.T) {
+		// --- Given ---
+		dmp := New()
+		val := uintptr(123)
+
+		// --- When ---
+		have := HexPtrDumper(dmp, 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		affirm.Equal(t, "<addr>", have)
+	})
+
+	t.Run("Uintptr with addresses", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithPtrAddr)
+		val := uintptr(123)
+
+		// --- When ---
+		have := HexPtrDumper(dmp, 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		affirm.Equal(t, "<0x7b>", have)
+	})
+
+	t.Run("UnsafePointer without addresses", func(t *testing.T) {
+		// --- Given ---
+		dmp := New()
+		v := 42
+		val := unsafe.Pointer(&v)
+
+		// --- When ---
+		have := HexPtrDumper(dmp, 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		affirm.Equal(t, "<addr>", have)
+	})
+
+	t.Run("UnsafePointer with addresses", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithPtrAddr)
+		v := 42
+		val := unsafe.Pointer(&v)
+
+		// --- When ---
+		have := HexPtrDumper(dmp, 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		affirm.Equal(t, fmt.Sprintf("<%p>", &v), have)
+	})
+}
+
+func Test_HexPtrDumper_tabular(t *testing.T) {
 	sPtr := &types.TPtr{Val: "a"}
 
 	tt := []struct {
@@ -37,10 +89,10 @@ func Test_hexPtrDumper_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- Given ---
-			dmp := New(WithIndent(tc.indent))
+			dmp := New(WithIndent(tc.indent), WithPtrAddr)
 
 			// --- When ---
-			have := hexPtrDumper(dmp, tc.level, reflect.ValueOf(tc.val))
+			have := HexPtrDumper(dmp, tc.level, reflect.ValueOf(tc.val))
 
 			// --- Then ---
 			affirm.Equal(t, tc.want, have)

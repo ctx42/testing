@@ -7,12 +7,17 @@ import (
 	"reflect"
 )
 
-// sliceDumper requires val to be dereferenced representation of [reflect.Slice]
-// and returns its string representation in the format defined by [Dump]
-// configuration.
-func sliceDumper(dmp Dump, lvl int, val reflect.Value) string {
+// SliceDumper is a generic dumper for slices. It expects val to represent the
+// [reflect.Slice] kind. Returns [valErrUsage] ("<dump-usage-error>") string if
+// the kind cannot be matched. It returns string representation in the format
+// defined by [Dump] configuration.
+func SliceDumper(dmp Dump, lvl int, val reflect.Value) string {
+	if val.Kind() != reflect.Slice {
+		prn := NewPrinter(dmp)
+		return prn.Write(ValErrUsage).String()
+	}
 	if val.IsNil() {
 		return ValNil
 	}
-	return arrayDumper(dmp, lvl, val)
+	return ArrayDumper(dmp, lvl, val)
 }

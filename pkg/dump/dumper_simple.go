@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// simpleDumper is a generic dumper for simple types. It expects val to
+// SimpleDumper is a generic dumper for simple types. It expects val to
 // represent one of the kinds:
 //
 //   - [reflect.Bool]
@@ -29,9 +29,9 @@ import (
 //   - [reflect.Float64]
 //   - [reflect.String]
 //
-// It requires val to be dereferenced value and returns its string
-// representation in format defined by [Dump] configuration.
-func simpleDumper(dmp Dump, lvl int, val reflect.Value) string {
+// It returns string representation in the format defined by [Dump]
+// configuration.
+func SimpleDumper(dmp Dump, lvl int, val reflect.Value) string {
 	v := val.Interface()
 
 	var format string

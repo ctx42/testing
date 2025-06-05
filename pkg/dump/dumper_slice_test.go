@@ -10,7 +10,32 @@ import (
 	"github.com/ctx42/testing/internal/affirm"
 )
 
-func Test_sliceDumper_tabular(t *testing.T) {
+func Test_SliceDumper(t *testing.T) {
+	t.Run("slice of any", func(t *testing.T) {
+		// --- Given ---
+		val := []any{"str0", 1, "str2"}
+		dmp := New(WithFlat, WithCompact)
+
+		// --- When ---
+		have := SliceDumper(dmp, 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		affirm.Equal(t, `[]any{"str0",1,"str2"}`, have)
+	})
+
+	t.Run("error - invalid type", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(1))
+
+		// --- When ---
+		have := SliceDumper(dmp, 2, reflect.ValueOf(123))
+
+		// --- Then ---
+		affirm.Equal(t, ValErrUsage, have)
+	})
+}
+
+func Test_SliceDumper_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -41,24 +66,10 @@ func Test_sliceDumper_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := sliceDumper(tc.dmp, 0, reflect.ValueOf(tc.val))
+			have := SliceDumper(tc.dmp, 0, reflect.ValueOf(tc.val))
 
 			// --- Then ---
 			affirm.Equal(t, tc.want, have)
 		})
 	}
-}
-
-func Test_sliceDumper(t *testing.T) {
-	t.Run("slice of any", func(t *testing.T) {
-		// --- Given ---
-		val := []any{"str0", 1, "str2"}
-		dmp := New(WithFlat, WithCompact)
-
-		// --- When ---
-		have := sliceDumper(dmp, 0, reflect.ValueOf(val))
-
-		// --- Then ---
-		affirm.Equal(t, `[]any{"str0",1,"str2"}`, have)
-	})
 }

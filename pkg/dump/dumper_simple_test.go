@@ -11,7 +11,7 @@ import (
 	"github.com/ctx42/testing/internal/affirm"
 )
 
-func Test_sampleDumper_tabular(t *testing.T) {
+func Test_SampleDumper_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -48,7 +48,7 @@ func Test_sampleDumper_tabular(t *testing.T) {
 			dmp := New(WithIndent(tc.indent))
 
 			// --- When ---
-			have := simpleDumper(dmp, tc.level, reflect.ValueOf(tc.val))
+			have := SimpleDumper(dmp, tc.level, reflect.ValueOf(tc.val))
 
 			// --- Then ---
 			affirm.Equal(t, tc.want, have)
@@ -56,13 +56,13 @@ func Test_sampleDumper_tabular(t *testing.T) {
 	}
 }
 
-func Test_sampleDumper(t *testing.T) {
+func Test_SampleDumper(t *testing.T) {
 	t.Run("string with Flat false and FlatStrings off", func(t *testing.T) {
 		// --- Given ---
 		dmp := New(WithFlatStrings(0))
 
 		// --- When ---
-		have := simpleDumper(dmp, 0, reflect.ValueOf("str0\nstr1\n"))
+		have := SimpleDumper(dmp, 0, reflect.ValueOf("str0\nstr1\n"))
 
 		// --- Then ---
 		affirm.Equal(t, "str0\nstr1\n", have)
@@ -73,7 +73,7 @@ func Test_sampleDumper(t *testing.T) {
 		dmp := New()
 
 		// --- When ---
-		have := simpleDumper(dmp, 0, reflect.ValueOf("str0\nstr1\n"))
+		have := SimpleDumper(dmp, 0, reflect.ValueOf("str0\nstr1\n"))
 
 		// --- Then ---
 		affirm.Equal(t, "\"str0\\nstr1\\n\"", have)
@@ -87,7 +87,7 @@ func Test_sampleDumper(t *testing.T) {
 		dmp := New()
 
 		// --- When ---
-		have := simpleDumper(dmp, 0, reflect.ValueOf(str))
+		have := SimpleDumper(dmp, 0, reflect.ValueOf(str))
 
 		// --- Then ---
 		want := "" +
@@ -103,7 +103,7 @@ func Test_sampleDumper(t *testing.T) {
 		dmp := New(WithFlat)
 
 		// --- When ---
-		have := simpleDumper(dmp, 0, reflect.ValueOf("str0\nstr1\n"))
+		have := SimpleDumper(dmp, 0, reflect.ValueOf("str0\nstr1\n"))
 
 		// --- Then ---
 		affirm.Equal(t, "\"str0\\nstr1\\n\"", have)

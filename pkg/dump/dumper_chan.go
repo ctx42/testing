@@ -8,22 +8,22 @@ import (
 	"reflect"
 )
 
-// chanDumper is a generic dumper for channels. It expects val to represent one
+// ChanDumper is a generic dumper for channels. It expects val to represent one
 // of the kinds:
 //
 //   - [reflect.Chan]
 //
-// Returns [valErrUsage] ("<dump-usage-error>") string if kind cannot be
-// matched. It requires val to be a dereferenced value and returns its string
-// representation in the format defined by [Dump] configuration.
-func chanDumper(dmp Dump, lvl int, val reflect.Value) string {
+// Returns [valErrUsage] ("<dump-usage-error>") string if the kind cannot be
+// matched. It returns string representation in the format defined by [Dump]
+// configuration.
+func ChanDumper(dmp Dump, lvl int, val reflect.Value) string {
 	var str string
 	switch val.Kind() {
 	case reflect.Chan:
 		ptrAddr := ValAddr
 		if dmp.PtrAddr {
 			ptr := reflect.ValueOf(val.Pointer())
-			ptrAddr = hexPtrDumper(dmp, lvl, ptr)
+			ptrAddr = HexPtrDumper(dmp, lvl, ptr)
 		}
 		str = fmt.Sprintf("(%s)(%s)", val.Type(), ptrAddr)
 	default:

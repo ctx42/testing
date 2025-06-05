@@ -11,7 +11,20 @@ import (
 	"github.com/ctx42/testing/internal/types"
 )
 
-func Test_zoneDumper_tabular(t *testing.T) {
+func Test_ZoneDumper(t *testing.T) {
+	t.Run("error - invalid type", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(1))
+
+		// --- When ---
+		have := ZoneDumper(dmp, 2, reflect.ValueOf(123))
+
+		// --- Then ---
+		affirm.Equal(t, "      "+ValErrUsage, have)
+	})
+}
+
+func Test_ZoneDumper_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -42,7 +55,7 @@ func Test_zoneDumper_tabular(t *testing.T) {
 			dmp := New(WithIndent(tc.indent))
 
 			// --- When ---
-			have := zoneDumper(dmp, tc.level, reflect.ValueOf(tc.val))
+			have := ZoneDumper(dmp, tc.level, reflect.ValueOf(tc.val))
 
 			// --- Then ---
 			affirm.Equal(t, tc.want, have)

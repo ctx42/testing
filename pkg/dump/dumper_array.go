@@ -8,22 +8,27 @@ import (
 	"strings"
 )
 
-// arrayDumper requires val to be dereferenced representation of [reflect.Array]
-// or [reflect.Slice] and returns its string representation in format defined
-// by [Dump] configuration.
-func arrayDumper(dmp Dump, lvl int, val reflect.Value) string {
+// ArrayDumper is a generic dumper for arrays. It expects val to represent one
+// of the kinds:
+//
+//   - [reflect.Array]
+//   - [reflect.Slice]
+//
+// Returns [valErrUsage] ("<dump-usage-error>") string if the kind cannot be
+// matched. It returns string representation in the format defined by [Dump]
+// configuration.
+func ArrayDumper(dmp Dump, lvl int, val reflect.Value) string {
 	prn := NewPrinter(dmp)
 	prn.Tab(dmp.Indent + lvl)
+
+	if !(val.Kind() == reflect.Slice || val.Kind() == reflect.Array) {
+		return prn.Write(ValErrUsage).String()
+	}
 
 	if dmp.PrintType {
 		valTypStr := val.Type().String()
 		if dmp.UseAny {
-			switch {
-			case valTypStr == "interface{}":
-				valTypStr = "any"
-			case strings.HasSuffix(valTypStr, "]interface {}"):
-				valTypStr = strings.Replace(valTypStr, "interface {}", "any", 1)
-			}
+			valTypStr = strings.Replace(valTypStr, "interface {}", "any", 1)
 		}
 		prn.Write(valTypStr)
 	}

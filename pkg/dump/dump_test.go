@@ -180,7 +180,7 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 		{"uint16", New(WithFlat, WithCompact), uint16(123), "123"},
 		{"uint32", New(WithFlat, WithCompact), uint32(123), "123"},
 		{"uint64", New(WithFlat, WithCompact), uint64(123), "123"},
-		{"uintptr", New(WithFlat, WithCompact), uintptr(123), "<0x7b>"},
+		{"uintptr", New(WithFlat, WithCompact, WithPtrAddr), uintptr(123), "<0x7b>"},
 		{"float32", New(WithFlat, WithCompact), float32(12.3), "12.3"},
 		{"float64", New(WithFlat, WithCompact), 12.3, "12.3"},
 		{"complex64", New(WithFlat, WithCompact), complex(float32(1), float32(2)), "(1+2i)"},
@@ -217,7 +217,7 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 		},
 		{
 			"unsafe pointer",
-			New(WithFlat, WithCompact),
+			New(WithFlat, WithCompact, WithPtrAddr),
 			unsafe.Pointer(sPtr),
 			fmt.Sprintf("<%p>", sPtr),
 		},

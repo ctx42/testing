@@ -12,7 +12,20 @@ import (
 	"github.com/ctx42/testing/pkg/goldy"
 )
 
-func Test_mapDumper_tabular(t *testing.T) {
+func Test_MapDumper(t *testing.T) {
+	t.Run("error - invalid type", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(1))
+
+		// --- When ---
+		have := MapDumper(dmp, 2, reflect.ValueOf(123))
+
+		// --- Then ---
+		affirm.Equal(t, "      "+ValErrUsage, have)
+	})
+}
+
+func Test_MapDumper_tabular(t *testing.T) {
 	var nilMap map[string]int
 
 	tt := []struct {
@@ -75,7 +88,7 @@ func Test_mapDumper_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := mapDumper(tc.dmp, 0, reflect.ValueOf(tc.val))
+			have := MapDumper(tc.dmp, 0, reflect.ValueOf(tc.val))
 
 			// --- Then ---
 			affirm.Equal(t, tc.want, have)

@@ -11,7 +11,83 @@ import (
 	"github.com/ctx42/testing/internal/affirm"
 )
 
-func Test_chanDumper_tabular(t *testing.T) {
+func Test_ChanDumper(t *testing.T) {
+	t.Run("nil channel", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithPtrAddr)
+		var ch chan int
+		val := reflect.ValueOf(ch)
+
+		// --- When ---
+		have := ChanDumper(dmp, 0, val)
+
+		// --- Then ---
+		affirm.Equal(t, "(chan int)(<0x0>)", have)
+	})
+
+	t.Run("usage error", func(t *testing.T) {
+		// --- Given ---
+		dmp := New()
+		val := reflect.ValueOf(1234)
+
+		// --- When ---
+		have := ChanDumper(dmp, 0, val)
+
+		// --- Then ---
+		affirm.Equal(t, ValErrUsage, have)
+	})
+
+	t.Run("usage error uses level", func(t *testing.T) {
+		// --- Given ---
+		dmp := New()
+		val := reflect.ValueOf(1234)
+
+		// --- When ---
+		have := ChanDumper(dmp, 2, val)
+
+		// --- Then ---
+		affirm.Equal(t, "    "+ValErrUsage, have)
+	})
+
+	t.Run("print pointer address", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithPtrAddr)
+		val := reflect.ValueOf(make(chan int))
+
+		// --- When ---
+		have := ChanDumper(dmp, 0, val)
+
+		// --- Then ---
+		want := fmt.Sprintf("(chan int)(<0x%x>)", val.Pointer())
+		affirm.Equal(t, want, have)
+	})
+
+	t.Run("uses level", func(t *testing.T) {
+		// --- Given ---
+		dmp := New()
+		val := reflect.ValueOf(make(chan int))
+
+		// --- When ---
+		have := ChanDumper(dmp, 1, val)
+
+		// --- Then ---
+		affirm.Equal(t, "  (chan int)(<addr>)", have)
+	})
+
+	t.Run("uses indent and level", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(2))
+		val := reflect.ValueOf(make(chan int))
+
+		// --- When ---
+		have := ChanDumper(dmp, 1, val)
+
+		// --- Then ---
+		affirm.Equal(t, "      (chan int)(<addr>)", have)
+	})
+}
+
+func Test_ChanDumper_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -28,86 +104,10 @@ func Test_chanDumper_tabular(t *testing.T) {
 			val := reflect.ValueOf(tc.val)
 
 			// --- When ---
-			have := chanDumper(Dump{}, 0, val)
+			have := ChanDumper(Dump{}, 0, val)
 
 			// --- Then ---
 			affirm.Equal(t, tc.want, have)
 		})
 	}
-}
-
-func Test_chanDumper(t *testing.T) {
-	t.Run("nil channel", func(t *testing.T) {
-		// --- Given ---
-		dmp := New(WithPtrAddr)
-		var ch chan int
-		val := reflect.ValueOf(ch)
-
-		// --- When ---
-		have := chanDumper(dmp, 0, val)
-
-		// --- Then ---
-		affirm.Equal(t, "(chan int)(<0x0>)", have)
-	})
-
-	t.Run("usage error", func(t *testing.T) {
-		// --- Given ---
-		dmp := New()
-		val := reflect.ValueOf(1234)
-
-		// --- When ---
-		have := chanDumper(dmp, 0, val)
-
-		// --- Then ---
-		affirm.Equal(t, ValErrUsage, have)
-	})
-
-	t.Run("usage error uses level", func(t *testing.T) {
-		// --- Given ---
-		dmp := New()
-		val := reflect.ValueOf(1234)
-
-		// --- When ---
-		have := chanDumper(dmp, 2, val)
-
-		// --- Then ---
-		affirm.Equal(t, "    "+ValErrUsage, have)
-	})
-
-	t.Run("print pointer address", func(t *testing.T) {
-		// --- Given ---
-		dmp := New(WithPtrAddr)
-		val := reflect.ValueOf(make(chan int))
-
-		// --- When ---
-		have := chanDumper(dmp, 0, val)
-
-		// --- Then ---
-		want := fmt.Sprintf("(chan int)(<0x%x>)", val.Pointer())
-		affirm.Equal(t, want, have)
-	})
-
-	t.Run("uses level", func(t *testing.T) {
-		// --- Given ---
-		dmp := New()
-		val := reflect.ValueOf(make(chan int))
-
-		// --- When ---
-		have := chanDumper(dmp, 1, val)
-
-		// --- Then ---
-		affirm.Equal(t, "  (chan int)(<addr>)", have)
-	})
-
-	t.Run("uses indent and level", func(t *testing.T) {
-		// --- Given ---
-		dmp := New(WithIndent(2))
-		val := reflect.ValueOf(make(chan int))
-
-		// --- When ---
-		have := chanDumper(dmp, 1, val)
-
-		// --- Then ---
-		affirm.Equal(t, "      (chan int)(<addr>)", have)
-	})
 }
