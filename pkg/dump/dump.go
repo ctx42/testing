@@ -245,10 +245,8 @@ func (dmp Dump) Diff(want, have any) (string, string, string) {
 		dmp2.FlatStrings = 0
 		if wMlStr {
 			hStr, _ = dmp2.value(0, reflect.ValueOf(have))
-			hMlStr = true
 		} else {
 			wStr, _ = dmp2.value(0, reflect.ValueOf(want))
-			wMlStr = true
 		}
 	}
 

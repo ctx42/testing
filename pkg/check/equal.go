@@ -63,19 +63,12 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 		return equalError(wItf, hItf, WithOptions(ops))
 	}
 
-	if !wVal.CanInterface() {
+	if !wVal.CanInterface() && ops.SkipUnexported {
 		trail := ops.Trail
 		ops.Trail += " <skipped>"
 		ops.LogTrail()
 		ops.Trail = trail
-		if ops.SkipUnexported {
-			return nil
-		}
-		return notice.New("cannot compare values").
-			SetTrail(ops.Trail).
-			Append("cause", "%s", "value cannot be used without panicking").
-			Append("hint", "%s", "use WithSkipTrail or WithSkipUnexported "+
-				"option to skip this field")
+		return nil
 	}
 
 	wType := wVal.Type()
@@ -215,61 +208,183 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 
 	case reflect.Bool:
 		ops.LogTrail()
-		if wVal.Bool() == hVal.Bool() {
+		w, h := wVal.Bool(), hVal.Bool()
+		if w == h {
 			return nil
 		}
-		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
+		return equalError(w, h, WithOptions(ops))
 
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+	case reflect.Int:
 		ops.LogTrail()
-		if wVal.Int() == hVal.Int() {
+		w, h := int(wVal.Int()), int(hVal.Int())
+		if w == h {
 			return nil
 		}
-		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
+		return equalError(w, h, WithOptions(ops))
 
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32,
-		reflect.Uint64:
+	case reflect.Int8:
 		ops.LogTrail()
-		if wVal.Uint() == hVal.Uint() {
+		w, h := int8(wVal.Int()), int8(hVal.Int()) // nolint: gosec
+		if w == h {
 			return nil
 		}
-		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
+		return equalError(w, h, WithOptions(ops))
 
-	case reflect.Float32, reflect.Float64:
+	case reflect.Int16:
 		ops.LogTrail()
-		if wVal.Float() == hVal.Float() {
+		w, h := int16(wVal.Int()), int16(hVal.Int()) // nolint: gosec
+		if w == h {
 			return nil
 		}
-		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
+		return equalError(w, h, WithOptions(ops))
 
-	case reflect.Complex64, reflect.Complex128:
+	case reflect.Int32:
 		ops.LogTrail()
-		if wVal.Complex() == hVal.Complex() {
+		w, h := int32(wVal.Int()), int32(hVal.Int()) // nolint: gosec
+		if w == h {
 			return nil
 		}
-		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
+		return equalError(w, h, WithOptions(ops))
+
+	case reflect.Int64:
+		ops.LogTrail()
+		w, h := wVal.Int(), hVal.Int()
+		if w == h {
+			return nil
+		}
+		return equalError(w, h, WithOptions(ops))
+
+	case reflect.Uint:
+		ops.LogTrail()
+		w, h := uint(wVal.Uint()), uint(hVal.Uint())
+		if w == h {
+			return nil
+		}
+		return equalError(w, h, WithOptions(ops))
+
+	case reflect.Uint8:
+		ops.LogTrail()
+		w, h := uint8(wVal.Uint()), uint8(hVal.Uint()) // nolint: gosec
+		if w == h {
+			return nil
+		}
+		return equalError(w, h, WithOptions(ops))
+
+	case reflect.Uint16:
+		ops.LogTrail()
+		w, h := uint16(wVal.Uint()), uint16(hVal.Uint()) // nolint: gosec
+		if w == h {
+			return nil
+		}
+		return equalError(w, h, WithOptions(ops))
+
+	case reflect.Uint32:
+		ops.LogTrail()
+		w, h := uint32(wVal.Uint()), uint32(hVal.Uint()) // nolint: gosec
+		if w == h {
+			return nil
+		}
+		return equalError(w, h, WithOptions(ops))
+
+	case reflect.Uint64:
+		ops.LogTrail()
+		w, h := wVal.Uint(), hVal.Uint()
+		if w == h {
+			return nil
+		}
+		return equalError(w, h, WithOptions(ops))
+
+	case reflect.Float32:
+		ops.LogTrail()
+		w, h := float32(wVal.Float()), float32(hVal.Float()) // nolint: gosec
+		if w == h {
+			return nil
+		}
+		return equalError(w, h, WithOptions(ops))
+
+	case reflect.Float64:
+		ops.LogTrail()
+		w, h := wVal.Float(), hVal.Float()
+		if w == h {
+			return nil
+		}
+		return equalError(w, h, WithOptions(ops))
+
+	case reflect.Complex64:
+		ops.LogTrail()
+		w, h := complex64(wVal.Complex()), complex64(hVal.Complex())
+		if w == h {
+			return nil
+		}
+		return equalError(w, h, WithOptions(ops))
+
+	case reflect.Complex128:
+		ops.LogTrail()
+		w, h := wVal.Complex(), hVal.Complex()
+		if w == h {
+			return nil
+		}
+		return equalError(w, h, WithOptions(ops))
 
 	case reflect.String:
 		ops.LogTrail()
-		if wVal.String() == hVal.String() {
+		w, h := wVal.String(), hVal.String()
+		if w == h {
 			return nil
 		}
-		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
+		return equalError(w, h, WithOptions(ops))
 
-	case reflect.Chan, reflect.Func:
+	case reflect.Chan:
 		ops.LogTrail()
-		if wVal.Pointer() == hVal.Pointer() {
+		w, h := wVal.Pointer(), hVal.Pointer()
+		if w == h {
 			return nil
 		}
-		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
+		err := notice.New("expected values to be equal").SetTrail(ops.Trail).
+			Want("%s", dump.ChanDumper(ops.Dumper, 0, wVal)).
+			Have("%s", dump.ChanDumper(ops.Dumper, 0, hVal))
+		return err
+
+	case reflect.Func:
+		ops.LogTrail()
+		w, h := wVal.Pointer(), hVal.Pointer()
+		if w == h {
+			return nil
+		}
+		err := notice.New("expected values to be equal").SetTrail(ops.Trail).
+			Want("%s", dump.FuncDumper(ops.Dumper, 0, wVal)).
+			Have("%s", dump.FuncDumper(ops.Dumper, 0, hVal))
+		return err
+
+	case reflect.Uintptr:
+		ops.LogTrail()
+		w, h := wVal.Uint(), hVal.Uint()
+		if w == h {
+			return nil
+		}
+		err := notice.New("expected values to be equal").SetTrail(ops.Trail).
+			Want("%s", dump.HexPtrDumper(ops.Dumper, 0, wVal)).
+			Have("%s", dump.HexPtrDumper(ops.Dumper, 0, hVal))
+		return err
+
+	case reflect.UnsafePointer:
+		ops.LogTrail()
+		w, h := wVal.Pointer(), hVal.Pointer()
+		if w == h {
+			return nil
+		}
+		err := notice.New("expected values to be equal").SetTrail(ops.Trail).
+			Want("%s", dump.HexPtrDumper(ops.Dumper, 0, wVal)).
+			Have("%s", dump.HexPtrDumper(ops.Dumper, 0, hVal))
+		return err
 
 	default:
 		ops.LogTrail()
-		// For types, we haven't explicitly handled, use DeepEqual.
-		if reflect.DeepEqual(wVal.Interface(), hVal.Interface()) {
-			return nil
-		}
-		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
+		return notice.New("cannot compare values").
+			SetTrail(ops.Trail).
+			Append("cause", "%s", "value cannot be used without panicking").
+			Append("hint", "%s", "use WithSkipTrail or WithSkipUnexported "+
+				"option to skip this field")
 	}
 }
 

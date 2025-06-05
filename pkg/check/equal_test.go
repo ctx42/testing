@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 	"time"
+	"unsafe"
 
 	"github.com/ctx42/testing/internal/affirm"
 	"github.com/ctx42/testing/internal/cases"
@@ -523,26 +524,25 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.DeepEqual(t, wTrail, trail)
 	})
 
-	t.Run("error - private fields must be skipped", func(t *testing.T) {
+	t.Run("error - private fields not equal", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []Option{WithTrailLog(&trail)}
 
 		want := types.NewTIntPrv(42, 1)
-		have := types.NewTIntPrv(42, 1)
+		have := types.NewTIntPrv(42, 2)
 
 		// --- When ---
 		err := Equal(want, have, opts...)
 
 		// --- Then ---
 		wMsg := "" +
-			"cannot compare values:\n" +
+			"expected values to be equal:\n" +
 			"  trail: TIntPrv.v\n" +
-			"  cause: value cannot be used without panicking\n" +
-			"   hint: use WithSkipTrail or WithSkipUnexported option to skip " +
-			"this field"
+			"   want: 1\n" +
+			"   have: 2"
 		affirm.Equal(t, wMsg, err.Error())
-		wTrail := []string{"TIntPrv.Int", "TIntPrv.v <skipped>"}
+		wTrail := []string{"TIntPrv.Int", "TIntPrv.v"}
 		affirm.DeepEqual(t, wTrail, trail)
 	})
 
@@ -1090,7 +1090,8 @@ func Test_Equal_kind_Bool(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: type.field\n" +
 			"   want: true\n" +
 			"   have: false"
@@ -1184,7 +1185,8 @@ func Test_Equal_kind_numbers_error_tabular(t *testing.T) {
 
 			// --- Then ---
 			affirm.NotNil(t, err)
-			wMsg := "expected values to be equal:\n" +
+			wMsg := "" +
+				"expected values to be equal:\n" +
 				"  trail: type.field\n" +
 				"   want: %s\n" +
 				"   have: %s"
@@ -1224,12 +1226,35 @@ func Test_Equal_kind_Chan(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: type.field\n" +
 			"   want: (chan bool)(<addr>)\n" +
 			"   have: (chan bool)(<addr>)"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+
+	t.Run("not equal unexported field", func(t *testing.T) {
+		// --- Given ---
+		trail := make([]string, 0)
+		opts := []Option{WithTrailLog(&trail), WithTrail("type.field")}
+
+		want := struct{ want chan bool }{make(chan bool)}
+		have := struct{ want chan bool }{make(chan bool)}
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: type.field.want\n" +
+			"   want: (chan bool)(<addr>)\n" +
+			"   have: (chan bool)(<addr>)"
+		affirm.Equal(t, wMsg, err.Error())
+		affirm.DeepEqual(t, []string{"type.field.want"}, trail)
 	})
 }
 
@@ -1262,7 +1287,8 @@ func Test_Equal_kind_Func(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: type.field\n" +
 			"   want: <func>(<addr>)\n" +
 			"   have: <func>(<addr>)"
@@ -1271,7 +1297,7 @@ func Test_Equal_kind_Func(t *testing.T) {
 	})
 }
 
-func Test_Equal_kind_default_Uintptr(t *testing.T) {
+func Test_Equal_kind_Uintptr(t *testing.T) {
 	t.Run("equal", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
@@ -1288,7 +1314,7 @@ func Test_Equal_kind_default_Uintptr(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal", func(t *testing.T) {
+	t.Run("not equal without addresses", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []Option{WithTrailLog(&trail), WithTrail("type.field")}
@@ -1301,10 +1327,80 @@ func Test_Equal_kind_default_Uintptr(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: type.field\n" +
+			"   want: <addr>\n" +
+			"   have: <addr>"
+		affirm.Equal(t, wMsg, err.Error())
+		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+
+	t.Run("not equal with addresses", func(t *testing.T) {
+		// --- Given ---
+		trail := make([]string, 0)
+		opts := []Option{
+			WithTrailLog(&trail),
+			WithTrail("type.field"),
+			WithDumper(dump.WithPtrAddr),
+		}
+
+		want := uintptr(42)
+		have := uintptr(44)
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: type.field\n" +
 			"   want: <0x2a>\n" +
 			"   have: <0x2c>"
+		affirm.Equal(t, wMsg, err.Error())
+		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+}
+
+func Test_Equal_kind_UnsafePointer(t *testing.T) {
+	t.Run("equal", func(t *testing.T) {
+		// --- Given ---
+		trail := make([]string, 0)
+		opts := []Option{WithTrailLog(&trail), WithTrail("type.field")}
+
+		w := 42
+		want := unsafe.Pointer(&w)
+		have := unsafe.Pointer(&w)
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+
+	t.Run("not equal", func(t *testing.T) {
+		// --- Given ---
+		trail := make([]string, 0)
+		opts := []Option{WithTrailLog(&trail), WithTrail("type.field")}
+
+		w := 42
+		h := 42
+		want := unsafe.Pointer(&w)
+		have := unsafe.Pointer(&h)
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: type.field\n" +
+			"   want: <addr>\n" +
+			"   have: <addr>"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
@@ -1344,7 +1440,8 @@ func Test_NotEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values not to be equal:\n" +
+		wMsg := "" +
+			"expected values not to be equal:\n" +
 			"  want: 42\n" +
 			"  have: 42"
 		affirm.Equal(t, wMsg, err.Error())
@@ -1356,7 +1453,8 @@ func Test_NotEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values not to be equal:\n" +
+		wMsg := "" +
+			"expected values not to be equal:\n" +
 			"  want: 0x2a ('*')\n" +
 			"  have: 0x2a ('*')"
 		affirm.Equal(t, wMsg, err.Error())
@@ -1371,7 +1469,8 @@ func Test_NotEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected values not to be equal:\n" +
+		wMsg := "" +
+			"expected values not to be equal:\n" +
 			"  trail: type.field\n" +
 			"   want: 42\n" +
 			"   have: 42"
@@ -1402,7 +1501,8 @@ func Test_equalError(t *testing.T) {
 		err := equalError(42, 44, WithOptions(ops))
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  trail: type.field\n" +
 			"   want: 42\n" +
 			"   have: 44"
@@ -1419,7 +1519,8 @@ func Test_equalError(t *testing.T) {
 		err := equalError(w, h, WithOptions(ops))
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want: 0x41 ('A')\n" +
 			"  have: 0x42 ('B')"
 		affirm.Equal(t, wMsg, err.Error())
@@ -1436,7 +1537,8 @@ func Test_equalError(t *testing.T) {
 		err := equalError(w, h, WithOptions(ops))
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want: abc\n" +
 			"  have: abc"
 		affirm.Equal(t, wMsg, err.Error())
@@ -1452,7 +1554,8 @@ func Test_equalError(t *testing.T) {
 		err := equalError(w, h, WithOptions(ops))
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want type: uint8\n" +
 			"  have type: int\n" +
 			"       want: 0x41 ('A')\n" +
@@ -1469,7 +1572,8 @@ func Test_equalError(t *testing.T) {
 		err := equalError(nil, h, WithOptions(ops))
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want type: <nil>\n" +
 			"  have type: int\n" +
 			"       want: nil\n" +
@@ -1486,7 +1590,8 @@ func Test_equalError(t *testing.T) {
 		err := equalError(w, nil, WithOptions(ops))
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want type: int\n" +
 			"  have type: <nil>\n" +
 			"       want: 42\n" +
@@ -1504,7 +1609,8 @@ func Test_equalError(t *testing.T) {
 		err := equalError(w, h, WithOptions(ops))
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want:\n" +
 			"        []int{\n" +
 			"          1,\n" +
