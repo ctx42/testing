@@ -1,3 +1,6 @@
+## v0.13.0 (Fri, 06 Jun 2025 13:13:44 UTC)
+- Dump values of not exported fields, add special case for type error.
+
 ## v0.12.0 (Thu, 05 Jun 2025 13:11:42 UTC)
 - Code style.
 - Expose dumpers implemented in the dumper package, improve test coverage and code documentation.
