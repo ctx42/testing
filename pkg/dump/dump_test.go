@@ -4,6 +4,7 @@
 package dump
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
@@ -57,6 +58,17 @@ func Test_WithPtrAddr(t *testing.T) {
 
 	// --- Then ---
 	affirm.Equal(t, true, dmp.PtrAddr)
+}
+
+func Test_WithNoPrivate(t *testing.T) {
+	// --- Given ---
+	dmp := &Dump{}
+
+	// --- When ---
+	WithNoPrivate(dmp)
+
+	// --- Then ---
+	affirm.Equal(t, false, dmp.PrintPrivate)
 }
 
 func Test_WithTimeFormat(t *testing.T) {
@@ -131,6 +143,7 @@ func Test_New(t *testing.T) {
 		affirm.Equal(t, TimeFormat, have.TimeFormat)
 		affirm.Equal(t, "", have.DurationFormat)
 		affirm.Equal(t, false, have.PtrAddr)
+		affirm.Equal(t, true, have.PrintType)
 		affirm.Equal(t, true, have.UseAny)
 		affirm.Equal(t, true, len(have.Dumpers) == 3)
 		affirm.Equal(t, DefaultDepth, have.MaxDepth)
@@ -159,6 +172,7 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 	itfPtr = &types.TPtr{}
 	sPtr := &types.TPtr{Val: "a"}
 	var aAnyNil any
+	es := []error{errors.New("error message")}
 
 	tt := []struct {
 		testN string
@@ -220,6 +234,18 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 			New(WithFlat, WithCompact, WithPtrAddr),
 			unsafe.Pointer(sPtr),
 			fmt.Sprintf("<%p>", sPtr),
+		},
+		{
+			"special case for type error",
+			New(WithFlat, WithCompact, WithPtrAddr),
+			errors.New("error message"),
+			`"error message"`,
+		},
+		{
+			"special case for type error 2",
+			New(WithFlat, WithCompact, WithPtrAddr),
+			es,
+			"[]error{\"error message\"}",
 		},
 	}
 

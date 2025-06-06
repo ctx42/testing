@@ -224,6 +224,7 @@ func Test_WithOptions(t *testing.T) {
 			DurationFormat: "DurAsString",
 			PtrAddr:        true,
 			PrintType:      true,
+			PrintPrivate:   true,
 			UseAny:         true,
 			Dumpers: map[reflect.Type]dump.Dumper{
 				reflect.TypeOf(123): dump.Dumper(nil),
@@ -259,7 +260,7 @@ func Test_WithOptions(t *testing.T) {
 	affirm.Equal(t, true, reflect.DeepEqual(ops, have))
 
 	// When those fail, add fields above.
-	affirm.Equal(t, 13, reflect.ValueOf(have.Dumper).NumField())
+	affirm.Equal(t, 14, reflect.ValueOf(have.Dumper).NumField())
 	affirm.Equal(t, 10, reflect.ValueOf(have).NumField())
 }
 

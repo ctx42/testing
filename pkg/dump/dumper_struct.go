@@ -32,7 +32,8 @@ func StructDumper(dmp Dump, lvl int, val reflect.Value) string {
 		last := i == num-1
 
 		fld := vTyp.Field(i)
-		if !fld.IsExported() {
+
+		if !fld.IsExported() && !dmp.PrintPrivate {
 			lastPrivate = last
 			continue
 		}

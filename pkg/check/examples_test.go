@@ -71,8 +71,6 @@ func ExampleEqual_wrongTypes() {
 	//       trail: type.field
 	//   want type: int
 	//   have type: uint8
-	//        want: 42
-	//        have: 0x2a ('*')
 }
 
 func ExampleEqual_structs() {
@@ -156,19 +154,6 @@ func ExampleEqual_arrays() {
 	// expected values to be equal:
 	//   want type: [3]int
 	//   have type: [4]int
-	//        want:
-	//              [3]int{
-	//                1,
-	//                2,
-	//                3,
-	//              }
-	//        have:
-	//              [4]int{
-	//                1,
-	//                2,
-	//                3,
-	//                4,
-	//              }
 }
 
 func ExampleEqual_slices() {

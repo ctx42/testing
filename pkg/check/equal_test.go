@@ -123,9 +123,7 @@ func Test_Equal_not_matching_types(t *testing.T) {
 		wMsg := "" +
 			"expected values to be equal:\n" +
 			"  want type: int\n" +
-			"  have type: string\n" +
-			"       want: 123\n" +
-			"       have: \"abc\""
+			"  have type: string"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -143,9 +141,7 @@ func Test_Equal_not_matching_types(t *testing.T) {
 			"expected values to be equal:\n" +
 			"      trail: type.field\n" +
 			"  want type: int\n" +
-			"  have type: string\n" +
-			"       want: 123\n" +
-			"       have: \"abc\""
+			"  have type: string"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
@@ -617,6 +613,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 			"          Dur: \"0s\",\n" +
 			"          Loc: nil,\n" +
 			"          TAp: nil,\n" +
+			"          private: 0,\n" +
 			"        }"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -640,6 +637,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 			"          Dur: \"0s\",\n" +
 			"          Loc: nil,\n" +
 			"          TAp: nil,\n" +
+			"          private: 0,\n" +
 			"        }\n" +
 			"  have: nil"
 		affirm.Equal(t, wMsg, err.Error())

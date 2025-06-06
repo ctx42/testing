@@ -31,7 +31,6 @@ func Test_SampleDumper_tabular(t *testing.T) {
 		{"uint16", uint16(123), 0, 0, "123"},
 		{"uint32", uint32(123), 0, 0, "123"},
 		{"uint64", uint64(123), 0, 0, "123"},
-		{"uintptr", uintptr(123), 0, 0, "123"},
 		{"float32", float32(12.3), 0, 0, "12.3"},
 		{"float64", 12.3, 0, 0, "12.3"},
 		{"float64 very small", 0.00000000000003, 0, 0, "0.00000000000003"},
@@ -107,5 +106,38 @@ func Test_SampleDumper(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "\"str0\\nstr1\\n\"", have)
+	})
+
+	t.Run("string with Dump.flatStrings true", func(t *testing.T) {
+		// --- Given ---
+		dmp := Dump{flatStrings: true}
+
+		// --- When ---
+		have := SimpleDumper(dmp, 0, reflect.ValueOf("str0\nstr1\n"))
+
+		// --- Then ---
+		affirm.Equal(t, "\"str0\\nstr1\\n\"", have)
+	})
+
+	t.Run("default single line string format", func(t *testing.T) {
+		// --- Given ---
+		dmp := Dump{}
+
+		// --- When ---
+		have := SimpleDumper(dmp, 0, reflect.ValueOf("str0"))
+
+		// --- Then ---
+		affirm.Equal(t, "\"str0\"", have)
+	})
+
+	t.Run("unsupported kind", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(1))
+
+		// --- When ---
+		have := SimpleDumper(dmp, 2, reflect.ValueOf(struct{}{}))
+
+		// --- Then ---
+		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
 }

@@ -75,7 +75,10 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 	hType := hVal.Type()
 	if wType != hType {
 		ops.LogTrail()
-		return equalError(wVal.Interface(), hVal.Interface(), WithOptions(ops))
+		return notice.New("expected values to be equal").
+			SetTrail(ops.Trail).
+			Append("want type", "%s", wType).
+			Append("have type", "%s", hType)
 	}
 
 	if chk, ok := ops.TrailCheckers[ops.Trail]; ok {

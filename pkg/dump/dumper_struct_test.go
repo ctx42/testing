@@ -14,7 +14,7 @@ import (
 )
 
 func Test_StructDumper(t *testing.T) {
-	t.Run("simple struct", func(t *testing.T) {
+	t.Run("simple struct with private fields", func(t *testing.T) {
 		// --- Given ---
 		s := types.TA{
 			Int: 1,
@@ -31,6 +31,26 @@ func Test_StructDumper(t *testing.T) {
 
 		// --- Then ---
 		want := goldy.Open(t, "testdata/struct_simple.gld")
+		affirm.Equal(t, want.String(), have)
+	})
+
+	t.Run("simple struct without private fields", func(t *testing.T) {
+		// --- Given ---
+		s := types.TA{
+			Int: 1,
+			Str: "2",
+			Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
+			Dur: 3,
+			Loc: types.WAW,
+			TAp: nil,
+		}
+		dmp := New(WithNoPrivate)
+
+		// --- When ---
+		have := StructDumper(dmp, 0, reflect.ValueOf(s))
+
+		// --- Then ---
+		want := goldy.Open(t, "testdata/struct_simple_no_private.gld")
 		affirm.Equal(t, want.String(), have)
 	})
 

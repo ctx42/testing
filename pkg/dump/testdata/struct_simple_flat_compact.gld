@@ -1,3 +1,3 @@
 Simple struct presented as in flat and compact format.
 ---
-{Int:1,Str:"2",Tim:"2000-01-02T03:04:05Z",Dur:"3ns",Loc:"Europe/Warsaw",TAp:nil}
+{Int:1,Str:"2",Tim:"2000-01-02T03:04:05Z",Dur:"3ns",Loc:"Europe/Warsaw",TAp:nil,private:0}

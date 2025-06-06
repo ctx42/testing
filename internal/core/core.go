@@ -123,3 +123,65 @@ func same(want, have reflect.Value) bool {
 	hPtr := unsafe.Pointer(have.Pointer())
 	return wPtr == hPtr
 }
+
+// Value returns the underlying value represented by the [reflect.Value].
+func Value(val reflect.Value) (any, bool) {
+	switch knd := val.Kind(); knd {
+	case reflect.Invalid:
+		return nil, true
+	case reflect.Bool:
+		return val.Bool(), true
+	case reflect.Int:
+		return int(val.Int()), true
+	case reflect.Int8:
+		return int8(val.Int()), true
+	case reflect.Int16:
+		return int16(val.Int()), true
+	case reflect.Int32:
+		return int32(val.Int()), true
+	case reflect.Int64:
+		return val.Int(), true
+	case reflect.Uint:
+		return uint(val.Uint()), true
+	case reflect.Uint8:
+		return uint8(val.Uint()), true
+	case reflect.Uint16:
+		return uint16(val.Uint()), true
+	case reflect.Uint32:
+		return uint32(val.Uint()), true
+	case reflect.Uint64:
+		return val.Uint(), true
+	case reflect.Uintptr:
+		return uintptr(val.Uint()), true
+	case reflect.Float32:
+		return float32(val.Float()), true
+	case reflect.Float64:
+		return val.Float(), true
+	case reflect.Complex64:
+		return complex64(val.Complex()), true
+	case reflect.Complex128:
+		return val.Complex(), true
+	case reflect.Array:
+		return val.Interface(), true
+	case reflect.Chan:
+		return val.Interface(), true
+	case reflect.Func:
+		return val.Interface(), true
+	case reflect.Interface:
+		return val.Interface(), true
+	case reflect.Map:
+		return val.Interface(), true
+	case reflect.Pointer:
+		return val.Interface(), true
+	case reflect.Slice:
+		return val.Interface(), true
+	case reflect.String:
+		return val.String(), true
+	case reflect.Struct:
+		return val.Interface(), true
+	case reflect.UnsafePointer:
+		return val.Pointer(), true
+	default:
+		panic("unsupported value kind")
+	}
+}

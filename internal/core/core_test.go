@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"runtime"
 	"testing"
+	"unsafe"
 
 	"github.com/ctx42/testing/internal/cases"
 	"github.com/ctx42/testing/internal/types"
@@ -78,10 +79,10 @@ func Test_WillPanic(t *testing.T) {
 
 		// --- Then ---
 		if val != nil {
-			t.Error("expected WillPanic to return empty string")
+			t.Error("expected WillPanic to return an empty string")
 		}
 		if stack != "" {
-			t.Error("expected WillPanic to return empty string")
+			t.Error("expected WillPanic to return an empty string")
 		}
 	})
 }
@@ -205,6 +206,8 @@ func Test_Same_tabular(t *testing.T) {
 		{"chanel nil same type both", cA, cB, true},
 	}
 
+	wMsg := "expected same:\n  want: %t\n  have: %t"
+
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
@@ -212,10 +215,108 @@ func Test_Same_tabular(t *testing.T) {
 
 			// --- Then ---
 			if !reflect.DeepEqual(tc.same, have) {
-				wMsg := "expected same:\n" +
-					"  want: %t\n" +
-					"  have: %t"
 				t.Errorf(wMsg, have, tc.same)
+			}
+		})
+	}
+}
+
+func Test_Value(t *testing.T) {
+	t.Run("function", func(t *testing.T) {
+		// --- Given ---
+		add := func(a, b int) int { return a + b }
+
+		// --- When ---
+		haveVal, haveOK := Value(reflect.ValueOf(add))
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected Value to return true")
+		}
+		if haveVal == nil {
+			t.Error("expected Value to return non-nil value")
+		}
+		fn, ok := haveVal.(func(int, int) int)
+		if !ok {
+			t.Errorf("expected Value to return `func(int, int) int` function")
+		}
+		have := fn(1, 2)
+		if 3 != have {
+			t.Errorf("expected the correct result")
+		}
+	})
+
+	t.Run("interface", func(t *testing.T) {
+		// --- Given ---
+		val := [][]any{{"str"}}
+		in := reflect.ValueOf(val).Index(0).Index(0)
+
+		// --- When ---
+		haveVal, haveOK := Value(in)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected Value to return true")
+		}
+		if "str" != haveVal.(string) {
+			t.Error("expected to get the correct value")
+		}
+	})
+}
+
+func Test_Value_tabular(t *testing.T) {
+	chn := make(chan int)
+	m := make(map[string]int)
+	ptr := &types.TPtr{}
+
+	tt := []struct {
+		testN string
+
+		in      any
+		wantVal any
+		wantOK  bool
+	}{
+		{"nil", nil, nil, true},
+		{"bool - true", true, true, true},
+		{"bool - false", false, false, true},
+		{"int", 42, 42, true},
+		{"int8", int8(42), int8(42), true},
+		{"int16", int16(42), int16(42), true},
+		{"int32", int32(42), int32(42), true},
+		{"int64", int64(42), int64(42), true},
+		{"uint", uint(42), uint(42), true},
+		{"uint8", uint8(42), uint8(42), true},
+		{"uint16", uint16(42), uint16(42), true},
+		{"uint32", uint32(42), uint32(42), true},
+		{"uint64", uint64(42), uint64(42), true},
+		{"uintptr", uintptr(42), uintptr(42), true},
+		{"float32", float32(42), float32(42), true},
+		{"float64", float64(42), float64(42), true},
+		{"complex64", complex64(42), complex64(42), true},
+		{"complex128", complex128(42), complex128(42), true},
+		{"array", [...]int{1, 2, 3}, [...]int{1, 2, 3}, true},
+		{"chan", chn, chn, true},
+		{"map", m, m, true},
+		{"pointer", ptr, ptr, true},
+		{"slice", []int{1, 2, 3}, []int{1, 2, 3}, true},
+		{"string", "abc", "abc", true},
+		{"struct", types.TPtr{}, types.TPtr{}, true},
+		{"unsafe pointer", unsafe.Pointer(ptr), uintptr(unsafe.Pointer(ptr)), true},
+	}
+
+	wMsg := "expected same:\n  want: %v\n  have: %v"
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			haveVal, haveOK := Value(reflect.ValueOf(tc.in))
+
+			// --- Then ---
+			if !reflect.DeepEqual(tc.wantVal, haveVal) {
+				t.Errorf(wMsg, tc.wantVal, haveVal)
+			}
+			if !reflect.DeepEqual(tc.wantOK, haveOK) {
+				t.Errorf(wMsg, tc.wantOK, haveOK)
 			}
 		})
 	}

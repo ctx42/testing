@@ -24,7 +24,6 @@ import (
 //   - [reflect.Uint16]
 //   - [reflect.Uint32]
 //   - [reflect.Uint64]
-//   - [reflect.Uintptr]
 //   - [reflect.Float32]
 //   - [reflect.Float64]
 //   - [reflect.String]
@@ -32,11 +31,17 @@ import (
 // It returns string representation in the format defined by [Dump]
 // configuration.
 func SimpleDumper(dmp Dump, lvl int, val reflect.Value) string {
-	v := val.Interface()
+	var v any
 
 	var format string
 	switch val.Kind() {
+	case reflect.Bool:
+		v = val.Bool()
+		format = "%v"
+
 	case reflect.String:
+		str := val.String()
+		v = str
 		length := val.Len()
 		switch {
 		case dmp.flatStrings:
@@ -45,7 +50,7 @@ func SimpleDumper(dmp Dump, lvl int, val reflect.Value) string {
 			format = `%q`
 		case dmp.FlatStrings > 0 && length <= dmp.FlatStrings:
 			format = `%q`
-		case strings.Contains(val.String(), "\n"):
+		case strings.Contains(str, "\n"):
 			format = "%v"
 		default:
 			format = "%q"
@@ -53,23 +58,25 @@ func SimpleDumper(dmp Dump, lvl int, val reflect.Value) string {
 
 	case reflect.Float32:
 		format = "%s"
-		f := float64(v.(float32)) // nolint: forcetypeassert
+		f := float64(float32(val.Float()))
 		v = strconv.FormatFloat(f, 'f', -1, 32)
 
 	case reflect.Float64:
 		format = "%s"
-		f := v.(float64) // nolint: forcetypeassert
-		v = strconv.FormatFloat(f, 'f', -1, 64)
+		v = strconv.FormatFloat(val.Float(), 'f', -1, 64)
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		v = val.Int()
 		format = "%d"
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32,
 		reflect.Uint64:
+		v = val.Uint()
 		format = "%d"
 
 	default:
-		format = "%v"
+		v = ValErrUsage
+		format = "%s"
 	}
 
 	prn := NewPrinter(dmp)

@@ -1,4 +1,4 @@
-Default presentation of a simple struct.
+Default presentation of a simple struct without private fields.
 ---
 {
   Int: 1,
@@ -7,5 +7,4 @@ Default presentation of a simple struct.
   Dur: "3ns",
   Loc: "Europe/Warsaw",
   TAp: nil,
-  private: 0,
 }

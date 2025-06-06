@@ -33,6 +33,7 @@ func ExampleDump_Any() {
 	//   Dur: "3ns",
 	//   Loc: "Europe/Warsaw",
 	//   TAp: nil,
+	//   private: 0,
 	// }
 }
 

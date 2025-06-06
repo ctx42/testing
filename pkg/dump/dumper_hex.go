@@ -22,7 +22,7 @@ func HexPtrDumper(dmp Dump, lvl int, val reflect.Value) string {
 	var str string
 	switch val.Kind() {
 	case reflect.Uint8:
-		str = fmt.Sprintf("0x%x", val.Interface())
+		str = fmt.Sprintf("0x%x", val.Uint())
 	case reflect.Uintptr:
 		if !dmp.PtrAddr {
 			return ValAddr

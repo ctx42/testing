@@ -5,6 +5,7 @@
 package dump
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -60,6 +61,7 @@ var (
 	typDur      = reflect.TypeOf(time.Duration(0))
 	typLocation = reflect.TypeOf(time.Location{})
 	typTime     = reflect.TypeOf(time.Time{})
+	typError    = reflect.TypeOf((*error)(nil)).Elem()
 )
 
 var nilVal = reflect.ValueOf(nil)
@@ -90,6 +92,10 @@ func WithCompact(dmp *Dump) { dmp.Compact = true }
 // WithPtrAddr is an option for [New] which makes [Dump] display pointer
 // addresses.
 func WithPtrAddr(dmp *Dump) { dmp.PtrAddr = true }
+
+// WithNoPrivate is an option for [New] which makes [Dump] skip displaying
+// values for not exported fields.
+func WithNoPrivate(dmp *Dump) { dmp.PrintPrivate = false }
 
 // WithTimeFormat is an option for [New] which makes [Dump] display [time.Time]
 // using a given format. The format might be a standard Go time formating
@@ -155,6 +161,9 @@ type Dump struct {
 	// Print types.
 	PrintType bool
 
+	// Controls if the not exported field values should be printed.
+	PrintPrivate bool
+
 	// Use "any" instead of "interface{}".
 	UseAny bool
 
@@ -187,14 +196,15 @@ type Dump struct {
 // New returns new instance of [Dump].
 func New(opts ...Option) Dump {
 	dmp := Dump{
-		FlatStrings: 200,
-		TimeFormat:  TimeFormat,
-		PrintType:   true,
-		UseAny:      true,
-		Dumpers:     make(map[reflect.Type]Dumper),
-		MaxDepth:    Depth,
-		Indent:      Indent,
-		TabWidth:    TabWidth,
+		FlatStrings:  200,
+		TimeFormat:   TimeFormat,
+		PrintType:    true,
+		PrintPrivate: true,
+		UseAny:       true,
+		Dumpers:      make(map[reflect.Type]Dumper),
+		MaxDepth:     Depth,
+		Indent:       Indent,
+		TabWidth:     TabWidth,
 	}
 	for _, opt := range opts {
 		opt(&dmp)
@@ -301,6 +311,16 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 	if knd != reflect.Invalid {
 		if fn, ok := dmp.Dumpers[val.Type()]; ok {
 			return fn(dmp, lvl, val), knd
+		}
+	}
+
+	if val.IsValid() {
+		typ := val.Type()
+		// Special case for type: error.
+		if typ == typError || typ.String() == "*errors.errorString" {
+			str := fmt.Sprintf("%q", val.Interface().(error).Error())
+			prn := NewPrinter(dmp)
+			return prn.Tab(dmp.Indent + lvl).Write(str).String(), knd
 		}
 	}
 
