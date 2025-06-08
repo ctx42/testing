@@ -1,3 +1,7 @@
+## v0.14.0 (Sun, 08 Jun 2025 17:31:52 UTC)
+- Fix linting errors.
+- The goldy golden files can be Go text templates.
+
 ## v0.13.0 (Fri, 06 Jun 2025 13:13:44 UTC)
 - Dump values of not exported fields, add special case for type error.
 
