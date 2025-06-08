@@ -318,7 +318,8 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 		typ := val.Type()
 		// Special case for type: error.
 		if typ == typError || typ.String() == "*errors.errorString" {
-			str := fmt.Sprintf("%q", val.Interface().(error).Error())
+			err := val.Interface().(error) // nolint: forcetypeassert
+			str = fmt.Sprintf("%q", err.Error())
 			prn := NewPrinter(dmp)
 			return prn.Tab(dmp.Indent + lvl).Write(str).String(), knd
 		}

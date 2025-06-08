@@ -241,7 +241,7 @@ func Test_Value(t *testing.T) {
 			t.Errorf("expected Value to return `func(int, int) int` function")
 		}
 		have := fn(1, 2)
-		if 3 != have {
+		if have != 3 {
 			t.Errorf("expected the correct result")
 		}
 	})
@@ -258,7 +258,7 @@ func Test_Value(t *testing.T) {
 		if !haveOK {
 			t.Error("expected Value to return true")
 		}
-		if "str" != haveVal.(string) {
+		if haveVal.(string) != "str" {
 			t.Error("expected to get the correct value")
 		}
 	})

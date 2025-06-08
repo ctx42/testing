@@ -125,6 +125,8 @@ func same(want, have reflect.Value) bool {
 }
 
 // Value returns the underlying value represented by the [reflect.Value].
+//
+// nolint: cyclop
 func Value(val reflect.Value) (any, bool) {
 	switch knd := val.Kind(); knd {
 	case reflect.Invalid:
@@ -134,21 +136,21 @@ func Value(val reflect.Value) (any, bool) {
 	case reflect.Int:
 		return int(val.Int()), true
 	case reflect.Int8:
-		return int8(val.Int()), true
+		return int8(val.Int()), true // nolint: gosec
 	case reflect.Int16:
-		return int16(val.Int()), true
+		return int16(val.Int()), true // nolint: gosec
 	case reflect.Int32:
-		return int32(val.Int()), true
+		return int32(val.Int()), true // nolint: gosec
 	case reflect.Int64:
 		return val.Int(), true
 	case reflect.Uint:
 		return uint(val.Uint()), true
 	case reflect.Uint8:
-		return uint8(val.Uint()), true
+		return uint8(val.Uint()), true // nolint: gosec
 	case reflect.Uint16:
-		return uint16(val.Uint()), true
+		return uint16(val.Uint()), true // nolint: gosec
 	case reflect.Uint32:
-		return uint32(val.Uint()), true
+		return uint32(val.Uint()), true // nolint: gosec
 	case reflect.Uint64:
 		return val.Uint(), true
 	case reflect.Uintptr:
