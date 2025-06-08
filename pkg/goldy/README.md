@@ -6,6 +6,7 @@
     * [Example](#example)
       * [Directory Structure](#directory-structure)
       * [Test](#test)
+    * [Golden file template](#golden-file-template)
     * [Error Handling](#error-handling)
   * [Updating Golden Files](#updating-golden-files)
 <!-- TOC -->
@@ -21,20 +22,17 @@ files in tests.
 
 ## Usage
 
-The `goldy` package provides a single function, `goldy.New`, which reads the
+The `goldy` package provides a single function, `goldy.Open`, which reads the
 content of a golden file.
 
 ### Opening Golden Files
 
 ```go
-func New(t core.T, pth string) string
+func Open(t core.T, pth string, opts ...func(*Goldy)) *Goldy
 ```
 
 - `t core.T`: A test context (typically a `*testing.T`).
 - `pth string`: The golden file path relative to the test file or absolute.
-
-The internal `core.T` interface enables unit testing by allowing mocks,
-ensuring `goldy` integrates seamlessly with test helpers.
 
 ### Golden File Format
 
@@ -86,13 +84,31 @@ func Test_Generator(t *testing.T) {
         have := Generate() // Returns string.
 
         // Then
-        want := goldy.New(t, "testdata/case1.gld").String()
+        want := goldy.Open(t, "testdata/case1.gld").String()
         if want != have {
             format := "expected values to be equal:\n  want: %q\n  have: %q"
             t.Errorf(format, want, have)
         }
     })
 }
+```
+
+### Golden file template
+
+For cases where a golden file needs dynamic content, you can use Go text
+templates.
+
+```text
+Golden file template.
+---
+Content #{{ .first }}.
+```
+
+then use it:
+
+```go
+data := WithData(map[string]any{"first": 1})
+gld := Open(tspy, "testdata/test_tpl.gld", data)
 ```
 
 ### Error Handling
@@ -103,16 +119,11 @@ failed. This ensures clear feedback for debugging.
 
 ## Updating Golden Files
 
-The `Goldy` struct, returned by the `New` function, provides a `Save` method to 
-update a golden file. Calling `Goldy.Save` writes the modified `Comment` and 
-`Content` fields to the original file path. The `Comment` field typically 
-contains metadata or a description, while `Content` holds the expected test 
-output, separated by the `Marker`.
-
 Example:
 
 ```go
-gld := gold.New(t, "test.gld")
-gld.Comment = "Mock for TestInterface"
-gld.Content = "type TestInterface struct {...}"
+gld := gold.Open(t, "test.gld")
+gld.SetComment("Mock for TestInterface")
+gld.SetContent("type TestInterface struct {...}")
 gld.Save()
+```

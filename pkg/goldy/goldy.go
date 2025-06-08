@@ -11,32 +11,43 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"text/template"
 
 	"github.com/ctx42/testing/internal/core"
 )
 
-// Marker denotes a separator between a comment and the content in a golden
-// test file.
+// Marker is a separator between a golden file comment and the content.
 const Marker = "---\n"
 
-// byteseq represents byte sequences.
-type byteseq interface {
-	~string | ~[]byte
+// WithData is the [Open] option setting [Goldy] data for golden files which
+// are text templates.
+func WithData(data map[string]any) func(*Goldy) {
+	return func(gld *Goldy) { gld.data = data }
 }
 
-// Goldy represents golden file.
+// Goldy represents a golden file.
+//
+// Example golden file:
+//
+//	Multi line
+//	golden file documentation.
+//	---
+//	Content line #1.
+//	Content line #2.
 type Goldy struct {
-	Path    string // Path to the golden file.
-	Comment string // Golden file comment.
-	Content []byte // Golden file content after the marker.
-	t       core.T // Test manager.
+	pth     string         // Path to the golden file.
+	comment string         // Golden file comment.
+	content []byte         // Golden file content.
+	data    map[string]any // Template data.
+	tpl     []byte         // Raw text template.
+	t       core.T         // Test manager.
 }
 
-// Open instantiates [Golden] based on the provided path to the golden file.
-// The contents start after the mandatory [Marker] line, anything before it is
-// ignored. It's customary to have short documentation about golden file
-// contents before the marker.
-func Open(t core.T, pth string) *Goldy {
+// Open instantiates [Goldy] based on the provided path to the golden file and
+// options. The golden file content starts after the mandatory [Marker] line,
+// anything before it is ignored. It's customary to have short golden file
+// documentation before the marker.
+func Open(t core.T, pth string, opts ...func(*Goldy)) *Goldy {
 	t.Helper()
 
 	fil, err := os.Open(pth)
@@ -47,9 +58,12 @@ func Open(t core.T, pth string) *Goldy {
 
 	mark := []byte(Marker)
 	gld := &Goldy{
-		Path:    pth,
-		Content: make([]byte, 0, 4*1024),
+		pth:     pth,
+		content: make([]byte, 0, 4*1024),
 		t:       t,
+	}
+	for _, opt := range opts {
+		opt(gld)
 	}
 
 	var started bool
@@ -69,55 +83,85 @@ func Open(t core.T, pth string) *Goldy {
 					t.Fatalf("the golden file is missing the %q marker", m)
 					return nil
 				}
-				gld.Comment += string(line)
+				gld.comment += string(line)
 			}
 			continue
 		}
-		gld.Content = append(gld.Content, line...)
+		gld.content = append(gld.content, line...)
 		if eof {
 			break
 		}
 	}
-	return gld
-}
 
-// New returns new instance of [Goldy].
-func New[C byteseq](t core.T, pth, comment string, content C) *Goldy {
-	t.Helper()
-	return &Goldy{
-		Path:    pth,
-		Comment: comment,
-		Content: append([]byte{}, content...),
-		t:       t,
+	if gld.data != nil {
+		gld.tpl = gld.content
+		return gld.renderTemplate()
 	}
-}
-
-// String implements [fmt.Stringer] interface and returns golden file content as
-// string.
-func (gld *Goldy) String() string { return string(gld.Content) }
-
-// Bytes return clone of the [Goldy.Content].
-func (gld *Goldy) Bytes() []byte { return slices.Clone(gld.Content) }
-
-// SetContent is a helper function to set content from a string.
-func (gld *Goldy) SetContent(str string) *Goldy {
-	gld.Content = []byte(str)
 	return gld
 }
 
-// Save saves the golden file to the [Goldy.Path].
+// String implements [fmt.Stringer] and returns golden file content.
+func (gld *Goldy) String() string { return string(gld.content) }
+
+// Bytes return clone of the golden file content.
+func (gld *Goldy) Bytes() []byte { return slices.Clone(gld.content) }
+
+// SetComment sets a comment for the golden file. Implements fluent interface.
+func (gld *Goldy) SetComment(comment string) *Goldy {
+	gld.comment = comment
+	return gld
+}
+
+// SetContent sets golden file content. If the golden file was a template, it
+// expects a template string. Implements fluent interface.
+func (gld *Goldy) SetContent(content string) *Goldy {
+	gld.content = []byte(content)
+	if gld.data != nil {
+		gld.tpl = gld.content
+		return gld.renderTemplate()
+	}
+	return gld
+}
+
+// Save saves the golden file to the original path.
 func (gld *Goldy) Save() {
 	gld.t.Helper()
 
 	buf := &bytes.Buffer{}
-	comment := gld.Comment
+	comment := gld.comment
 	if !strings.HasSuffix(comment, "\n") {
 		comment += "\n"
 	}
 	buf.WriteString(comment)
 	buf.WriteString(Marker)
-	buf.Write(gld.Content)
-	if err := os.WriteFile(gld.Path, buf.Bytes(), 0600); err != nil {
-		gld.t.Fatalf("error writing golden file (%s): %v", gld.Path, err)
+	if gld.data != nil {
+		buf.Write(gld.tpl)
+	} else {
+		buf.Write(gld.content)
 	}
+	if err := os.WriteFile(gld.pth, buf.Bytes(), 0600); err != nil {
+		gld.t.Fatalf("error writing golden file (%s): %v", gld.pth, err)
+	}
+}
+
+// renderTemplate renders golden file content as a text template using data
+// from [Goldy.data].
+func (gld *Goldy) renderTemplate() *Goldy {
+	gld.t.Helper()
+
+	var err error
+	tpl := template.New("goldy")
+	tpl.Option("missingkey=error")
+	if tpl, err = tpl.Parse(string(gld.content)); err != nil {
+		gld.t.Fatal(err)
+		return nil
+	}
+
+	buf := &bytes.Buffer{}
+	if err = tpl.Execute(buf, gld.data); err != nil {
+		gld.t.Fatal(err)
+		return nil
+	}
+	gld.content = buf.Bytes()
+	return gld
 }

@@ -1,0 +1,4 @@
+Invalid golden file template.
+---
+Content #1.
+Content #{{ .second }.
