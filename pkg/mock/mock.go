@@ -179,13 +179,6 @@ func (mck *Mock) Proxy(met any, name ...string) *Call {
 	return call
 }
 
-// Called tells the mock object that a method has been called with given
-// arguments, and returns an array of arguments to return. Panics if the call
-// is unexpected (i.e. not preceded by appropriate [Mock.On] or [Mock.OnAny]
-// calls).
-//
-// If [Call.Until] or [Call.After] is set, it blocks.
-
 // Called records that a method was invoked with the given arguments and
 // returns the configured return values as a [Arguments] slice. It panics if
 // the call is unexpected, meaning no matching [Mock.On] or [Mock.OnAny]
@@ -216,7 +209,7 @@ func (mck *Mock) called(skip int) string {
 }
 
 // Call calls method on the mock with arguments and returns the mocked method
-// [Arguments]. Panics if the call is unexpected (i.e. not preceded by
+// [Arguments]. Panics if the call is unexpected (i.e., not preceded by
 // appropriate [Mock.On] calls). Blocks before returning if [Call.Until] or
 // [Call.After] were used.
 func (mck *Mock) Call(method string, args ...any) Arguments {
@@ -418,9 +411,7 @@ func (mck *Mock) AssertExpectations() bool {
 			hCls = "call"
 		}
 
-		name := formatMethod(call.Method, call.args, call.returns)
-		names = append(names, name)
-
+		names = append(names, call.Method)
 		format := "expected %d %s received %d %s"
 		why := fmt.Sprintf(format, call.wantCalls, wCls, call.haveCalls, hCls)
 		whys = append(whys, why)

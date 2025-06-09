@@ -162,9 +162,9 @@ func Test_twoColumns_tabular(t *testing.T) {
 			[]string{"aaa", "bb", "c"},
 			[]string{"111", "222", "333"},
 			[]string{
-				"aaa 111",
-				"bb  222",
-				"c   333",
+				"aaa -> 111",
+				"bb  -> 222",
+				"c   -> 333",
 			},
 		},
 	}

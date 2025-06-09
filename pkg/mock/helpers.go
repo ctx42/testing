@@ -91,7 +91,7 @@ func formatMethod(method string, args, rets Arguments) string {
 	return strings.Join(out, "\n")
 }
 
-// formatArgs returns formated multi line string representing arguments. Uses
+// formatArgs returns formated multi-line string representing arguments. Uses
 // internal [dump.Dump].
 func formatArgs(args Arguments) string {
 	if len(args) == 0 {
@@ -142,7 +142,7 @@ func methodName(met reflect.Value) string {
 	return last
 }
 
-// twoColumns aligns the text in second column to the longest string in the
+// twoColumns aligns the text in the second column to the longest string in the
 // first column. Stores the result in the first column.
 //
 // Example:
@@ -159,6 +159,6 @@ func twoColumns(col1, col2 []string) {
 	}
 	for i, s := range col2 {
 		ind := strings.Repeat(" ", longest-len(col1[i]))
-		col1[i] = fmt.Sprintf("%s %s%s", col1[i], ind, s)
+		col1[i] = fmt.Sprintf("%s %s-> %s", col1[i], ind, s)
 	}
 }

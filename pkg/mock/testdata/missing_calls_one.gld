@@ -2,4 +2,4 @@ Log message when code being tested did not call single expected mocked method.
 ---
 [mock] too few method calls:
   missing calls:
-                 MethodBool(bool) expected 1 call received 0 calls
+                 MethodBool -> expected 1 call received 0 calls

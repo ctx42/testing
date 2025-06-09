@@ -2,6 +2,6 @@ Log message when code being tested did not call mocks methods as expected.
 ---
 [mock] too few method calls:
   missing calls:
-                 MethodBool(bool)                       expected 1 call received 0 calls
-                 MethodInts(int, int, int) (int, <nil>) expected 3 calls received 1 call
-                 MethodIntVar(int, int) <nil>           expected 2 calls received 0 calls
+                 MethodBool   -> expected 1 call received 0 calls
+                 MethodInts   -> expected 3 calls received 1 call
+                 MethodIntVar -> expected 2 calls received 0 calls
