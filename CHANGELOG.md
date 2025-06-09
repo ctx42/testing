@@ -1,3 +1,6 @@
+## v0.14.1 (Mon, 09 Jun 2025 14:42:23 UTC)
+- Simplify mock error messages. In many instances we are not able to display all the arguments and returns properly, especially in cases when matchers or specifically formated functions are used as return arguments.
+
 ## v0.14.0 (Sun, 08 Jun 2025 17:31:52 UTC)
 - Fix linting errors.
 - The goldy golden files can be Go text templates.
