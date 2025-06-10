@@ -1,3 +1,6 @@
+## v0.14.2 (Tue, 10 Jun 2025 07:28:48 UTC)
+- Fix mocker file name generation when the interface name has all capital letters.
+
 ## v0.14.1 (Mon, 09 Jun 2025 14:42:23 UTC)
 - Simplify mock error messages. In many instances we are not able to display all the arguments and returns properly, especially in cases when matchers or specifically formated functions are used as return arguments.
 
