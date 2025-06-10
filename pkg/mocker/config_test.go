@@ -178,6 +178,19 @@ func Test_newConfig(t *testing.T) {
 		assert.Equal(t, filepath.Join(wd, "my_mock.go"), have.tgtFilename)
 	})
 
+	t.Run("interface name has all capital letters", func(t *testing.T) {
+		// --- Given ---
+		wd := must.Value(os.Getwd())
+
+		// --- When ---
+		have, err := newConfig("DB")
+
+		// --- Then ---
+		assert.NoError(t, err)
+		assert.Equal(t, "DBMock", have.tgtName)
+		assert.Equal(t, filepath.Join(wd, "db_mock.go"), have.tgtFilename)
+	})
+
 	t.Run("with a custom target filename", func(t *testing.T) {
 		// --- Given ---
 		wd := must.Value(os.Getwd())

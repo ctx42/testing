@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Option represents a mocker option.
@@ -111,7 +112,13 @@ func newConfig(name string, opts ...Option) (Config, error) {
 		}
 	} else {
 		if cfg.tgtFilename == "" {
-			cfg.tgtFilename = toLowerSnakeCase(cfg.tgtName) + ".go"
+			var tmp string
+			if strings.HasSuffix(cfg.tgtName, "Mock") {
+				tmp = cfg.tgtName[:len(cfg.tgtName)-4]
+				cfg.tgtFilename = toLowerSnakeCase(tmp) + "_mock.go"
+			} else {
+				cfg.tgtFilename = toLowerSnakeCase(cfg.tgtName) + ".go"
+			}
 		}
 		if !filepath.IsAbs(cfg.tgtFilename) {
 			cfg.tgtFilename = filepath.Join(cfg.tgtPkg.pkgDir, cfg.tgtFilename)
