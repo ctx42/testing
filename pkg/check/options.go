@@ -103,6 +103,24 @@ func WithTimeFormat(format string) Option {
 	}
 }
 
+// WithZone is a [Check] option which specifies the timezone to apply to the
+// "want" date before comparing times. It ensures consistent timezone handling
+// for string-based date inputs. For [time.Time] values, it calls
+// [time.Time.In] to adjust the timezone.
+//
+// Example:
+//
+//	assert.Exact(t, "2000-01-02T02:04:05Z", have, check.WithZone(WAW))
+//
+// In the above example the string date will be parsed then [time.Time.In]
+// method will set its timezone.
+func WithZone(zone *time.Location) Option {
+	return func(ops Options) Options {
+		ops.Zone = zone
+		return ops
+	}
+}
+
 // WithRecent is a [Check] option setting duration used to compare recent dates.
 func WithRecent(recent time.Duration) Option {
 	return func(ops Options) Options {
@@ -212,6 +230,7 @@ func WithOptions(src Options) Option {
 	return func(ops Options) Options {
 		ops.Dumper = src.Dumper
 		ops.TimeFormat = src.TimeFormat
+		ops.Zone = src.Zone
 		ops.Recent = src.Recent
 		ops.Trail = src.Trail
 		ops.TrailLog = src.TrailLog
@@ -232,6 +251,9 @@ type Options struct {
 
 	// Time format when parsing time strings (default: [time.RFC3339]).
 	TimeFormat string
+
+	// See [WithZone].
+	Zone *time.Location
 
 	// Duration when comparing recent dates.
 	Recent time.Duration
@@ -272,6 +294,7 @@ func DefaultOptions(opts ...Option) Options {
 		),
 		Recent:       RecentDuration,
 		TimeFormat:   ParseTimeFormat,
+		Zone:         nil,
 		TypeCheckers: maps.Clone(typeCheckers),
 		now:          time.Now,
 	}

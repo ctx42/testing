@@ -397,12 +397,20 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 	ops := DefaultOptions(opts...)
 	switch val := tim.(type) {
 	case time.Time:
+		if ops.Zone != nil {
+			val = val.In(ops.Zone) // TODO(rz): test this.
+		}
 		return val, val.Format(time.RFC3339Nano), timeTypeTim, nil
 
 	case string:
 		have, err := time.Parse(ops.TimeFormat, val)
 		if err == nil {
-			return have.UTC(), val, timeTypeStr, nil
+			if ops.Zone != nil {
+				have = have.In(ops.Zone) // TODO(rz): test this.
+			} else {
+				have = have.UTC() // TODO(rz): test this.
+			}
+			return have, val, timeTypeStr, nil
 		}
 
 		var pe *time.ParseError
@@ -421,11 +429,23 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 
 	case int:
 		str := strconv.Itoa(val)
-		return time.Unix(int64(val), 0).UTC(), str, timeTypeInt, nil
+		ts := time.Unix(int64(val), 0)
+		if ops.Zone != nil {
+			ts = ts.In(ops.Zone) // TODO(rz): test this.
+		} else {
+			ts = ts.UTC() // TODO(rz): test this.
+		}
+		return ts, str, timeTypeInt, nil
 
 	case int64:
 		str := strconv.FormatInt(val, 10)
-		return time.Unix(val, 0).UTC(), str, timeTypeInt64, nil
+		ts := time.Unix(val, 0)
+		if ops.Zone != nil {
+			ts = ts.In(ops.Zone) // TODO(rz): test this.
+		} else {
+			ts = ts.UTC() // TODO(rz): test this.
+		}
+		return ts, str, timeTypeInt64, nil
 
 	default:
 		str := fmt.Sprintf("%v", val)

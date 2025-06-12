@@ -15,6 +15,7 @@ import (
 	"github.com/ctx42/testing/internal/affirm"
 	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/pkg/dump"
+	"github.com/ctx42/testing/pkg/must"
 )
 
 func Test_RegisterTypeChecker(t *testing.T) {
@@ -106,6 +107,18 @@ func Test_WithTimeFormat(t *testing.T) {
 
 	// --- Then ---
 	affirm.Equal(t, time.RFC3339, have.TimeFormat)
+}
+
+func Test_WithZone(t *testing.T) {
+	// --- Given ---
+	waw := must.Value(time.LoadLocation("Europe/Warsaw"))
+	ops := Options{}
+
+	// --- When ---
+	have := WithZone(waw)(ops)
+
+	// --- Then ---
+	affirm.Equal(t, true, core.Same(waw, have.Zone))
 }
 
 func Test_WithRecent(t *testing.T) {
@@ -214,6 +227,7 @@ func Test_WithSkipUnexported(t *testing.T) {
 
 func Test_WithOptions(t *testing.T) {
 	// --- Given ---
+	waw := must.Value(time.LoadLocation("Europe/Warsaw"))
 	trailLog := make([]string, 0)
 	ops := Options{
 		Dumper: dump.Dump{
@@ -234,6 +248,7 @@ func Test_WithOptions(t *testing.T) {
 			TabWidth: 4,
 		},
 		TimeFormat:     time.RFC3339,
+		Zone:           waw,
 		Recent:         123,
 		Trail:          "trail",
 		TrailLog:       &trailLog,
@@ -250,6 +265,7 @@ func Test_WithOptions(t *testing.T) {
 
 	// --- Then ---
 	affirm.Equal(t, true, core.Same(ops.Dumper.Dumpers, have.Dumper.Dumpers))
+	affirm.Equal(t, true, core.Same(ops.Zone, have.Zone))
 	affirm.Equal(t, true, core.Same(ops.TrailLog, have.TrailLog))
 	affirm.Equal(t, true, core.Same(ops.TypeCheckers, have.TypeCheckers))
 	affirm.Equal(t, true, core.Same(ops.TrailCheckers, have.TrailCheckers))
@@ -262,7 +278,7 @@ func Test_WithOptions(t *testing.T) {
 
 	// When those fail, add fields above.
 	affirm.Equal(t, 14, reflect.ValueOf(have.Dumper).NumField())
-	affirm.Equal(t, 11, reflect.ValueOf(have).NumField())
+	affirm.Equal(t, 12, reflect.ValueOf(have).NumField())
 }
 
 func Test_DefaultOptions(t *testing.T) {
@@ -275,6 +291,7 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, DefaultDumpTimeFormat, have.Dumper.TimeFormat)
 
 		affirm.Equal(t, DefaultParseTimeFormat, have.TimeFormat)
+		affirm.Nil(t, have.Zone)
 		affirm.Equal(t, DefaultRecentDuration, have.Recent)
 		affirm.Equal(t, "", have.Trail)
 		affirm.Equal(t, true, have.TrailLog == nil)
@@ -284,7 +301,7 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, false, have.SkipUnexported)
 		affirm.Equal(t, false, have.CmpSimpleType)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 11, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 12, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("with options", func(t *testing.T) {
@@ -296,6 +313,7 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, DefaultDumpTimeFormat, have.Dumper.TimeFormat)
 
 		affirm.Equal(t, DefaultParseTimeFormat, have.TimeFormat)
+		affirm.Nil(t, have.Zone)
 		affirm.Equal(t, DefaultRecentDuration, have.Recent)
 		affirm.Equal(t, "type.field", have.Trail)
 		affirm.Equal(t, true, have.TrailLog == nil)
@@ -305,7 +323,7 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, false, have.SkipUnexported)
 		affirm.Equal(t, false, have.CmpSimpleType)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 11, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 12, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("TypeCheckers field is a clone of a global map", func(t *testing.T) {
