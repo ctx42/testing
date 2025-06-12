@@ -227,12 +227,9 @@ func Test_Value(t *testing.T) {
 		add := func(a, b int) int { return a + b }
 
 		// --- When ---
-		haveVal, haveOK := Value(reflect.ValueOf(add))
+		haveVal := Value(reflect.ValueOf(add))
 
 		// --- Then ---
-		if !haveOK {
-			t.Error("expected Value to return true")
-		}
 		if haveVal == nil {
 			t.Error("expected Value to return non-nil value")
 		}
@@ -252,12 +249,9 @@ func Test_Value(t *testing.T) {
 		in := reflect.ValueOf(val).Index(0).Index(0)
 
 		// --- When ---
-		haveVal, haveOK := Value(in)
+		haveVal := Value(in)
 
 		// --- Then ---
-		if !haveOK {
-			t.Error("expected Value to return true")
-		}
 		if haveVal.(string) != "str" {
 			t.Error("expected to get the correct value")
 		}
@@ -274,11 +268,65 @@ func Test_Value_tabular(t *testing.T) {
 
 		in      any
 		wantVal any
+	}{
+		{"nil", nil, nil},
+		{"bool - true", true, true},
+		{"bool - false", false, false},
+		{"int", 42, 42},
+		{"int8", int8(42), int8(42)},
+		{"int16", int16(42), int16(42)},
+		{"int32", int32(42), int32(42)},
+		{"int64", int64(42), int64(42)},
+		{"uint", uint(42), uint(42)},
+		{"uint8", uint8(42), uint8(42)},
+		{"uint16", uint16(42), uint16(42)},
+		{"uint32", uint32(42), uint32(42)},
+		{"uint64", uint64(42), uint64(42)},
+		{"uintptr", uintptr(42), uintptr(42)},
+		{"float32", float32(42), float32(42)},
+		{"float64", float64(42), float64(42)},
+		{"complex64", complex64(42), complex64(42)},
+		{"complex128", complex128(42), complex128(42)},
+		{"array", [...]int{1, 2, 3}, [...]int{1, 2, 3}},
+		{"chan", chn, chn},
+		{"map", m, m},
+		{"pointer", ptr, ptr},
+		{"slice", []int{1, 2, 3}, []int{1, 2, 3}},
+		{"string", "abc", "abc"},
+		{"struct", types.TPtr{}, types.TPtr{}},
+		{"unsafe pointer", unsafe.Pointer(ptr), uintptr(unsafe.Pointer(ptr))},
+	}
+
+	wMsg := "expected same:\n  want: %v\n  have: %v"
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			haveVal := Value(reflect.ValueOf(tc.in))
+
+			// --- Then ---
+			if !reflect.DeepEqual(tc.wantVal, haveVal) {
+				t.Errorf(wMsg, tc.wantVal, haveVal)
+			}
+		})
+	}
+}
+
+func Test_IsSimpleType_tabular(t *testing.T) {
+	chn := make(chan int)
+	m := make(map[string]int)
+	ptr := &types.TPtr{}
+
+	tt := []struct {
+		testN string
+
+		in      any
+		wantVal any
 		wantOK  bool
 	}{
-		{"nil", nil, nil, true},
-		{"bool - true", true, true, true},
+		{"nil", nil, nil, false},
 		{"bool - false", false, false, true},
+		{"bool - true", false, false, true},
 		{"int", 42, 42, true},
 		{"int8", int8(42), int8(42), true},
 		{"int16", int16(42), int16(42), true},
@@ -289,30 +337,30 @@ func Test_Value_tabular(t *testing.T) {
 		{"uint16", uint16(42), uint16(42), true},
 		{"uint32", uint32(42), uint32(42), true},
 		{"uint64", uint64(42), uint64(42), true},
-		{"uintptr", uintptr(42), uintptr(42), true},
+		{"uintptr", uintptr(42), nil, false},
 		{"float32", float32(42), float32(42), true},
 		{"float64", float64(42), float64(42), true},
 		{"complex64", complex64(42), complex64(42), true},
 		{"complex128", complex128(42), complex128(42), true},
-		{"array", [...]int{1, 2, 3}, [...]int{1, 2, 3}, true},
-		{"chan", chn, chn, true},
-		{"map", m, m, true},
-		{"pointer", ptr, ptr, true},
-		{"slice", []int{1, 2, 3}, []int{1, 2, 3}, true},
+		{"array", [...]int{1, 2, 3}, nil, false},
+		{"chan", chn, nil, false},
+		{"map", m, nil, false},
+		{"pointer", ptr, nil, false},
+		{"slice", []int{1, 2, 3}, nil, false},
 		{"string", "abc", "abc", true},
-		{"struct", types.TPtr{}, types.TPtr{}, true},
-		{"unsafe pointer", unsafe.Pointer(ptr), uintptr(unsafe.Pointer(ptr)), true},
+		{"struct", types.TPtr{}, nil, false},
+		{"unsafe pointer", uintptr(unsafe.Pointer(ptr)), nil, false},
 	}
 
-	wMsg := "expected same:\n  want: %v\n  have: %v"
+	wMsg := "expected value:\n  want: %v\n  have: %v"
 
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			haveVal, haveOK := Value(reflect.ValueOf(tc.in))
+			haveVal, haveOK := IsSimpleType(reflect.ValueOf(tc.in))
 
 			// --- Then ---
-			if !reflect.DeepEqual(tc.wantVal, haveVal) {
+			if tc.wantVal != haveVal {
 				t.Errorf(wMsg, tc.wantVal, haveVal)
 			}
 			if !reflect.DeepEqual(tc.wantOK, haveOK) {

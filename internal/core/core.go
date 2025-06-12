@@ -125,12 +125,46 @@ func same(want, have reflect.Value) bool {
 }
 
 // Value returns the underlying value represented by the [reflect.Value].
+// Panics for unknown [reflect.Kind].
 //
 // nolint: cyclop
-func Value(val reflect.Value) (any, bool) {
+func Value(val reflect.Value) any {
+	if v, ok := IsSimpleType(val); ok {
+		return v
+	}
+
 	switch knd := val.Kind(); knd {
 	case reflect.Invalid:
-		return nil, true
+		return nil
+	case reflect.Array:
+		return val.Interface()
+	case reflect.Chan:
+		return val.Interface()
+	case reflect.Func:
+		return val.Interface()
+	case reflect.Interface:
+		return val.Interface()
+	case reflect.Map:
+		return val.Interface()
+	case reflect.Pointer:
+		return val.Interface()
+	case reflect.Slice:
+		return val.Interface()
+	case reflect.Struct:
+		return val.Interface()
+	case reflect.Uintptr:
+		return uintptr(val.Uint())
+	case reflect.UnsafePointer:
+		return val.Pointer()
+	default:
+		panic("unsupported value kind")
+	}
+}
+
+// IsSimpleType returns the underlying value and true when the provided
+// [reflect.Value] is a simple type. Otherwise, returns untyped nil and false.
+func IsSimpleType(val reflect.Value) (any, bool) {
+	switch knd := val.Kind(); knd {
 	case reflect.Bool:
 		return val.Bool(), true
 	case reflect.Int:
@@ -153,8 +187,6 @@ func Value(val reflect.Value) (any, bool) {
 		return uint32(val.Uint()), true // nolint: gosec
 	case reflect.Uint64:
 		return val.Uint(), true
-	case reflect.Uintptr:
-		return uintptr(val.Uint()), true
 	case reflect.Float32:
 		return float32(val.Float()), true
 	case reflect.Float64:
@@ -163,27 +195,8 @@ func Value(val reflect.Value) (any, bool) {
 		return complex64(val.Complex()), true
 	case reflect.Complex128:
 		return val.Complex(), true
-	case reflect.Array:
-		return val.Interface(), true
-	case reflect.Chan:
-		return val.Interface(), true
-	case reflect.Func:
-		return val.Interface(), true
-	case reflect.Interface:
-		return val.Interface(), true
-	case reflect.Map:
-		return val.Interface(), true
-	case reflect.Pointer:
-		return val.Interface(), true
-	case reflect.Slice:
-		return val.Interface(), true
 	case reflect.String:
 		return val.String(), true
-	case reflect.Struct:
-		return val.Interface(), true
-	case reflect.UnsafePointer:
-		return val.Pointer(), true
-	default:
-		panic("unsupported value kind")
 	}
+	return nil, false
 }
