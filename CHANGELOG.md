@@ -1,3 +1,6 @@
+## v0.17.0 (Thu, 12 Jun 2025 13:54:48 UTC)
+- Add WithZone option to support timezone adjustments in date comparisons.
+
 ## v0.16.0 (Thu, 12 Jun 2025 12:57:14 UTC)
 - Add core.IsSimpleType helper.
 - Add WithCmpBaseTypes option for comparing values with the same base type.
