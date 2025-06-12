@@ -241,6 +241,7 @@ func Test_WithOptions(t *testing.T) {
 		TrailCheckers:  make(map[string]Check),
 		SkipTrails:     make([]string, 0),
 		SkipUnexported: true,
+		CmpSimpleType:  true,
 		now:            time.Now,
 	}
 
@@ -261,7 +262,7 @@ func Test_WithOptions(t *testing.T) {
 
 	// When those fail, add fields above.
 	affirm.Equal(t, 14, reflect.ValueOf(have.Dumper).NumField())
-	affirm.Equal(t, 10, reflect.ValueOf(have).NumField())
+	affirm.Equal(t, 11, reflect.ValueOf(have).NumField())
 }
 
 func Test_DefaultOptions(t *testing.T) {
@@ -281,8 +282,9 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, true, have.TrailCheckers == nil)
 		affirm.Equal(t, true, have.SkipTrails == nil)
 		affirm.Equal(t, false, have.SkipUnexported)
+		affirm.Equal(t, false, have.CmpSimpleType)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 10, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 11, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("with options", func(t *testing.T) {
@@ -301,8 +303,9 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, true, have.TrailCheckers == nil)
 		affirm.Equal(t, true, have.SkipTrails == nil)
 		affirm.Equal(t, false, have.SkipUnexported)
+		affirm.Equal(t, false, have.CmpSimpleType)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 10, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 11, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("TypeCheckers field is a clone of a global map", func(t *testing.T) {

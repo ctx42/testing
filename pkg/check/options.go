@@ -164,6 +164,49 @@ func WithSkipUnexported(ops Options) Options {
 	return ops
 }
 
+// WithCmpBaseTypes is a [Check] option turning on simple base type comparisons.
+//
+// During a normal operation, when comparing values with different types, the
+// error is returned. Then this option is used, and both values have the same
+// underlying simple type the values of that base type will be compared.
+//
+// Simple types are defined as:
+//   - [reflect.Bool]
+//   - [reflect.Int]
+//   - [reflect.Int8]
+//   - [reflect.Int16]
+//   - [reflect.Int32]
+//   - [reflect.Int64]
+//   - [reflect.Uint]
+//   - [reflect.Uint8]
+//   - [reflect.Uint16]
+//   - [reflect.Uint32]
+//   - [reflect.Uint64]
+//   - [reflect.Float32]
+//   - [reflect.Float64]
+//   - [reflect.Complex64]
+//   - [reflect.Complex128]
+//   - [reflect.String]
+//
+// Example:
+//
+//	// --- Given ---
+//	type MyInt int
+//	const MyIntValue MyInt = 42
+//
+//	m0 := map[string]any{"A": MyIntValue}
+//	m1 := map[string]any{"A": 42}
+//
+//	// --- When ---
+//	err := Equal(m0, m1, WithCmpBaseTypes)
+//
+//	// --- Then ---
+//	assert.NoError(t, err)
+func WithCmpBaseTypes(ops Options) Options {
+	ops.CmpSimpleType = true
+	return ops
+}
+
 // WithOptions is a [Check] option which passes all options.
 func WithOptions(src Options) Option {
 	return func(ops Options) Options {
@@ -176,6 +219,7 @@ func WithOptions(src Options) Option {
 		ops.TrailCheckers = src.TrailCheckers
 		ops.SkipTrails = src.SkipTrails
 		ops.SkipUnexported = src.SkipUnexported
+		ops.CmpSimpleType = src.CmpSimpleType
 		ops.now = src.now
 		return ops
 	}
@@ -210,6 +254,9 @@ type Options struct {
 
 	// Skips all unexported fields during equality checks.
 	SkipUnexported bool
+
+	// See [WithCmpBaseTypes].
+	CmpSimpleType bool
 
 	// Function used to get current time. Used preliminary to inject a clock in
 	// tests of checks and assertions using [time.Now].

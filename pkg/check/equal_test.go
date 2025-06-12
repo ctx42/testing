@@ -15,6 +15,59 @@ import (
 	"github.com/ctx42/testing/pkg/must"
 )
 
+func Test_Equal(t *testing.T) {
+	t.Run("typed constant", func(t *testing.T) {
+		// --- Given ---
+		type MyInt int
+		const MyIntValue MyInt = 42
+
+		m0 := map[string]any{"A": MyIntValue}
+		m1 := map[string]any{"A": MyIntValue}
+
+		// --- When ---
+		err := Equal(m0, m1)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - the same underlying type", func(t *testing.T) {
+		// --- Given ---
+		type MyInt int
+		const MyIntValue MyInt = 42
+
+		m0 := map[string]any{"A": MyIntValue}
+		m1 := map[string]any{"A": 42}
+
+		// --- When ---
+		err := Equal(m0, m1)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"      trail: map[\"A\"]\n" +
+			"  want type: check.MyInt\n" +
+			"  have type: int"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("WithCmpBaseTypes - the same underlying type", func(t *testing.T) {
+		// --- Given ---
+		type MyInt int
+		const MyIntValue MyInt = 42
+
+		m0 := map[string]any{"A": MyIntValue}
+		m1 := map[string]any{"A": 42}
+
+		// --- When ---
+		err := Equal(m0, m1, WithCmpBaseTypes)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+}
+
 func Test_Equal_invalid_arguments(t *testing.T) {
 	t.Run("equal both are untyped nil", func(t *testing.T) {
 		// --- When ---
@@ -1098,7 +1151,10 @@ func Test_Equal_kind_Bool(t *testing.T) {
 	})
 }
 
-func Test_Equal_kind_numbers_success_tabular(t *testing.T) {
+func Test_Equal_kind_success_tabular(t *testing.T) {
+	type MyInt int
+	const MyIntValue MyInt = 42
+
 	tt := []struct {
 		testN string
 
@@ -1124,6 +1180,9 @@ func Test_Equal_kind_numbers_success_tabular(t *testing.T) {
 		{"complex128", complex128(42), complex128(42)},
 
 		{"string", "abc", "abc"},
+
+		{"int base type", MyInt(42), MyInt(42)},
+		{"const int base type", MyIntValue, MyIntValue},
 	}
 
 	for _, tc := range tt {
@@ -1142,7 +1201,7 @@ func Test_Equal_kind_numbers_success_tabular(t *testing.T) {
 	}
 }
 
-func Test_Equal_kind_numbers_error_tabular(t *testing.T) {
+func Test_Equal_kind_error_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 

@@ -10,6 +10,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/notice"
 )
@@ -73,7 +74,26 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 
 	wType := wVal.Type()
 	hType := hVal.Type()
+	a := wType.String()
+	b := hType.String()
+	_ = a
+	_ = b
+	A := hVal.Kind().String()
+	B := hVal.Kind().String()
+	_ = A
+	_ = B
 	if wType != hType {
+		// TODO(rz): document this.
+		if ops.CmpSimpleType {
+			wSmp, wOK := core.IsSimpleType(wVal)
+			hSmp, hOK := core.IsSimpleType(hVal)
+			if wOK && hOK {
+				wVal = reflect.ValueOf(wSmp)
+				hVal = reflect.ValueOf(hSmp)
+				return deepEqual(wVal, hVal, WithOptions(ops))
+			}
+		}
+
 		ops.LogTrail()
 		return notice.New("expected values to be equal").
 			SetTrail(ops.Trail).
