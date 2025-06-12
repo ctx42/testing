@@ -1,3 +1,7 @@
+## v0.16.0 (Thu, 12 Jun 2025 12:57:14 UTC)
+- Add core.IsSimpleType helper.
+- Add WithCmpBaseTypes option for comparing values with the same base type.
+
 ## v0.15.0 (Thu, 12 Jun 2025 10:34:11 UTC)
 - Add the ability to define dumpers for a type globally.
 
