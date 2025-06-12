@@ -1,3 +1,6 @@
+## v0.15.0 (Thu, 12 Jun 2025 10:34:11 UTC)
+- Add the ability to define dumpers for a type globally.
+
 ## v0.14.2 (Tue, 10 Jun 2025 07:28:48 UTC)
 - Fix mocker file name generation when the interface name has all capital letters.
 
