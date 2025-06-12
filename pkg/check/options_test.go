@@ -53,7 +53,7 @@ func Test_RegisterTypeChecker(t *testing.T) {
 		msg := affirm.Panic(t, fn)
 
 		// --- Then ---
-		wMsg := "cannot overwrite an existing checker"
+		wMsg := "cannot overwrite an existing type checker"
 		affirm.Equal(t, true, strings.Contains(*msg, wMsg))
 		affirm.Equal(t, "", buf.String())
 	})
@@ -68,7 +68,7 @@ func Test_RegisterTypeChecker(t *testing.T) {
 		msg := affirm.Panic(t, fn)
 
 		// --- Then ---
-		affirm.Equal(t, "cannot register a nil checker", *msg)
+		affirm.Equal(t, "cannot register a nil type checker", *msg)
 		affirm.Equal(t, "", buf.String())
 	})
 }
@@ -137,7 +137,7 @@ func Test_WithTypeChecker(t *testing.T) {
 	origLog := globLog
 	buf := &bytes.Buffer{}
 	globLog = log.New(buf, "", 0)
-	chk := func(_, _ any, _ ...Option) error { return errors.New("123456") }
+	cChk := func(_, _ any, _ ...Option) error { return errors.New("123456") }
 	t.Cleanup(func() { globLog = origLog; typeCheckers = nil })
 
 	t.Run("setting", func(t *testing.T) {
@@ -146,10 +146,10 @@ func Test_WithTypeChecker(t *testing.T) {
 		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
 
 		// --- When ---
-		have := WithTypeChecker(123, chk)(ops)
+		have := WithTypeChecker(123, cChk)(ops)
 
 		// --- Then ---
-		wChk := core.Same(chk, have.TypeCheckers[reflect.TypeOf(123)])
+		wChk := core.Same(cChk, have.TypeCheckers[reflect.TypeOf(123)])
 		affirm.Equal(t, true, wChk)
 		affirm.Equal(t, "", buf.String())
 	})
@@ -159,16 +159,16 @@ func Test_WithTypeChecker(t *testing.T) {
 		type custom struct{}
 		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
 
-		RegisterTypeChecker(custom{}, chk) // The first call.
-		buf.Reset()                        // Test later the log is empty.
+		RegisterTypeChecker(custom{}, cChk) // The first call.
+		buf.Reset()                         // Test later the log is empty.
 
 		ops := Options{}
 
 		// --- When ---
-		have := WithTypeChecker(custom{}, chk)(ops)
+		have := WithTypeChecker(custom{}, cChk)(ops)
 
 		// --- Then ---
-		wChk := core.Same(chk, have.TypeCheckers[reflect.TypeOf(custom{})])
+		wChk := core.Same(cChk, have.TypeCheckers[reflect.TypeOf(custom{})])
 		affirm.Equal(t, true, wChk)
 		wMsg := "Overwriting the global type checker for: check.custom\n"
 		affirm.Equal(t, wMsg, buf.String())

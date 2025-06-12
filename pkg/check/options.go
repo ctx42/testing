@@ -49,6 +49,11 @@ var (
 	DumpDepth = DefaultDumpDepth
 )
 
+// Check is signature for generic check function comparing two arguments
+// returning error if they are not. The returned error might be one or more
+// errors joined with [errors.Join].
+type Check func(want, have any, opts ...Option) error
+
 // typeCheckers is the global map of custom checkers for given types.
 var typeCheckers map[reflect.Type]Check
 
@@ -56,7 +61,7 @@ var typeCheckers map[reflect.Type]Check
 // It panics if a checker for the same type is already registered.
 func RegisterTypeChecker(typ any, chk Check) {
 	if chk == nil {
-		panic("cannot register a nil checker")
+		panic("cannot register a nil type checker")
 	}
 	if typeCheckers == nil {
 		typeCheckers = make(map[reflect.Type]Check)
@@ -64,16 +69,11 @@ func RegisterTypeChecker(typ any, chk Check) {
 	rt := reflect.TypeOf(typ)
 	msg := fmt.Sprintf("Registering type checker for: %s", rt)
 	if _, ok := typeCheckers[rt]; ok {
-		panic("cannot overwrite an existing checker: " + msg)
+		panic("cannot overwrite an existing type checker: " + msg)
 	}
 	_ = globLog.Output(2, msg)
 	typeCheckers[rt] = chk
 }
-
-// Check is signature for generic check function comparing two arguments
-// returning error if they are not. The returned error might be one or more
-// errors joined with [errors.Join].
-type Check func(want, have any, opts ...Option) error
 
 // Option represents a [Check] option.
 type Option func(Options) Options

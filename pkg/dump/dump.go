@@ -6,6 +6,9 @@ package dump
 
 import (
 	"fmt"
+	"log"
+	"maps"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -13,6 +16,9 @@ import (
 
 	"github.com/ctx42/testing/internal/diff"
 )
+
+// globLog is a global logger used package-wide.
+var globLog = log.New(os.Stderr, "*** DUMP ", log.Llongfile)
 
 // Strings used by dump package to indicate special values.
 const (
@@ -69,6 +75,27 @@ var nilVal = reflect.ValueOf(nil)
 // Dumper represents function signature for value dumpers.
 type Dumper func(dmp Dump, level int, val reflect.Value) string
 
+// typeDumpers is the global map of custom dumpers for given types.
+var typeDumpers map[reflect.Type]Dumper
+
+// RegisterTypeDumper globally registers a custom dumper for a given type.
+// It panics if a dumper for the same type is already registered.
+func RegisterTypeDumper(typ any, dmp Dumper) {
+	if dmp == nil {
+		panic("cannot register a nil type dumper")
+	}
+	if typeDumpers == nil {
+		typeDumpers = make(map[reflect.Type]Dumper)
+	}
+	rt := reflect.TypeOf(typ)
+	msg := fmt.Sprintf("Registering type dumper for: %s", rt)
+	if _, ok := typeDumpers[rt]; ok {
+		panic("cannot overwrite an existing type dumper: " + msg)
+	}
+	_ = globLog.Output(2, msg)
+	typeDumpers[rt] = dmp
+}
+
 // Option represents a [NewConfig] option.
 type Option func(*Dump)
 
@@ -106,7 +133,14 @@ func WithTimeFormat(format string) Option {
 
 // WithDumper adds custom [Dumper] to the config.
 func WithDumper(typ any, dumper Dumper) Option {
-	return func(dmp *Dump) { dmp.Dumpers[reflect.TypeOf(typ)] = dumper }
+	return func(dmp *Dump) {
+		rt := reflect.TypeOf(typ)
+		if _, ok := typeDumpers[rt]; ok {
+			format := "Overwriting the global type dumper for: %s"
+			_ = globLog.Output(2, fmt.Sprintf(format, rt))
+		}
+		dmp.Dumpers[rt] = dumper
+	}
 }
 
 // WithMaxDepth is an option for [New] which controls maximum nesting when
@@ -201,10 +235,13 @@ func New(opts ...Option) Dump {
 		PrintType:    true,
 		PrintPrivate: true,
 		UseAny:       true,
-		Dumpers:      make(map[reflect.Type]Dumper),
+		Dumpers:      maps.Clone(typeDumpers),
 		MaxDepth:     Depth,
 		Indent:       Indent,
 		TabWidth:     TabWidth,
+	}
+	if dmp.Dumpers == nil {
+		dmp.Dumpers = make(map[reflect.Type]Dumper)
 	}
 	for _, opt := range opts {
 		opt(&dmp)

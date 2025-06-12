@@ -4,17 +4,77 @@
 package dump
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
+	strings "strings"
 	"testing"
 	"time"
 	"unsafe"
 
 	"github.com/ctx42/testing/internal/affirm"
+	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/goldy"
 )
+
+func Test_RegisterTypeDumper(t *testing.T) {
+	t.Setenv("___", "___")
+	affirm.Nil(t, typeDumpers)
+	origLog := globLog
+	buf := &bytes.Buffer{}
+	globLog = log.New(buf, "", 0)
+	dmp := func(Dump, int, reflect.Value) string { return "123456" }
+	t.Cleanup(func() { globLog = origLog; typeDumpers = nil })
+
+	t.Run("is registered", func(t *testing.T) {
+		// --- Given ---
+		type custom struct{}
+		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
+
+		// --- When ---
+		RegisterTypeDumper(custom{}, dmp)
+
+		// --- Then ---
+		affirm.Equal(t, 1, len(typeDumpers))
+		wChk := core.Same(dmp, typeDumpers[reflect.TypeOf(custom{})])
+		affirm.Equal(t, true, wChk)
+		wMsg := "Registering type dumper for: dump.custom\n"
+		affirm.Equal(t, wMsg, buf.String())
+	})
+
+	t.Run("panics if already registered", func(t *testing.T) {
+		// --- Given ---
+		type custom struct{}
+		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
+		typeDumpers = map[reflect.Type]Dumper{reflect.TypeOf(custom{}): dmp}
+
+		// --- When ---
+		fn := func() { RegisterTypeDumper(custom{}, dmp) }
+		msg := affirm.Panic(t, fn)
+
+		// --- Then ---
+		wMsg := "cannot overwrite an existing type dumper"
+		affirm.Equal(t, true, strings.Contains(*msg, wMsg))
+		affirm.Equal(t, "", buf.String())
+	})
+
+	t.Run("panics if the checker is nil", func(t *testing.T) {
+		// --- Given ---
+		type custom struct{}
+		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
+
+		// --- When ---
+		fn := func() { RegisterTypeDumper(custom{}, nil) }
+		msg := affirm.Panic(t, fn)
+
+		// --- Then ---
+		affirm.Equal(t, "cannot register a nil type dumper", *msg)
+		affirm.Equal(t, "", buf.String())
+	})
+}
 
 func Test_WithFlat(t *testing.T) {
 	// --- Given ---
@@ -120,15 +180,46 @@ func Test_WithTabWidth(t *testing.T) {
 }
 
 func Test_WithDumper(t *testing.T) {
-	// --- Given ---
-	dmp := Dump{Dumpers: make(map[reflect.Type]Dumper)}
+	t.Setenv("___", "___")
+	affirm.Nil(t, typeDumpers)
+	origLog := globLog
+	buf := &bytes.Buffer{}
+	globLog = log.New(buf, "", 0)
+	cDpr := func(Dump, int, reflect.Value) string { return "123456" }
+	t.Cleanup(func() { globLog = origLog; typeDumpers = nil })
 
-	// --- When ---
-	WithDumper(time.Time{}, GetTimeDumper(time.Kitchen))(&dmp)
+	t.Run("setting", func(t *testing.T) {
+		// --- Given ---
+		dmp := &Dump{Dumpers: make(map[reflect.Type]Dumper)}
+		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
 
-	// --- Then ---
-	have := dmp.Any(time.Date(2020, 1, 2, 3, 4, 5, 0, time.UTC))
-	affirm.Equal(t, `"3:04AM"`, have)
+		// --- When ---
+		WithDumper(123, cDpr)(dmp)
+
+		// --- Then ---
+		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeOf(123)])
+		affirm.Equal(t, true, wChk)
+		affirm.Equal(t, "", buf.String())
+	})
+
+	t.Run("overwriting global checker", func(t *testing.T) {
+		// --- Given ---
+		type custom struct{}
+		dmp := &Dump{Dumpers: make(map[reflect.Type]Dumper)}
+		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
+
+		RegisterTypeDumper(custom{}, cDpr) // The first call.
+		buf.Reset()                        // Test later the log is empty.
+
+		// --- When ---
+		WithDumper(custom{}, cDpr)(dmp)
+
+		// --- Then ---
+		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeOf(custom{})])
+		affirm.Equal(t, true, wChk)
+		wMsg := "Overwriting the global type dumper for: dump.custom\n"
+		affirm.Equal(t, wMsg, buf.String())
+	})
 }
 
 func Test_New(t *testing.T) {
