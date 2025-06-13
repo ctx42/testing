@@ -1,3 +1,6 @@
+## v0.17.1 (Fri, 13 Jun 2025 14:50:05 UTC)
+- Fix panic when comparing not exported struct fields which are pointers.
+
 ## v0.17.0 (Thu, 12 Jun 2025 13:54:48 UTC)
 - Add WithZone option to support timezone adjustments in date comparisons.
 
