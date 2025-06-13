@@ -129,33 +129,34 @@ func same(want, have reflect.Value) bool {
 //
 // nolint: cyclop
 func Value(val reflect.Value) any {
+	knd := val.Kind()
+	if knd == reflect.Invalid {
+		return nil
+	}
+
 	if v, ok := IsSimpleType(val); ok {
 		return v
 	}
 
-	switch knd := val.Kind(); knd {
-	case reflect.Invalid:
-		return nil
-	case reflect.Array:
-		return val.Interface()
-	case reflect.Chan:
-		return val.Interface()
-	case reflect.Func:
-		return val.Interface()
-	case reflect.Interface:
-		return val.Interface()
-	case reflect.Map:
-		return val.Interface()
-	case reflect.Pointer:
-		return val.Interface()
-	case reflect.Slice:
-		return val.Interface()
-	case reflect.Struct:
-		return val.Interface()
-	case reflect.Uintptr:
+	if knd == reflect.Uintptr {
 		return uintptr(val.Uint())
-	case reflect.UnsafePointer:
+	}
+
+	if knd == reflect.UnsafePointer {
 		return val.Pointer()
+	}
+
+	switch knd := val.Kind(); knd {
+	case reflect.Array, reflect.Chan, reflect.Func, reflect.Interface,
+		reflect.Map, reflect.Pointer, reflect.Slice, reflect.Struct:
+
+		if !val.CanInterface() {
+			valuePtr := unsafe.Pointer(val.UnsafeAddr())
+			unsafeValue := reflect.NewAt(val.Type(), valuePtr).Elem()
+			return unsafeValue.Interface()
+		}
+		return val.Interface()
+
 	default:
 		panic("unsupported value kind")
 	}

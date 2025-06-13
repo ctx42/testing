@@ -59,12 +59,16 @@ type TLoc struct{ Loc *time.Location }
 
 // /////////////////////////////////////////////////////////////////////////////
 
-type TIntPrv struct {
+type TPrv struct {
 	Int int
 	v   int
+	fn  func()
+	ptr *TVal
 }
 
-func NewTIntPrv(i, v int) TIntPrv { return TIntPrv{Int: i, v: v} }
+func NewTPrvInt(i, v int) TPrv         { return TPrv{Int: i, v: v} }
+func NewTPrvFn(i int, fn func()) TPrv  { return TPrv{Int: i, fn: fn} }
+func NewTPrvPtr(i int, ptr *TVal) TPrv { return TPrv{Int: i, ptr: ptr} }
 
 // /////////////////////////////////////////////////////////////////////////////
 

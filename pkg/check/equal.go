@@ -55,10 +55,10 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 	if !wVal.IsValid() || !hVal.IsValid() {
 		var wItf, hItf any
 		if wVal.IsValid() {
-			wItf = wVal.Interface()
+			wItf = core.Value(wVal)
 		}
 		if hVal.IsValid() {
-			hItf = hVal.Interface()
+			hItf = core.Value(hVal)
 		}
 		ops.LogTrail()
 		return equalError(wItf, hItf, WithOptions(ops))
@@ -74,16 +74,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 
 	wType := wVal.Type()
 	hType := hVal.Type()
-	a := wType.String()
-	b := hType.String()
-	_ = a
-	_ = b
-	A := hVal.Kind().String()
-	B := hVal.Kind().String()
-	_ = A
-	_ = B
 	if wType != hType {
-		// TODO(rz): document this.
 		if ops.CmpSimpleType {
 			wSmp, wOK := core.IsSimpleType(wVal)
 			hSmp, hOK := core.IsSimpleType(hVal)
@@ -107,7 +98,6 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 	}
 
 	if chk, ok := ops.TypeCheckers[wType]; ok {
-		// TODO(rz): Log we are using custom checker.
 		ops.LogTrail()
 		return chk(wVal.Interface(), hVal.Interface(), opts...)
 	}
@@ -124,12 +114,6 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 		if wVal.IsNil() && hVal.IsNil() {
 			ops.LogTrail()
 			return nil
-		}
-		if wVal.IsNil() || hVal.IsNil() {
-			ops.LogTrail()
-			wItf := wVal.Interface()
-			hItf := hVal.Interface()
-			return equalError(wItf, hItf, WithOptions(ops))
 		}
 
 		return deepEqual(wVal.Elem(), hVal.Elem(), WithOptions(ops))
