@@ -47,7 +47,7 @@ func Test_RegisterTypeChecker(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
 		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
-		typeCheckers = map[reflect.Type]Check{reflect.TypeOf(custom{}): chk}
+		typeCheckers = map[reflect.Type]Checker{reflect.TypeOf(custom{}): chk}
 
 		// --- When ---
 		fn := func() { RegisterTypeChecker(custom{}, chk) }
@@ -252,8 +252,8 @@ func Test_WithOptions(t *testing.T) {
 		Recent:         123,
 		Trail:          "trail",
 		TrailLog:       &trailLog,
-		TypeCheckers:   make(map[reflect.Type]Check),
-		TrailCheckers:  make(map[string]Check),
+		TypeCheckers:   make(map[reflect.Type]Checker),
+		TrailCheckers:  make(map[string]Checker),
 		SkipTrails:     make([]string, 0),
 		SkipUnexported: true,
 		CmpSimpleType:  true,
@@ -332,7 +332,7 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Nil(t, typeCheckers)
 		chk := func(_, _ any, _ ...Option) error { return errors.New("123456") }
 		t.Cleanup(func() { typeCheckers = nil })
-		typeCheckers = map[reflect.Type]Check{reflect.TypeOf(123): chk}
+		typeCheckers = map[reflect.Type]Checker{reflect.TypeOf(123): chk}
 
 		// --- When ---
 		have := DefaultOptions()

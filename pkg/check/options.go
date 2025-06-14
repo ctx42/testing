@@ -49,22 +49,22 @@ var (
 	DumpDepth = DefaultDumpDepth
 )
 
-// Check is signature for generic check function comparing two arguments
-// returning error if they are not. The returned error might be one or more
+// Checker is signature for generic check function comparing two arguments
+// returning an error if they are not. The returned error might be one or more
 // errors joined with [errors.Join].
-type Check func(want, have any, opts ...Option) error
+type Checker func(want, have any, opts ...Option) error
 
 // typeCheckers is the global map of custom checkers for given types.
-var typeCheckers map[reflect.Type]Check
+var typeCheckers map[reflect.Type]Checker
 
 // RegisterTypeChecker globally registers a custom checker for a given type.
 // It panics if a checker for the same type is already registered.
-func RegisterTypeChecker(typ any, chk Check) {
+func RegisterTypeChecker(typ any, chk Checker) {
 	if chk == nil {
 		panic("cannot register a nil type checker")
 	}
 	if typeCheckers == nil {
-		typeCheckers = make(map[reflect.Type]Check)
+		typeCheckers = make(map[reflect.Type]Checker)
 	}
 	rt := reflect.TypeOf(typ)
 	msg := fmt.Sprintf("Registering type checker for: %s", rt)
@@ -75,10 +75,10 @@ func RegisterTypeChecker(typ any, chk Check) {
 	typeCheckers[rt] = chk
 }
 
-// Option represents a [Check] option.
+// Option represents a [Checker] option.
 type Option func(Options) Options
 
-// WithTrail is a [Check] option setting initial field/element/key trail.
+// WithTrail is a [Checker] option setting initial field/element/key trail.
 func WithTrail(pth string) Option {
 	return func(ops Options) Options {
 		ops.Trail = pth
@@ -86,7 +86,7 @@ func WithTrail(pth string) Option {
 	}
 }
 
-// WithTrailLog is a [Check] option turning on a collection of checked
+// WithTrailLog is a [Checker] option turning on a collection of checked
 // fields/elements/keys. The trails are added to the provided slice.
 func WithTrailLog(list *[]string) Option {
 	return func(ops Options) Options {
@@ -95,7 +95,7 @@ func WithTrailLog(list *[]string) Option {
 	}
 }
 
-// WithTimeFormat is a [Check] option setting time format when parsing dates.
+// WithTimeFormat is a [Checker] option setting time format when parsing dates.
 func WithTimeFormat(format string) Option {
 	return func(ops Options) Options {
 		ops.TimeFormat = format
@@ -103,7 +103,7 @@ func WithTimeFormat(format string) Option {
 	}
 }
 
-// WithZone is a [Check] option which specifies the timezone to apply to the
+// WithZone is a [Checker] option which specifies the timezone to apply to the
 // "want" date before comparing times. It ensures consistent timezone handling
 // for string-based date inputs. For [time.Time] values, it calls
 // [time.Time.In] to adjust the timezone.
@@ -121,7 +121,7 @@ func WithZone(zone *time.Location) Option {
 	}
 }
 
-// WithRecent is a [Check] option setting duration used to compare recent dates.
+// WithRecent is a [Checker] option setting duration used to compare recent dates.
 func WithRecent(recent time.Duration) Option {
 	return func(ops Options) Options {
 		ops.Recent = recent
@@ -129,7 +129,7 @@ func WithRecent(recent time.Duration) Option {
 	}
 }
 
-// WithDumper is [Check] option setting [dump.Config] options.
+// WithDumper is [Checker] option setting [dump.Config] options.
 func WithDumper(optsD ...dump.Option) Option {
 	return func(optsC Options) Options {
 		for _, opt := range optsD {
@@ -139,11 +139,11 @@ func WithDumper(optsD ...dump.Option) Option {
 	}
 }
 
-// WithTypeChecker is a [Check] option setting custom checker for a type.
-func WithTypeChecker(typ any, chk Check) Option {
+// WithTypeChecker is a [Checker] option setting custom checker for a type.
+func WithTypeChecker(typ any, chk Checker) Option {
 	return func(ops Options) Options {
 		if ops.TypeCheckers == nil {
-			ops.TypeCheckers = make(map[reflect.Type]Check)
+			ops.TypeCheckers = make(map[reflect.Type]Checker)
 		}
 		rt := reflect.TypeOf(typ)
 		if _, ok := typeCheckers[rt]; ok {
@@ -155,19 +155,19 @@ func WithTypeChecker(typ any, chk Check) Option {
 	}
 }
 
-// WithTrailChecker is a [Check] option setting a custom checker for a given
+// WithTrailChecker is a [Checker] option setting a custom checker for a given
 // trail.
-func WithTrailChecker(trail string, chk Check) Option {
+func WithTrailChecker(trail string, chk Checker) Option {
 	return func(ops Options) Options {
 		if ops.TrailCheckers == nil {
-			ops.TrailCheckers = make(map[string]Check)
+			ops.TrailCheckers = make(map[string]Checker)
 		}
 		ops.TrailCheckers[trail] = chk
 		return ops
 	}
 }
 
-// WithSkipTrail is a [Check] option setting trails to skip.
+// WithSkipTrail is a [Checker] option setting trails to skip.
 func WithSkipTrail(skip ...string) Option {
 	return func(ops Options) Options {
 		ops.SkipTrails = append(ops.SkipTrails, skip...)
@@ -175,14 +175,14 @@ func WithSkipTrail(skip ...string) Option {
 	}
 }
 
-// WithSkipUnexported is a [Check] option instructing equality checks to skip
+// WithSkipUnexported is a [Checker] option instructing equality checks to skip
 // exported fields.
 func WithSkipUnexported(ops Options) Options {
 	ops.SkipUnexported = true
 	return ops
 }
 
-// WithCmpBaseTypes is a [Check] option turning on simple base type comparisons.
+// WithCmpBaseTypes is a [Checker] option turning on simple base type comparisons.
 //
 // During a normal operation, when comparing values with different types, the
 // error is returned. Then this option is used, and both values have the same
@@ -225,7 +225,7 @@ func WithCmpBaseTypes(ops Options) Options {
 	return ops
 }
 
-// WithOptions is a [Check] option which passes all options.
+// WithOptions is a [Checker] option which passes all options.
 func WithOptions(src Options) Option {
 	return func(ops Options) Options {
 		ops.Dumper = src.Dumper
@@ -244,7 +244,7 @@ func WithOptions(src Options) Option {
 	}
 }
 
-// Options represent options used by [Check] functions.
+// Options represent options used by [Checker] functions.
 type Options struct {
 	// Dump configuration.
 	Dumper dump.Dump
@@ -266,10 +266,10 @@ type Options struct {
 	TrailLog *[]string
 
 	// Custom checks to run for a given type.
-	TypeCheckers map[reflect.Type]Check
+	TypeCheckers map[reflect.Type]Checker
 
 	// Custom checker for given trail.
-	TrailCheckers map[string]Check
+	TrailCheckers map[string]Checker
 
 	// List of trails to skip.
 	SkipTrails []string
