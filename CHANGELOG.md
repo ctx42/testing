@@ -1,3 +1,8 @@
+## v0.18.0 (Sat, 14 Jun 2025 09:13:44 UTC)
+- Use core.Value helper to access values in check.Equal.
+- Rename check.Check to check.Checker.
+- Implement WithinChecker partial application helper and add missing tests.
+
 ## v0.17.1 (Fri, 13 Jun 2025 14:50:05 UTC)
 - Fix panic when comparing not exported struct fields which are pointers.
 
