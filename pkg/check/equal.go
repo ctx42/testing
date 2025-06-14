@@ -94,20 +94,20 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 
 	if chk, ok := ops.TrailCheckers[ops.Trail]; ok {
 		ops.LogTrail()
-		return chk(wVal.Interface(), hVal.Interface(), WithOptions(ops))
+		return chk(core.Value(wVal), core.Value(hVal), WithOptions(ops))
 	}
 
 	if chk, ok := ops.TypeCheckers[wType]; ok {
 		ops.LogTrail()
-		return chk(wVal.Interface(), hVal.Interface(), opts...)
+		return chk(core.Value(wVal), core.Value(hVal), opts...)
 	}
 
 	switch knd := wVal.Kind(); knd {
 	case reflect.Ptr:
 		if wType == typTimeLocPtr && hType == typTimeLocPtr {
 			ops.LogTrail()
-			wZone := wVal.Interface().(*time.Location) // nolint: forcetypeassert
-			hZone := hVal.Interface().(*time.Location) // nolint: forcetypeassert
+			wZone := core.Value(wVal).(*time.Location) // nolint: forcetypeassert
+			hZone := core.Value(hVal).(*time.Location) // nolint: forcetypeassert
 			return Zone(wZone, hZone, WithOptions(ops))
 		}
 
@@ -123,12 +123,12 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 		hTyp := hVal.Type()
 		if wTyp == typTime && hTyp == typTime {
 			ops.LogTrail()
-			return Time(wVal.Interface(), hVal.Interface(), opts...)
+			return Time(core.Value(wVal), core.Value(hVal), opts...)
 		}
 		if wTyp == typTimeLoc && hTyp == typTimeLoc {
 			ops.LogTrail()
-			wZone := wVal.Interface().(time.Location) // nolint: forcetypeassert
-			hZone := hVal.Interface().(time.Location) // nolint: forcetypeassert
+			wZone := core.Value(wVal).(time.Location) // nolint: forcetypeassert
+			hZone := core.Value(hVal).(time.Location) // nolint: forcetypeassert
 			return Zone(&wZone, &hZone, opts...)
 		}
 		typeName := wVal.Type().Name()
@@ -151,8 +151,8 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 	case reflect.Slice, reflect.Array:
 		if wVal.Len() != hVal.Len() {
 			ops.LogTrail()
-			wItf := wVal.Interface()
-			hItf := hVal.Interface()
+			wItf := core.Value(wVal)
+			hItf := core.Value(hVal)
 			return equalError(wItf, hItf, WithOptions(ops)).
 				Prepend("have len", "%d", hVal.Len()).
 				Prepend("want len", "%d", wVal.Len())
@@ -175,8 +175,8 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 	case reflect.Map:
 		if wVal.Len() != hVal.Len() {
 			ops.LogTrail()
-			wItf := wVal.Interface()
-			hItf := hVal.Interface()
+			wItf := core.Value(wVal)
+			hItf := core.Value(hVal)
 			return equalError(wItf, hItf, WithOptions(ops)).
 				Prepend("have len", "%d", hVal.Len()).
 				Prepend("want len", "%d", wVal.Len())
