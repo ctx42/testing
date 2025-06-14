@@ -285,6 +285,13 @@ func Within(want, within, have any, opts ...Option) error {
 		Append("have diff", "%s", diff.String())
 }
 
+// WithinChecker is a partial application function for [Within].
+func WithinChecker(within any) Checker {
+	return func(want, have any, opts ...Option) error {
+		return Within(want, within, have, opts...)
+	}
+}
+
 // Recent checks "have" is within [Options.Recent] from [time.Now]. Returns nil
 // if it is, otherwise returns an error with a message indicating the expected
 // and actual values.
@@ -384,7 +391,7 @@ func formatDates(
 	return want, have
 }
 
-// getTime returns date represented by "tim", its string representation and
+// getTime returns the date represented by "tim", its string representation and
 // type of the argument passed. The "tim" may represent date in the form of a
 // string, int, int64 or [time.Time]. For string representations the
 // [Options.TimeFormat] is used during parsing and the returned date is always
@@ -398,7 +405,7 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 	switch val := tim.(type) {
 	case time.Time:
 		if ops.Zone != nil {
-			val = val.In(ops.Zone) // TODO(rz): test this.
+			val = val.In(ops.Zone)
 		}
 		return val, val.Format(time.RFC3339Nano), timeTypeTim, nil
 
@@ -406,9 +413,9 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 		have, err := time.Parse(ops.TimeFormat, val)
 		if err == nil {
 			if ops.Zone != nil {
-				have = have.In(ops.Zone) // TODO(rz): test this.
+				have = have.In(ops.Zone)
 			} else {
-				have = have.UTC() // TODO(rz): test this.
+				have = have.UTC()
 			}
 			return have, val, timeTypeStr, nil
 		}
@@ -431,9 +438,9 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 		str := strconv.Itoa(val)
 		ts := time.Unix(int64(val), 0)
 		if ops.Zone != nil {
-			ts = ts.In(ops.Zone) // TODO(rz): test this.
+			ts = ts.In(ops.Zone)
 		} else {
-			ts = ts.UTC() // TODO(rz): test this.
+			ts = ts.UTC()
 		}
 		return ts, str, timeTypeInt, nil
 
@@ -441,9 +448,9 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 		str := strconv.FormatInt(val, 10)
 		ts := time.Unix(val, 0)
 		if ops.Zone != nil {
-			ts = ts.In(ops.Zone) // TODO(rz): test this.
+			ts = ts.In(ops.Zone)
 		} else {
-			ts = ts.UTC() // TODO(rz): test this.
+			ts = ts.UTC()
 		}
 		return ts, str, timeTypeInt64, nil
 

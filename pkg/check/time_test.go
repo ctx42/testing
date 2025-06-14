@@ -756,6 +756,32 @@ func Test_Within(t *testing.T) {
 	})
 }
 
+func Test_WithinChecker(t *testing.T) {
+	t.Run("it is within", func(t *testing.T) {
+		// --- Given ---
+		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		have := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
+
+		// --- When ---
+		err := WithinChecker(time.Second)(want, have)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("it is not within", func(t *testing.T) {
+		// --- Given ---
+		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		have := time.Date(2000, 1, 2, 3, 4, 7, 0, time.UTC)
+
+		// --- When ---
+		err := WithinChecker(time.Second)(want, have)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+	})
+}
+
 func Test_Recent(t *testing.T) {
 	t.Run("recent with time now", func(t *testing.T) {
 		// --- Given ---
@@ -1136,6 +1162,15 @@ func Test_getTime_success_tabular(t *testing.T) {
 			time.UTC,
 		},
 		{
+			"time.Time in UTC - apply different timezone",
+			[]Option{WithZone(types.WAW)},
+			time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
+			"2000-01-02T04:04:05+01:00",
+			timeTypeTim,
+			time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
+			types.WAW,
+		},
+		{
 			"time.Time in WAW",
 			nil,
 			time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW),
@@ -1154,6 +1189,15 @@ func Test_getTime_success_tabular(t *testing.T) {
 			time.UTC,
 		},
 		{
+			"RFC3339 - apply timezone",
+			[]Option{WithZone(types.WAW)},
+			"2000-01-02T03:04:05+01:00",
+			"2000-01-02T03:04:05+01:00",
+			timeTypeStr,
+			time.Date(2000, 1, 2, 2, 4, 5, 0, time.UTC),
+			types.WAW,
+		},
+		{
 			"Unix timestamp int",
 			nil,
 			946778645,
@@ -1163,6 +1207,15 @@ func Test_getTime_success_tabular(t *testing.T) {
 			time.UTC,
 		},
 		{
+			"Unix timestamp int - apply timezone",
+			[]Option{WithZone(types.WAW)},
+			946778645,
+			"946778645",
+			timeTypeInt,
+			time.Date(2000, 1, 2, 2, 4, 5, 0, time.UTC),
+			types.WAW,
+		},
+		{
 			"Unix timestamp int64",
 			nil,
 			int64(946778645),
@@ -1170,6 +1223,15 @@ func Test_getTime_success_tabular(t *testing.T) {
 			timeTypeInt64,
 			time.Date(2000, 1, 2, 2, 4, 5, 0, time.UTC),
 			time.UTC,
+		},
+		{
+			"Unix timestamp int64 - apply timezone",
+			[]Option{WithZone(types.WAW)},
+			int64(946778645),
+			"946778645",
+			timeTypeInt64,
+			time.Date(2000, 1, 2, 2, 4, 5, 0, time.UTC),
+			types.WAW,
 		},
 	}
 
