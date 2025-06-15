@@ -1,3 +1,6 @@
+## v0.18.1 (Sun, 15 Jun 2025 09:43:54 UTC)
+- Implement stack overflow prevention when comparing nested types.
+
 ## v0.18.0 (Sat, 14 Jun 2025 09:13:44 UTC)
 - Use core.Value helper to access values in check.Equal.
 - Rename check.Check to check.Checker.
