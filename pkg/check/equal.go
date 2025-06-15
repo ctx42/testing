@@ -9,6 +9,7 @@ import (
 	"slices"
 	"sort"
 	"time"
+	"unsafe"
 
 	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/pkg/dump"
@@ -21,7 +22,7 @@ import (
 func Equal(want, have any, opts ...Option) error {
 	wVal := reflect.ValueOf(want)
 	hVal := reflect.ValueOf(have)
-	return deepEqual(wVal, hVal, opts...)
+	return deepEqual(wVal, hVal, make(map[visit]bool), opts...)
 }
 
 // NotEqual checks both values are not equal using. Returns nil if they are not,
@@ -35,11 +36,33 @@ func NotEqual(want, have any, opts ...Option) error {
 	return nil
 }
 
+// During deepEqual we must keep track of a set of pointers we compare to avoid
+// infinite nesting (stack overflow).
+type visit struct {
+	want unsafe.Pointer
+	have unsafe.Pointer
+}
+
 // deepEqual is the internal comparison function which is called recursively.
 //
 // nolint: gocognit, cyclop
-func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
+func deepEqual(
+	wVal, hVal reflect.Value,
+	visited map[visit]bool,
+	opts ...Option,
+) error {
+
 	ops := DefaultOptions(opts...)
+
+	wPtr := core.Pointer(wVal)
+	hPtr := core.Pointer(hVal)
+	if wPtr != nil && hPtr != nil {
+		v := visit{wPtr, hPtr}
+		if visited[v] {
+			return nil
+		}
+		visited[v] = true
+	}
 
 	if i := slices.Index(ops.SkipTrails, ops.Trail); i >= 0 {
 		ops.Trail += " <skipped>"
@@ -81,7 +104,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 			if wOK && hOK {
 				wVal = reflect.ValueOf(wSmp)
 				hVal = reflect.ValueOf(hSmp)
-				return deepEqual(wVal, hVal, WithOptions(ops))
+				return deepEqual(wVal, hVal, visited, WithOptions(ops))
 			}
 		}
 
@@ -116,7 +139,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 			return nil
 		}
 
-		return deepEqual(wVal.Elem(), hVal.Elem(), WithOptions(ops))
+		return deepEqual(wVal.Elem(), hVal.Elem(), visited, WithOptions(ops))
 
 	case reflect.Struct:
 		wTyp := wVal.Type()
@@ -142,7 +165,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 			}
 			wSF := wVal.Type().Field(i)
 			iOps := ops.StructTrail(typeName, wSF.Name)
-			if e := deepEqual(wfVal, hfVal, WithOptions(iOps)); e != nil {
+			if e := deepEqual(wfVal, hfVal, visited, WithOptions(iOps)); e != nil {
 				err = notice.Join(err, e)
 			}
 		}
@@ -166,7 +189,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 			wiVal := wVal.Index(i)
 			hiVal := hVal.Index(i)
 			iOps := ops.ArrTrail(knd.String(), i)
-			if e := deepEqual(wiVal, hiVal, WithOptions(iOps)); e != nil {
+			if e := deepEqual(wiVal, hiVal, visited, WithOptions(iOps)); e != nil {
 				err = notice.Join(err, e)
 			}
 		}
@@ -202,7 +225,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 				err = notice.Join(err, e)
 				continue
 			}
-			if e := deepEqual(wkVal, hkVal, WithOptions(kOps)); e != nil {
+			if e := deepEqual(wkVal, hkVal, visited, WithOptions(kOps)); e != nil {
 				err = notice.Join(err, e)
 			}
 		}
@@ -211,7 +234,7 @@ func deepEqual(wVal, hVal reflect.Value, opts ...Option) error {
 	case reflect.Interface:
 		wElem := wVal.Elem()
 		hElem := hVal.Elem()
-		return deepEqual(wElem, hElem, WithOptions(ops))
+		return deepEqual(wElem, hElem, visited, WithOptions(ops))
 
 	case reflect.Bool:
 		ops.LogTrail()

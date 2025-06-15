@@ -124,6 +124,28 @@ func same(want, have reflect.Value) bool {
 	return wPtr == hPtr
 }
 
+// Pointer checks if the argument represents a pointer type and returns its
+// memory address as an [unsafe.Pointer], otherwise returns nil.
+func Pointer(val reflect.Value) unsafe.Pointer {
+	if !val.IsValid() || val.Kind() != reflect.Ptr {
+		return nil
+	}
+	if val.IsNil() {
+		return nil
+	}
+	if val.CanAddr() {
+		return unsafe.Pointer(val.UnsafeAddr())
+	}
+	if val.CanInterface() || !val.CanAddr() {
+		ptr := val.UnsafePointer()
+		if ptr == nil {
+			return nil
+		}
+		return ptr
+	}
+	return nil
+}
+
 // Value returns the underlying value represented by the [reflect.Value].
 // Panics for unknown [reflect.Kind].
 //
@@ -147,13 +169,34 @@ func Value(val reflect.Value) any {
 	}
 
 	switch knd := val.Kind(); knd {
+	case reflect.Slice:
+		// TODO(rz):
+		// if !val.CanInterface() {
+		// 	valPtr := val.UnsafePointer()
+		// 	if valPtr == nil {
+		// 		return nil
+		// 	}
+		// 	slcLen := val.Len()
+		// 	slcCap := val.Cap()
+		//
+		// 	// Get the underlying data pointer from the slice header.
+		// 	dataPtr := (*[3]uintptr)(valPtr)[0]
+		//
+		// 	// Create a new slice with the correct length and capacity.
+		// 	//goland:noinspection GoVetUnsafePointer
+		// 	bytePtr := (*byte)(unsafe.Pointer(dataPtr))
+		// 	slc := unsafe.Slice(bytePtr, slcCap)[:slcLen:slcCap]
+		// 	return slc
+		// }
+		// return val.Interface()
+		fallthrough
 	case reflect.Array, reflect.Chan, reflect.Func, reflect.Interface,
-		reflect.Map, reflect.Pointer, reflect.Slice, reflect.Struct:
+		reflect.Map, reflect.Pointer, reflect.Struct:
 
 		if !val.CanInterface() {
-			valuePtr := unsafe.Pointer(val.UnsafeAddr())
-			unsafeValue := reflect.NewAt(val.Type(), valuePtr).Elem()
-			return unsafeValue.Interface()
+			valPtr := unsafe.Pointer(val.UnsafeAddr())
+			valUnsafe := reflect.NewAt(val.Type(), valPtr).Elem()
+			return valUnsafe.Interface()
 		}
 		return val.Interface()
 
@@ -198,6 +241,7 @@ func IsSimpleType(val reflect.Value) (any, bool) {
 		return val.Complex(), true
 	case reflect.String:
 		return val.String(), true
+	default:
+		return nil, false
 	}
-	return nil, false
 }

@@ -578,56 +578,9 @@ func Test_Equal_kind_Struct(t *testing.T) {
 			"TPrv.v <skipped>",
 			"TPrv.fn",
 			"TPrv.ptr",
-		}
-		affirm.DeepEqual(t, wTrail, trail)
-	})
-
-	t.Run("error - private fields not equal", func(t *testing.T) {
-		// --- Given ---
-		trail := make([]string, 0)
-		opts := []Option{WithTrailLog(&trail)}
-
-		want := types.NewTPrvInt(42, 1)
-		have := types.NewTPrvInt(42, 2)
-
-		// --- When ---
-		err := Equal(want, have, opts...)
-
-		// --- Then ---
-		wMsg := "" +
-			"expected values to be equal:\n" +
-			"  trail: TPrv.v\n" +
-			"   want: 1\n" +
-			"   have: 2"
-		affirm.Equal(t, wMsg, err.Error())
-		wTrail := []string{"TPrv.Int", "TPrv.v", "TPrv.fn", "TPrv.ptr"}
-		affirm.DeepEqual(t, wTrail, trail)
-	})
-
-	t.Run("not equal with private fields", func(t *testing.T) {
-		// --- Given ---
-		trail := make([]string, 0)
-		opts := []Option{WithTrailLog(&trail), WithSkipTrail("TPrv.v")}
-
-		want := types.NewTPrvInt(42, 1)
-		have := types.NewTPrvInt(44, 2)
-
-		// --- When ---
-		err := Equal(want, have, opts...)
-
-		// --- Then ---
-		affirm.NotNil(t, err)
-		wMsg := "" +
-			"expected values to be equal:\n" +
-			"  trail: TPrv.Int\n" +
-			"   want: 42\n" +
-			"   have: 44"
-		affirm.Equal(t, wMsg, err.Error())
-		wTrail := []string{
-			"TPrv.Int",
-			"TPrv.v <skipped>",
-			"TPrv.fn",
-			"TPrv.ptr",
+			"TPrv.sInt",
+			"TPrv.aInt[0]",
+			"TPrv.aInt[1]",
 		}
 		affirm.DeepEqual(t, wTrail, trail)
 	})
@@ -795,24 +748,41 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.DeepEqual(t, wTrail, trail)
 	})
 
-	t.Run("equal private field function", func(t *testing.T) {
+	t.Run("error - private int fields not equal", func(t *testing.T) {
+		// --- Given ---
+		trail := make([]string, 0)
+		opts := []Option{WithTrailLog(&trail)}
+
+		want := types.NewTPrvInt(42, 1)
+		have := types.NewTPrvInt(42, 2)
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: TPrv.v\n" +
+			"   want: 1\n" +
+			"   have: 2"
+		affirm.Equal(t, wMsg, err.Error())
+		wTrail := []string{
+			"TPrv.Int",
+			"TPrv.v",
+			"TPrv.fn",
+			"TPrv.ptr",
+			"TPrv.sInt",
+			"TPrv.aInt[0]",
+			"TPrv.aInt[1]",
+		}
+		affirm.DeepEqual(t, wTrail, trail)
+	})
+
+	t.Run("equal private function field", func(t *testing.T) {
 		// --- Given ---
 		fn := func() {}
 		typ0 := types.NewTPrvFn(42, fn)
 		typ1 := types.NewTPrvFn(42, fn)
-
-		// --- When ---
-		err := Equal(typ0, typ1)
-
-		// --- Then ---
-		affirm.Nil(t, err)
-	})
-
-	t.Run("equal private field pointer", func(t *testing.T) {
-		// --- Given ---
-		ptr := &types.TVal{Val: "abc"}
-		typ0 := types.NewTPrvPtr(42, ptr)
-		typ1 := types.NewTPrvPtr(42, ptr)
 
 		// --- When ---
 		err := Equal(typ0, typ1)
@@ -838,7 +808,20 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error - not equal private field pointer", func(t *testing.T) {
+	t.Run("equal private pointer field", func(t *testing.T) {
+		// --- Given ---
+		ptr := &types.TVal{Val: "abc"}
+		typ0 := types.NewTPrvPtr(42, ptr)
+		typ1 := types.NewTPrvPtr(42, ptr)
+
+		// --- When ---
+		err := Equal(typ0, typ1)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - not equal private pointer field", func(t *testing.T) {
 		// --- Given ---
 		ptr0 := &types.TVal{Val: "abc"}
 		ptr1 := &types.TVal{Val: "xyz"}
@@ -857,7 +840,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error - not equal private field pointer", func(t *testing.T) {
+	t.Run("error - not equal private field nil pointer", func(t *testing.T) {
 		// --- Given ---
 		ptr0 := &types.TVal{Val: "abc"}
 		typ0 := types.NewTPrvPtr(42, ptr0)
@@ -877,6 +860,70 @@ func Test_Equal_kind_Struct(t *testing.T) {
 			"               Val: \"abc\",\n" +
 			"             }\n" +
 			"       have: nil"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("equal private slice field", func(t *testing.T) {
+		// --- Given ---
+		s := []int{1, 2}
+		typ0 := types.NewTPrvSInt(42, s)
+		typ1 := types.NewTPrvSInt(42, s)
+
+		// --- When ---
+		err := Equal(typ0, typ1)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - not equal private slice field", func(t *testing.T) {
+		// --- Given ---
+		s0 := []int{1, 2}
+		s1 := []int{1, 3}
+		typ0 := types.NewTPrvSInt(42, s0)
+		typ1 := types.NewTPrvSInt(42, s1)
+
+		// --- When ---
+		err := Equal(typ0, typ1)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: TPrv.sInt[1]\n" +
+			"   want: 2\n" +
+			"   have: 3"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("equal private array field", func(t *testing.T) {
+		// --- Given ---
+		a := [2]int{1, 2}
+		typ0 := types.NewTPrvAInt(42, a)
+		typ1 := types.NewTPrvAInt(42, a)
+
+		// --- When ---
+		err := Equal(typ0, typ1)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - not equal private array field", func(t *testing.T) {
+		// --- Given ---
+		a0 := [2]int{1, 2}
+		a1 := [2]int{1, 3}
+		typ0 := types.NewTPrvAInt(42, a0)
+		typ1 := types.NewTPrvAInt(42, a1)
+
+		// --- When ---
+		err := Equal(typ0, typ1)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: TPrv.aInt[1]\n" +
+			"   want: 2\n" +
+			"   have: 3"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }

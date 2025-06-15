@@ -60,15 +60,19 @@ type TLoc struct{ Loc *time.Location }
 // /////////////////////////////////////////////////////////////////////////////
 
 type TPrv struct {
-	Int int
-	v   int
-	fn  func()
-	ptr *TVal
+	Int  int
+	v    int
+	fn   func()
+	ptr  *TVal
+	sInt []int
+	aInt [2]int
 }
 
 func NewTPrvInt(i, v int) TPrv         { return TPrv{Int: i, v: v} }
 func NewTPrvFn(i int, fn func()) TPrv  { return TPrv{Int: i, fn: fn} }
 func NewTPrvPtr(i int, ptr *TVal) TPrv { return TPrv{Int: i, ptr: ptr} }
+func NewTPrvSInt(i int, s []int) TPrv  { return TPrv{Int: i, sInt: s} }
+func NewTPrvAInt(i int, a [2]int) TPrv { return TPrv{Int: i, aInt: a} }
 
 // /////////////////////////////////////////////////////////////////////////////
 
