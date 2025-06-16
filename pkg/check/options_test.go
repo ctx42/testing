@@ -295,8 +295,11 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, DefaultRecentDuration, have.Recent)
 		affirm.Equal(t, "", have.Trail)
 		affirm.Equal(t, true, have.TrailLog == nil)
-		affirm.Equal(t, true, have.TypeCheckers == nil)
+		affirm.Equal(t, false, have.TypeCheckers == nil)
 		affirm.Equal(t, true, have.TrailCheckers == nil)
+		affirm.Equal(t, true, core.Same(Time, have.TypeCheckers[typTime]))
+		affirm.Equal(t, true, core.Same(Zone, have.TypeCheckers[typZone]))
+		affirm.Equal(t, true, core.Same(Zone, have.TypeCheckers[typZonePtr]))
 		affirm.Equal(t, true, have.SkipTrails == nil)
 		affirm.Equal(t, false, have.SkipUnexported)
 		affirm.Equal(t, false, have.CmpSimpleType)
@@ -317,7 +320,10 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, DefaultRecentDuration, have.Recent)
 		affirm.Equal(t, "type.field", have.Trail)
 		affirm.Equal(t, true, have.TrailLog == nil)
-		affirm.Equal(t, true, have.TypeCheckers == nil)
+		affirm.Equal(t, true, have.TrailCheckers == nil)
+		affirm.Equal(t, true, core.Same(Time, have.TypeCheckers[typTime]))
+		affirm.Equal(t, true, core.Same(Zone, have.TypeCheckers[typZone]))
+		affirm.Equal(t, true, core.Same(Zone, have.TypeCheckers[typZonePtr]))
 		affirm.Equal(t, true, have.TrailCheckers == nil)
 		affirm.Equal(t, true, have.SkipTrails == nil)
 		affirm.Equal(t, false, have.SkipUnexported)
@@ -339,6 +345,42 @@ func Test_DefaultOptions(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, core.Same(typeCheckers, have.TypeCheckers))
+	})
+
+	t.Run("the time check is not overwritten when set", func(t *testing.T) {
+		// --- Given ---
+		chk := func(_, _ any, _ ...Option) error { return nil }
+		opt := WithTypeChecker(time.Time{}, chk)
+
+		// --- When ---
+		ops := DefaultOptions(opt)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(chk, ops.TypeCheckers[typTime]))
+	})
+
+	t.Run("the timezone check is not overwritten when set", func(t *testing.T) {
+		// --- Given ---
+		chk := func(_, _ any, _ ...Option) error { return nil }
+		opt := WithTypeChecker(time.Location{}, chk)
+
+		// --- When ---
+		ops := DefaultOptions(opt)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(chk, ops.TypeCheckers[typZone]))
+	})
+
+	t.Run("timezone ptr check is not overwritten when set", func(t *testing.T) {
+		// --- Given ---
+		chk := func(_, _ any, _ ...Option) error { return nil }
+		opt := WithTypeChecker(&time.Location{}, chk)
+
+		// --- When ---
+		ops := DefaultOptions(opt)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(chk, ops.TypeCheckers[typZonePtr]))
 	})
 }
 

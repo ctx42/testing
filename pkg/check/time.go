@@ -503,7 +503,8 @@ func getZone(zone any, opts ...Option) (*time.Location, string, zoneRep, error) 
 
 	case time.Location:
 		v := &val
-		return v, v.String(), zoneZone, nil
+		vStr := v.String()
+		return v, vStr, zoneZone, nil
 
 	case string:
 		z, err := time.LoadLocation(val)
@@ -518,7 +519,8 @@ func getZone(zone any, opts ...Option) (*time.Location, string, zoneRep, error) 
 		return nil, val, zoneString, msg
 
 	case *time.Location:
-		return val, val.String(), zoneZone, nil
+		valStr := val.String()
+		return val, valStr, zoneZone, nil
 
 	default:
 		str := fmt.Sprintf("%v", val)

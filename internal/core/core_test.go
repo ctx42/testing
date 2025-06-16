@@ -7,11 +7,14 @@ import (
 	"reflect"
 	"runtime"
 	"testing"
+	"time"
 	"unsafe"
 
 	"github.com/ctx42/testing/internal/cases"
 	"github.com/ctx42/testing/internal/types"
 )
+
+const expMsg = "expected same:\n  want: %v\n  have: %v"
 
 func Test_IsNil_tabular_ZENValues(t *testing.T) {
 	for _, tc := range cases.ZENValues() {
@@ -21,16 +24,14 @@ func Test_IsNil_tabular_ZENValues(t *testing.T) {
 
 			// --- Then ---
 			if tc.IsNil && !hNil {
-				format := "expected nil value:\n  have: %#v"
-				t.Errorf(format, hNil)
+				msg := "expected nil value:\n  have: %#v"
+				t.Errorf(msg, hNil)
 			}
 			if !tc.IsNil && hNil {
-				format := "expected not-nil value:\n  have: %#v"
-				t.Errorf(format, hNil)
+				t.Errorf("expected not-nil value:\n  have: %#v", hNil)
 			}
 			if tc.IsWrappedNil != hWrapped {
-				format := "expected wrapped nil value:\n  have: %#v"
-				t.Errorf(format, tc.Val)
+				t.Errorf("expected wrapped nil value:\n  have: %#v", tc.Val)
 			}
 		})
 	}
@@ -61,7 +62,6 @@ func Test_WillPanic(t *testing.T) {
 		val, stack := WillPanic(fn)
 
 		// --- Then ---
-		//goland:noinspection GoTypeAssertionOnErrors
 		if _, ok := val.(*runtime.PanicNilError); !ok {
 			t.Error("expected WillPanic to return value 'panic'")
 		}
@@ -221,44 +221,288 @@ func Test_Same_tabular(t *testing.T) {
 	}
 }
 
+func Test_Pointer_tabular(t *testing.T) {
+	s2 := []*types.TA{{TAp: &types.TA{Int: 42}}}
+
+	tt := []struct {
+		testN string
+
+		in  reflect.Value
+		nil bool
+	}{
+		{"nil", reflect.ValueOf(nil), true},
+		{"struct value", reflect.ValueOf(struct{}{}), true},
+		{"nil struct pointer", reflect.ValueOf((*types.TIntStr)(nil)), true},
+		{
+			"struct pointer",
+			reflect.ValueOf(&struct{ Int int }{Int: 123}),
+			false,
+		},
+		{
+			"struct pointer",
+			reflect.ValueOf(s2).Index(0),
+			false,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := Pointer(tc.in)
+
+			// --- Then ---
+			if tc.nil && have != nil {
+				t.Error("expected nil value")
+			}
+			if !tc.nil && have == nil {
+				t.Error("expected not-nil value")
+			}
+		})
+	}
+}
+
 func Test_Value(t *testing.T) {
+	t.Run("struct by pointer - with exported fields", func(t *testing.T) {
+		// --- Given ---
+		ps := &types.TIntStr{Int: 42, Str: "abc"}
+		val := reflect.ValueOf(ps)
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		have := haveVal.(*types.TIntStr)
+		if !reflect.DeepEqual(have, &types.TIntStr{Int: 42, Str: "abc"}) {
+			t.Errorf("expected correct field value")
+		}
+	})
+
+	t.Run("struct by pointer - exported field", func(t *testing.T) {
+		// --- Given ---
+		ps := &types.TIntStr{Int: 42, Str: "abc"}
+		val := reflect.ValueOf(ps).Elem().FieldByName("Int")
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		have := haveVal.(int)
+		if have != 42 {
+			t.Errorf("expected correct field value")
+		}
+	})
+
 	t.Run("function", func(t *testing.T) {
 		// --- Given ---
 		add := func(a, b int) int { return a + b }
+		val := reflect.ValueOf(add)
 
 		// --- When ---
-		haveVal := Value(reflect.ValueOf(add))
+		haveVal, haveOK := Value(val)
 
 		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
 		if haveVal == nil {
-			t.Error("expected Value to return non-nil value")
+			t.Error("expected non-nil value")
 		}
 		fn, ok := haveVal.(func(int, int) int)
 		if !ok {
-			t.Errorf("expected Value to return `func(int, int) int` function")
+			t.Errorf("unexpected type")
 		}
 		have := fn(1, 2)
 		if have != 3 {
-			t.Errorf("expected the correct result")
+			t.Errorf("expected correct field value")
+		}
+	})
+
+	t.Run("slice of slices of any interfaces", func(t *testing.T) {
+		// --- Given ---
+		s := [][]any{{"str"}}
+		val := reflect.ValueOf(s).Index(0).Index(0)
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		if haveVal.(string) != "str" {
+			t.Errorf("expected correct field value")
+		}
+	})
+
+	t.Run("struct by value - private int field", func(t *testing.T) {
+		// --- Given ---
+		prv := types.NewTPrv().SetInt(42)
+		val := reflect.ValueOf(prv).FieldByName("vInt")
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		if haveVal.(int) != 42 {
+			t.Errorf("expected correct field value")
+		}
+	})
+
+	t.Run("struct by value - private pointer field", func(t *testing.T) {
+		// --- Given ---
+		prv := types.NewTPrv().SetPtr(&types.TVal{Val: "abc"})
+		val := reflect.ValueOf(prv).FieldByName("ptr")
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		have := haveVal.(*types.TVal)
+		if have.Val != "abc" {
+			t.Errorf("expected correct field value")
+		}
+	})
+
+	t.Run("struct by value - private slice field", func(t *testing.T) {
+		// --- Given ---
+		prv := types.NewTPrv().SetSInt([]int{1, 2, 3})
+		val := reflect.ValueOf(prv).FieldByName("sInt")
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		have := haveVal.([]int)
+		if !reflect.DeepEqual(have, []int{1, 2, 3}) {
+			t.Errorf("expected correct field value")
+		}
+	})
+
+	t.Run("struct by value - private array field", func(t *testing.T) {
+		// --- Given ---
+		prv := types.NewTPrv().SetAInt([...]int{1, 2})
+		val := reflect.ValueOf(prv).FieldByName("aInt")
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		have := haveVal.([2]int)
+		if !reflect.DeepEqual(have, [...]int{1, 2}) {
+			t.Errorf("expected correct field value")
+		}
+	})
+
+	t.Run("struct by value - private map field", func(t *testing.T) {
+		// --- Given ---
+		prv := types.NewTPrv().SetMapII(map[int]int{1: 11, 2: 22})
+		val := reflect.ValueOf(prv).FieldByName("vMap")
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		have := haveVal.(map[int]int)
+		if !reflect.DeepEqual(have, map[int]int{1: 11, 2: 22}) {
+			t.Errorf("expected correct field value")
+		}
+	})
+
+	t.Run("struct by value - private time field", func(t *testing.T) {
+		// --- Given ---
+		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		prv := types.NewTPrv().SetTim(tim)
+		val := reflect.ValueOf(prv).FieldByName("tim")
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		if !haveVal.(time.Time).Equal(tim) {
+			t.Errorf("expected correct field value")
+		}
+	})
+
+	t.Run("struct by value - private function field", func(t *testing.T) {
+		// --- Given ---
+		fn := func() int { return 42 }
+		prv := types.NewTPrv().SetFn(fn)
+		val := reflect.ValueOf(prv).FieldByName("fn")
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		if Same(haveVal, fn) != true {
+			t.Errorf("expected correct field value")
+		}
+	})
+
+	t.Run("struct by value - private chan field", func(t *testing.T) {
+		// --- Given ---
+		ch := make(chan int)
+		prv := types.NewTPrv().SetCh(ch)
+		val := reflect.ValueOf(prv).FieldByName("ch")
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		if Same(haveVal, ch) != true {
+			t.Errorf("expected correct field value")
 		}
 	})
 
 	t.Run("interface", func(t *testing.T) {
 		// --- Given ---
-		val := [][]any{{"str"}}
-		in := reflect.ValueOf(val).Index(0).Index(0)
+		var itf types.TItf
+		itf = &types.TPtr{}
+		val := reflect.ValueOf(itf)
 
 		// --- When ---
-		haveVal := Value(in)
+		haveVal, haveOK := Value(val)
 
 		// --- Then ---
-		if haveVal.(string) != "str" {
-			t.Error("expected to get the correct value")
+		if !haveOK {
+			t.Error("expected success")
+		}
+		if Same(haveVal, itf) != true {
+			t.Errorf("expected correct field value")
 		}
 	})
 }
 
-func Test_Value_tabular(t *testing.T) {
+func Test_Value_tabular_success(t *testing.T) {
 	chn := make(chan int)
 	m := make(map[string]int)
 	ptr := &types.TPtr{}
@@ -282,7 +526,6 @@ func Test_Value_tabular(t *testing.T) {
 		{"uint16", uint16(42), uint16(42)},
 		{"uint32", uint32(42), uint32(42)},
 		{"uint64", uint64(42), uint64(42)},
-		{"uintptr", uintptr(42), uintptr(42)},
 		{"float32", float32(42), float32(42)},
 		{"float64", float64(42), float64(42)},
 		{"complex64", complex64(42), complex64(42)},
@@ -294,25 +537,47 @@ func Test_Value_tabular(t *testing.T) {
 		{"slice", []int{1, 2, 3}, []int{1, 2, 3}},
 		{"string", "abc", "abc"},
 		{"struct", types.TPtr{}, types.TPtr{}},
-		{"unsafe pointer", unsafe.Pointer(ptr), uintptr(unsafe.Pointer(ptr))},
-	}
 
-	wMsg := "expected same:\n  want: %v\n  have: %v"
+		{"uintptr", uintptr(42), uintptr(42)},
+		{"unsafe pointer", unsafe.Pointer(ptr), unsafe.Pointer(ptr)},
+	}
 
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			haveVal := Value(reflect.ValueOf(tc.in))
+			haveVal, haveOK := Value(reflect.ValueOf(tc.in))
 
 			// --- Then ---
 			if !reflect.DeepEqual(tc.wantVal, haveVal) {
-				t.Errorf(wMsg, tc.wantVal, haveVal)
+				t.Errorf(expMsg, tc.wantVal, haveVal)
+			}
+			if !haveOK {
+				t.Error("expected true")
 			}
 		})
 	}
 }
 
-func Test_IsSimpleType_tabular(t *testing.T) {
+func Test_value(t *testing.T) {
+	t.Run("nil vHeader data pointer", func(t *testing.T) {
+		// --- Given ---
+		typ := reflect.TypeOf(123)
+		val := reflect.ValueOf(nil)
+
+		// --- When ---
+		haveVal, haveOK := value(typ, val)
+
+		// --- Then ---
+		if haveOK {
+			t.Error("expected false")
+		}
+		if haveVal != nil {
+			t.Errorf("expected nil")
+		}
+	})
+}
+
+func Test_ValueSimple_tabular(t *testing.T) {
 	chn := make(chan int)
 	m := make(map[string]int)
 	ptr := &types.TPtr{}
@@ -324,7 +589,6 @@ func Test_IsSimpleType_tabular(t *testing.T) {
 		wantVal any
 		wantOK  bool
 	}{
-		{"nil", nil, nil, false},
 		{"bool - false", false, false, true},
 		{"bool - true", false, false, true},
 		{"int", 42, 42, true},
@@ -342,6 +606,8 @@ func Test_IsSimpleType_tabular(t *testing.T) {
 		{"float64", float64(42), float64(42), true},
 		{"complex64", complex64(42), complex64(42), true},
 		{"complex128", complex128(42), complex128(42), true},
+
+		{"nil", nil, nil, false},
 		{"array", [...]int{1, 2, 3}, nil, false},
 		{"chan", chn, nil, false},
 		{"map", m, nil, false},
@@ -352,19 +618,17 @@ func Test_IsSimpleType_tabular(t *testing.T) {
 		{"unsafe pointer", uintptr(unsafe.Pointer(ptr)), nil, false},
 	}
 
-	wMsg := "expected value:\n  want: %v\n  have: %v"
-
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			haveVal, haveOK := IsSimpleType(reflect.ValueOf(tc.in))
+			haveVal, haveOK := ValueSimple(reflect.ValueOf(tc.in))
 
 			// --- Then ---
 			if tc.wantVal != haveVal {
-				t.Errorf(wMsg, tc.wantVal, haveVal)
+				t.Errorf(expMsg, tc.wantVal, haveVal)
 			}
-			if !reflect.DeepEqual(tc.wantOK, haveOK) {
-				t.Errorf(wMsg, tc.wantOK, haveOK)
+			if tc.wantOK != haveOK {
+				t.Errorf(expMsg, tc.wantOK, haveOK)
 			}
 		})
 	}

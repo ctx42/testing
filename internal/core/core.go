@@ -27,6 +27,7 @@ func IsNil(have any) (isNil, isWrapped bool) {
 		return true, false
 	}
 	val := reflect.ValueOf(have)
+	val.IsValid()
 	kind := val.Kind()
 	if kind >= reflect.Chan && kind <= reflect.Slice {
 		return val.IsNil(), true
@@ -137,77 +138,105 @@ func Pointer(val reflect.Value) unsafe.Pointer {
 		return unsafe.Pointer(val.UnsafeAddr())
 	}
 	if val.CanInterface() || !val.CanAddr() {
-		ptr := val.UnsafePointer()
-		if ptr == nil {
-			return nil
-		}
-		return ptr
+		return val.UnsafePointer()
 	}
+	// TODO(rz): test this case.
 	return nil
 }
 
 // Value returns the underlying value represented by the [reflect.Value].
-// Panics for unknown [reflect.Kind].
-//
-// nolint: cyclop
-func Value(val reflect.Value) any {
-	knd := val.Kind()
-	if knd == reflect.Invalid {
-		return nil
+// Returns nil, false if the underlying value cannot be returned.
+func Value(val reflect.Value) (any, bool) {
+	// TODO(rz): improve coverage.
+	if nilVal.Equal(val) {
+		return nil, true
 	}
 
-	if v, ok := IsSimpleType(val); ok {
-		return v
+	if v, ok := ValueSimple(val); ok {
+		return v, true
 	}
 
-	if knd == reflect.Uintptr {
-		return uintptr(val.Uint())
+	if val.CanInterface() {
+		return val.Interface(), true
 	}
 
-	if knd == reflect.UnsafePointer {
-		return val.Pointer()
+	if val.CanAddr() {
+		valPtr := unsafe.Pointer(val.UnsafeAddr())
+		valUnsafe := reflect.NewAt(val.Type(), valPtr).Elem()
+		return valUnsafe.Interface(), true
 	}
 
 	switch knd := val.Kind(); knd {
-	case reflect.Slice:
-		// TODO(rz):
-		// if !val.CanInterface() {
-		// 	valPtr := val.UnsafePointer()
-		// 	if valPtr == nil {
-		// 		return nil
-		// 	}
-		// 	slcLen := val.Len()
-		// 	slcCap := val.Cap()
-		//
-		// 	// Get the underlying data pointer from the slice header.
-		// 	dataPtr := (*[3]uintptr)(valPtr)[0]
-		//
-		// 	// Create a new slice with the correct length and capacity.
-		// 	//goland:noinspection GoVetUnsafePointer
-		// 	bytePtr := (*byte)(unsafe.Pointer(dataPtr))
-		// 	slc := unsafe.Slice(bytePtr, slcCap)[:slcLen:slcCap]
-		// 	return slc
-		// }
-		// return val.Interface()
-		fallthrough
-	case reflect.Array, reflect.Chan, reflect.Func, reflect.Interface,
-		reflect.Map, reflect.Pointer, reflect.Struct:
-
-		if !val.CanInterface() {
-			valPtr := unsafe.Pointer(val.UnsafeAddr())
-			valUnsafe := reflect.NewAt(val.Type(), valPtr).Elem()
-			return valUnsafe.Interface()
+	case reflect.Pointer:
+		if val.Elem().Kind() == reflect.Struct {
+			return value(val.Type(), val.Elem())
 		}
-		return val.Interface()
+		return nil, false
+
+	case reflect.Func, reflect.Chan:
+		return value(val.Type(), val)
+
+	case reflect.Struct, reflect.Slice, reflect.Array, reflect.Map:
+		return value(val.Type(), val)
 
 	default:
-		panic("unsupported value kind")
+		return nil, false
 	}
 }
 
-// IsSimpleType returns the underlying value and true when the provided
+// Value extracts the underlying value from a [reflect.Value] representing an
+// unexported or unaddressable field, returning it as an "any" with a boolean
+// indicating success.
+//
+// The typ parameter specifies the expected type of the value, and val is the
+// [reflect.Value] to extract. For unexported fields, it uses unsafe to bypass
+// reflection restrictions. If val is unaddressable (e.g., from a struct passed
+// by value), it creates an addressable copy.
+//
+// The returned bool is true if the extraction succeeds, false otherwise (e.g.,
+// nil pointer or invalid value).
+//
+// The function is unsafe and assumes val is a valid field of the specified
+// type.
+func value(typ reflect.Type, val reflect.Value) (any, bool) {
+	v := reflect.New(typ).Elem()
+
+	if val.CanAddr() {
+		valPtr := unsafe.Pointer(val.UnsafeAddr())
+		*(*unsafe.Pointer)(unsafe.Pointer(v.UnsafeAddr())) = valPtr
+		return v.Interface(), true
+	}
+
+	// Unaddressable: Copy the value's memory byte-by-byte.
+	size := int(typ.Size())
+	// Access the [reflect.Value] internal representation.
+	type valueHeader struct {
+		_    uintptr        // Type pointer.
+		data unsafe.Pointer // Data pointer.
+		_    uintptr        // Flag or padding.
+	}
+	vHeader := (*valueHeader)(unsafe.Pointer(&val))
+	if vHeader.data == nil {
+		return nil, false
+	}
+
+	// Copy the bytes from vHeader.data to v.
+	destPtr := unsafe.Pointer(v.UnsafeAddr())
+	srcPtr := vHeader.data
+	for i := 0; i < size; i++ {
+		*(*byte)(unsafe.Pointer(uintptr(destPtr) + uintptr(i))) =
+			*(*byte)(unsafe.Pointer(uintptr(srcPtr) + uintptr(i)))
+	}
+
+	// Return the struct value as any
+	return v.Interface(), true
+}
+
+// ValueSimple returns the underlying value and true when the provided
 // [reflect.Value] is a simple type. Otherwise, returns untyped nil and false.
-func IsSimpleType(val reflect.Value) (any, bool) {
+//
+// nolint: cyclop
+func ValueSimple(val reflect.Value) (any, bool) {
 	switch knd := val.Kind(); knd {
 	case reflect.Bool:
 		return val.Bool(), true

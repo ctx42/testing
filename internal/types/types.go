@@ -60,19 +60,26 @@ type TLoc struct{ Loc *time.Location }
 // /////////////////////////////////////////////////////////////////////////////
 
 type TPrv struct {
-	Int  int
-	v    int
-	fn   func()
+	Pub  int
+	vInt int
 	ptr  *TVal
 	sInt []int
 	aInt [2]int
+	vMap map[int]int
+	tim  time.Time
+	fn   func() int
+	ch   chan int
 }
 
-func NewTPrvInt(i, v int) TPrv         { return TPrv{Int: i, v: v} }
-func NewTPrvFn(i int, fn func()) TPrv  { return TPrv{Int: i, fn: fn} }
-func NewTPrvPtr(i int, ptr *TVal) TPrv { return TPrv{Int: i, ptr: ptr} }
-func NewTPrvSInt(i int, s []int) TPrv  { return TPrv{Int: i, sInt: s} }
-func NewTPrvAInt(i int, a [2]int) TPrv { return TPrv{Int: i, aInt: a} }
+func NewTPrv() TPrv                          { return TPrv{} }
+func (prv TPrv) SetInt(v int) TPrv           { prv.vInt = v; return prv }
+func (prv TPrv) SetPtr(ptr *TVal) TPrv       { prv.ptr = ptr; return prv }
+func (prv TPrv) SetSInt(s []int) TPrv        { prv.sInt = s; return prv }
+func (prv TPrv) SetAInt(a [2]int) TPrv       { prv.aInt = a; return prv }
+func (prv TPrv) SetMapII(m map[int]int) TPrv { prv.vMap = m; return prv }
+func (prv TPrv) SetTim(tim time.Time) TPrv   { prv.tim = tim; return prv }
+func (prv TPrv) SetFn(fn func() int) TPrv    { prv.fn = fn; return prv }
+func (prv TPrv) SetCh(ch chan int) TPrv      { prv.ch = ch; return prv }
 
 // /////////////////////////////////////////////////////////////////////////////
 
@@ -98,7 +105,7 @@ type TA struct {
 
 type TB struct {
 	TA     // Embedded by value.
-	TAv TA // Non pointer type.
+	TAv TA // Non-pointer type.
 }
 
 // /////////////////////////////////////////////////////////////////////////////

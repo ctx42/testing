@@ -8,7 +8,6 @@ import (
 	"reflect"
 	"slices"
 	"sort"
-	"time"
 	"unsafe"
 
 	"github.com/ctx42/testing/internal/core"
@@ -20,9 +19,13 @@ import (
 // otherwise it returns an error with a message indicating the expected and
 // actual values.
 func Equal(want, have any, opts ...Option) error {
+	ops := DefaultOptions(opts...)
+	if _, ok := ops.Dumper.Dumpers[typByte]; !ok {
+		ops.Dumper.Dumpers[typByte] = dumpByte
+	}
 	wVal := reflect.ValueOf(want)
 	hVal := reflect.ValueOf(have)
-	return deepEqual(wVal, hVal, make(map[visit]bool), opts...)
+	return deepEqual(wVal, hVal, make(map[visit]bool), WithOptions(ops))
 }
 
 // NotEqual checks both values are not equal using. Returns nil if they are not,
@@ -54,6 +57,7 @@ func deepEqual(
 
 	ops := DefaultOptions(opts...)
 
+	// Detect already compared pointers.
 	wPtr := core.Pointer(wVal)
 	hPtr := core.Pointer(hVal)
 	if wPtr != nil && hPtr != nil {
@@ -64,30 +68,15 @@ func deepEqual(
 		visited[v] = true
 	}
 
+	// Return when the trail should be skipped.
 	if i := slices.Index(ops.SkipTrails, ops.Trail); i >= 0 {
 		ops.Trail += " <skipped>"
 		ops.LogTrail()
 		return nil
 	}
 
-	if !wVal.IsValid() && !hVal.IsValid() {
-		ops.LogTrail()
-		return nil
-	}
-
-	if !wVal.IsValid() || !hVal.IsValid() {
-		var wItf, hItf any
-		if wVal.IsValid() {
-			wItf = core.Value(wVal)
-		}
-		if hVal.IsValid() {
-			hItf = core.Value(hVal)
-		}
-		ops.LogTrail()
-		return equalError(wItf, hItf, WithOptions(ops))
-	}
-
-	if !wVal.CanInterface() && ops.SkipUnexported {
+	// Skip unexported fields if the option is turned on.
+	if wVal.IsValid() && !wVal.CanInterface() && ops.SkipUnexported {
 		trail := ops.Trail
 		ops.Trail += " <skipped>"
 		ops.LogTrail()
@@ -95,12 +84,38 @@ func deepEqual(
 		return nil
 	}
 
-	wType := wVal.Type()
-	hType := hVal.Type()
-	if wType != hType {
+	// Both are untyped nil value.
+	if !wVal.IsValid() && !hVal.IsValid() {
+		ops.LogTrail()
+		return nil
+	}
+
+	// One of the values is untyped nil.
+	if !wVal.IsValid() || !hVal.IsValid() {
+		ops.LogTrail()
+		if wVal.IsValid() {
+			wStr := ops.Dumper.Value(wVal)
+			return notice.New("expected values to be equal").
+				SetTrail(ops.Trail).
+				Want("%s", wStr).
+				Have("%s", dump.ValNil)
+		}
+
+		hStr := ops.Dumper.Value(hVal)
+		return notice.New("expected values to be equal").
+			SetTrail(ops.Trail).
+			Want("%s", dump.ValNil).
+			Have("%s", hStr)
+	}
+
+	// Check both types are the same.
+	wTyp := wVal.Type()
+	hTyp := hVal.Type()
+	if wTyp != hTyp {
+		// Compare simple types if any of the types is an alias.
 		if ops.CmpSimpleType {
-			wSmp, wOK := core.IsSimpleType(wVal)
-			hSmp, hOK := core.IsSimpleType(hVal)
+			wSmp, wOK := core.ValueSimple(wVal)
+			hSmp, hOK := core.ValueSimple(hVal)
 			if wOK && hOK {
 				wVal = reflect.ValueOf(wSmp)
 				hVal = reflect.ValueOf(hSmp)
@@ -111,51 +126,38 @@ func deepEqual(
 		ops.LogTrail()
 		return notice.New("expected values to be equal").
 			SetTrail(ops.Trail).
-			Append("want type", "%s", wType).
-			Append("have type", "%s", hType)
+			Append("want type", "%s", wTyp).
+			Append("have type", "%s", hTyp)
 	}
 
-	if chk, ok := ops.TrailCheckers[ops.Trail]; ok {
-		ops.LogTrail()
-		return chk(core.Value(wVal), core.Value(hVal), WithOptions(ops))
+	var chk Checker
+	if chk = ops.TrailCheckers[ops.Trail]; chk == nil {
+		chk = ops.TypeCheckers[wTyp]
 	}
 
-	if chk, ok := ops.TypeCheckers[wType]; ok {
+	if chk != nil {
 		ops.LogTrail()
-		return chk(core.Value(wVal), core.Value(hVal), opts...)
+		wItf, wOk := core.Value(wVal)
+		hItf, hOk := core.Value(hVal)
+		if !wOk || !hOk {
+			// TODO(rz): test this.
+			return notice.New("not able to compare using a custom checker").
+				SetTrail(ops.Trail).
+				Append("want type", "%s", wTyp).
+				Append("have type", "%s", hTyp)
+		}
+		return chk(wItf, hItf, WithOptions(ops))
 	}
 
 	switch knd := wVal.Kind(); knd {
 	case reflect.Ptr:
-		if wType == typTimeLocPtr && hType == typTimeLocPtr {
-			ops.LogTrail()
-			wZone := core.Value(wVal).(*time.Location) // nolint: forcetypeassert
-			hZone := core.Value(hVal).(*time.Location) // nolint: forcetypeassert
-			return Zone(wZone, hZone, WithOptions(ops))
-		}
-
 		if wVal.IsNil() && hVal.IsNil() {
 			ops.LogTrail()
 			return nil
 		}
-
 		return deepEqual(wVal.Elem(), hVal.Elem(), visited, WithOptions(ops))
 
 	case reflect.Struct:
-		wTyp := wVal.Type()
-		hTyp := hVal.Type()
-		if wTyp == typTime && hTyp == typTime {
-			ops.LogTrail()
-			return Time(core.Value(wVal), core.Value(hVal), opts...)
-		}
-		if wTyp == typTimeLoc && hTyp == typTimeLoc {
-			ops.LogTrail()
-			wZone := core.Value(wVal).(time.Location) // nolint: forcetypeassert
-			hZone := core.Value(hVal).(time.Location) // nolint: forcetypeassert
-			return Zone(&wZone, &hZone, opts...)
-		}
-		typeName := wVal.Type().Name()
-
 		var err error
 		for i := 0; i < wVal.NumField(); i++ {
 			wfVal := wVal.Field(i)
@@ -164,6 +166,7 @@ func deepEqual(
 				continue
 			}
 			wSF := wVal.Type().Field(i)
+			typeName := wVal.Type().Name()
 			iOps := ops.StructTrail(typeName, wSF.Name)
 			if e := deepEqual(wfVal, hfVal, visited, WithOptions(iOps)); e != nil {
 				err = notice.Join(err, e)
@@ -174,11 +177,14 @@ func deepEqual(
 	case reflect.Slice, reflect.Array:
 		if wVal.Len() != hVal.Len() {
 			ops.LogTrail()
-			wItf := core.Value(wVal)
-			hItf := core.Value(hVal)
-			return equalError(wItf, hItf, WithOptions(ops)).
+			wStr, hStr, diff := ops.Dumper.DiffValue(wVal, hVal)
+			return notice.New("expected values to be equal").
+				SetTrail(ops.Trail).
 				Prepend("have len", "%d", hVal.Len()).
-				Prepend("want len", "%d", wVal.Len())
+				Prepend("want len", "%d", wVal.Len()).
+				Want("%s", wStr).
+				Have("%s", hStr).
+				Append("diff", "%s", diff)
 		}
 		if knd == reflect.Slice && wVal.Pointer() == hVal.Pointer() {
 			ops.LogTrail()
@@ -198,11 +204,14 @@ func deepEqual(
 	case reflect.Map:
 		if wVal.Len() != hVal.Len() {
 			ops.LogTrail()
-			wItf := core.Value(wVal)
-			hItf := core.Value(hVal)
-			return equalError(wItf, hItf, WithOptions(ops)).
+			wStr, hStr, diff := ops.Dumper.DiffValue(wVal, hVal)
+			return notice.New("expected values to be equal").
+				SetTrail(ops.Trail).
 				Prepend("have len", "%d", hVal.Len()).
-				Prepend("want len", "%d", wVal.Len())
+				Prepend("want len", "%d", wVal.Len()).
+				Want("%s", wStr).
+				Have("%s", hStr).
+				Append("diff", "%s", diff)
 		}
 		if wVal.Pointer() == hVal.Pointer() {
 			ops.LogTrail()

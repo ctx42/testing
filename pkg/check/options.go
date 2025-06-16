@@ -262,7 +262,7 @@ type Options struct {
 	Trail string
 
 	// List of visited trails.
-	// The skipped trails have " <skipped>" suffix.
+	// The skipped trails have "<skipped>" suffix.
 	TrailLog *[]string
 
 	// Custom checks to run for a given type.
@@ -298,7 +298,21 @@ func DefaultOptions(opts ...Option) Options {
 		TypeCheckers: maps.Clone(typeCheckers),
 		now:          time.Now,
 	}
-	return ops.set(opts)
+	ops = ops.set(opts)
+
+	if ops.TypeCheckers == nil {
+		ops.TypeCheckers = make(map[reflect.Type]Checker)
+	}
+	if _, ok := ops.TypeCheckers[typTime]; !ok {
+		ops.TypeCheckers[typTime] = Time
+	}
+	if _, ok := ops.TypeCheckers[typZonePtr]; !ok {
+		ops.TypeCheckers[typZonePtr] = Zone
+	}
+	if _, ok := ops.TypeCheckers[typZone]; !ok {
+		ops.TypeCheckers[typZone] = Zone
+	}
+	return ops
 }
 
 // set sets [Options] from a slice of [Option] functions.

@@ -15,10 +15,10 @@ import (
 
 // Types for some of the built-in types.
 var (
-	typTime       = reflect.TypeOf(time.Time{})
-	typTimeLoc    = reflect.TypeOf(time.Location{})
-	typTimeLocPtr = reflect.TypeOf(&time.Location{})
-	typByte       = reflect.TypeOf(byte(0))
+	typTime    = reflect.TypeOf(time.Time{})
+	typZone    = reflect.TypeOf(time.Location{})
+	typZonePtr = reflect.TypeOf(&time.Location{})
+	typByte    = reflect.TypeOf(byte(0))
 )
 
 // typeString returns a type of the value as a string.
