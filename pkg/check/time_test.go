@@ -899,9 +899,17 @@ func Test_Recent(t *testing.T) {
 }
 
 func Test_Zone(t *testing.T) {
-	t.Run("equal", func(t *testing.T) {
+	t.Run("equal instance", func(t *testing.T) {
 		// --- When ---
 		err := Zone(time.UTC, time.UTC)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("equal string", func(t *testing.T) {
+		// --- When ---
+		err := Zone("UTC", "UTC")
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -912,7 +920,7 @@ func Test_Zone(t *testing.T) {
 		affirm.Nil(t, Zone(time.UTC, nil))
 	})
 
-	t.Run("not equal", func(t *testing.T) {
+	t.Run("not equal instance", func(t *testing.T) {
 		// --- When ---
 		err := Zone(time.UTC, types.WAW)
 
@@ -922,6 +930,43 @@ func Test_Zone(t *testing.T) {
 			"expected timezones to be equal:\n" +
 			"  want: UTC\n" +
 			"  have: Europe/Warsaw"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("not equal string", func(t *testing.T) {
+		// --- When ---
+		err := Zone("UTC", "Europe/Warsaw")
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected timezones to be equal:\n" +
+			"  want: UTC\n" +
+			"  have: Europe/Warsaw"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - want is unsupported timezone type", func(t *testing.T) {
+		// --- When ---
+		err := Zone("123", "Europe/Warsaw")
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"[want] failed to parse timezone:\n" +
+			"  value: 123"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - have is unsupported timezone type", func(t *testing.T) {
+		// --- When ---
+		err := Zone("Europe/Warsaw", "123")
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"[have] failed to parse timezone:\n" +
+			"  value: 123"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -1248,6 +1293,69 @@ func Test_getTime_success_tabular(t *testing.T) {
 			affirm.Equal(t, tc.wantTZ.String(), haveTim.Location().String())
 		})
 	}
+}
+
+func Test_getZone(t *testing.T) {
+	t.Run("timezone as string", func(t *testing.T) {
+		// --- When ---
+		haveZone, haveStr, haveRep, err := getZone("Europe/Warsaw")
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.Equal(t, zoneString, haveRep)
+		affirm.Equal(t, "Europe/Warsaw", haveStr)
+		affirm.Equal(t, types.WAW.String(), haveZone.String())
+	})
+
+	t.Run("timezone pointer instance", func(t *testing.T) {
+		// --- When ---
+		haveZone, haveStr, haveRep, err := getZone(types.WAW)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.Equal(t, zoneZone, haveRep)
+		affirm.Equal(t, "Europe/Warsaw", haveStr)
+		affirm.Equal(t, types.WAW.String(), haveZone.String())
+	})
+
+	t.Run("timezone instance", func(t *testing.T) {
+		// --- When ---
+		haveZone, haveStr, haveRep, err := getZone(*types.WAW)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.Equal(t, zoneZone, haveRep)
+		affirm.Equal(t, "Europe/Warsaw", haveStr)
+		affirm.Equal(t, types.WAW.String(), haveZone.String())
+	})
+
+	t.Run("parsing error", func(t *testing.T) {
+		// --- When ---
+		have, haveStr, haveRep, err := getZone("abc///")
+
+		// --- Then ---
+		affirm.Nil(t, have)
+		affirm.Equal(t, "abc///", haveStr)
+		affirm.Equal(t, zoneString, haveRep)
+		wMsg := "failed to parse timezone:\n" +
+			"  value: abc///"
+		affirm.Equal(t, wMsg, err.Error())
+		affirm.Equal(t, true, errors.Is(err, ErrZoneParse))
+	})
+
+	t.Run("unsupported type", func(t *testing.T) {
+		// --- When ---
+		have, haveStr, haveRep, err := getZone(123)
+
+		// --- Then ---
+		affirm.Nil(t, have)
+		affirm.Equal(t, "123", haveStr)
+		affirm.Equal(t, "", haveRep)
+		wMsg := "failed to parse timezone:\n" +
+			"  cause: not supported timezone type"
+		affirm.Equal(t, wMsg, err.Error())
+		affirm.Equal(t, true, errors.Is(err, ErrZoneType))
+	})
 }
 
 func Test_getDur(t *testing.T) {

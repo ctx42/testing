@@ -22,6 +22,12 @@ var (
 	// ErrTimeParse is used when date parsing fails for whatever reason.
 	ErrTimeParse = fmt.Errorf("time parsing")
 
+	// ErrZoneType is returned when timezone representation is not supported.
+	ErrZoneType = fmt.Errorf("not supported timezone type")
+
+	// ErrZoneParse is used when timezone parsing fails for whatever reason.
+	ErrZoneParse = fmt.Errorf("timezone parsing")
+
 	// ErrDurType is returned when duration representation is not supported.
 	ErrDurType = fmt.Errorf("not supported duration type")
 
@@ -38,6 +44,15 @@ const (
 	timeTypeStr   timeRep = "tim-string"
 	timeTypeInt   timeRep = "tim-int"
 	timeTypeInt64 timeRep = "tim-int64"
+)
+
+// zoneRep is timezone representation.
+type zoneRep string
+
+// The timezone representations the [Zone] supports.
+const (
+	zoneString = "zone-string"
+	zoneZone   = "zone-zone"
 )
 
 // durRep is duration representation.
@@ -311,16 +326,27 @@ func Recent(have any, opts ...Option) error {
 // values.
 //
 // Note nil [time.Location] is the same as [time.UTC].
-func Zone(want, have *time.Location, opts ...Option) error {
-	if want.String() == have.String() {
+//
+// The "want" and "have" may represent timezones in the form of a string,
+// nil (UTC), or [time.Location].
+func Zone(want, have any, opts ...Option) error {
+	wZone, wStr, _, err := getZone(want, opts...)
+	if err != nil {
+		return notice.From(err, "want")
+	}
+	hZone, hStr, _, err := getZone(have, opts...)
+	if err != nil {
+		return notice.From(err, "have")
+	}
+	if wZone.String() == hZone.String() {
 		return nil
 	}
 
 	ops := DefaultOptions(opts...)
 	return notice.New("expected timezones to be equal").
 		SetTrail(ops.Trail).
-		Want("%s", want.String()).
-		Have("%s", have.String())
+		Want("%s", wStr).
+		Have("%s", hStr)
 }
 
 // Duration checks "want" and "have" durations are equal. Returns nil if they
@@ -464,9 +490,50 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 	}
 }
 
-// getDur returns duration represented by "dur", its string representation and
-// type of the argument passed. The "dur" may represent duration in the form of
-// a string, int, int64 or [time.Duration].
+// getZone returns timezone represented by "zone", its string representation,
+// and the type of the argument passed. The "zone" may represent a timezone in
+// the form of a string, nil (UTC) or instance of [time.Location].
+//
+// When an error is returned, it will always have [ErrDurParse], [ErrZoneType]
+// in its chain.
+func getZone(zone any, opts ...Option) (*time.Location, string, zoneRep, error) {
+	switch val := zone.(type) {
+	case nil:
+		return time.UTC, "UTC", zoneZone, nil // TODO(rz): test this.
+
+	case time.Location:
+		v := &val
+		return v, v.String(), zoneZone, nil
+
+	case string:
+		z, err := time.LoadLocation(val)
+		if err == nil {
+			return z, val, zoneString, nil
+		}
+		ops := DefaultOptions(opts...)
+		msg := notice.New("failed to parse timezone").
+			SetTrail(ops.Trail).
+			Append("value", "%s", zone).
+			Wrap(ErrZoneParse)
+		return nil, val, zoneString, msg
+
+	case *time.Location:
+		return val, val.String(), zoneZone, nil
+
+	default:
+		str := fmt.Sprintf("%v", val)
+		ops := DefaultOptions(opts...)
+		msg := notice.New("failed to parse timezone").
+			SetTrail(ops.Trail).
+			Append("cause", "%s", ErrZoneType).
+			Wrap(ErrZoneType)
+		return nil, str, "", msg
+	}
+}
+
+// getDur returns duration represented by "dur", its string representation, and
+// the type of the argument passed. The "dur" may represent duration in the
+// form of a string, int, int64 or [time.Duration].
 //
 // When an error is returned, it will always have [ErrDurParse], [ErrDurType]
 // in its chain.
