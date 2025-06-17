@@ -1,3 +1,6 @@
+## v0.18.2 (Tue, 17 Jun 2025 14:54:44 UTC)
+- Add support for string-based timezone comparisons and enhance error handling in check.Zone.
+
 ## v0.18.1 (Sun, 15 Jun 2025 09:43:54 UTC)
 - Implement stack overflow prevention when comparing nested types.
 
