@@ -22,6 +22,7 @@ var globLog = log.New(os.Stderr, "*** DUMP ", log.Llongfile)
 
 // Strings used by dump package to indicate special values.
 const (
+	ValNotNil     = "<not-nil>"          // Represents any not-nil value.
 	ValNil        = "nil"                // The [reflect.Value] is nil.
 	ValAddr       = "<addr>"             // The [reflect.Value] is an address.
 	ValFunc       = "<func>"             // The [reflect.Value] is a function.
