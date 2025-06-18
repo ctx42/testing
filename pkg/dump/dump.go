@@ -272,9 +272,16 @@ func (dmp Dump) Any(val any) string {
 // formatted "have" value, and the third is the unified diff if they differ. If
 // the values are identical, the diff result will be an empty string.
 func (dmp Dump) Diff(want, have any) (string, string, string) {
+	wVal := reflect.ValueOf(want)
+	hVal := reflect.ValueOf(have)
+	return dmp.DiffValue(wVal, hVal)
+}
+
+// DiffValue works like [Diff] but uses [reflect.Value] instances.
+func (dmp Dump) DiffValue(wVal, hVal reflect.Value) (string, string, string) {
 	// Format values for display.
-	wStr, _ := dmp.value(0, reflect.ValueOf(want))
-	hStr, _ := dmp.value(0, reflect.ValueOf(have))
+	wStr, _ := dmp.value(0, wVal)
+	hStr, _ := dmp.value(0, hVal)
 	if wStr == hStr {
 		return wStr, hStr, ""
 	}
@@ -291,15 +298,15 @@ func (dmp Dump) Diff(want, have any) (string, string, string) {
 		dmp2.Flat = false
 		dmp2.FlatStrings = 0
 		if wMlStr {
-			hStr, _ = dmp2.value(0, reflect.ValueOf(have))
+			hStr, _ = dmp2.value(0, hVal)
 		} else {
-			wStr, _ = dmp2.value(0, reflect.ValueOf(want))
+			wStr, _ = dmp2.value(0, wVal)
 		}
 	}
 
 	// Format values for diff.
-	wDiffStr, _ := dmp.forDiff(want)
-	hDiffStr, _ := dmp.forDiff(have)
+	wDiffStr, _ := dmp.forDiff(wVal)
+	hDiffStr, _ := dmp.forDiff(hVal)
 	wDiffMlStr := strings.Contains(wDiffStr, "\n")
 	hDiffMlStr := strings.Contains(hDiffStr, "\n")
 
@@ -316,12 +323,12 @@ func (dmp Dump) Diff(want, have any) (string, string, string) {
 
 // forDiff prepares a value for diffing by formatting it into a string. Returns
 // the string representation of the value and kind.
-func (dmp Dump) forDiff(val any) (string, reflect.Kind) {
+func (dmp Dump) forDiff(val reflect.Value) (string, reflect.Kind) {
 	dmp.Flat = false
 	dmp.FlatStrings = 0
 	dmp.Compact = false
 
-	str, knd := dmp.value(0, reflect.ValueOf(val))
+	str, knd := dmp.value(0, val)
 	if s, err := strconv.Unquote(str); err == nil {
 		str = s
 	}

@@ -633,7 +633,7 @@ func Test_Dump_Diff_tabular(t *testing.T) {
 func Test_Dump_forDiff(t *testing.T) {
 	t.Run("changes Flat and Compact configuration", func(t *testing.T) {
 		// --- Given ---
-		val := []int{1, 2, 3}
+		val := reflect.ValueOf([]int{1, 2, 3})
 		dmp := Dump{
 			Flat:        true,
 			FlatStrings: 10,
