@@ -1,3 +1,8 @@
+## v0.19.0 (Fri, 20 Jun 2025 13:28:01 UTC)
+- Add dump.Dump.DiffValue which behaves the same way as dump.Dump.Duff but works on reflect.Value instances.
+- Add dump.ValNotNil constant representing not nil values.
+- Fix custom checkers when the checked type is an unexported struct field. Refactor deep equality test.
+
 ## v0.18.2 (Tue, 17 Jun 2025 14:54:44 UTC)
 - Add support for string-based timezone comparisons and enhance error handling in check.Zone.
 
