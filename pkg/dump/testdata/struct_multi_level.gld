@@ -2,8 +2,8 @@ Struct containing other struct (multi level presentation).
 ---
 {
   Int: 1,
-  T1: {
+  Rec: {
     Int: 2,
-    T1: nil,
+    Rec: nil,
   },
 }

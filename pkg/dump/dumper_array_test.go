@@ -113,10 +113,10 @@ func Test_ArrayDumper_tabular(t *testing.T) {
 		{
 			"array of structs",
 			New(),
-			[]types.T1{{Int: 1}, {Int: 2}},
-			"[]types.T1{\n" +
-				"  {\n    Int: 1,\n    T1: nil,\n  },\n" +
-				"  {\n    Int: 2,\n    T1: nil,\n  },\n" +
+			[]types.TRec{{Int: 1}, {Int: 2}},
+			"[]types.TRec{\n" +
+				"  {\n    Int: 1,\n    Rec: nil,\n  },\n" +
+				"  {\n    Int: 2,\n    Rec: nil,\n  },\n" +
 				"}",
 		},
 	}

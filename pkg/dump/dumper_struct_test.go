@@ -76,9 +76,9 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("multi level struct", func(t *testing.T) {
 		// --- Given ---
-		s := types.T1{
+		s := types.TRec{
 			Int: 1,
-			T1: &types.T1{
+			Rec: &types.TRec{
 				Int: 2,
 			},
 		}
@@ -94,9 +94,9 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("multi-level struct with indent", func(t *testing.T) {
 		// --- Given ---
-		s := types.T1{
+		s := types.TRec{
 			Int: 1,
-			T1: &types.T1{
+			Rec: &types.TRec{
 				Int: 2,
 			},
 		}
@@ -112,9 +112,9 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("multi-level flat & compact struct", func(t *testing.T) {
 		// --- Given ---
-		s := types.T1{
+		s := types.TRec{
 			Int: 1,
-			T1: &types.T1{
+			Rec: &types.TRec{
 				Int: 2,
 			},
 		}

@@ -920,6 +920,21 @@ func Test_Equal_kind_Struct(t *testing.T) {
 			"   have: 3"
 		affirm.Equal(t, wMsg, err.Error())
 	})
+
+	t.Run("recursive", func(t *testing.T) {
+		// --- Given ---
+		s0 := types.TRec{Int: 1, Rec: &types.TRec{Int: 2}}
+		s0.Rec.Rec = &s0
+
+		s1 := types.TRec{Int: 1, Rec: &types.TRec{Int: 2}}
+		s1.Rec.Rec = &s1
+
+		// --- When ---
+		err := Equal(s0, s1)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
 }
 
 func Test_Equal_kind_Slice_and_Array(t *testing.T) {

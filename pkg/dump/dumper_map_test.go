@@ -74,13 +74,13 @@ func Test_MapDumper_tabular(t *testing.T) {
 		{
 			"flat map[int]types.T1",
 			New(WithFlat, WithCompact, WithTimeFormat(TimeAsUnix)),
-			map[int]types.T1{0: {Int: 0}, 1: {Int: 1}},
-			"map[int]types.T1{0:{Int:0,T1:nil},1:{Int:1,T1:nil}}",
+			map[int]types.TRec{0: {Int: 0}, 1: {Int: 1}},
+			"map[int]types.TRec{0:{Int:0,Rec:nil},1:{Int:1,Rec:nil}}",
 		},
 		{
-			"default map[int]types.T1",
+			"default map[int]types.TRec",
 			New(WithTimeFormat(TimeAsUnix)),
-			map[int]types.T1{0: {Int: 0}, 1: {Int: 1}},
+			map[int]types.TRec{0: {Int: 0}, 1: {Int: 1}},
 			goldy.Open(t, "testdata/map_of_structs.gld").String(),
 		},
 	}

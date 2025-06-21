@@ -1,12 +1,12 @@
 Map of simple structs.
 ---
-map[int]types.T1{
+map[int]types.TRec{
   0: {
     Int: 0,
-    T1: nil,
+    Rec: nil,
   },
   1: {
     Int: 1,
-    T1: nil,
+    Rec: nil,
   },
 }

@@ -44,6 +44,7 @@ func NotEqual(want, have any, opts ...Option) error {
 type visit struct {
 	want unsafe.Pointer
 	have unsafe.Pointer
+	typ  reflect.Type
 }
 
 // deepEqual is the internal comparison function which is called recursively.
@@ -56,17 +57,6 @@ func deepEqual(
 ) error {
 
 	ops := DefaultOptions(opts...)
-
-	// Detect already compared pointers.
-	wPtr := core.Pointer(wVal)
-	hPtr := core.Pointer(hVal)
-	if wPtr != nil && hPtr != nil {
-		v := visit{wPtr, hPtr}
-		if visited[v] {
-			return nil
-		}
-		visited[v] = true
-	}
 
 	// Return when the trail should be skipped.
 	if i := slices.Index(ops.SkipTrails, ops.Trail); i >= 0 {
@@ -128,6 +118,17 @@ func deepEqual(
 			SetTrail(ops.Trail).
 			Append("want type", "%s", wTyp).
 			Append("have type", "%s", hTyp)
+	}
+
+	// Detect already compared pointers.
+	wPtr := core.Pointer(wVal)
+	hPtr := core.Pointer(hVal)
+	if wPtr != nil && hPtr != nil {
+		v := visit{wPtr, hPtr, wTyp}
+		if visited[v] {
+			return nil
+		}
+		visited[v] = true
 	}
 
 	var chk Checker
