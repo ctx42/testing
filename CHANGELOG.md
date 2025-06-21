@@ -1,3 +1,6 @@
+## v0.19.1 (Sat, 21 Jun 2025 07:28:20 UTC)
+- Fix recursive structure checks by adding reflect.Type to the visited structure.
+
 ## v0.19.0 (Fri, 20 Jun 2025 13:28:01 UTC)
 - Add dump.Dump.DiffValue which behaves the same way as dump.Dump.Duff but works on reflect.Value instances.
 - Add dump.ValNotNil constant representing not nil values.
