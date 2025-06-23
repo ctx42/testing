@@ -1,3 +1,6 @@
+## v0.20.1 (Mon, 23 Jun 2025 14:30:35 UTC)
+- Fix mock generation where the interface method had a single variadic argument.
+
 ## v0.20.0 (Mon, 23 Jun 2025 10:55:47 UTC)
 - Add the ability to generate mocks for interfaces which use parametrized types.
 
