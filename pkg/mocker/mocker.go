@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"go/ast"
 	"io"
+	"strings"
 )
 
 // Generate creates a mock implementation for the specified interface name and
@@ -372,6 +373,36 @@ func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 		exp.value = ch + " " + got.value
 		exp.pks = append(exp.pks, got.pks...)
 		return exp, nil
+
+	case *ast.IndexExpr:
+		gotT, err := mck.parseExpr(cfg, v.X)
+		if err != nil {
+			return expression{}, err
+		}
+		gotP, err := mck.parseExpr(cfg, v.Index)
+		if err != nil {
+			return expression{}, err
+		}
+		gotT.value = gotT.value + "[" + gotP.value + "]"
+		gotT.pks = append(gotT.pks, gotP.pks...)
+		return gotT, nil
+
+	case *ast.IndexListExpr:
+		gotT, err := mck.parseExpr(cfg, v.X)
+		if err != nil {
+			return expression{}, err
+		}
+		gotT.value += "["
+		for _, exp := range v.Indices {
+			gotP, err := mck.parseExpr(cfg, exp)
+			if err != nil {
+				return expression{}, err
+			}
+			gotT.value += gotP.value + ", "
+			gotT.pks = append(gotT.pks, gotP.pks...)
+		}
+		gotT.value = strings.TrimSuffix(gotT.value, ", ") + "]"
+		return gotT, nil
 	}
 	return expression{}, ErrAstParse
 }

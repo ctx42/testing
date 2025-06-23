@@ -205,6 +205,8 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 		{"Case55", "Case55", "cases", "golden"},
 		{"Case55_dst_cases", "Case55", "cases", "cases"},
 		{"Case56", "Case56", "cases", "golden"},
+		{"Case57", "Case57", "cases", "golden"},
+		{"Case58", "Case58", "cases", "golden"},
 
 		{"ItfA", "ItfA", "cases", "golden"},
 		{"ItfB", "ItfB", "cases", "golden"},
@@ -233,10 +235,9 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 			assert.NoError(t, err)
 
 			gfp := filepath.Join("testdata/golden", tc.testN+".gld")
-			// nolint: gocritic
-			// goldy.New(t, gfp, "", buf.String()).Save()
-
 			want := goldy.Open(t, gfp)
+			// nolint: gocritic
+			// want.SetContent(buf.String()).Save()
 			assert.Equal(t, want.String(), buf.String())
 		})
 	}
