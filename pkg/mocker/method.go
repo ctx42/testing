@@ -233,6 +233,7 @@ func (met *method) genArgSlice() string {
 	code := "\tvar _args []any\n"
 	args := met.args
 	if met.isVariadic() {
+		// Remove variadic argument (always the last one).
 		args = met.args[0 : len(met.args)-1]
 	}
 	for i, arg := range args {
@@ -247,7 +248,11 @@ func (met *method) genArgSlice() string {
 		}
 	}
 	if met.isVariadic() {
-		name := met.args[len(met.args)-1].name
+		idx := len(met.args) - 1
+		if idx < 0 {
+			idx = 0
+		}
+		name := met.args[idx].genName(idx)
 		code += genAppendFromTo("_args", name)
 	}
 	return code

@@ -108,3 +108,5 @@ type Case57 interface{ Method57() ParamOne[int] }
 type Case58 interface {
 	Method58() ParamTwo[int, *Concrete]
 }
+
+type Case59 interface{ Method59(...int) }
