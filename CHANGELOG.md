@@ -1,3 +1,6 @@
+## v0.20.0 (Mon, 23 Jun 2025 10:55:47 UTC)
+- Add the ability to generate mocks for interfaces which use parametrized types.
+
 ## v0.19.1 (Sat, 21 Jun 2025 07:28:20 UTC)
 - Fix recursive structure checks by adding reflect.Type to the visited structure.
 
