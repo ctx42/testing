@@ -2,4 +2,4 @@ Example log message triggered from mock cleanup callback.
 ---
 [mock] too few method calls:
   missing calls:
-                 Zero -> expected 0 calls received 0 calls
+                 Zero -> expected at least one call received 0 calls

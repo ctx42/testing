@@ -412,8 +412,14 @@ func (mck *Mock) AssertExpectations() bool {
 		}
 
 		names = append(names, call.Method)
-		format := "expected %d %s received %d %s"
-		why := fmt.Sprintf(format, call.wantCalls, wCls, call.haveCalls, hCls)
+		var why string
+		if call.wantCalls == 0 {
+			format := "expected at least one call received %d %s"
+			why = fmt.Sprintf(format, call.haveCalls, hCls)
+		} else {
+			format := "expected %d %s received %d %s"
+			why = fmt.Sprintf(format, call.wantCalls, wCls, call.haveCalls, hCls)
+		}
 		whys = append(whys, why)
 	}
 	if len(names) == 0 {
