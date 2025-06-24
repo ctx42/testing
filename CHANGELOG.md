@@ -1,3 +1,7 @@
+## v0.20.2 (Tue, 24 Jun 2025 09:13:01 UTC)
+- Update golden file doc.
+- Improve the mock error message when at least one call to the mocked method is expected.
+
 ## v0.20.1 (Mon, 23 Jun 2025 14:30:35 UTC)
 - Fix mock generation where the interface method had a single variadic argument.
 
