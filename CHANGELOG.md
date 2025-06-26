@@ -1,3 +1,12 @@
+## v0.22.0 (Thu, 26 Jun 2025 16:14:51 UTC)
+- Add check.Increasing and check.Decreasing and their equivalents in assert package.
+- Remove already resolved TODO.
+- Add check.NotIncreasing and check.NotDecreasing and their equivalents in assert package.
+- Add check.Greater and its equivalent in the assert package.
+- Add check.Smaller and its equivalent in the assert package.
+- Add check.GreaterOrEqual and its equivalent in the assert package.
+- Add check.SmallerOrEqual and its equivalent in the assert package.
+
 ## v0.21.0 (Thu, 26 Jun 2025 10:25:01 UTC)
 - Add check.EpsilonSlice and assert.EpsilonSlice functions to test all slice values are within given epsilon of each other respectively.
 
