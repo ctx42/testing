@@ -54,6 +54,20 @@ func Smaller[T constraints.Ordered](want, have T, opts ...Option) error {
 		Have("%v", have)
 }
 
+// SmallerOrEqual checks the "want" value is smaller or equial than the "have"
+// value. Returns nil if the condition is met, otherwise it returns an error
+// with a message indicating the expected and actual values.
+func SmallerOrEqual[T constraints.Ordered](want, have T, opts ...Option) error {
+	if want <= have {
+		return nil
+	}
+	ops := DefaultOptions(opts...)
+	return notice.New("expected value to be smaller or equal").
+		SetTrail(ops.Trail).
+		Append("smaller or equal than", "%v", want).
+		Have("%v", have)
+}
+
 // Epsilon checks the difference between two numbers is within a given delta.
 // Returns nil if it does, otherwise it returns an error with a message
 // indicating the expected and actual values.

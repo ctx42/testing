@@ -155,6 +155,62 @@ func Test_Smaller(t *testing.T) {
 	})
 }
 
+func Test_SmallerOrEqual(t *testing.T) {
+	t.Run("success - smaller", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		// --- When ---
+		have := SmallerOrEqual(tspy, 42, 44)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("success - equal", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		// --- When ---
+		have := SmallerOrEqual(tspy, 44, 44)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		// --- When ---
+		have := SmallerOrEqual(tspy, 44, 42)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+
+	t.Run("log message with trail", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.ExpectLogContain("  trail: type.field\n")
+		tspy.Close()
+
+		opt := check.WithTrail("type.field")
+
+		// --- When ---
+		have := SmallerOrEqual(tspy, 44, 42, opt)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+}
+
 func Test_Epsilon(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
