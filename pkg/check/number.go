@@ -26,6 +26,20 @@ func Greater[T constraints.Ordered](want, have T, opts ...Option) error {
 		Have("%v", have)
 }
 
+// GreaterOrEqual checks the "want" value is greater or equal than the "have"
+// value. Returns nil if the condition is met, otherwise it returns an error
+// with a message indicating the expected and actual values.
+func GreaterOrEqual[T constraints.Ordered](want, have T, opts ...Option) error {
+	if want >= have {
+		return nil
+	}
+	ops := DefaultOptions(opts...)
+	return notice.New("expected value to be greater or equal").
+		SetTrail(ops.Trail).
+		Append("greater or equal than", "%v", want).
+		Have("%v", have)
+}
+
 // Smaller checks the "want" value is smaller than the "have" value. Returns
 // nil if the condition is met, otherwise it returns an error with a message
 // indicating the expected and actual values.

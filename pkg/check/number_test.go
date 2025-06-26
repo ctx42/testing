@@ -62,6 +62,54 @@ func Test_Greater(t *testing.T) {
 	})
 }
 
+func Test_GreaterOrEqual(t *testing.T) {
+	t.Run("success - greater", func(t *testing.T) {
+		// --- When ---
+		err := GreaterOrEqual(4, 2)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("success - equal", func(t *testing.T) {
+		// --- When ---
+		err := GreaterOrEqual(4, 4)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - less", func(t *testing.T) {
+		// --- When ---
+		err := GreaterOrEqual(2, 4)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected value to be greater or equal:\n" +
+			"  greater or equal than: 2\n" +
+			"                   have: 4"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("log message with trail", func(t *testing.T) {
+		// --- Given ---
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		err := GreaterOrEqual(2, 4, opt)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected value to be greater or equal:\n" +
+			"                  trail: type.field\n" +
+			"  greater or equal than: 2\n" +
+			"                   have: 4"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
 func Test_Smaller(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- When ---

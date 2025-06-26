@@ -26,6 +26,23 @@ func Greater[T constraints.Ordered](
 	return true
 }
 
+// GreaterOrEqual checks the "want" value is greater or equal than the "have"
+// value. Returns true if it is, otherwise marks the test as failed, writes an
+// error message to the test log and returns false.
+func GreaterOrEqual[T constraints.Ordered](
+	t tester.T,
+	want, have T,
+	opts ...check.Option,
+) bool {
+
+	t.Helper()
+	if err := check.GreaterOrEqual(want, have, opts...); err != nil {
+		t.Error(err)
+		return false
+	}
+	return true
+}
+
 // Smaller checks the "want" value is smaller than the "have" value. Returns
 // true if it is, otherwise marks the test as failed, writes an error message
 // to the test log and returns false.
