@@ -9,6 +9,23 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
+// Greater checks the "want" value is greater than the "have" value. Returns
+// true if it is, otherwise marks the test as failed, writes an error message to
+// the test log and returns false.
+func Greater[T constraints.Ordered](
+	t tester.T,
+	want, have T,
+	opts ...check.Option,
+) bool {
+
+	t.Helper()
+	if err := check.Greater(want, have, opts...); err != nil {
+		t.Error(err)
+		return false
+	}
+	return true
+}
+
 // Epsilon asserts the difference between two numbers is within a given delta.
 // Returns true if it is, otherwise marks the test as failed, writes an error
 // message to the test log and returns false.
@@ -38,8 +55,8 @@ func EpsilonSlice[T constraints.Number](
 ) bool {
 
 	t.Helper()
-	if e := check.EpsilonSlice(want, delta, have, opts...); e != nil {
-		t.Error(e)
+	if err := check.EpsilonSlice(want, delta, have, opts...); err != nil {
+		t.Error(err)
 		return false
 	}
 	return true
@@ -57,8 +74,8 @@ func Increasing[T constraints.Ordered](
 ) bool {
 
 	t.Helper()
-	if e := check.Increasing(seq, opts...); e != nil {
-		t.Error(e)
+	if err := check.Increasing(seq, opts...); err != nil {
+		t.Error(err)
 		return false
 	}
 	return true
@@ -72,8 +89,8 @@ func NotIncreasing[T constraints.Ordered](
 ) bool {
 
 	t.Helper()
-	if e := check.NotIncreasing(seq, opts...); e != nil {
-		t.Error(e)
+	if err := check.NotIncreasing(seq, opts...); err != nil {
+		t.Error(err)
 		return false
 	}
 	return true
@@ -91,8 +108,8 @@ func Decreasing[T constraints.Ordered](
 ) bool {
 
 	t.Helper()
-	if e := check.Decreasing(seq, opts...); e != nil {
-		t.Error(e)
+	if err := check.Decreasing(seq, opts...); err != nil {
+		t.Error(err)
 		return false
 	}
 	return true
@@ -106,8 +123,8 @@ func NotDecreasing[T constraints.Ordered](
 ) bool {
 
 	t.Helper()
-	if e := check.NotDecreasing(seq, opts...); e != nil {
-		t.Error(e)
+	if err := check.NotDecreasing(seq, opts...); err != nil {
+		t.Error(err)
 		return false
 	}
 	return true

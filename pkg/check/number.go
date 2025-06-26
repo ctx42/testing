@@ -12,6 +12,20 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
+// Greater checks the "want" value is greater than the "have" value. Returns
+// nil if the condition is met, otherwise it returns an error with a message
+// indicating the expected and actual values.
+func Greater[T constraints.Ordered](want, have T, opts ...Option) error {
+	if want > have {
+		return nil
+	}
+	ops := DefaultOptions(opts...)
+	return notice.New("expected value to be greater").
+		SetTrail(ops.Trail).
+		Want("%v", want).
+		Have("%v", have)
+}
+
 // Epsilon checks the difference between two numbers is within a given delta.
 // Returns nil if it does, otherwise it returns an error with a message
 // indicating the expected and actual values.

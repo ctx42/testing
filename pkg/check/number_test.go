@@ -9,6 +9,59 @@ import (
 	"github.com/ctx42/testing/internal/affirm"
 )
 
+func Test_Greater(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- When ---
+		err := Greater(4, 2)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - equal", func(t *testing.T) {
+		// --- When ---
+		err := Greater(4, 4)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected value to be greater:\n" +
+			"  want: 4\n" +
+			"  have: 4"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - less", func(t *testing.T) {
+		// --- When ---
+		err := Greater(2, 4)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected value to be greater:\n" +
+			"  want: 2\n" +
+			"  have: 4"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("log message with trail", func(t *testing.T) {
+		// --- Given ---
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		err := Greater(2, 4, opt)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected value to be greater:\n" +
+			"  trail: type.field\n" +
+			"   want: 2\n" +
+			"   have: 4"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
 func Test_Epsilon(t *testing.T) {
 	t.Run("float64", func(t *testing.T) {
 		// --- When ---
