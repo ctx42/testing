@@ -63,12 +63,84 @@ func EpsilonSlice[T constraints.Number](
 
 	for i, w := range want {
 		iOps := ops.ArrTrail(knd, i)
-		h := have[i]
-		if e := Epsilon(w, delta, h, WithOptions(iOps)); e != nil {
-			hdr := "expected all numbers in a slice to be within given epsilon " +
-				"respectively"
+		if e := Epsilon(w, delta, have[i], WithOptions(iOps)); e != nil {
+			hdr := "expected all numbers to be " +
+				"within given epsilon respectively"
 			return notice.From(e).SetHeader(hdr)
 		}
+	}
+	return nil
+}
+
+// Increasing checks if the given sequence has values in the increasing order.
+// You may use the [WithIncreasingSoft] option to allow consecutive values to
+// be equal. It returns an error if the sequence is not increasing.
+func Increasing[T constraints.Ordered](seq []T, opts ...Option) error {
+	if len(seq) <= 1 {
+		return nil
+	}
+
+	ops := DefaultOptions(opts...)
+	knd := fmt.Sprintf("%T", seq)
+	var mode string
+
+	var cmp func(T, T) bool
+	if ops.IncreaseSoft {
+		mode = "soft"
+		cmp = func(c, p T) bool { return p <= c }
+	} else {
+		mode = "strict"
+		cmp = func(c, p T) bool { return p < c }
+	}
+
+	prv := seq[0]
+	for i := 1; i < len(seq); i++ {
+		cur := seq[i]
+		if !cmp(cur, prv) {
+			iOps := ops.ArrTrail(knd, i)
+			return notice.New("expected an increasing sequence").
+				SetTrail(iOps.Trail).
+				Append("mode", "%s", mode).
+				Append("previous", "%v", prv).
+				Append("current", "%v", cur)
+		}
+		prv = cur
+	}
+	return nil
+}
+
+// Decreasing checks if the given sequence has values in the decreasing order.
+// You may use the [WithDecreasingSoft] option to allow consecutive values to
+// be equal. It returns an error if the sequence is not decreasing.
+func Decreasing[T constraints.Ordered](seq []T, opts ...Option) error {
+	if len(seq) <= 1 {
+		return nil
+	}
+	ops := DefaultOptions(opts...)
+	knd := fmt.Sprintf("%T", seq)
+	var mode string
+
+	var cmp func(T, T) bool
+	if ops.DecreaseSoft {
+		mode = "soft"
+		cmp = func(c, p T) bool { return p >= c }
+	} else {
+		mode = "strict"
+		cmp = func(c, p T) bool { return p > c }
+	}
+
+	prv := seq[0]
+	for i := 1; i < len(seq); i++ {
+		cur := seq[i]
+		if !cmp(cur, prv) {
+			iOps := ops.ArrTrail(knd, i)
+			return notice.New("expected a decreasing sequence").
+				SetTrail(iOps.Trail).
+				Append("mode", "%s", mode).
+				Append("previous", "%v", prv).
+				Append("current", "%v", cur)
+		}
+		prv = cur
 	}
 	return nil
 }

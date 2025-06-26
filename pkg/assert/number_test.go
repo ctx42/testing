@@ -107,3 +107,129 @@ func Test_EpsilonSlice(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 }
+
+func Test_Increasing(t *testing.T) {
+	t.Run("success - strict", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		seq := []float64{1, 2, 3, 4}
+
+		// --- When ---
+		have := Increasing(tspy, seq)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("success - soft", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		seq := []float64{1, 2, 2, 4}
+
+		// --- When ---
+		have := Increasing(tspy, seq, check.WithIncreasingSoft)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		seq := []float64{1, 2, 1, 4}
+
+		// --- When ---
+		have := Increasing(tspy, seq)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+
+	t.Run("log message with trail", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.ExpectLogContain("  trail: type.field[2]\n")
+		tspy.Close()
+
+		seq := []float64{1, 2, 1, 4}
+		opt := check.WithTrail("type.field")
+
+		// --- When ---
+		have := Increasing(tspy, seq, opt)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+}
+
+func Test_Decreasing(t *testing.T) {
+	t.Run("success - strict", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		seq := []float64{4, 3, 2, 1}
+
+		// --- When ---
+		have := Decreasing(tspy, seq)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("success - soft", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		seq := []float64{4, 3, 3, 1}
+
+		// --- When ---
+		have := Decreasing(tspy, seq, check.WithDecreasingSoft)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		seq := []float64{4, 3, 4, 1}
+
+		// --- When ---
+		have := Decreasing(tspy, seq)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+
+	t.Run("log message with trail", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.ExpectLogContain("  trail: type.field[2]\n")
+		tspy.Close()
+
+		seq := []float64{4, 3, 4, 1}
+		opt := check.WithTrail("type.field")
+
+		// --- When ---
+		have := Decreasing(tspy, seq, opt)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+}

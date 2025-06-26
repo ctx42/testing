@@ -225,6 +225,28 @@ func Test_WithSkipUnexported(t *testing.T) {
 	affirm.Equal(t, true, have.SkipUnexported)
 }
 
+func Test_WithIncreasingSoft(t *testing.T) {
+	// --- Given ---
+	ops := Options{}
+
+	// --- When ---
+	have := WithIncreasingSoft(ops)
+
+	// --- Then ---
+	affirm.Equal(t, true, have.IncreaseSoft)
+}
+
+func Test_WithDecreasingSoft(t *testing.T) {
+	// --- Given ---
+	ops := Options{}
+
+	// --- When ---
+	have := WithDecreasingSoft(ops)
+
+	// --- Then ---
+	affirm.Equal(t, true, have.DecreaseSoft)
+}
+
 func Test_WithOptions(t *testing.T) {
 	// --- Given ---
 	waw := must.Value(time.LoadLocation("Europe/Warsaw"))
@@ -257,6 +279,8 @@ func Test_WithOptions(t *testing.T) {
 		SkipTrails:     make([]string, 0),
 		SkipUnexported: true,
 		CmpSimpleType:  true,
+		IncreaseSoft:   true,
+		DecreaseSoft:   true,
 		now:            time.Now,
 	}
 
@@ -278,7 +302,7 @@ func Test_WithOptions(t *testing.T) {
 
 	// When those fail, add fields above.
 	affirm.Equal(t, 14, reflect.ValueOf(have.Dumper).NumField())
-	affirm.Equal(t, 12, reflect.ValueOf(have).NumField())
+	affirm.Equal(t, 14, reflect.ValueOf(have).NumField())
 }
 
 func Test_DefaultOptions(t *testing.T) {
@@ -303,8 +327,10 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, true, have.SkipTrails == nil)
 		affirm.Equal(t, false, have.SkipUnexported)
 		affirm.Equal(t, false, have.CmpSimpleType)
+		affirm.Equal(t, false, have.IncreaseSoft)
+		affirm.Equal(t, false, have.DecreaseSoft)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 12, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 14, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("with options", func(t *testing.T) {
@@ -328,8 +354,10 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, true, have.SkipTrails == nil)
 		affirm.Equal(t, false, have.SkipUnexported)
 		affirm.Equal(t, false, have.CmpSimpleType)
+		affirm.Equal(t, false, have.IncreaseSoft)
+		affirm.Equal(t, false, have.DecreaseSoft)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 12, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 14, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("TypeCheckers field is a clone of a global map", func(t *testing.T) {

@@ -44,3 +44,41 @@ func EpsilonSlice[T constraints.Number](
 	}
 	return true
 }
+
+// Increasing checks if the given sequence has values in the increasing order.
+// You may use the [check.WithIncreasingSoft] option to allow consecutive
+// values to be equal. It returns true if the sequence is increasing otherwise,
+// marks the test as failed, writes an error message to the test log and
+// returns false.
+func Increasing[T constraints.Ordered](
+	t tester.T,
+	seq []T,
+	opts ...check.Option,
+) bool {
+
+	t.Helper()
+	if e := check.Increasing(seq, opts...); e != nil {
+		t.Error(e)
+		return false
+	}
+	return true
+}
+
+// Decreasing checks if the given sequence has values in the decreasing order.
+// You may use the [check.WithDecreasingSoft] option to allow consecutive
+// values to be equal. It returns true if the sequence is decreasing otherwise,
+// marks the test as failed, writes an error message to the test log and
+// returns false.
+func Decreasing[T constraints.Ordered](
+	t tester.T,
+	seq []T,
+	opts ...check.Option,
+) bool {
+
+	t.Helper()
+	if e := check.Decreasing(seq, opts...); e != nil {
+		t.Error(e)
+		return false
+	}
+	return true
+}

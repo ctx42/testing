@@ -122,12 +122,202 @@ func Test_EpsilonSlice(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
-			"expected all numbers in a slice to be within given epsilon respectively:\n" +
+			"expected all numbers to be within given epsilon respectively:\n" +
 			"    trail: <[]float64>[1]\n" +
 			"     want: 2.123\n" +
 			"     have: 2.143\n" +
 			"  epsilon: 0.01\n" +
 			"     diff: 0.019999999999999574"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
+func Test_Increasing(t *testing.T) {
+	t.Run("success - strict", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{1, 2, 3, 4}
+
+		// --- When ---
+		err := Increasing(seq)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - strict - previous equal current", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{1, 2, 2, 4}
+
+		// --- When ---
+		err := Increasing(seq)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected an increasing sequence:\n" +
+			"     trail: <[]float64>[2]\n" +
+			"      mode: strict\n" +
+			"  previous: 2\n" +
+			"   current: 2"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - strict - not increasing", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{1, 0.5, 3, 4}
+
+		// --- When ---
+		err := Increasing(seq)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected an increasing sequence:\n" +
+			"     trail: <[]float64>[1]\n" +
+			"      mode: strict\n" +
+			"  previous: 1\n" +
+			"   current: 0.5"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("success - soft", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{1, 2, 2, 4}
+
+		// --- When ---
+		err := Increasing(seq, WithIncreasingSoft)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("success - empty slice", func(t *testing.T) {
+		// --- When ---
+		err := Increasing([]float64{})
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("success - nil slice", func(t *testing.T) {
+		// --- When ---
+		err := Increasing[int](nil)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("log message with trail", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{1, 2, 2, 4}
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		err := Increasing(seq, opt)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected an increasing sequence:\n" +
+			"     trail: type.field[2]\n" +
+			"      mode: strict\n" +
+			"  previous: 2\n" +
+			"   current: 2"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
+func Test_Decreasing(t *testing.T) {
+	t.Run("success - strict", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{4, 3, 2, 1}
+
+		// --- When ---
+		err := Decreasing(seq)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - strict - previous equal current", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{4, 3, 3, 1}
+
+		// --- When ---
+		err := Decreasing(seq)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected a decreasing sequence:\n" +
+			"     trail: <[]float64>[2]\n" +
+			"      mode: strict\n" +
+			"  previous: 3\n" +
+			"   current: 3"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - strict - not decreasing", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{4, 3, 0.5, 1}
+
+		// --- When ---
+		err := Decreasing(seq)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected a decreasing sequence:\n" +
+			"     trail: <[]float64>[3]\n" +
+			"      mode: strict\n" +
+			"  previous: 0.5\n" +
+			"   current: 1"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("success - soft", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{4, 3, 3, 1}
+
+		// --- When ---
+		err := Decreasing(seq, WithDecreasingSoft)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("success - empty slice", func(t *testing.T) {
+		// --- When ---
+		err := Decreasing([]float64{})
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("success - nil slice", func(t *testing.T) {
+		// --- When ---
+		err := Decreasing[int](nil)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("log message with trail", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{4, 3, 3, 1}
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		err := Decreasing(seq, opt)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected a decreasing sequence:\n" +
+			"     trail: type.field[2]\n" +
+			"      mode: strict\n" +
+			"  previous: 3\n" +
+			"   current: 3"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }

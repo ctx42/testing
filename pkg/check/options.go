@@ -121,7 +121,8 @@ func WithZone(zone *time.Location) Option {
 	}
 }
 
-// WithRecent is a [Checker] option setting duration used to compare recent dates.
+// WithRecent is a [Checker] option setting duration used to compare recent
+// dates.
 func WithRecent(recent time.Duration) Option {
 	return func(ops Options) Options {
 		ops.Recent = recent
@@ -182,6 +183,20 @@ func WithSkipUnexported(ops Options) Options {
 	return ops
 }
 
+// WithIncreasingSoft is an option used by [Increasing] check allowing
+// consecutive values to be equal to each other.
+func WithIncreasingSoft(ops Options) Options {
+	ops.IncreaseSoft = true
+	return ops
+}
+
+// WithDecreasingSoft is an option used by [Decreasing] check allowing
+// consecutive values to be equal to each other.
+func WithDecreasingSoft(ops Options) Options {
+	ops.DecreaseSoft = true
+	return ops
+}
+
 // WithCmpBaseTypes is a [Checker] option turning on simple base type comparisons.
 //
 // During a normal operation, when comparing values with different types, the
@@ -239,6 +254,8 @@ func WithOptions(src Options) Option {
 		ops.SkipTrails = src.SkipTrails
 		ops.SkipUnexported = src.SkipUnexported
 		ops.CmpSimpleType = src.CmpSimpleType
+		ops.IncreaseSoft = src.IncreaseSoft
+		ops.DecreaseSoft = src.DecreaseSoft
 		ops.now = src.now
 		return ops
 	}
@@ -279,6 +296,12 @@ type Options struct {
 
 	// See [WithCmpBaseTypes].
 	CmpSimpleType bool
+
+	// Option for [Increasing] allowing consecutive values to be equal.
+	IncreaseSoft bool
+
+	// Option for [Decreasing] allowing consecutive values to be equal.
+	DecreaseSoft bool
 
 	// Function used to get current time. Used preliminary to inject a clock in
 	// tests of checks and assertions using [time.Now].
