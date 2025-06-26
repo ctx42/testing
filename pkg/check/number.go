@@ -22,7 +22,21 @@ func Greater[T constraints.Ordered](want, have T, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 	return notice.New("expected value to be greater").
 		SetTrail(ops.Trail).
-		Want("%v", want).
+		Append("greater than", "%v", want).
+		Have("%v", have)
+}
+
+// Smaller checks the "want" value is smaller than the "have" value. Returns
+// nil if the condition is met, otherwise it returns an error with a message
+// indicating the expected and actual values.
+func Smaller[T constraints.Ordered](want, have T, opts ...Option) error {
+	if want < have {
+		return nil
+	}
+	ops := DefaultOptions(opts...)
+	return notice.New("expected value to be smaller").
+		SetTrail(ops.Trail).
+		Append("smaller than", "%v", want).
 		Have("%v", have)
 }
 

@@ -26,8 +26,8 @@ func Test_Greater(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be greater:\n" +
-			"  want: 4\n" +
-			"  have: 4"
+			"  greater than: 4\n" +
+			"          have: 4"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -39,8 +39,8 @@ func Test_Greater(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be greater:\n" +
-			"  want: 2\n" +
-			"  have: 4"
+			"  greater than: 2\n" +
+			"          have: 4"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -55,9 +55,62 @@ func Test_Greater(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be greater:\n" +
-			"  trail: type.field\n" +
-			"   want: 2\n" +
-			"   have: 4"
+			"         trail: type.field\n" +
+			"  greater than: 2\n" +
+			"          have: 4"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
+func Test_Smaller(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- When ---
+		err := Smaller(2, 4)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - equal", func(t *testing.T) {
+		// --- When ---
+		err := Smaller(4, 4)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected value to be smaller:\n" +
+			"  smaller than: 4\n" +
+			"          have: 4"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - smaller", func(t *testing.T) {
+		// --- When ---
+		err := Smaller(4, 2)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected value to be smaller:\n" +
+			"  smaller than: 4\n" +
+			"          have: 2"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("log message with trail", func(t *testing.T) {
+		// --- Given ---
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		err := Smaller(4, 2, opt)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected value to be smaller:\n" +
+			"         trail: type.field\n" +
+			"  smaller than: 4\n" +
+			"          have: 2"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }
