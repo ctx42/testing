@@ -227,6 +227,60 @@ func Test_Increasing(t *testing.T) {
 	})
 }
 
+func Test_NotIncreasing(t *testing.T) {
+	t.Run("success - strict", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{4, 3, 2, 1}
+
+		// --- When ---
+		err := NotIncreasing(seq)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("success - soft", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{4, 3, 2, 1}
+
+		// --- When ---
+		err := NotIncreasing(seq, WithIncreasingSoft)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - increasing strict", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{1, 2, 3, 4}
+
+		// --- When ---
+		err := NotIncreasing(seq)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected a not increasing sequence:\n" +
+			"  mode: strict"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - increasing soft", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{1, 2, 2, 4}
+
+		// --- When ---
+		err := NotIncreasing(seq, WithIncreasingSoft)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected a not increasing sequence:\n" +
+			"  mode: soft"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
 func Test_Decreasing(t *testing.T) {
 	t.Run("success - strict", func(t *testing.T) {
 		// --- Given ---
@@ -318,6 +372,60 @@ func Test_Decreasing(t *testing.T) {
 			"      mode: strict\n" +
 			"  previous: 3\n" +
 			"   current: 3"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
+func Test_NotDecreasing(t *testing.T) {
+	t.Run("success - strict", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{1, 2, 3, 4}
+
+		// --- When ---
+		err := NotDecreasing(seq)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("success - soft", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{1, 2, 3, 4}
+
+		// --- When ---
+		err := NotDecreasing(seq, WithDecreasingSoft)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - decreasing strict", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{4, 3, 2, 1}
+
+		// --- When ---
+		err := NotDecreasing(seq)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected a not decreasing sequence:\n" +
+			"  mode: strict"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - decreasing soft", func(t *testing.T) {
+		// --- Given ---
+		seq := []float64{4, 3, 3, 1}
+
+		// --- When ---
+		err := NotDecreasing(seq, WithDecreasingSoft)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected a not decreasing sequence:\n" +
+			"  mode: soft"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }

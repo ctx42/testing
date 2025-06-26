@@ -109,6 +109,22 @@ func Increasing[T constraints.Ordered](seq []T, opts ...Option) error {
 	return nil
 }
 
+// NotIncreasing is inverse of [Increasing].
+func NotIncreasing[T constraints.Ordered](seq []T, opts ...Option) error {
+	if err := Increasing(seq, opts...); err != nil {
+		return nil
+	}
+	ops := DefaultOptions(opts...)
+	var mode string
+	if ops.IncreaseSoft {
+		mode = "soft"
+	} else {
+		mode = "strict"
+	}
+	return notice.New("expected a not increasing sequence").
+		Append("mode", "%s", mode)
+}
+
 // Decreasing checks if the given sequence has values in the decreasing order.
 // You may use the [WithDecreasingSoft] option to allow consecutive values to
 // be equal. It returns an error if the sequence is not decreasing.
@@ -143,4 +159,21 @@ func Decreasing[T constraints.Ordered](seq []T, opts ...Option) error {
 		prv = cur
 	}
 	return nil
+}
+
+// NotDecreasing is inverse of [Decreasing].
+func NotDecreasing[T constraints.Ordered](seq []T, opts ...Option) error {
+	if err := Decreasing(seq, opts...); err != nil {
+		return nil
+	}
+
+	ops := DefaultOptions(opts...)
+	var mode string
+	if ops.DecreaseSoft {
+		mode = "soft"
+	} else {
+		mode = "strict"
+	}
+	return notice.New("expected a not decreasing sequence").
+		Append("mode", "%s", mode)
 }

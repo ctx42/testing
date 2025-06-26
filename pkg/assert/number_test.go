@@ -171,6 +171,68 @@ func Test_Increasing(t *testing.T) {
 	})
 }
 
+func Test_NotIncreasing(t *testing.T) {
+	t.Run("success - strict", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		seq := []float64{4, 3, 2, 1}
+
+		// --- When ---
+		have := NotIncreasing(tspy, seq)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("success - soft", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		seq := []float64{4, 3, 2, 1}
+
+		// --- When ---
+		have := NotIncreasing(tspy, seq, check.WithIncreasingSoft)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("error - increasing strict", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		seq := []float64{1, 2, 3, 4}
+
+		// --- When ---
+		have := NotIncreasing(tspy, seq)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+
+	t.Run("error - increasing soft", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		seq := []float64{1, 2, 2, 4}
+
+		// --- When ---
+		have := NotIncreasing(tspy, seq, check.WithIncreasingSoft)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+}
+
 func Test_Decreasing(t *testing.T) {
 	t.Run("success - strict", func(t *testing.T) {
 		// --- Given ---
@@ -228,6 +290,68 @@ func Test_Decreasing(t *testing.T) {
 
 		// --- When ---
 		have := Decreasing(tspy, seq, opt)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+}
+
+func Test_NotDecreasing(t *testing.T) {
+	t.Run("success - strict", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		seq := []float64{1, 2, 3, 4}
+
+		// --- When ---
+		have := NotDecreasing(tspy, seq)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("success - soft", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		seq := []float64{1, 2, 3, 4}
+
+		// --- When ---
+		have := NotDecreasing(tspy, seq, check.WithDecreasingSoft)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("error - decreasing strict", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		seq := []float64{4, 3, 2, 1}
+
+		// --- When ---
+		have := NotDecreasing(tspy, seq)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+
+	t.Run("error - decreasing soft", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		seq := []float64{4, 3, 3, 1}
+
+		// --- When ---
+		have := NotDecreasing(tspy, seq, check.WithDecreasingSoft)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

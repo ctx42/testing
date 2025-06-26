@@ -65,7 +65,7 @@ func isEmpty(have any) bool {
 // NotEmpty checks "have" is not empty. Returns nil if it's otherwise, it
 // returns an error with a message indicating the expected and actual values.
 //
-// See [check.Empty] for list of values which are considered empty.
+// See [check.Empty] for the list of values which are considered empty.
 func NotEmpty(have any, opts ...Option) error {
 	if !isEmpty(have) {
 		return nil

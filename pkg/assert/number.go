@@ -64,6 +64,21 @@ func Increasing[T constraints.Ordered](
 	return true
 }
 
+// NotIncreasing is inverse of [Increasing].
+func NotIncreasing[T constraints.Ordered](
+	t tester.T,
+	seq []T,
+	opts ...check.Option,
+) bool {
+
+	t.Helper()
+	if e := check.NotIncreasing(seq, opts...); e != nil {
+		t.Error(e)
+		return false
+	}
+	return true
+}
+
 // Decreasing checks if the given sequence has values in the decreasing order.
 // You may use the [check.WithDecreasingSoft] option to allow consecutive
 // values to be equal. It returns true if the sequence is decreasing otherwise,
@@ -77,6 +92,21 @@ func Decreasing[T constraints.Ordered](
 
 	t.Helper()
 	if e := check.Decreasing(seq, opts...); e != nil {
+		t.Error(e)
+		return false
+	}
+	return true
+}
+
+// NotDecreasing is inverse of [Decreasing].
+func NotDecreasing[T constraints.Ordered](
+	t tester.T,
+	seq []T,
+	opts ...check.Option,
+) bool {
+
+	t.Helper()
+	if e := check.NotDecreasing(seq, opts...); e != nil {
 		t.Error(e)
 		return false
 	}
