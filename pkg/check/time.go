@@ -499,7 +499,7 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 func getZone(zone any, opts ...Option) (*time.Location, string, zoneRep, error) {
 	switch val := zone.(type) {
 	case nil:
-		return time.UTC, "UTC", zoneZone, nil // TODO(rz): test this.
+		return time.UTC, "UTC", zoneZone, nil
 
 	case time.Location:
 		v := &val
