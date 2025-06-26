@@ -4,6 +4,7 @@
 package check
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 
@@ -14,7 +15,11 @@ import (
 // Epsilon checks the difference between two numbers is within a given delta.
 // Returns nil if it does, otherwise it returns an error with a message
 // indicating the expected and actual values.
-func Epsilon[T constraints.Number](want, epsilon, have T, opts ...Option) error {
+func Epsilon[T constraints.Number](
+	want, epsilon, have T,
+	opts ...Option,
+) error {
+
 	fWant := float64(want)
 	fHave := float64(have)
 	fDelta := float64(epsilon)
@@ -35,4 +40,35 @@ func Epsilon[T constraints.Number](want, epsilon, have T, opts ...Option) error 
 		Have("%s", haveFmt).
 		Append("epsilon", "%s", deltaFmt).
 		Append("diff", "%s", diffFmt)
+}
+
+// EpsilonSlice compares two slices of numbers, "have" and "want", and checks
+// if the absolute difference between corresponding elements is within the
+// specified delta. It returns nil if all differences are within the delta;
+// otherwise, it returns an error indicating the first index where the "have"
+// slice violates the epsilon condition.
+func EpsilonSlice[T constraints.Number](
+	want []T,
+	delta T,
+	have []T,
+	opts ...Option,
+) error {
+
+	if err := Len(len(want), have, opts...); err != nil {
+		return err
+	}
+
+	ops := DefaultOptions(opts...)
+	knd := fmt.Sprintf("%T", want)
+
+	for i, w := range want {
+		iOps := ops.ArrTrail(knd, i)
+		h := have[i]
+		if e := Epsilon(w, delta, h, WithOptions(iOps)); e != nil {
+			hdr := "expected all numbers in a slice to be within given epsilon " +
+				"respectively"
+			return notice.From(e).SetHeader(hdr)
+		}
+	}
+	return nil
 }

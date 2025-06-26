@@ -80,3 +80,54 @@ func Test_Epsilon(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }
+
+func Test_EpsilonSlice(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		s0 := []float64{1.123, 2.123, 3.123}
+		s1 := []float64{1.123, 2.123, 3.123}
+
+		// --- When ---
+		err := EpsilonSlice(s0, 0.01, s1)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - different lengths", func(t *testing.T) {
+		// --- Given ---
+		s0 := []float64{1.123, 2.123, 3.123}
+		s1 := []float64{1.123, 2.143}
+
+		// --- When ---
+		err := EpsilonSlice(s0, 0.01, s1)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected []float64 length:\n" +
+			"  want: 3\n" +
+			"  have: 2"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - not equal", func(t *testing.T) {
+		// --- Given ---
+		s0 := []float64{1.123, 2.123, 3.123}
+		s1 := []float64{1.123, 2.143, 3.123}
+
+		// --- When ---
+		err := EpsilonSlice(s0, 0.01, s1)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected all numbers in a slice to be within given epsilon respectively:\n" +
+			"    trail: <[]float64>[1]\n" +
+			"     want: 2.123\n" +
+			"     have: 2.143\n" +
+			"  epsilon: 0.01\n" +
+			"     diff: 0.019999999999999574"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+}

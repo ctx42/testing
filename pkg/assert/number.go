@@ -25,3 +25,22 @@ func Epsilon[T constraints.Number](
 	}
 	return true
 }
+
+// EpsilonSlice compares two slices of numbers, "have" and "want", and checks
+// if the absolute difference between corresponding elements is within the
+// specified delta. It returns true if all differences are within the delta;
+// otherwise, marks the test as failed, writes an error message to the test log
+// and returns false.
+func EpsilonSlice[T constraints.Number](
+	t tester.T,
+	want []T, delta T, have []T,
+	opts ...check.Option,
+) bool {
+
+	t.Helper()
+	if e := check.EpsilonSlice(want, delta, have, opts...); e != nil {
+		t.Error(e)
+		return false
+	}
+	return true
+}
