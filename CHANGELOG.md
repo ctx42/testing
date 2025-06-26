@@ -1,3 +1,6 @@
+## v0.21.0 (Thu, 26 Jun 2025 10:25:01 UTC)
+- Add check.EpsilonSlice and assert.EpsilonSlice functions to test all slice values are within given epsilon of each other respectively.
+
 ## v0.20.2 (Tue, 24 Jun 2025 09:13:01 UTC)
 - Update golden file doc.
 - Improve the mock error message when at least one call to the mocked method is expected.
