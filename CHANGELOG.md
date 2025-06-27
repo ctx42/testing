@@ -1,3 +1,7 @@
+## v0.23.0 (Fri, 27 Jun 2025 09:28:33 UTC)
+- Fix check.Epsilon and check.EpsilonSlice to check relative error not delta.
+- Add check.Delta, check.DeltaSlice and its equivalents in the assert package.
+
 ## v0.22.0 (Thu, 26 Jun 2025 16:14:51 UTC)
 - Add check.Increasing and check.Decreasing and their equivalents in assert package.
 - Remove already resolved TODO.
