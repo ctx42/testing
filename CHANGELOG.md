@@ -1,3 +1,6 @@
+## v0.24.0 (Fri, 27 Jun 2025 13:38:10 UTC)
+- The check.Delta, check.DeltaSlice, check.Epsilon, check.EpsilonSlice use >= instead of > check.
+
 ## v0.23.0 (Fri, 27 Jun 2025 09:28:33 UTC)
 - Fix check.Epsilon and check.EpsilonSlice to check relative error not delta.
 - Add check.Delta, check.DeltaSlice and its equivalents in the assert package.
