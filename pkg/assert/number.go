@@ -77,36 +77,37 @@ func SmallerOrEqual[T constraints.Ordered](
 	return true
 }
 
-// Epsilon asserts the difference between two numbers is within a given delta.
-// Returns true if it is, otherwise marks the test as failed, writes an error
-// message to the test log and returns false.
-func Epsilon[T constraints.Number](
+// Epsilon asserts the relative error is less than epsilon. Returns true if it
+// is, otherwise marks the test as failed, writes an error message to the test
+// log and returns false.
+//
+//	|w-h|/|w| < epsilon
+func Epsilon[T, E constraints.Number](
 	t tester.T,
-	want, delta, have T,
+	want T, epsilon E, have T,
 	opts ...check.Option,
 ) bool {
 
 	t.Helper()
-	if e := check.Epsilon(want, delta, have, opts...); e != nil {
+	if e := check.Epsilon(want, epsilon, have, opts...); e != nil {
 		t.Error(e)
 		return false
 	}
 	return true
 }
 
-// EpsilonSlice compares two slices of numbers, "have" and "want", and checks
-// if the absolute difference between corresponding elements is within the
-// specified delta. It returns true if all differences are within the delta;
-// otherwise, marks the test as failed, writes an error message to the test log
-// and returns false.
-func EpsilonSlice[T constraints.Number](
+// EpsilonSlice asserts the relative error is less than epsilon for all
+// respective values in the provided slices. It returns true if all differences
+// are within the delta; otherwise, marks the test as failed, writes an error
+// message to the test log and returns false.
+func EpsilonSlice[T, E constraints.Number](
 	t tester.T,
-	want []T, delta T, have []T,
+	want []T, epsilon E, have []T,
 	opts ...check.Option,
 ) bool {
 
 	t.Helper()
-	if err := check.EpsilonSlice(want, delta, have, opts...); err != nil {
+	if err := check.EpsilonSlice(want, epsilon, have, opts...); err != nil {
 		t.Error(err)
 		return false
 	}

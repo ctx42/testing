@@ -230,7 +230,7 @@ func Test_Epsilon(t *testing.T) {
 
 	t.Run("int64", func(t *testing.T) {
 		// --- When ---
-		err := Epsilon(int64(42), int64(5), int64(47))
+		err := Epsilon(int64(42), 5, int64(47))
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -238,29 +238,31 @@ func Test_Epsilon(t *testing.T) {
 
 	t.Run("error - float64", func(t *testing.T) {
 		// --- When ---
-		err := Epsilon(42.0, 0.11, 39.9)
+		err := Epsilon(42.0, 0.01, 39.9)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected numbers to be within given epsilon:\n" +
-			"     want: 42\n" +
-			"     have: 39.9\n" +
-			"  epsilon: 0.11\n" +
-			"     diff: 2.1000000000000014"
+		wMsg := "" +
+			"expected numbers to be within given epsilon:\n" +
+			"            want: 42\n" +
+			"            have: 39.9\n" +
+			"         epsilon: 0.01\n" +
+			"  relative error: 0.05000000000000003"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
 	t.Run("error - uint", func(t *testing.T) {
 		// --- When ---
-		err := Epsilon(uint(42), uint(4), uint(47))
+		err := Epsilon(uint(42), 0.10, uint(47))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected numbers to be within given epsilon:\n" +
-			"     want: 42\n" +
-			"     have: 47\n" +
-			"  epsilon: 4\n" +
-			"     diff: 5"
+		wMsg := "" +
+			"expected numbers to be within given epsilon:\n" +
+			"            want: 42\n" +
+			"            have: 47\n" +
+			"         epsilon: 0.1\n" +
+			"  relative error: 0.11904761904761904"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -269,16 +271,17 @@ func Test_Epsilon(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Epsilon(42, 4, 47, opt)
+		err := Epsilon(42, 0.10, 47, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected numbers to be within given epsilon:\n" +
-			"    trail: type.field\n" +
-			"     want: 42\n" +
-			"     have: 47\n" +
-			"  epsilon: 4\n" +
-			"     diff: 5"
+		wMsg := "" +
+			"expected numbers to be within given epsilon:\n" +
+			"           trail: type.field\n" +
+			"            want: 42\n" +
+			"            have: 47\n" +
+			"         epsilon: 0.1\n" +
+			"  relative error: 0.11904761904761904"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }
@@ -319,17 +322,17 @@ func Test_EpsilonSlice(t *testing.T) {
 		s1 := []float64{1.123, 2.143, 3.123}
 
 		// --- When ---
-		err := EpsilonSlice(s0, 0.01, s1)
+		err := EpsilonSlice(s0, 0.009, s1)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected all numbers to be within given epsilon respectively:\n" +
-			"    trail: <[]float64>[1]\n" +
-			"     want: 2.123\n" +
-			"     have: 2.143\n" +
-			"  epsilon: 0.01\n" +
-			"     diff: 0.019999999999999574"
+			"           trail: <[]float64>[1]\n" +
+			"            want: 2.123\n" +
+			"            have: 2.143\n" +
+			"         epsilon: 0.009\n" +
+			"  relative error: 0.00942063118228901"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }

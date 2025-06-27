@@ -232,7 +232,7 @@ func Test_Epsilon(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := Epsilon(tspy, 42.0, 0.11, 39.9)
+		have := Epsilon(tspy, 42.0, 0.01, 39.9)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -248,7 +248,7 @@ func Test_Epsilon(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Epsilon(tspy, 42.0, 0.11, 39.9, opt)
+		have := Epsilon(tspy, 42.0, 0.01, 39.9, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -282,7 +282,7 @@ func Test_EpsilonSlice(t *testing.T) {
 		s1 := []float64{1.123, 2.143, 3.123}
 
 		// --- When ---
-		have := EpsilonSlice(tspy, s0, 0.01, s1)
+		have := EpsilonSlice(tspy, s0, 0.009, s1)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -301,7 +301,7 @@ func Test_EpsilonSlice(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := EpsilonSlice(tspy, s0, 0.01, s1, opt)
+		have := EpsilonSlice(tspy, s0, 0.009, s1, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
