@@ -77,6 +77,43 @@ func SmallerOrEqual[T constraints.Ordered](
 	return true
 }
 
+// Delta asserts both values are within the given delta. Returns true if they
+// are, otherwise marks the test as failed, writes an error message to the test
+// log and returns false.
+//
+//	|w-h|/|w| < epsilon
+func Delta[T, E constraints.Number](
+	t tester.T,
+	want T, delta E, have T,
+	opts ...check.Option,
+) bool {
+
+	t.Helper()
+	if e := check.Delta(want, delta, have, opts...); e != nil {
+		t.Error(e)
+		return false
+	}
+	return true
+}
+
+// DeltaSlice asserts values are within the given delta for all respective
+// slice indexes. It returns true if all differences are within the delta;
+// otherwise, marks the test as failed, writes an error message to the test log
+// and returns false.
+func DeltaSlice[T, E constraints.Number](
+	t tester.T,
+	want []T, delta E, have []T,
+	opts ...check.Option,
+) bool {
+
+	t.Helper()
+	if err := check.DeltaSlice(want, delta, have, opts...); err != nil {
+		t.Error(err)
+		return false
+	}
+	return true
+}
+
 // Epsilon asserts the relative error is less than epsilon. Returns true if it
 // is, otherwise marks the test as failed, writes an error message to the test
 // log and returns false.

@@ -68,6 +68,70 @@ func SmallerOrEqual[T constraints.Ordered](want, have T, opts ...Option) error {
 		Have("%v", have)
 }
 
+// Delta checks the both values are within the given delta. Returns nil if they
+// are, otherwise it returns an error with a message indicating the expected
+// and actual values.
+//
+//	|w-h| < delta
+func Delta[T, E constraints.Number](
+	want T, delta E, have T,
+	opts ...Option,
+) error {
+
+	fWant := float64(want)
+	fHave := float64(have)
+	fwDelta := float64(delta)
+	fhDelta := math.Abs(fWant - fHave)
+	if fhDelta < fwDelta {
+		return nil
+	}
+
+	ops := DefaultOptions(opts...)
+
+	wantFmt := strconv.FormatFloat(fWant, 'f', -1, 64)
+	haveFmt := strconv.FormatFloat(fHave, 'f', -1, 64)
+	wDeltaFmt := strconv.FormatFloat(fwDelta, 'f', -1, 64)
+	hDeltaFmt := strconv.FormatFloat(fhDelta, 'f', -1, 64)
+	return notice.New("expected numbers to be within the given delta").
+		SetTrail(ops.Trail).
+		Want("%s", wantFmt).
+		Have("%s", haveFmt).
+		Append("want delta", "%s", wDeltaFmt).
+		Append("have delta", "%s", hDeltaFmt)
+}
+
+// DeltaSlice checks values are within the given delta for all respective
+// slice indexes. It returns nil if all differences are within the delta;
+// otherwise, it returns an error indicating the first index where the "have"
+// slice violates the epsilon condition.
+//
+//	|w[i]-h[i]| < delta
+func DeltaSlice[T, E constraints.Number](
+	want []T,
+	delta E,
+	have []T,
+	opts ...Option,
+) error {
+
+	if err := Len(len(want), have, opts...); err != nil {
+		return err
+	}
+
+	fDelta := float64(delta)
+	ops := DefaultOptions(opts...)
+	knd := fmt.Sprintf("%T", want)
+
+	for i, w := range want {
+		iOps := ops.ArrTrail(knd, i)
+		if e := Delta(w, fDelta, have[i], WithOptions(iOps)); e != nil {
+			hdr := "expected all numbers to be " +
+				"within the given delta respectively"
+			return notice.From(e).SetHeader(hdr)
+		}
+	}
+	return nil
+}
+
 // Epsilon checks the relative error is less than epsilon. Returns nil if it
 // does, otherwise it returns an error with a message indicating the expected
 // and actual values.
@@ -80,9 +144,9 @@ func Epsilon[T, E constraints.Number](
 
 	fWant := float64(want)
 	fHave := float64(have)
-	fEpsilon := float64(epsilon)
-	relErr := math.Abs(fWant-fHave) / math.Abs(fWant)
-	if relErr < fEpsilon {
+	fwEpsilon := float64(epsilon)
+	fhEpsilon := math.Abs(fWant-fHave) / math.Abs(fWant)
+	if fhEpsilon < fwEpsilon {
 		return nil
 	}
 
@@ -90,14 +154,14 @@ func Epsilon[T, E constraints.Number](
 
 	wantFmt := strconv.FormatFloat(fWant, 'f', -1, 64)
 	haveFmt := strconv.FormatFloat(fHave, 'f', -1, 64)
-	deltaFmt := strconv.FormatFloat(fEpsilon, 'f', -1, 64)
-	diffFmt := strconv.FormatFloat(relErr, 'f', -1, 64)
-	return notice.New("expected numbers to be within given epsilon").
+	wEpsilonFmt := strconv.FormatFloat(fwEpsilon, 'f', -1, 64)
+	hEpsilonFmt := strconv.FormatFloat(fhEpsilon, 'f', -1, 64)
+	return notice.New("expected numbers to be within the given epsilon").
 		SetTrail(ops.Trail).
 		Want("%s", wantFmt).
 		Have("%s", haveFmt).
-		Append("epsilon", "%s", deltaFmt).
-		Append("relative error", "%s", diffFmt)
+		Append("want epsilon", "%s", wEpsilonFmt).
+		Append("have epsilon", "%s", hEpsilonFmt)
 }
 
 // EpsilonSlice checks the relative error is less than epsilon for all
@@ -125,7 +189,7 @@ func EpsilonSlice[T, E constraints.Number](
 		iOps := ops.ArrTrail(knd, i)
 		if e := Epsilon(w, fEpsilon, have[i], WithOptions(iOps)); e != nil {
 			hdr := "expected all numbers to be " +
-				"within given epsilon respectively"
+				"within the given epsilon respectively"
 			return notice.From(e).SetHeader(hdr)
 		}
 	}
