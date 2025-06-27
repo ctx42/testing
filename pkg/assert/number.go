@@ -81,7 +81,7 @@ func SmallerOrEqual[T constraints.Ordered](
 // are, otherwise marks the test as failed, writes an error message to the test
 // log and returns false.
 //
-//	|w-h|/|w| < epsilon
+//	|w-h|/|w| <= delta
 func Delta[T, E constraints.Number](
 	t tester.T,
 	want T, delta E, have T,
@@ -100,6 +100,8 @@ func Delta[T, E constraints.Number](
 // slice indexes. It returns true if all differences are within the delta;
 // otherwise, marks the test as failed, writes an error message to the test log
 // and returns false.
+//
+//	|w[i]-h[i]| <= delta
 func DeltaSlice[T, E constraints.Number](
 	t tester.T,
 	want []T, delta E, have []T,
@@ -118,7 +120,7 @@ func DeltaSlice[T, E constraints.Number](
 // is, otherwise marks the test as failed, writes an error message to the test
 // log and returns false.
 //
-//	|w-h|/|w| < epsilon
+//	|w-h|/|w| <= epsilon
 func Epsilon[T, E constraints.Number](
 	t tester.T,
 	want T, epsilon E, have T,
@@ -137,6 +139,8 @@ func Epsilon[T, E constraints.Number](
 // respective values in the provided slices. It returns true if all differences
 // are within the delta; otherwise, marks the test as failed, writes an error
 // message to the test log and returns false.
+//
+//	|w[i]-h[i]|/|w[i]| <= epsilon
 func EpsilonSlice[T, E constraints.Number](
 	t tester.T,
 	want []T, epsilon E, have []T,

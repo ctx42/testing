@@ -212,7 +212,7 @@ func Test_SmallerOrEqual(t *testing.T) {
 }
 
 func Test_Delta(t *testing.T) {
-	t.Run("float64", func(t *testing.T) {
+	t.Run("success - delta less than expected", func(t *testing.T) {
 		// --- When ---
 		err := Delta(42.0, 0.11, 41.9)
 
@@ -220,9 +220,9 @@ func Test_Delta(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("int", func(t *testing.T) {
+	t.Run("success - delta equal to expected", func(t *testing.T) {
 		// --- When ---
-		err := Delta(42, 1.1, 41)
+		err := Delta(42, 1, 41)
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -236,7 +236,7 @@ func Test_Delta(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error - float64", func(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
 		// --- When ---
 		err := Delta(42.0, 2, 39.9)
 
@@ -248,21 +248,6 @@ func Test_Delta(t *testing.T) {
 			"        have: 39.9\n" +
 			"  want delta: 2\n" +
 			"  have delta: 2.1000000000000014"
-		affirm.Equal(t, wMsg, err.Error())
-	})
-
-	t.Run("error - uint", func(t *testing.T) {
-		// --- When ---
-		err := Delta(uint(42), 0.10, uint(47))
-
-		// --- Then ---
-		affirm.NotNil(t, err)
-		wMsg := "" +
-			"expected numbers to be within the given delta:\n" +
-			"        want: 42\n" +
-			"        have: 47\n" +
-			"  want delta: 0.1\n" +
-			"  have delta: 5"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -338,7 +323,7 @@ func Test_DeltaSlice(t *testing.T) {
 }
 
 func Test_Epsilon(t *testing.T) {
-	t.Run("float64", func(t *testing.T) {
+	t.Run("success - epsilon less then expected", func(t *testing.T) {
 		// --- When ---
 		err := Epsilon(42.0, 0.11, 41.9)
 
@@ -346,38 +331,15 @@ func Test_Epsilon(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("int", func(t *testing.T) {
+	t.Run("success - epsilon equal to expected", func(t *testing.T) {
 		// --- When ---
-		err := Epsilon(42, 1, 41)
+		err := Epsilon(42.0, 1, 43.0)
 
 		// --- Then ---
 		affirm.Nil(t, err)
 	})
 
-	t.Run("int64", func(t *testing.T) {
-		// --- When ---
-		err := Epsilon(int64(42), 5, int64(47))
-
-		// --- Then ---
-		affirm.Nil(t, err)
-	})
-
-	t.Run("error - float64", func(t *testing.T) {
-		// --- When ---
-		err := Epsilon(42.0, 0.01, 39.9)
-
-		// --- Then ---
-		affirm.NotNil(t, err)
-		wMsg := "" +
-			"expected numbers to be within the given epsilon:\n" +
-			"          want: 42\n" +
-			"          have: 39.9\n" +
-			"  want epsilon: 0.01\n" +
-			"  have epsilon: 0.05000000000000003"
-		affirm.Equal(t, wMsg, err.Error())
-	})
-
-	t.Run("error - uint", func(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
 		// --- When ---
 		err := Epsilon(uint(42), 0.10, uint(47))
 

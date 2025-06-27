@@ -72,7 +72,7 @@ func SmallerOrEqual[T constraints.Ordered](want, have T, opts ...Option) error {
 // are, otherwise it returns an error with a message indicating the expected
 // and actual values.
 //
-//	|w-h| < delta
+//	|w-h| <= delta
 func Delta[T, E constraints.Number](
 	want T, delta E, have T,
 	opts ...Option,
@@ -82,7 +82,7 @@ func Delta[T, E constraints.Number](
 	fHave := float64(have)
 	fwDelta := float64(delta)
 	fhDelta := math.Abs(fWant - fHave)
-	if fhDelta < fwDelta {
+	if fwDelta >= fhDelta {
 		return nil
 	}
 
@@ -105,7 +105,7 @@ func Delta[T, E constraints.Number](
 // otherwise, it returns an error indicating the first index where the "have"
 // slice violates the epsilon condition.
 //
-//	|w[i]-h[i]| < delta
+//	|w[i]-h[i]| <= delta
 func DeltaSlice[T, E constraints.Number](
 	want []T,
 	delta E,
@@ -136,7 +136,7 @@ func DeltaSlice[T, E constraints.Number](
 // does, otherwise it returns an error with a message indicating the expected
 // and actual values.
 //
-//	|w-h|/|w| < epsilon
+//	|w-h|/|w| <= epsilon
 func Epsilon[T, E constraints.Number](
 	want T, epsilon E, have T,
 	opts ...Option,
@@ -146,7 +146,7 @@ func Epsilon[T, E constraints.Number](
 	fHave := float64(have)
 	fwEpsilon := float64(epsilon)
 	fhEpsilon := math.Abs(fWant-fHave) / math.Abs(fWant)
-	if fhEpsilon < fwEpsilon {
+	if fwEpsilon >= fhEpsilon {
 		return nil
 	}
 
@@ -169,7 +169,7 @@ func Epsilon[T, E constraints.Number](
 // are within the epsilon; otherwise, it returns an error indicating the first
 // index where the "have" slice violates the epsilon condition.
 //
-//	|w[i]-h[i]|/|w[i]| < epsilon
+//	|w[i]-h[i]|/|w[i]| <= epsilon
 func EpsilonSlice[T, E constraints.Number](
 	want []T,
 	epsilon E,
