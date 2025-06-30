@@ -1,3 +1,6 @@
+## v0.24.1 (Mon, 30 Jun 2025 12:36:40 UTC)
+- Fix mock generation when a method has a variadic "any" argument.
+
 ## v0.24.0 (Fri, 27 Jun 2025 13:38:10 UTC)
 - The check.Delta, check.DeltaSlice, check.Epsilon, check.EpsilonSlice use >= instead of > check.
 
