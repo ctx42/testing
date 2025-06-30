@@ -1,3 +1,4 @@
+
 ---
 package golden
 
@@ -643,4 +644,56 @@ func (_mck *Massive) Method56(a string, b float64, c ...int) error {
 		_r0 = _r.(error)
 	}
 	return _r0
+}
+
+func (_mck *Massive) Method57() cases.ParamOne[int] {
+	_mck.t.Helper()
+	var _args []any
+	_rets := _mck.Called(_args...)
+	if len(_rets) != 1 {
+		_mck.t.Fatal("the number of mocked method returns does not match")
+	}
+
+	var _r0 cases.ParamOne[int]
+	if _rFn, ok := _rets.Get(0).(func() cases.ParamOne[int]); ok {
+		_r0 = _rFn()
+	} else if _r := _rets.Get(0); _r != nil {
+		_r0 = _r.(cases.ParamOne[int])
+	}
+	return _r0
+}
+
+func (_mck *Massive) Method58() cases.ParamTwo[int, *cases.Concrete] {
+	_mck.t.Helper()
+	var _args []any
+	_rets := _mck.Called(_args...)
+	if len(_rets) != 1 {
+		_mck.t.Fatal("the number of mocked method returns does not match")
+	}
+
+	var _r0 cases.ParamTwo[int, *cases.Concrete]
+	if _rFn, ok := _rets.Get(0).(func() cases.ParamTwo[int, *cases.Concrete]); ok {
+		_r0 = _rFn()
+	} else if _r := _rets.Get(0); _r != nil {
+		_r0 = _r.(cases.ParamTwo[int, *cases.Concrete])
+	}
+	return _r0
+}
+
+func (_mck *Massive) Method59(_a0 ...int) {
+	_mck.t.Helper()
+	var _args []any
+	for _, _elem := range _a0 {
+		_args = append(_args, _elem)
+	}
+	_mck.Called(_args...)
+}
+
+func (_mck *Massive) Method60(_a0 ...any) {
+	_mck.t.Helper()
+	var _args []any
+	for _, _elem := range _a0 {
+		_args = append(_args, _elem)
+	}
+	_mck.Called(_args...)
 }

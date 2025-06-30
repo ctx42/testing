@@ -59,4 +59,8 @@ type Massive interface {
 	Case54
 	Case55
 	Case56
+	Case57
+	Case58
+	Case59
+	Case60
 }

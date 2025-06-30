@@ -110,3 +110,5 @@ type Case58 interface {
 }
 
 type Case59 interface{ Method59(...int) }
+type Case60 interface{ Method60(...interface{}) }
+type Case61 interface{ Method61(a ItfA) }

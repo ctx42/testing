@@ -403,6 +403,11 @@ func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 		}
 		gotT.value = strings.TrimSuffix(gotT.value, ", ") + "]"
 		return gotT, nil
+
+	case *ast.InterfaceType:
+		if v.Methods != nil && len(v.Methods.List) == 0 {
+			return expression{value: "any"}, nil
+		}
 	}
 	return expression{}, ErrAstParse
 }

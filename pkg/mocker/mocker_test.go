@@ -208,6 +208,9 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 		{"Case57", "Case57", "cases", "golden"},
 		{"Case58", "Case58", "cases", "golden"},
 		{"Case59", "Case59", "cases", "golden"},
+		{"Case60", "Case60", "cases", "golden"},
+		{"Case61", "Case61", "cases", "golden"},
+		{"Case61_dst_cases", "Case61", "cases", "cases"},
 
 		{"ItfA", "ItfA", "cases", "golden"},
 		{"ItfB", "ItfB", "cases", "golden"},
