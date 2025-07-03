@@ -5,6 +5,7 @@
     * [DryBuffer](#drybuffer)
   * [Clocks](#clocks)
   * [ErrReader](#errreader)
+  * [ErrWriter](#errwriter)
 <!-- TOC -->
 
 # The `tstkit` Package

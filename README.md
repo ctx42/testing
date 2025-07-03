@@ -76,15 +76,16 @@ Packages used in test cases.
 - Package [goldy](pkg/goldy/README.md) provides basic golden file support.
 - Package [mock](pkg/mock/README.md) provides primitives for writing interface mocks.
 - Package [mocker](pkg/mocker/README.md) provides an interface mock generator.
-- Package [must](pkg/must/README.md) provides basic test helpers which panic on error.
+- Package [must](pkg/must/README.md) provide basic test helpers which panic on error.
+- Package [tstkit](pkg/tstkit/README.md) provides all sorts of test helpers that are not assertions.
 
 ### Supporting Packets
 
 Packages are used to create custom checks, assertions, and helpers.
 
-- Package [dump](pkg/dump/README.md) provides configurable renderer of any type to a string.
+- Package [dump](pkg/dump/README.md) provides a configurable renderer of any type to a string.
 - Package [notice](pkg/notice/README.md) helps to create nicely formated assertion messages.
 - Package [tester](pkg/tester/README.md) provides facilities to test `Test Helpers`.
 
-Click on the package link to see its README.md file with documentation. Also 
+Click on the package link to see its README.md file with documentation. Also, 
 most of the packages contain `examples_test.go` file with usage examples.
