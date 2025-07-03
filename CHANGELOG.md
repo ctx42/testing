@@ -1,3 +1,7 @@
+## v0.25.0 (Thu, 03 Jul 2025 12:47:08 UTC)
+- Add tstkit.ErrReader and tstkit.ErrWriter helpers.
+- Update documentation.
+
 ## v0.24.1 (Mon, 30 Jun 2025 12:36:40 UTC)
 - Fix mock generation when a method has a variadic "any" argument.
 
