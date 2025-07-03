@@ -16,6 +16,7 @@ import (
 	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/must"
+	"github.com/ctx42/testing/pkg/notice"
 )
 
 func Test_RegisterTypeChecker(t *testing.T) {
@@ -302,7 +303,7 @@ func Test_WithOptions(t *testing.T) {
 
 	// When those fail, add fields above.
 	affirm.Equal(t, 14, reflect.ValueOf(have.Dumper).NumField())
-	affirm.Equal(t, 14, reflect.ValueOf(have).NumField())
+	affirm.Equal(t, 15, reflect.ValueOf(have).NumField())
 }
 
 func Test_DefaultOptions(t *testing.T) {
@@ -330,7 +331,7 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, false, have.IncreaseSoft)
 		affirm.Equal(t, false, have.DecreaseSoft)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 14, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 15, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("with options", func(t *testing.T) {
@@ -357,7 +358,7 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, false, have.IncreaseSoft)
 		affirm.Equal(t, false, have.DecreaseSoft)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 14, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 15, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("TypeCheckers field is a clone of a global map", func(t *testing.T) {
@@ -570,5 +571,83 @@ func Test_FieldName(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "ABC[1].myField", have(Options{}).Trail)
 		affirm.Equal(t, true, have(Options{}).SkipUnexported)
+	})
+}
+
+func Test_WithCustomRow(t *testing.T) {
+	t.Run("single custom row", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{}
+
+		// --- When ---
+		result := WithCustomRow("context", "user validation failed")(ops)
+
+		// --- Then ---
+		affirm.Equal(t, 1, len(result.CustomRows))
+		affirm.Equal(t, "context", result.CustomRows[0].Name)
+		affirm.Equal(t, "user validation failed", result.CustomRows[0].String())
+	})
+
+	t.Run("multiple custom rows", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{}
+
+		// --- When ---
+		result := WithCustomRow("context", "user validation failed")(ops)
+		result = WithCustomRow("hint", "check input parameters")(result)
+
+		// --- Then ---
+		affirm.Equal(t, 2, len(result.CustomRows))
+		affirm.Equal(t, "context", result.CustomRows[0].Name)
+		affirm.Equal(t, "user validation failed", result.CustomRows[0].String())
+		affirm.Equal(t, "hint", result.CustomRows[1].Name)
+		affirm.Equal(t, "check input parameters", result.CustomRows[1].String())
+	})
+
+	t.Run("custom row with format args", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{}
+
+		// --- When ---
+		result := WithCustomRow("user", "validation failed for %s (id: %d)", "John", 123)(ops)
+
+		// --- Then ---
+		affirm.Equal(t, 1, len(result.CustomRows))
+		affirm.Equal(t, "user", result.CustomRows[0].Name)
+		affirm.Equal(t, "validation failed for John (id: 123)", result.CustomRows[0].String())
+	})
+}
+
+func Test_ApplyCustomRows(t *testing.T) {
+	t.Run("no custom rows", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{}
+		n := notice.New("test error")
+
+		// --- When ---
+		result := ops.ApplyCustomRows(n)
+
+		// --- Then ---
+		affirm.Equal(t, n, result)
+		affirm.Equal(t, 0, len(result.Rows))
+	})
+
+	t.Run("with custom rows", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{}
+		ops = WithCustomRow("context", "user validation")(ops)
+		ops = WithCustomRow("hint", "check parameters")(ops)
+		n := notice.New("test error")
+
+		// --- When ---
+		result := ops.ApplyCustomRows(n)
+
+		// --- Then ---
+		affirm.Equal(t, n, result)
+		affirm.Equal(t, 2, len(result.Rows))
+		affirm.Equal(t, "context", result.Rows[0].Name)
+		affirm.Equal(t, "user validation", result.Rows[0].String())
+		affirm.Equal(t, "hint", result.Rows[1].Name)
+		affirm.Equal(t, "check parameters", result.Rows[1].String())
 	})
 }

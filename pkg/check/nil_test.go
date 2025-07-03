@@ -78,4 +78,22 @@ func Test_NotNil(t *testing.T) {
 		wMsg := "expected non-nil value:\n  trail: type.field"
 		affirm.Equal(t, wMsg, err.Error())
 	})
+
+	t.Run("with custom rows", func(t *testing.T) {
+		// --- Given ---
+		ops := []Option{
+			WithCustomRow("context", "during user validation"),
+			WithCustomRow("hint", "check input parameters"),
+		}
+		
+		// --- When ---
+		err := NotNil(nil, ops...)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "expected non-nil value:\n"+
+			"  context: during user validation\n"+
+			"  hint: check input parameters"
+		affirm.Equal(t, wMsg, err.Error())
+	})
 }

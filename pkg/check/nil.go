@@ -16,9 +16,10 @@ func Nil(have any, opts ...Option) error {
 	}
 	ops := DefaultOptions(opts...)
 	const mHeader = "expected value to be nil"
-	return notice.New(mHeader).Want("nil").
-		SetTrail(ops.Trail).
-		Have("%s", ops.Dumper.Any(have))
+	return ops.ApplyCustomRows(
+		notice.New(mHeader).Want("nil").
+			SetTrail(ops.Trail).
+			Have("%s", ops.Dumper.Any(have)))
 }
 
 // NotNil checks if "have" is not nil. Returns nil if it is not nil, otherwise
@@ -30,5 +31,6 @@ func NotNil(have any, opts ...Option) error {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected non-nil value").SetTrail(ops.Trail)
+	return ops.ApplyCustomRows(
+		notice.New("expected non-nil value").SetTrail(ops.Trail))
 }

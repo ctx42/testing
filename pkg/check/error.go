@@ -18,7 +18,8 @@ func Error(err error, opts ...Option) error {
 		return nil // nolint: nilerr
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected non-nil error").SetTrail(ops.Trail)
+	return ops.ApplyCustomRows(
+		notice.New("expected non-nil error").SetTrail(ops.Trail))
 }
 
 // NoError checks "err" is nil. Returns error it's not nil.
@@ -29,15 +30,17 @@ func NoError(err error, opts ...Option) error {
 	ops := DefaultOptions(opts...)
 	const mHeader = "expected the error to be nil"
 	if is, _ := core.IsNil(err); is {
-		return notice.New(mHeader).
+		return ops.ApplyCustomRows(
+			notice.New(mHeader).
+				SetTrail(ops.Trail).
+				Want(dump.ValNil).
+				Have("%T", err))
+	}
+	return ops.ApplyCustomRows(
+		notice.New(mHeader).
 			SetTrail(ops.Trail).
 			Want(dump.ValNil).
-			Have("%T", err)
-	}
-	return notice.New(mHeader).
-		SetTrail(ops.Trail).
-		Want(dump.ValNil).
-		Have("%q", err.Error())
+			Have("%q", err.Error()))
 }
 
 // ErrorIs checks whether any error in the "err" tree matches the "want" target.

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/pkg/dump"
+	"github.com/ctx42/testing/pkg/notice"
 )
 
 // globLog is a global logger used package-wide.
@@ -197,6 +198,25 @@ func WithDecreasingSoft(ops Options) Options {
 	return ops
 }
 
+// WithCustomRow is a [Checker] option that adds a custom row with a message
+// to be included in the notice when the check fails. Multiple custom rows
+// can be added by calling this option multiple times.
+//
+// Example:
+//
+//	err := Equal(want, have, 
+//		WithCustomRow("context", "during user validation"),
+//		WithCustomRow("hint", "check the input parameters"))
+func WithCustomRow(name, format string, args ...any) Option {
+	return func(ops Options) Options {
+		if ops.CustomRows == nil {
+			ops.CustomRows = make([]notice.Row, 0)
+		}
+		ops.CustomRows = append(ops.CustomRows, notice.NewRow(name, format, args...))
+		return ops
+	}
+}
+
 // WithCmpBaseTypes is a [Checker] option turning on simple base type comparisons.
 //
 // During a normal operation, when comparing values with different types, the
@@ -252,6 +272,7 @@ func WithOptions(src Options) Option {
 		ops.TypeCheckers = src.TypeCheckers
 		ops.TrailCheckers = src.TrailCheckers
 		ops.SkipTrails = src.SkipTrails
+		ops.CustomRows = src.CustomRows
 		ops.SkipUnexported = src.SkipUnexported
 		ops.CmpSimpleType = src.CmpSimpleType
 		ops.IncreaseSoft = src.IncreaseSoft
@@ -290,6 +311,9 @@ type Options struct {
 
 	// List of trails to skip.
 	SkipTrails []string
+
+	// Custom rows to be added to notices when checks fail.
+	CustomRows []notice.Row
 
 	// Skips all unexported fields during equality checks.
 	SkipUnexported bool
@@ -445,4 +469,14 @@ func FieldName(ops Options, typeName string) func(fldName string) Option {
 	return func(fldName string) Option {
 		return WithOptions(ops.StructTrail(typeName, fldName))
 	}
+}
+
+// ApplyCustomRows adds custom rows from options to the provided notice.
+// This is a helper function used by check implementations to include
+// custom rows when checks fail.
+func (ops Options) ApplyCustomRows(n *notice.Notice) *notice.Notice {
+	if len(ops.CustomRows) == 0 {
+		return n
+	}
+	return n.AppendRow(ops.CustomRows...)
 }
