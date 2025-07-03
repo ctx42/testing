@@ -1,3 +1,6 @@
+## v0.27.0 (Thu, 03 Jul 2025 13:29:55 UTC)
+- Add tstkit.SHA1Reader, tstkit.SHA1File helpers.
+
 ## v0.26.0 (Thu, 03 Jul 2025 13:11:26 UTC)
 - Add tstkit.ReadAllFromStart helper.
 
