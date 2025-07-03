@@ -1,3 +1,6 @@
+## v0.26.0 (Thu, 03 Jul 2025 13:11:26 UTC)
+- Add tstkit.ReadAllFromStart helper.
+
 ## v0.25.0 (Thu, 03 Jul 2025 12:47:08 UTC)
 - Add tstkit.ErrReader and tstkit.ErrWriter helpers.
 - Update documentation.
