@@ -1,4 +1,4 @@
-package fskit_test
+package memfs_test
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ func BenchmarkFileWrite(b *testing.B) {
 
 		b.StartTimer()
 		for i := 0; i < b.N; i++ {
-			buf := &fskit.File{}
+			buf := &memfs.File{}
 			n, _ = buf.Write(data)
 		}
 		bufferWrite = n
@@ -51,7 +51,7 @@ func BenchmarkFileWriteByte(b *testing.B) {
 
 		b.StartTimer()
 		for i := 0; i < b.N; i++ {
-			buf := &fskit.File{}
+			buf := &memfs.File{}
 			err = buf.WriteByte(1)
 		}
 		bufferWriteByte = err
@@ -82,7 +82,7 @@ func BenchmarkFileWriteString(b *testing.B) {
 
 		b.StartTimer()
 		for i := 0; i < b.N; i++ {
-			buf := &fskit.File{}
+			buf := &memfs.File{}
 			n, _ = buf.WriteString("abcdefghijkl")
 		}
 		bufferWriteString = n
@@ -116,7 +116,7 @@ func BenchmarkFileReadFrom(b *testing.B) {
 
 		b.StartTimer()
 		for i := 0; i < b.N; i++ {
-			buf := &fskit.File{}
+			buf := &memfs.File{}
 			n, _ = buf.ReadFrom(src)
 			src.Reset(data)
 		}

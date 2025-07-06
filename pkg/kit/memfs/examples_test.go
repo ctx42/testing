@@ -1,4 +1,4 @@
-package fskit_test
+package memfs_test
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 func ExampleFile() {
-	buf := &fskit.File{}
+	buf := &memfs.File{}
 
 	_, _ = buf.Write([]byte{0, 1, 2, 3})
 	_, _ = buf.Seek(-2, io.SeekEnd)

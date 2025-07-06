@@ -1,4 +1,4 @@
-package fskit
+package memfs
 
 import (
 	"io"
