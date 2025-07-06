@@ -1,19 +1,18 @@
-package tstkit
+package kit
 
 import (
-	"os"
+	"bytes"
 	"testing"
 
 	"github.com/ctx42/testing/pkg/assert"
-	"github.com/ctx42/testing/pkg/must"
 )
 
 func Test_SHA1Reader(t *testing.T) {
 	// --- Given ---
-	fil := must.Value(os.Open("testdata/file.txt"))
+	rdr := bytes.NewReader([]byte("content"))
 
 	// --- When ---
-	have := SHA1Reader(fil)
+	have := SHA1Reader(rdr)
 
 	// --- Then ---
 	assert.Equal(t, "040f06fd774092478d450774f5ba30c5da78acc8", have)

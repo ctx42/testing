@@ -1,4 +1,4 @@
-package tstkit
+package iokit
 
 import (
 	"bytes"
@@ -7,30 +7,6 @@ import (
 
 	"github.com/ctx42/testing/pkg/assert"
 )
-
-func Test_WithWriteErr(t *testing.T) {
-	// --- Given ---
-	custom := errors.New("my error")
-	ew := &ErrorWriter{}
-
-	// --- When ---
-	WithWriteErr(custom)(ew)
-
-	// --- Then ---
-	assert.Same(t, custom, ew.errWrite)
-}
-
-func Test_WithWriteCloseErr(t *testing.T) {
-	// --- Given ---
-	custom := errors.New("my error")
-	ew := &ErrorWriter{}
-
-	// --- When ---
-	WithWriteCloseErr(custom)(ew)
-
-	// --- Then ---
-	assert.Same(t, custom, ew.errClose)
-}
 
 func Test_ErrWriter(t *testing.T) {
 	t.Run("without options", func(t *testing.T) {
@@ -67,18 +43,18 @@ func Test_ErrWriter(t *testing.T) {
 		dst := &bytes.Buffer{}
 
 		// --- When ---
-		have := ErrWriter(dst, -1, WithWriteErr(custom))
+		have := ErrWriter(dst, 42, WithWriteErr(custom))
 
 		// --- Then ---
 		assert.Same(t, dst, have.w)
-		assert.Equal(t, -1, have.n)
+		assert.Equal(t, 42, have.n)
 		assert.Equal(t, 0, have.off)
 		assert.Same(t, custom, have.errWrite)
 	})
 }
 
 func Test_ErrWriter_Write(t *testing.T) {
-	t.Run("no read error when n is negative", func(t *testing.T) {
+	t.Run("no error when n is negative", func(t *testing.T) {
 		// --- Given ---
 		dst := &bytes.Buffer{}
 		ew := ErrWriter(dst, -1)
@@ -108,7 +84,7 @@ func Test_ErrWriter_Write(t *testing.T) {
 
 	t.Run("underlying writer error", func(t *testing.T) {
 		// --- Given ---
-		dst := sadWriter{}
+		dst := sadStruct{}
 		ew := ErrWriter(dst, 42)
 
 		// --- When ---
@@ -148,64 +124,3 @@ func Test_ErrWriter_Write(t *testing.T) {
 		assert.Equal(t, []byte{0, 1, 2}, dst.Bytes())
 	})
 }
-
-func Test_ErrorWriter_Close(t *testing.T) {
-	t.Run("no close error", func(t *testing.T) {
-		// --- Given ---
-		dst := &happyWriter{}
-		ew := ErrWriter(dst, -1)
-
-		// --- When ---
-		err := ew.Close()
-
-		// --- Then ---
-		assert.NoError(t, err)
-	})
-
-	t.Run("underlying closer error", func(t *testing.T) {
-		// --- Given ---
-		ew := ErrWriter(sadWriter{}, -1)
-
-		// --- When ---
-		err := ew.Close()
-
-		// --- Then ---
-		assert.Same(t, ErrSadClose, err)
-	})
-
-	t.Run("close not defined on reader", func(t *testing.T) {
-		// --- Given ---
-		dst := &bytes.Buffer{}
-		rcs := ErrWriter(dst, -1)
-
-		// --- When ---
-		err := rcs.Close()
-
-		// --- Then ---
-		assert.ErrorEqual(t, "method Close is not implemented", err)
-	})
-
-	t.Run("custom close error", func(t *testing.T) {
-		// --- Given ---
-		exp := errors.New("test message")
-		rcs := ErrWriter(sadWriter{}, -1, WithWriteCloseErr(exp))
-
-		// --- When ---
-		err := rcs.Close()
-
-		// --- Then ---
-		assert.Same(t, exp, err)
-	})
-}
-
-var ErrSadWrite = errors.New("sad write error")
-
-type sadWriter struct{}
-
-func (w sadWriter) Write(_ []byte) (int, error) { return 0, ErrSadWrite }
-func (w sadWriter) Close() error                { return ErrSadClose }
-
-type happyWriter struct{}
-
-func (w happyWriter) Write(_ []byte) (int, error) { return 0, nil }
-func (w happyWriter) Close() error                { return nil }

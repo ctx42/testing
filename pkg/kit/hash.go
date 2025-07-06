@@ -1,4 +1,4 @@
-package tstkit
+package kit
 
 import (
 	"crypto/sha1"

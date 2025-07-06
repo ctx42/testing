@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: (c) 2025 Rafal Zajac <rzajac@gmail.com>
 // SPDX-License-Identifier: MIT
 
-package tstkit
+// Package timekit provides time.Time related helpers.
+package timekit
 
 import (
 	"sync"
