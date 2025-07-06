@@ -1,3 +1,9 @@
+## v0.28.0 (Sun, 06 Jul 2025 20:25:45 UTC)
+- Add check.Cap and assert.Cap functions.
+- Change how test kits are organized. Now kits will be put in packages of "kit" package and be organized by "topic". The change also introduces changes to ErrReader and ErrWriter which were split into ErrReader, ErrReadCloser, ErrReadSeeker, ErrReadSeekCloser and ErrWriter, ErrWriteCloser.
+- Add kit/memfs package with File struct which mimics `os.File` and implements `fs.File` interface among other useful I/O interfaces.
+- Update documentation and change to better struct names.
+
 ## v0.27.0 (Thu, 03 Jul 2025 13:29:55 UTC)
 - Add tstkit.SHA1Reader, tstkit.SHA1File helpers.
 
