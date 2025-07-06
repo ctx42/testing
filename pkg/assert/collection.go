@@ -11,7 +11,7 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// Len asserts "have" has "want" elements. Returns true if it is, otherwise it
+// Len asserts "have" has "want" length. Returns true if it is, otherwise it
 // marks the test as failed, writes an error message to the test log and
 // returns false.
 func Len(t tester.T, want int, have any, opts ...check.Option) bool {
@@ -19,6 +19,26 @@ func Len(t tester.T, want int, have any, opts ...check.Option) bool {
 	if e := check.Len(want, have, opts...); e != nil {
 		var cnt int
 		if val, ok := notice.From(e).MetaLookup("len"); ok {
+			cnt = val.(int) // nolint: forcetypeassert
+		}
+		if want > cnt {
+			t.Fatal(e)
+		} else {
+			t.Error(e)
+		}
+		return false
+	}
+	return true
+}
+
+// Cap asserts "have" has "want" capacity. Returns true if it is, otherwise it
+// marks the test as failed, writes an error message to the test log and
+// returns false.
+func Cap(t tester.T, want int, have any, opts ...check.Option) bool {
+	t.Helper()
+	if e := check.Cap(want, have, opts...); e != nil {
+		var cnt int
+		if val, ok := notice.From(e).MetaLookup("cap"); ok {
 			cnt = val.(int) // nolint: forcetypeassert
 		}
 		if want > cnt {

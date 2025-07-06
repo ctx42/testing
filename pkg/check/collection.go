@@ -11,7 +11,7 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Len checks "have" has "want" elements. Returns nil if it has, otherwise it
+// Len checks "have" has "want" length. Returns nil if it has, otherwise it
 // returns an error with a message indicating the expected and actual values.
 func Len(want int, have any, opts ...Option) (err error) {
 	vv := reflect.ValueOf(have)
@@ -28,6 +28,28 @@ func Len(want int, have any, opts ...Option) (err error) {
 			Want("%d", want).
 			Have("%d", cnt).
 			MetaSet("len", cnt)
+		return msg
+	}
+	return nil
+}
+
+// Cap checks "have" has "want" capacity. Returns nil if it has, otherwise it
+// returns an error with a message indicating the expected and actual values.
+func Cap(want int, have any, opts ...Option) (err error) {
+	vv := reflect.ValueOf(have)
+	defer func() {
+		if e := recover(); e != nil {
+			err = notice.New("cannot execute cap(%T)", have).MetaSet("cap", 0)
+		}
+	}()
+	cnt := vv.Cap()
+	if want != cnt {
+		ops := DefaultOptions(opts...)
+		msg := notice.New("expected %T capacity", have).
+			SetTrail(ops.Trail).
+			Want("%d", want).
+			Have("%d", cnt).
+			MetaSet("cap", cnt)
 		return msg
 	}
 	return nil

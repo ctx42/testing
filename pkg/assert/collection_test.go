@@ -23,7 +23,7 @@ func Test_Len(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("fatal when want is less than actual length", func(t *testing.T) {
+	t.Run("fatal when want is greater than actual length", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -37,7 +37,7 @@ func Test_Len(t *testing.T) {
 		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
-	t.Run("error - when want is greater than the actual length", func(t *testing.T) {
+	t.Run("error - when want is less than the actual length", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -62,6 +62,65 @@ func Test_Len(t *testing.T) {
 
 		// --- When ---
 		have := Len(tspy, 1, []int{0, 1}, opt)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+}
+
+func Test_Cap(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+
+		// --- When ---
+		have := Cap(tspy, 2, []int{0, 1})
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("fatal when want is greater than actual capacity", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectFatal()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		// --- When ---
+		msg := affirm.Panic(t, func() { Cap(tspy, 3, []int{0, 1}) })
+
+		// --- Then ---
+		affirm.Equal(t, tester.FailNowMsg, *msg)
+	})
+
+	t.Run("error - when want is less than the actual capacity", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		s := make([]int, 0, 3)
+
+		// --- When ---
+		have := Cap(tspy, 2, s)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+
+	t.Run("log message with trail", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.ExpectLogContain("  trail: type.field\n")
+		tspy.Close()
+
+		opt := check.WithTrail("type.field")
+
+		// --- When ---
+		have := Cap(tspy, 1, []int{0, 1}, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

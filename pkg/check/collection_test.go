@@ -146,6 +146,124 @@ func Test_Len_error_tabular(t *testing.T) {
 	}
 }
 
+func Test_Cap(t *testing.T) {
+	t.Run("log message with trail", func(t *testing.T) {
+		// --- Given ---
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		err := Cap(1, []int{1, 2}, opt)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected []int capacity:\n" +
+			"  trail: type.field\n" +
+			"   want: 1\n" +
+			"   have: 2"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
+func Test_Cap_success_tabular(t *testing.T) {
+	ch := make(chan int, 4)
+	ch <- 0
+	ch <- 1
+	ch <- 2
+	t.Cleanup(func() { <-ch; <-ch; <-ch; close(ch) })
+
+	tt := []struct {
+		testN string
+
+		val  any
+		want int
+	}{
+		{"int empty success", []int{}, 0},
+		{"int success", []int{1}, 1},
+		{"channel success", ch, 4},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			err := Cap(tc.want, tc.val)
+
+			// --- Then ---
+			affirm.Nil(t, err)
+		})
+	}
+}
+
+func Test_Cap_error_tabular(t *testing.T) {
+	ch := make(chan int, 4)
+	ch <- 0
+	ch <- 1
+	ch <- 2
+	t.Cleanup(func() { <-ch; <-ch; <-ch; close(ch) })
+
+	tt := []struct {
+		testN string
+
+		want   int
+		val    any
+		actual int
+		wMsg   string
+	}{
+		{
+			"int empty fail",
+			1,
+			[]int{},
+			0,
+			"expected []int capacity:\n  want: 1\n  have: 0",
+		},
+		{
+			"int fail",
+			2,
+			[]int{1},
+			1,
+			"expected []int capacity:\n  want: 2\n  have: 1",
+		},
+		{
+			"invalid type map",
+			0,
+			map[string]int{"A": 1},
+			0,
+			"cannot execute cap(map[string]int)",
+		},
+		{
+			"invalid type int",
+			0,
+			1,
+			0,
+			"cannot execute cap(int)",
+		},
+		{
+			"invalid type string",
+			0,
+			"abc",
+			0,
+			"cannot execute cap(string)",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			err := Cap(tc.want, tc.val)
+
+			// --- Then ---
+			affirm.NotNil(t, err)
+			affirm.Equal(t, tc.wMsg, err.Error())
+
+			var msg *notice.Notice
+			affirm.Equal(t, true, errors.As(err, &msg))
+			cnt, ok := msg.MetaLookup("cap")
+			affirm.Equal(t, true, ok)
+			affirm.Equal(t, tc.actual, cnt.(int))
+		})
+	}
+}
+
 func Test_Has(t *testing.T) {
 	t.Run("has", func(t *testing.T) {
 		// --- Given ---
