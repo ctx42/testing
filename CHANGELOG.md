@@ -1,3 +1,6 @@
+## v0.28.1 (Sun, 06 Jul 2025 20:36:47 UTC)
+- Fix the memfs package name.
+
 ## v0.28.0 (Sun, 06 Jul 2025 20:25:45 UTC)
 - Add check.Cap and assert.Cap functions.
 - Change how test kits are organized. Now kits will be put in packages of "kit" package and be organized by "topic". The change also introduces changes to ErrReader and ErrWriter which were split into ErrReader, ErrReadCloser, ErrReadSeeker, ErrReadSeekCloser and ErrWriter, ErrWriteCloser.
