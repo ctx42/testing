@@ -5,11 +5,11 @@ import (
 )
 
 // ErrorReadSeekCloser implements [io.ReadSeekCloser] by embedding
-// [ErrorReadSeek] instance and adding Close method which behavior you may
+// [ErrorReadSeeker] instance and adding Close method which behavior you may
 // control with options. See [ErrReadSeekCloser] constructor function for
 // details.
 type ErrorReadSeekCloser struct {
-	*ErrorReadSeek
+	*ErrorReadSeeker
 	cls io.Closer
 }
 
@@ -37,8 +37,8 @@ func ErrReadSeekCloser(
 ) *ErrorReadSeekCloser {
 
 	return &ErrorReadSeekCloser{
-		ErrorReadSeek: ErrReadSeeker(src, n, opts...),
-		cls:           src,
+		ErrorReadSeeker: ErrReadSeeker(src, n, opts...),
+		cls:             src,
 	}
 }
 

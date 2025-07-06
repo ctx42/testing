@@ -5,10 +5,10 @@ The `memfs` package provides in-memory filesystem.
 ## The `File`
 
 The `File` structure implements multiple I/O interfaces plus `fs.File` 
-interface. Its purpose is to be a versatile buffer. 
+interface. Its purpose is to be a versatile in-memory buffer. 
 
 ```go
-type file interface {
+type File interface {
     io.Seeker
     io.Reader
     io.ReaderAt

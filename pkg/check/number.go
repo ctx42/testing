@@ -54,7 +54,7 @@ func Smaller[T constraints.Ordered](want, have T, opts ...Option) error {
 		Have("%v", have)
 }
 
-// SmallerOrEqual checks the "want" value is smaller or equial than the "have"
+// SmallerOrEqual checks the "want" value is smaller or equal than the "have"
 // value. Returns nil if the condition is met, otherwise it returns an error
 // with a message indicating the expected and actual values.
 func SmallerOrEqual[T constraints.Ordered](want, have T, opts ...Option) error {
