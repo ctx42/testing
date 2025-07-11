@@ -1,3 +1,8 @@
+## v0.28.2 (Fri, 11 Jul 2025 10:37:31 UTC)
+- fix: panicking dumper for a special case where value is a nil error interface.
+- style: remove unreachable code.
+- doc: update documentation.
+
 ## v0.28.1 (Sun, 06 Jul 2025 20:36:47 UTC)
 - Fix the memfs package name.
 
