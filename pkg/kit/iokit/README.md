@@ -3,6 +3,7 @@
   * [The `Buffer` Type](#the-buffer-type)
     * [WetBuffer](#wetbuffer)
     * [DryBuffer](#drybuffer)
+  * [Error writers and readers](#error-writers-and-readers)
 <!-- TOC -->
 
 # The `iokit` package
