@@ -236,7 +236,7 @@ func Increasing[T constraints.Ordered](seq []T, opts ...Option) error {
 // NotIncreasing is inverse of [Increasing].
 func NotIncreasing[T constraints.Ordered](seq []T, opts ...Option) error {
 	if err := Increasing(seq, opts...); err != nil {
-		return nil
+		return nil // nolint: nilerr
 	}
 	ops := DefaultOptions(opts...)
 	var mode string
@@ -288,7 +288,7 @@ func Decreasing[T constraints.Ordered](seq []T, opts ...Option) error {
 // NotDecreasing is inverse of [Decreasing].
 func NotDecreasing[T constraints.Ordered](seq []T, opts ...Option) error {
 	if err := Decreasing(seq, opts...); err != nil {
-		return nil
+		return nil // nolint: nilerr
 	}
 
 	ops := DefaultOptions(opts...)
