@@ -264,6 +264,7 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 	sPtr := &types.TPtr{Val: "a"}
 	var aAnyNil any
 	es := []error{errors.New("error message")}
+	esNil := []error{nil}
 
 	tt := []struct {
 		testN string
@@ -337,6 +338,12 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 			New(WithFlat, WithCompact, WithPtrAddr),
 			es,
 			"[]error{\"error message\"}",
+		},
+		{
+			"special case for type error 2",
+			New(WithFlat, WithCompact, WithPtrAddr),
+			esNil,
+			"[]error{nil}",
 		},
 	}
 
