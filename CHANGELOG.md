@@ -1,3 +1,9 @@
+## v0.29.0 (Fri, 11 Jul 2025 20:06:20 UTC)
+- feat: add kit.AddGlobalCleanup and kit.RunGlobalCleanups helpers.
+- style: remove unnecessary import alias.
+- doc: update copyright notices.
+- style: ignore linting false positives.
+
 ## v0.28.2 (Fri, 11 Jul 2025 10:37:31 UTC)
 - fix: panicking dumper for a special case where value is a nil error interface.
 - style: remove unreachable code.
