@@ -1,3 +1,6 @@
+## v0.30.0 (Sat, 12 Jul 2025 08:13:02 UTC)
+- feat: add a configuration option for mocker to customize github.com/ctx42/testing/pkg/tester import alias.
+
 ## v0.29.0 (Fri, 11 Jul 2025 20:06:20 UTC)
 - feat: add kit.AddGlobalCleanup and kit.RunGlobalCleanups helpers.
 - style: remove unnecessary import alias.
