@@ -80,6 +80,30 @@ func Test_WithTgtOnHelpers(t *testing.T) {
 	assert.True(t, cfg.onHelpers)
 }
 
+func Test_WithTesterAlias(t *testing.T) {
+	t.Run("set", func(t *testing.T) {
+		// --- Given ---
+		cfg := &Config{}
+
+		// --- When ---
+		WithTesterAlias("alias")(cfg)
+
+		// --- Then ---
+		assert.Equal(t, "alias", cfg.testerAlias)
+	})
+
+	t.Run("set empty string", func(t *testing.T) {
+		// --- Given ---
+		cfg := &Config{}
+
+		// --- When ---
+		WithTesterAlias("")(cfg)
+
+		// --- Then ---
+		assert.Equal(t, "_tester", cfg.testerAlias)
+	})
+}
+
 func Test_newConfig(t *testing.T) {
 	t.Run("without options", func(t *testing.T) {
 		// --- Given ---
@@ -121,6 +145,7 @@ func Test_newConfig(t *testing.T) {
 		assert.Equal(t, wFilePth, have.tgtFilename)
 		assert.Nil(t, have.tgtOut)
 		assert.False(t, have.onHelpers)
+		assert.Empty(t, have.testerAlias)
 	})
 
 	t.Run("with a source directory", func(t *testing.T) {
@@ -162,6 +187,7 @@ func Test_newConfig(t *testing.T) {
 		assert.Equal(t, filepath.Join(wd, "case00_mock.go"), have.tgtFilename)
 		assert.Nil(t, have.tgtOut)
 		assert.False(t, have.onHelpers)
+		assert.Empty(t, have.testerAlias)
 	})
 
 	t.Run("with a custom target name", func(t *testing.T) {

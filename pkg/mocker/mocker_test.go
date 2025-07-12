@@ -45,6 +45,28 @@ func Test_Mocker_Generate(t *testing.T) {
 		assert.Equal(t, gld.String(), string(have))
 	})
 
+	t.Run("set tester alias", func(t *testing.T) {
+		// --- Given ---
+		mod := tstmod.New(t, "v2")
+
+		opts := []Option{
+			WithSrc("testdata/cases"),
+			WithTgt(mod.Dir),
+			WithTesterAlias(""),
+		}
+		mck := New()
+
+		// --- When ---
+		err := mck.Generate("Case54", opts...)
+
+		// --- Then ---
+		assert.NoError(t, err)
+
+		gld := goldy.Open(t, "testdata/generate_success_tester_alias.gld")
+		have := must.Value(os.ReadFile(mod.Path("case54_mock.go")))
+		assert.Equal(t, gld.String(), string(have))
+	})
+
 	t.Run("error - configuration", func(t *testing.T) {
 		// --- Given ---
 		mck := New()

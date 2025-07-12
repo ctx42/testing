@@ -107,9 +107,13 @@ See [examples_test.go](examples_test.go) for additional examples.
 
 The `Generate` function accepts optional configuration via option functions:
 
-- WithSrc(src string): the source package or directory. Defaults to the current package.
-- WithTgt(tgt string): the target package or directory for the generated mock. Defaults to the current package.
-- WithTgtOutput(w io.Writer): directs the mock output to the given writer. Defaults to a file named `<interface>_mock.go`.
+- `WithSrc(src string)`: the source package or directory. Defaults to the current package.
+- `WithTgt(tgt string)`: the target package or directory for the generated mock. Defaults to the current package.
+- `WithTgtOutput(w io.Writer)`: directs the mock output to the given writer. Defaults to a file named `<interface>_mock.go`.
+- `WithTgtName(name string)`: customize mock type name. Defaults to `TypeMock`. 
+- `WithTgtFilename(filename string)`: customize mock filename.
+- `WithTgtOnHelpers()`: generate additional mock helper methods.
+- `WithTesterAlias(alias string)`: sets alias for "github.com/ctx42/testing/pkg/tester" import.
 
 ## Performance
 

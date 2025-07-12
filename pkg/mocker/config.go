@@ -47,6 +47,16 @@ func WithTgtOutput(w io.Writer) Option {
 	return func(cfg *Config) { cfg.tgtOut = w }
 }
 
+// WithTesterAlias sets the alias for the "github.com/ctx42/testing/pkg/tester"
+// package. When the alias is set to empty string, it will use "_tester" as the
+// alias.
+func WithTesterAlias(alias string) Option {
+	if alias == "" {
+		alias = "_tester"
+	}
+	return func(cfg *Config) { cfg.testerAlias = alias }
+}
+
 // Config represents the configuration for the mocker.
 type Config struct {
 	srcName     string // Name of the interface to mock.
@@ -62,7 +72,8 @@ type Config struct {
 	tgtOut      io.Writer // Target to write generated mock to.
 	tgtPkg      *gopkg    // Destination package (based on tgtDirOrImp field).
 
-	onHelpers bool // Generate "OnXXX" helper methods.
+	onHelpers   bool   // Generate "OnXXX" helper methods.
+	testerAlias string // Alias for the CTX42 tester package.
 }
 
 // newConfig creates a new configuration for the interface with the provided

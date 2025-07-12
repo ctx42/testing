@@ -836,6 +836,32 @@ func Test_gopkg_from(t *testing.T) {
 	})
 }
 
+func Test_gopkg_setAlias(t *testing.T) {
+	t.Run("set", func(t *testing.T) {
+		// --- Given ---
+		pkg := &gopkg{}
+
+		// --- When ---
+		pkg.setAlias("alias")
+
+		// --- Then ---
+		assert.Equal(t, "alias", pkg.alias)
+		assert.Equal(t, "alias", pkg.pkgName)
+	})
+
+	t.Run("set to empty", func(t *testing.T) {
+		// --- Given ---
+		pkg := &gopkg{alias: "alias", pkgName: "pkgName", pkgPath: "io/fs"}
+
+		// --- When ---
+		pkg.setAlias("")
+
+		// --- Then ---
+		assert.Equal(t, "", pkg.alias)
+		assert.Equal(t, "fs", pkg.pkgName)
+	})
+}
+
 func Test_gopkg_genImport_tabular(t *testing.T) {
 	tt := []struct {
 		testN string

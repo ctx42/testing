@@ -50,11 +50,3 @@ func (itf *goitf) imports() []*gopkg {
 	}
 	return imps
 }
-
-// genImports generates and returns Go code representing interface imports.
-func (itf *goitf) genImports() string {
-	mckImp := &gopkg{pkgName: assumedPackageName(selfImp), pkgPath: selfImp}
-	tstImp := &gopkg{pkgName: assumedPackageName(testerImp), pkgPath: testerImp}
-	imps := append(itf.imports(), mckImp, tstImp)
-	return genImports(imps)
-}

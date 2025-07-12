@@ -309,6 +309,16 @@ func (pkg *gopkg) from(other *gopkg) {
 	pkg.fset = other.fset
 }
 
+// setAlias sets package [gopkg.alias] and [gopkg.pkgName] to given alias.
+func (pkg *gopkg) setAlias(alias string) {
+	pkg.alias = alias
+	if alias == "" {
+		pkg.pkgName = assumedPackageName(pkg.pkgPath)
+	} else {
+		pkg.pkgName = alias
+	}
+}
+
 // genImport generates code for the package import line. The dot alias is never
 // used.
 //

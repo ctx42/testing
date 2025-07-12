@@ -4,7 +4,6 @@
 package mocker
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/ctx42/testing/pkg/assert"
@@ -226,20 +225,6 @@ func Test_goitf_imports(t *testing.T) {
 			{pkgName: "r0", pkgPath: "r0_path"},
 			{pkgName: "r1", pkgPath: "r1_path"},
 		}
-		assert.Equal(t, want, have)
-	})
-}
-
-func Test_goitf_genImports(t *testing.T) {
-	t.Run("no imports", func(t *testing.T) {
-		// --- Given ---
-		itf := &goitf{}
-
-		// --- When ---
-		have := itf.genImports()
-
-		// --- Then ---
-		want := fmt.Sprintf("import (\n\t%q\n\t%q\n)", selfImp, testerImp)
 		assert.Equal(t, want, have)
 	})
 }
