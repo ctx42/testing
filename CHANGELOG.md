@@ -1,3 +1,6 @@
+## v0.31.0 (Sat, 12 Jul 2025 14:36:27 UTC)
+- feat!: change the order of arguments in assert.Before and check.Before to (t, mark, date) to indicate "date" must be before the "mark" - keeping the order (want, have) as in every other check and assert.
+
 ## v0.30.0 (Sat, 12 Jul 2025 08:13:02 UTC)
 - feat: add a configuration option for mocker to customize github.com/ctx42/testing/pkg/tester import alias.
 
