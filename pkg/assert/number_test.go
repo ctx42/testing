@@ -18,7 +18,7 @@ func Test_Greater(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := Greater(tspy, 44, 42)
+		have := Greater(tspy, 42, 44)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -48,7 +48,7 @@ func Test_Greater(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Greater(tspy, 42, 44, opt)
+		have := Greater(tspy, 44, 42, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -62,7 +62,7 @@ func Test_GreaterOrEqual(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := GreaterOrEqual(tspy, 44, 42)
+		have := GreaterOrEqual(tspy, 42, 44)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -88,7 +88,7 @@ func Test_GreaterOrEqual(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := GreaterOrEqual(tspy, 42, 44)
+		have := GreaterOrEqual(tspy, 44, 42)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -104,7 +104,7 @@ func Test_GreaterOrEqual(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := GreaterOrEqual(tspy, 42, 44, opt)
+		have := GreaterOrEqual(tspy, 44, 42, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -118,7 +118,7 @@ func Test_Smaller(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := Smaller(tspy, 42, 44)
+		have := Smaller(tspy, 44, 42)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -132,7 +132,7 @@ func Test_Smaller(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := Smaller(tspy, 44, 42)
+		have := Smaller(tspy, 42, 44)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -148,7 +148,7 @@ func Test_Smaller(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Smaller(tspy, 44, 42, opt)
+		have := Smaller(tspy, 42, 44, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -162,7 +162,7 @@ func Test_SmallerOrEqual(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := SmallerOrEqual(tspy, 42, 44)
+		have := SmallerOrEqual(tspy, 44, 42)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -188,7 +188,7 @@ func Test_SmallerOrEqual(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := SmallerOrEqual(tspy, 44, 42)
+		have := SmallerOrEqual(tspy, 42, 44)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -204,7 +204,7 @@ func Test_SmallerOrEqual(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := SmallerOrEqual(tspy, 44, 42, opt)
+		have := SmallerOrEqual(tspy, 42, 44, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

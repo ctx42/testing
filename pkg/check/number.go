@@ -12,11 +12,11 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Greater checks the "want" value is greater than the "have" value. Returns
+// Greater checks the "have" value is greater than the "want" value. Returns
 // nil if the condition is met, otherwise it returns an error with a message
 // indicating the expected and actual values.
 func Greater[T constraints.Ordered](want, have T, opts ...Option) error {
-	if want > have {
+	if want < have {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
@@ -26,11 +26,11 @@ func Greater[T constraints.Ordered](want, have T, opts ...Option) error {
 		Have("%v", have)
 }
 
-// GreaterOrEqual checks the "want" value is greater or equal than the "have"
+// GreaterOrEqual checks the "have" value is greater or equal than the "want"
 // value. Returns nil if the condition is met, otherwise it returns an error
 // with a message indicating the expected and actual values.
 func GreaterOrEqual[T constraints.Ordered](want, have T, opts ...Option) error {
-	if want >= have {
+	if want <= have {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
@@ -40,11 +40,11 @@ func GreaterOrEqual[T constraints.Ordered](want, have T, opts ...Option) error {
 		Have("%v", have)
 }
 
-// Smaller checks the "want" value is smaller than the "have" value. Returns
+// Smaller checks the "have" value is smaller than the "want" value. Returns
 // nil if the condition is met, otherwise it returns an error with a message
 // indicating the expected and actual values.
 func Smaller[T constraints.Ordered](want, have T, opts ...Option) error {
-	if want < have {
+	if want > have {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
@@ -54,11 +54,11 @@ func Smaller[T constraints.Ordered](want, have T, opts ...Option) error {
 		Have("%v", have)
 }
 
-// SmallerOrEqual checks the "want" value is smaller or equal than the "have"
+// SmallerOrEqual checks the "have" value is smaller or equal than the "want"
 // value. Returns nil if the condition is met, otherwise it returns an error
 // with a message indicating the expected and actual values.
 func SmallerOrEqual[T constraints.Ordered](want, have T, opts ...Option) error {
-	if want <= have {
+	if want >= have {
 		return nil
 	}
 	ops := DefaultOptions(opts...)

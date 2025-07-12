@@ -55,9 +55,9 @@ func Exact(t tester.T, want, have any, opts ...check.Option) bool {
 // [check.Options.TimeFormat] is used during parsing and the returned date is
 // always in UTC. The int and int64 types are interpreted as Unix Timestamp,
 // and the date returned is also in UTC.
-func Before(t tester.T, date, mark any, opts ...check.Option) bool {
+func Before(t tester.T, mark, date any, opts ...check.Option) bool {
 	t.Helper()
-	if e := check.Before(date, mark, opts...); e != nil {
+	if e := check.Before(mark, date, opts...); e != nil {
 		t.Error(e)
 		return false
 	}
@@ -73,9 +73,9 @@ func Before(t tester.T, date, mark any, opts ...check.Option) bool {
 // [check.Options.TimeFormat] is used during parsing and the returned date is
 // always in UTC. The int and int64 types are interpreted as Unix Timestamp,
 // and the date returned is also in UTC.
-func After(t tester.T, date, mark time.Time, opts ...check.Option) bool {
+func After(t tester.T, mark, date time.Time, opts ...check.Option) bool {
 	t.Helper()
-	if e := check.After(date, mark, opts...); e != nil {
+	if e := check.After(mark, date, opts...); e != nil {
 		t.Error(e)
 		return false
 	}
@@ -91,9 +91,9 @@ func After(t tester.T, date, mark time.Time, opts ...check.Option) bool {
 // [check.Options.TimeFormat] is used during parsing and the returned date is
 // always in UTC. The int and int64 types are interpreted as Unix Timestamp,
 // and the date returned is also in UTC.
-func BeforeOrEqual(t tester.T, date, mark time.Time, opts ...check.Option) bool {
+func BeforeOrEqual(t tester.T, mark, date time.Time, opts ...check.Option) bool {
 	t.Helper()
-	if e := check.BeforeOrEqual(date, mark, opts...); e != nil {
+	if e := check.BeforeOrEqual(mark, date, opts...); e != nil {
 		t.Error(e)
 		return false
 	}
@@ -109,9 +109,9 @@ func BeforeOrEqual(t tester.T, date, mark time.Time, opts ...check.Option) bool 
 // [check.Options.TimeFormat] is used during parsing and the returned date is
 // always in UTC. The int and int64 types are interpreted as Unix Timestamp,
 // and the date returned is also in UTC.
-func AfterOrEqual(t tester.T, date, mark any, opts ...check.Option) bool {
+func AfterOrEqual(t tester.T, mark, date any, opts ...check.Option) bool {
 	t.Helper()
-	if e := check.AfterOrEqual(date, mark, opts...); e != nil {
+	if e := check.AfterOrEqual(mark, date, opts...); e != nil {
 		t.Error(e)
 		return false
 	}

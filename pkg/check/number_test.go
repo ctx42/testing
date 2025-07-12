@@ -12,7 +12,7 @@ import (
 func Test_Greater(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- When ---
-		err := Greater(4, 2)
+		err := Greater(2, 4)
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -33,14 +33,14 @@ func Test_Greater(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		// --- When ---
-		err := Greater(2, 4)
+		err := Greater(4, 2)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be greater:\n" +
-			"  greater than: 2\n" +
-			"          have: 4"
+			"  greater than: 4\n" +
+			"          have: 2"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -49,15 +49,15 @@ func Test_Greater(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Greater(2, 4, opt)
+		err := Greater(4, 2, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be greater:\n" +
 			"         trail: type.field\n" +
-			"  greater than: 2\n" +
-			"          have: 4"
+			"  greater than: 4\n" +
+			"          have: 2"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }
@@ -65,7 +65,7 @@ func Test_Greater(t *testing.T) {
 func Test_GreaterOrEqual(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- When ---
-		err := GreaterOrEqual(4, 2)
+		err := GreaterOrEqual(2, 4)
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -81,14 +81,14 @@ func Test_GreaterOrEqual(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		// --- When ---
-		err := GreaterOrEqual(2, 4)
+		err := GreaterOrEqual(4, 2)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be greater or equal:\n" +
-			"  greater or equal than: 2\n" +
-			"                   have: 4"
+			"  greater or equal than: 4\n" +
+			"                   have: 2"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -97,15 +97,15 @@ func Test_GreaterOrEqual(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := GreaterOrEqual(2, 4, opt)
+		err := GreaterOrEqual(4, 2, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be greater or equal:\n" +
 			"                  trail: type.field\n" +
-			"  greater or equal than: 2\n" +
-			"                   have: 4"
+			"  greater or equal than: 4\n" +
+			"                   have: 2"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }
@@ -113,7 +113,7 @@ func Test_GreaterOrEqual(t *testing.T) {
 func Test_Smaller(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- When ---
-		err := Smaller(2, 4)
+		err := Smaller(4, 2)
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -134,14 +134,14 @@ func Test_Smaller(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		// --- When ---
-		err := Smaller(4, 2)
+		err := Smaller(2, 4)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be smaller:\n" +
-			"  smaller than: 4\n" +
-			"          have: 2"
+			"  smaller than: 2\n" +
+			"          have: 4"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -150,15 +150,15 @@ func Test_Smaller(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Smaller(4, 2, opt)
+		err := Smaller(2, 4, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be smaller:\n" +
 			"         trail: type.field\n" +
-			"  smaller than: 4\n" +
-			"          have: 2"
+			"  smaller than: 2\n" +
+			"          have: 4"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }
@@ -166,7 +166,7 @@ func Test_Smaller(t *testing.T) {
 func Test_SmallerOrEqual(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- When ---
-		err := SmallerOrEqual(2, 4)
+		err := SmallerOrEqual(4, 2)
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -182,14 +182,14 @@ func Test_SmallerOrEqual(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		// --- When ---
-		err := SmallerOrEqual(4, 2)
+		err := SmallerOrEqual(2, 4)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be smaller or equal:\n" +
-			"  smaller or equal than: 4\n" +
-			"                   have: 2"
+			"  smaller or equal than: 2\n" +
+			"                   have: 4"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -198,15 +198,15 @@ func Test_SmallerOrEqual(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := SmallerOrEqual(4, 2, opt)
+		err := SmallerOrEqual(2, 4, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be smaller or equal:\n" +
 			"                  trail: type.field\n" +
-			"  smaller or equal than: 4\n" +
-			"                   have: 2"
+			"  smaller or equal than: 2\n" +
+			"                   have: 4"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }

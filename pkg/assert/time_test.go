@@ -131,7 +131,7 @@ func Test_Before(t *testing.T) {
 		mark := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		have := Before(tspy, date, mark)
+		have := Before(tspy, mark, date)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -148,7 +148,7 @@ func Test_Before(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		have := Before(tspy, date, mark)
+		have := Before(tspy, mark, date)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -166,7 +166,7 @@ func Test_Before(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Before(tspy, date, mark, opt)
+		have := Before(tspy, mark, date, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -182,7 +182,7 @@ func Test_After(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := After(tspy, date, mark)
+		got := After(tspy, mark, date)
 
 		// --- Then ---
 		affirm.Equal(t, true, got)
@@ -199,7 +199,7 @@ func Test_After(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := After(tspy, date, mark)
+		got := After(tspy, mark, date)
 
 		// --- Then ---
 		affirm.Equal(t, false, got)
@@ -217,7 +217,7 @@ func Test_After(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		got := After(tspy, date, mark, opt)
+		got := After(tspy, mark, date, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, got)
@@ -233,7 +233,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := BeforeOrEqual(tspy, date, mark)
+		got := BeforeOrEqual(tspy, mark, date)
 
 		// --- Then ---
 		affirm.Equal(t, true, got)
@@ -250,7 +250,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := BeforeOrEqual(tspy, date, mark)
+		got := BeforeOrEqual(tspy, mark, date)
 
 		// --- Then ---
 		affirm.Equal(t, false, got)
@@ -268,7 +268,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		got := BeforeOrEqual(tspy, date, mark, opt)
+		got := BeforeOrEqual(tspy, mark, date, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, got)
@@ -284,7 +284,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := AfterOrEqual(tspy, date, mark)
+		got := AfterOrEqual(tspy, mark, date)
 
 		// --- Then ---
 		affirm.Equal(t, true, got)
@@ -301,7 +301,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		mark := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := AfterOrEqual(tspy, date, mark)
+		got := AfterOrEqual(tspy, mark, date)
 
 		// --- Then ---
 		affirm.Equal(t, false, got)
@@ -319,7 +319,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		got := AfterOrEqual(tspy, date, mark, opt)
+		got := AfterOrEqual(tspy, mark, date, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, got)

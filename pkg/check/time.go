@@ -140,7 +140,7 @@ func Exact(want, have any, opts ...Option) error {
 // used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
-func Before(date, mark any, opts ...Option) error {
+func Before(mark, date any, opts ...Option) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
 		return notice.From(err, "date")
@@ -171,7 +171,7 @@ func Before(date, mark any, opts ...Option) error {
 // used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
-func After(date, mark any, opts ...Option) error {
+func After(mark, date any, opts ...Option) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
 		return notice.From(err, "date")
@@ -203,7 +203,7 @@ func After(date, mark any, opts ...Option) error {
 // used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
-func BeforeOrEqual(date, mark any, opts ...Option) error {
+func BeforeOrEqual(mark, date any, opts ...Option) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
 		return notice.From(err, "date")
@@ -235,7 +235,7 @@ func BeforeOrEqual(date, mark any, opts ...Option) error {
 // used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
-func AfterOrEqual(date, mark any, opts ...Option) error {
+func AfterOrEqual(mark, date any, opts ...Option) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
 		return notice.From(err, "date")

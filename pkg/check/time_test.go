@@ -290,7 +290,7 @@ func Test_Before(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := Before(date, mark)
+		err := Before(mark, date)
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -302,7 +302,7 @@ func Test_Before(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := Before(date, mark)
+		err := Before(mark, date)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -320,7 +320,7 @@ func Test_Before(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := Before(date, mark)
+		err := Before(mark, date)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -334,7 +334,7 @@ func Test_Before(t *testing.T) {
 
 	t.Run("invalid date", func(t *testing.T) {
 		// --- When ---
-		err := Before("abc", time.Now())
+		err := Before(time.Now(), "abc")
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -347,7 +347,7 @@ func Test_Before(t *testing.T) {
 
 	t.Run("invalid mark", func(t *testing.T) {
 		// --- When ---
-		err := Before(time.Now(), "abc")
+		err := Before("abc", time.Now())
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -365,7 +365,7 @@ func Test_Before(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Before(date, mark, opt)
+		err := Before(mark, date, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -386,7 +386,7 @@ func Test_After(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := After(date, mark)
+		err := After(mark, date)
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -398,7 +398,7 @@ func Test_After(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := After(mark, date)
+		err := After(date, mark)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -416,7 +416,7 @@ func Test_After(t *testing.T) {
 		mark := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := After(date, mark)
+		err := After(mark, date)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -430,7 +430,7 @@ func Test_After(t *testing.T) {
 
 	t.Run("invalid date", func(t *testing.T) {
 		// --- When ---
-		err := After("abc", time.Now())
+		err := After(time.Now(), "abc")
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -443,7 +443,7 @@ func Test_After(t *testing.T) {
 
 	t.Run("invalid mark", func(t *testing.T) {
 		// --- When ---
-		err := After(time.Now(), "abc")
+		err := After("abc", time.Now())
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -461,7 +461,7 @@ func Test_After(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := After(date, mark, opt)
+		err := After(mark, date, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -482,7 +482,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := BeforeOrEqual(date, mark)
+		err := BeforeOrEqual(mark, date)
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -494,7 +494,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := BeforeOrEqual(date, mark)
+		err := BeforeOrEqual(mark, date)
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -506,7 +506,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := BeforeOrEqual(date, mark)
+		err := BeforeOrEqual(mark, date)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -520,7 +520,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 
 	t.Run("invalid date", func(t *testing.T) {
 		// --- When ---
-		err := BeforeOrEqual("abc", time.Now())
+		err := BeforeOrEqual(time.Now(), "abc")
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -533,7 +533,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 
 	t.Run("invalid mark", func(t *testing.T) {
 		// --- When ---
-		err := BeforeOrEqual(time.Now(), "abc")
+		err := BeforeOrEqual("abc", time.Now())
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -551,7 +551,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := BeforeOrEqual(date, mark, opt)
+		err := BeforeOrEqual(mark, date, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -572,7 +572,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := AfterOrEqual(date, mark)
+		err := AfterOrEqual(mark, date)
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -584,7 +584,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := AfterOrEqual(date, mark)
+		err := AfterOrEqual(mark, date)
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -596,7 +596,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := AfterOrEqual(date, mark)
+		err := AfterOrEqual(mark, date)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -610,7 +610,7 @@ func Test_AfterOrEqual(t *testing.T) {
 
 	t.Run("invalid date", func(t *testing.T) {
 		// --- When ---
-		err := AfterOrEqual("abc", time.Now())
+		err := AfterOrEqual(time.Now(), "abc")
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -623,7 +623,7 @@ func Test_AfterOrEqual(t *testing.T) {
 
 	t.Run("invalid mark", func(t *testing.T) {
 		// --- When ---
-		err := AfterOrEqual(time.Now(), "abc")
+		err := AfterOrEqual("abc", time.Now())
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -641,7 +641,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := AfterOrEqual(date, mark, opt)
+		err := AfterOrEqual(mark, date, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)

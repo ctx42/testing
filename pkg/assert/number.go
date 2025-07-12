@@ -9,9 +9,9 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// Greater checks the "want" value is greater than the "have" value. Returns
-// true if it is, otherwise marks the test as failed, writes an error message to
-// the test log and returns false.
+// Greater checks the "have" value is greater than the "want" value. Returns
+// true if it is, otherwise marks the test as failed, writes an error message
+// to the test log and returns false.
 func Greater[T constraints.Ordered](
 	t tester.T,
 	want, have T,
@@ -26,7 +26,7 @@ func Greater[T constraints.Ordered](
 	return true
 }
 
-// GreaterOrEqual checks the "want" value is greater or equal than the "have"
+// GreaterOrEqual checks the "have" value is greater or equal than the "want"
 // value. Returns true if it is, otherwise marks the test as failed, writes an
 // error message to the test log and returns false.
 func GreaterOrEqual[T constraints.Ordered](
@@ -43,7 +43,7 @@ func GreaterOrEqual[T constraints.Ordered](
 	return true
 }
 
-// Smaller checks the "want" value is smaller than the "have" value. Returns
+// Smaller checks the "have" value is smaller than the "want" value. Returns
 // true if it is, otherwise marks the test as failed, writes an error message
 // to the test log and returns false.
 func Smaller[T constraints.Ordered](
@@ -60,7 +60,7 @@ func Smaller[T constraints.Ordered](
 	return true
 }
 
-// SmallerOrEqual checks the "want" value is smaller or equal than the "have"
+// SmallerOrEqual checks the "have" value is smaller or equal than the "want"
 // value. Returns true if it is, otherwise marks the test as failed, writes an
 // error message to the test log and returns false.
 func SmallerOrEqual[T constraints.Ordered](
