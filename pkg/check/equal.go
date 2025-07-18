@@ -457,7 +457,7 @@ func equalError(want, have any, opts ...Option) *notice.Notice {
 	if diff != "" && assignable {
 		_ = msg.Append("diff", "%s", diff)
 	}
-	return msg
+	return ops.ApplyCustomRows(msg)
 }
 
 // dumpByte is a custom bumper for bytes.
