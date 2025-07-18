@@ -88,34 +88,44 @@ func (msg *Notice) SetHeader(header string, args ...any) *Notice {
 // Append appends a new row with the specified name and value build using
 // [fmt.Sprintf] from format and args. Implements fluent interface.
 func (msg *Notice) Append(name, format string, args ...any) *Notice {
-	fn := func(row Row) bool { return row.Name == name }
-	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
-		msg.Rows[idx].Format = format
-		msg.Rows[idx].Args = args
-		return msg
-	}
-	msg.Rows = append(msg.Rows, NewRow(name, format, args...))
-	return msg
+	return msg.appendRow(NewRow(name, format, args...))
 }
 
 // AppendRow appends description rows to the message.
 func (msg *Notice) AppendRow(desc ...Row) *Notice {
 	for _, row := range desc {
-		_ = msg.Append(row.Name, row.Format, row.Args...)
+		_ = msg.appendRow(row)
 	}
+	return msg
+}
+
+// appendRow appends [Row] to the [Notice]. Implements fluent interface.
+func (msg *Notice) appendRow(row Row) *Notice {
+	fn := func(have Row) bool { return have.Name == row.Name }
+	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
+		msg.Rows[idx].Format = row.Format
+		msg.Rows[idx].Args = row.Args
+		return msg
+	}
+	msg.Rows = append(msg.Rows, row)
 	return msg
 }
 
 // Prepend prepends a new row with the specified name and value built using
 // [fmt.Sprintf] from format and args. Implements fluent interface.
 func (msg *Notice) Prepend(name, format string, args ...any) *Notice {
-	fn := func(row Row) bool { return row.Name == name }
+	return msg.prependRow(NewRow(name, format, args...))
+}
+
+// prependRow prepends [Row] to the [Notice]. Implements fluent interface.
+func (msg *Notice) prependRow(row Row) *Notice {
+	fn := func(have Row) bool { return have.Name == row.Name }
 	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
-		msg.Rows[idx].Format = format
-		msg.Rows[idx].Args = args
+		msg.Rows[idx].Format = row.Format
+		msg.Rows[idx].Args = row.Args
 		return msg
 	}
-	msg.Rows = slices.Insert(msg.Rows, 0, NewRow(name, format, args...))
+	msg.Rows = slices.Insert(msg.Rows, 0, row)
 	return msg
 }
 

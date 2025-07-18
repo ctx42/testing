@@ -160,6 +160,8 @@ func deepEqual(
 
 	case reflect.Struct:
 		var err error
+		typeName := wVal.Type().Name()
+		sOps := ops.StructTrail(typeName, "")
 		for i := 0; i < wVal.NumField(); i++ {
 			wfVal := wVal.Field(i)
 			hfVal := hVal.Field(i)
@@ -167,8 +169,7 @@ func deepEqual(
 				continue
 			}
 			wSF := wVal.Type().Field(i)
-			typeName := wVal.Type().Name()
-			iOps := ops.StructTrail(typeName, wSF.Name)
+			iOps := sOps.StructTrail("", wSF.Name)
 			if e := deepEqual(wfVal, hfVal, visited, WithOptions(iOps)); e != nil {
 				err = notice.Join(err, e)
 			}

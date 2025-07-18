@@ -55,6 +55,5 @@ func Test_Adder_Add(t *testing.T) {
 	have := mck.Add(1.0, 2.0)
 
 	// --- Then ---
-	// Prints: Result: 3.000000
-	t.Logf("Result: %f", have)
+	_ = have // The "have" is: 3.000000
 }

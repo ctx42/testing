@@ -278,7 +278,9 @@ func Test_Notice_Prepend(t *testing.T) {
 
 	t.Run("prepend existing name changes it", func(t *testing.T) {
 		// --- Given ---
-		msg := New("header").Prepend("first", "%d", 1).Prepend("second", "%d", 2)
+		msg := New("header").
+			Prepend("first", "%d", 1).
+			Prepend("second", "%d", 2)
 
 		// --- When ---
 		_ = msg.Prepend("second", "%d", 3)

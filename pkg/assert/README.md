@@ -181,6 +181,7 @@ assert.JSON(want, have)
 - `Epsilon` - assert floating point numbers within given ε.
 - `ChannelWillClose` - assert channel will be closed within given time.
 - `MapSubset` - checks the "want" is a subset "have".
+- `Wait` - Wait waits for "fn" to return true but no longer then given timeout.
 
 See the [documentation](https://pkg.go.dev/github.com/ctx42/testing) for the
 full list.
@@ -220,6 +221,8 @@ assert.Equal(want, have, opt)
 In this example, the custom checker `chk` compares float64 values at the trail
 `T.Any[1]` with a tolerance of 0.01. The assertion passes because 2.123 and
 2.124 are within the specified epsilon.
+
+Also, see the example in [custom_assertion_test.go](custom_assertions_test.go).
 
 ### Understanding Trails
 
