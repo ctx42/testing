@@ -1,3 +1,9 @@
+<!-- TOC -->
+* [The `check` Package](#the-check-package)
+  * [Example Usage](#example-usage)
+  * [Custom Assertions](#custom-assertions)
+<!-- TOC -->
+
 # The `check` Package
 
 The `check` package is designed for performing assertions in Go tests,
@@ -42,3 +48,7 @@ fmt.Println(err)
 //	    have: "test error"
 //	context: wow
 ```
+
+## Custom Assertions
+
+See example in [custom_assertions_test.go](custom_assertions_test.go) file.
