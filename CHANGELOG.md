@@ -1,3 +1,8 @@
+## v0.32.0 (Tue, 22 Jul 2025 21:10:33 UTC)
+- style: fix minor code style issue.
+- doc: add custom assertion example.
+- feat: add check.Wait and assert.Wait which wait for a function to return true no longer than given timeout calling it with configurable throttle duration.
+
 ## v0.31.0 (Sat, 12 Jul 2025 14:36:27 UTC)
 - feat!: change the order of arguments in assert.Before and check.Before to (t, mark, date) to indicate "date" must be before the "mark" - keeping the order (want, have) as in every other check and assert.
 
