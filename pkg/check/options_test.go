@@ -247,6 +247,28 @@ func Test_WithDecreasingSoft(t *testing.T) {
 	affirm.Equal(t, true, have.DecreaseSoft)
 }
 
+func Test_WithCmpBaseTypes(t *testing.T) {
+	// --- Given ---
+	ops := Options{}
+
+	// --- When ---
+	have := WithCmpBaseTypes(ops)
+
+	// --- Then ---
+	affirm.Equal(t, true, have.CmpSimpleType)
+}
+
+func Test_WithWaitThrottle(t *testing.T) {
+	// --- Given ---
+	ops := Options{}
+
+	// --- When ---
+	have := WithWaitThrottle(time.Second)(ops)
+
+	// --- Then ---
+	affirm.Equal(t, time.Second, have.WaitThrottle)
+}
+
 func Test_WithOptions(t *testing.T) {
 	// --- Given ---
 	waw := must.Value(time.LoadLocation("Europe/Warsaw"))
@@ -281,6 +303,7 @@ func Test_WithOptions(t *testing.T) {
 		CmpSimpleType:  true,
 		IncreaseSoft:   true,
 		DecreaseSoft:   true,
+		WaitThrottle:   10 * time.Millisecond,
 		now:            time.Now,
 	}
 
@@ -302,7 +325,7 @@ func Test_WithOptions(t *testing.T) {
 
 	// When those fail, add fields above.
 	affirm.Equal(t, 14, reflect.ValueOf(have.Dumper).NumField())
-	affirm.Equal(t, 14, reflect.ValueOf(have).NumField())
+	affirm.Equal(t, 15, reflect.ValueOf(have).NumField())
 }
 
 func Test_DefaultOptions(t *testing.T) {
@@ -329,8 +352,9 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, false, have.CmpSimpleType)
 		affirm.Equal(t, false, have.IncreaseSoft)
 		affirm.Equal(t, false, have.DecreaseSoft)
+		affirm.Equal(t, 10*time.Millisecond, have.WaitThrottle)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 14, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 15, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("with options", func(t *testing.T) {
@@ -356,8 +380,9 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, false, have.CmpSimpleType)
 		affirm.Equal(t, false, have.IncreaseSoft)
 		affirm.Equal(t, false, have.DecreaseSoft)
+		affirm.Equal(t, 10*time.Millisecond, have.WaitThrottle)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 14, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 15, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("TypeCheckers field is a clone of a global map", func(t *testing.T) {

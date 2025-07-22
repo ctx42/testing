@@ -240,6 +240,15 @@ func WithCmpBaseTypes(ops Options) Options {
 	return ops
 }
 
+// WithWaitThrottle is a [Checker] option setting how calls to the test
+// function should be throttled.
+func WithWaitThrottle(throttle time.Duration) Option {
+	return func(ops Options) Options {
+		ops.WaitThrottle = throttle
+		return ops
+	}
+}
+
 // WithOptions is a [Checker] option which passes all options.
 func WithOptions(src Options) Option {
 	return func(ops Options) Options {
@@ -256,6 +265,7 @@ func WithOptions(src Options) Option {
 		ops.CmpSimpleType = src.CmpSimpleType
 		ops.IncreaseSoft = src.IncreaseSoft
 		ops.DecreaseSoft = src.DecreaseSoft
+		ops.WaitThrottle = src.WaitThrottle
 		ops.now = src.now
 		return ops
 	}
@@ -303,6 +313,9 @@ type Options struct {
 	// Option for [Decreasing] allowing consecutive values to be equal.
 	DecreaseSoft bool
 
+	// Option for [Wait] throttling the calls to a test function.
+	WaitThrottle time.Duration
+
 	// Function used to get current time. Used preliminary to inject a clock in
 	// tests of checks and assertions using [time.Now].
 	now func() time.Time
@@ -319,6 +332,7 @@ func DefaultOptions(opts ...Option) Options {
 		TimeFormat:   ParseTimeFormat,
 		Zone:         nil,
 		TypeCheckers: maps.Clone(typeCheckers),
+		WaitThrottle: 10 * time.Millisecond,
 		now:          time.Now,
 	}
 	ops = ops.set(opts)

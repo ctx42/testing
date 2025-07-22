@@ -46,9 +46,9 @@ func Exact(t tester.T, want, have any, opts ...check.Option) bool {
 	return true
 }
 
-// Before asserts "date" is before "mark". Returns true if it's, otherwise
-// marks the test as failed, writes an error message to the test log and
-// returns false.
+// Before asserts "date" is before the "mark" date. Returns true if it is,
+// otherwise marks the test as failed, writes an error message to the test log
+// and returns false.
 //
 // The "date" and "mark" might be date representations in the form of string,
 // int, int64 or [time.Time]. For string representations the
@@ -64,9 +64,9 @@ func Before(t tester.T, mark, date any, opts ...check.Option) bool {
 	return true
 }
 
-// After asserts "date" is after "mark". Returns true if it's, otherwise
-// marks the test as failed, writes an error message to the test log and
-// returns false.
+// After asserts "date" is after the "mark" date. Returns true if it is,
+// otherwise marks the test as failed, writes an error message to the test log
+// and returns false.
 //
 // The "date" and "mark" might be date representations in the form of string,
 // int, int64 or [time.Time]. For string representations the
@@ -82,9 +82,9 @@ func After(t tester.T, mark, date time.Time, opts ...check.Option) bool {
 	return true
 }
 
-// BeforeOrEqual asserts "date" is equal or before "mark". Returns true if it's,
-// otherwise marks the test as failed, writes an error message to the test log
-// and returns false.
+// BeforeOrEqual asserts "date" is equal or before the "mark" date. Returns
+// true if it is, otherwise marks the test as failed, writes an error message
+// to the test log and returns false.
 //
 // The "date" and "mark" might be date representations in the form of a string,
 // int, int64 or [time.Time]. For string representations the
