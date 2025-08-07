@@ -1,3 +1,6 @@
+## v0.33.0 (Thu, 07 Aug 2025 11:27:56 UTC)
+- test: Add example code showing how to create custom assertions.
+
 ## v0.32.0 (Tue, 22 Jul 2025 21:10:33 UTC)
 - style: fix minor code style issue.
 - doc: add custom assertion example.
