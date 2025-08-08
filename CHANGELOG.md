@@ -1,3 +1,7 @@
+## v0.34.0 (Fri, 08 Aug 2025 10:14:24 UTC)
+- style: Move custom assertions examples to the examples directory.
+- feat!: Remove the kit/memfs package use github.com/ctx42/memfs if you need this functionality.
+
 ## v0.33.0 (Thu, 07 Aug 2025 11:27:56 UTC)
 - test: Add example code showing how to create custom assertions.
 
