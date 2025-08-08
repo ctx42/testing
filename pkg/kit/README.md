@@ -11,7 +11,6 @@ focusing on practical tools generic.
 
 Sub-packages:
 
-- [memfs](memfs/README.md) - Filesystem related test helpers.
 - [iokit](iokit/README.md) - I/O related test helpers.
 - [timekit](timekit/README.md) - Time related test helpers.
 
