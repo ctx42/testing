@@ -15,57 +15,57 @@ import (
 // Greater checks the "have" value is greater than the "want" value. Returns
 // nil if the condition is met, otherwise it returns an error with a message
 // indicating the expected and actual values.
-func Greater[T constraints.Ordered](want, have T, opts ...Option) error {
+func Greater[T constraints.Ordered](want, have T, opts ...any) error {
 	if want < have {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected value to be greater").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected value to be greater").
 		Append("greater than", "%v", want).
 		Have("%v", have)
+	return AddRows(ops, msg)
 }
 
 // GreaterOrEqual checks the "have" value is greater or equal than the "want"
 // value. Returns nil if the condition is met, otherwise it returns an error
 // with a message indicating the expected and actual values.
-func GreaterOrEqual[T constraints.Ordered](want, have T, opts ...Option) error {
+func GreaterOrEqual[T constraints.Ordered](want, have T, opts ...any) error {
 	if want <= have {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected value to be greater or equal").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected value to be greater or equal").
 		Append("greater or equal than", "%v", want).
 		Have("%v", have)
+	return AddRows(ops, msg)
 }
 
 // Smaller checks the "have" value is smaller than the "want" value. Returns
 // nil if the condition is met, otherwise it returns an error with a message
 // indicating the expected and actual values.
-func Smaller[T constraints.Ordered](want, have T, opts ...Option) error {
+func Smaller[T constraints.Ordered](want, have T, opts ...any) error {
 	if want > have {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected value to be smaller").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected value to be smaller").
 		Append("smaller than", "%v", want).
 		Have("%v", have)
+	return AddRows(ops, msg)
 }
 
 // SmallerOrEqual checks the "have" value is smaller or equal than the "want"
 // value. Returns nil if the condition is met, otherwise it returns an error
 // with a message indicating the expected and actual values.
-func SmallerOrEqual[T constraints.Ordered](want, have T, opts ...Option) error {
+func SmallerOrEqual[T constraints.Ordered](want, have T, opts ...any) error {
 	if want >= have {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected value to be smaller or equal").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected value to be smaller or equal").
 		Append("smaller or equal than", "%v", want).
 		Have("%v", have)
+	return AddRows(ops, msg)
 }
 
 // Delta checks the both values are within the given delta. Returns nil if they
@@ -75,7 +75,7 @@ func SmallerOrEqual[T constraints.Ordered](want, have T, opts ...Option) error {
 //	|w-h| <= delta
 func Delta[T, E constraints.Number](
 	want T, delta E, have T,
-	opts ...Option,
+	opts ...any,
 ) error {
 
 	fWant := float64(want)
@@ -92,12 +92,12 @@ func Delta[T, E constraints.Number](
 	haveFmt := strconv.FormatFloat(fHave, 'f', -1, 64)
 	wDeltaFmt := strconv.FormatFloat(fwDelta, 'f', -1, 64)
 	hDeltaFmt := strconv.FormatFloat(fhDelta, 'f', -1, 64)
-	return notice.New("expected numbers to be within the given delta").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected numbers to be within the given delta").
 		Want("%s", wantFmt).
 		Have("%s", haveFmt).
 		Append("want delta", "%s", wDeltaFmt).
 		Append("have delta", "%s", hDeltaFmt)
+	return AddRows(ops, msg)
 }
 
 // DeltaSlice checks values are within the given delta for all respective
@@ -110,7 +110,7 @@ func DeltaSlice[T, E constraints.Number](
 	want []T,
 	delta E,
 	have []T,
-	opts ...Option,
+	opts ...any,
 ) error {
 
 	if err := Len(len(want), have, opts...); err != nil {
@@ -124,9 +124,10 @@ func DeltaSlice[T, E constraints.Number](
 	for i, w := range want {
 		iOps := ops.ArrTrail(knd, i)
 		if e := Delta(w, fDelta, have[i], WithOptions(iOps)); e != nil {
-			hdr := "expected all numbers to be " +
+			const hHeader = "expected all numbers to be " +
 				"within the given delta respectively"
-			return notice.From(e).SetHeader(hdr)
+			msg := notice.From(e).SetHeader(hHeader)
+			return AddRows(iOps, msg)
 		}
 	}
 	return nil
@@ -139,7 +140,7 @@ func DeltaSlice[T, E constraints.Number](
 //	|w-h|/|w| <= epsilon
 func Epsilon[T, E constraints.Number](
 	want T, epsilon E, have T,
-	opts ...Option,
+	opts ...any,
 ) error {
 
 	fWant := float64(want)
@@ -156,12 +157,12 @@ func Epsilon[T, E constraints.Number](
 	haveFmt := strconv.FormatFloat(fHave, 'f', -1, 64)
 	wEpsilonFmt := strconv.FormatFloat(fwEpsilon, 'f', -1, 64)
 	hEpsilonFmt := strconv.FormatFloat(fhEpsilon, 'f', -1, 64)
-	return notice.New("expected numbers to be within the given epsilon").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected numbers to be within the given epsilon").
 		Want("%s", wantFmt).
 		Have("%s", haveFmt).
 		Append("want epsilon", "%s", wEpsilonFmt).
 		Append("have epsilon", "%s", hEpsilonFmt)
+	return AddRows(ops, msg)
 }
 
 // EpsilonSlice checks the relative error is less than epsilon for all
@@ -174,7 +175,7 @@ func EpsilonSlice[T, E constraints.Number](
 	want []T,
 	epsilon E,
 	have []T,
-	opts ...Option,
+	opts ...any,
 ) error {
 
 	if err := Len(len(want), have, opts...); err != nil {
@@ -188,9 +189,10 @@ func EpsilonSlice[T, E constraints.Number](
 	for i, w := range want {
 		iOps := ops.ArrTrail(knd, i)
 		if e := Epsilon(w, fEpsilon, have[i], WithOptions(iOps)); e != nil {
-			hdr := "expected all numbers to be " +
+			const hHeader = "expected all numbers to be " +
 				"within the given epsilon respectively"
-			return notice.From(e).SetHeader(hdr)
+			msg := notice.From(e).SetHeader(hHeader)
+			return AddRows(iOps, msg)
 		}
 	}
 	return nil
@@ -199,7 +201,7 @@ func EpsilonSlice[T, E constraints.Number](
 // Increasing checks if the given sequence has values in the increasing order.
 // You may use the [WithIncreasingSoft] option to allow consecutive values to
 // be equal. It returns an error if the sequence is not increasing.
-func Increasing[T constraints.Ordered](seq []T, opts ...Option) error {
+func Increasing[T constraints.Ordered](seq []T, opts ...any) error {
 	if len(seq) <= 1 {
 		return nil
 	}
@@ -222,11 +224,11 @@ func Increasing[T constraints.Ordered](seq []T, opts ...Option) error {
 		cur := seq[i]
 		if !cmp(cur, prv) {
 			iOps := ops.ArrTrail(knd, i)
-			return notice.New("expected an increasing sequence").
-				SetTrail(iOps.Trail).
+			msg := notice.New("expected an increasing sequence").
 				Append("mode", "%s", mode).
 				Append("previous", "%v", prv).
 				Append("current", "%v", cur)
+			return AddRows(iOps, msg)
 		}
 		prv = cur
 	}
@@ -234,7 +236,7 @@ func Increasing[T constraints.Ordered](seq []T, opts ...Option) error {
 }
 
 // NotIncreasing is inverse of [Increasing].
-func NotIncreasing[T constraints.Ordered](seq []T, opts ...Option) error {
+func NotIncreasing[T constraints.Ordered](seq []T, opts ...any) error {
 	if err := Increasing(seq, opts...); err != nil {
 		return nil // nolint: nilerr
 	}
@@ -245,14 +247,15 @@ func NotIncreasing[T constraints.Ordered](seq []T, opts ...Option) error {
 	} else {
 		mode = "strict"
 	}
-	return notice.New("expected a not increasing sequence").
+	msg := notice.New("expected a not increasing sequence").
 		Append("mode", "%s", mode)
+	return AddRows(ops, msg)
 }
 
 // Decreasing checks if the given sequence has values in the decreasing order.
 // You may use the [WithDecreasingSoft] option to allow consecutive values to
 // be equal. It returns an error if the sequence is not decreasing.
-func Decreasing[T constraints.Ordered](seq []T, opts ...Option) error {
+func Decreasing[T constraints.Ordered](seq []T, opts ...any) error {
 	if len(seq) <= 1 {
 		return nil
 	}
@@ -274,11 +277,11 @@ func Decreasing[T constraints.Ordered](seq []T, opts ...Option) error {
 		cur := seq[i]
 		if !cmp(cur, prv) {
 			iOps := ops.ArrTrail(knd, i)
-			return notice.New("expected a decreasing sequence").
-				SetTrail(iOps.Trail).
+			msg := notice.New("expected a decreasing sequence").
 				Append("mode", "%s", mode).
 				Append("previous", "%v", prv).
 				Append("current", "%v", cur)
+			return AddRows(iOps, msg)
 		}
 		prv = cur
 	}
@@ -286,7 +289,7 @@ func Decreasing[T constraints.Ordered](seq []T, opts ...Option) error {
 }
 
 // NotDecreasing is inverse of [Decreasing].
-func NotDecreasing[T constraints.Ordered](seq []T, opts ...Option) error {
+func NotDecreasing[T constraints.Ordered](seq []T, opts ...any) error {
 	if err := Decreasing(seq, opts...); err != nil {
 		return nil // nolint: nilerr
 	}
@@ -298,6 +301,7 @@ func NotDecreasing[T constraints.Ordered](seq []T, opts ...Option) error {
 	} else {
 		mode = "strict"
 	}
-	return notice.New("expected a not decreasing sequence").
+	msg := notice.New("expected a not decreasing sequence").
 		Append("mode", "%s", mode)
+	return AddRows(ops, msg)
 }

@@ -14,7 +14,7 @@ import (
 //
 // The "timeout" may represent duration in the form of a string, int, int64 or
 // [time.Duration].
-func Wait(t tester.T, timeout string, fn func() bool, opts ...check.Option) bool {
+func Wait(t tester.T, timeout string, fn func() bool, opts ...any) bool {
 	t.Helper()
 	if e := check.Wait(timeout, fn, opts...); e != nil {
 		t.Error(e)

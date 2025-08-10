@@ -877,7 +877,7 @@ func Test_Recent(t *testing.T) {
 		// --- Given ---
 		now := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := now.Add(-11 * time.Second)
-		opts := []Option{
+		opts := []any{
 			WithNow(func() time.Time { return now }),
 			WithTrail("type.field"),
 		}
@@ -1152,7 +1152,7 @@ func Test_getTime(t *testing.T) {
 
 	t.Run("log message with trail", func(t *testing.T) {
 		// --- Given ---
-		opts := []Option{
+		opts := []any{
 			WithTimeFormat(time.RFC3339),
 			WithTrail("type.field"),
 		}
@@ -1190,7 +1190,7 @@ func Test_getTime_success_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		opts    []Option
+		opts    []any
 		have    any
 		haveStr string
 		haveRep timeRep
@@ -1208,7 +1208,7 @@ func Test_getTime_success_tabular(t *testing.T) {
 		},
 		{
 			"time.Time in UTC - apply different timezone",
-			[]Option{WithZone(types.WAW)},
+			[]any{WithZone(types.WAW)},
 			time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
 			"2000-01-02T04:04:05+01:00",
 			timeTypeTim,
@@ -1235,7 +1235,7 @@ func Test_getTime_success_tabular(t *testing.T) {
 		},
 		{
 			"RFC3339 - apply timezone",
-			[]Option{WithZone(types.WAW)},
+			[]any{WithZone(types.WAW)},
 			"2000-01-02T03:04:05+01:00",
 			"2000-01-02T03:04:05+01:00",
 			timeTypeStr,
@@ -1253,7 +1253,7 @@ func Test_getTime_success_tabular(t *testing.T) {
 		},
 		{
 			"Unix timestamp int - apply timezone",
-			[]Option{WithZone(types.WAW)},
+			[]any{WithZone(types.WAW)},
 			946778645,
 			"946778645",
 			timeTypeInt,
@@ -1271,7 +1271,7 @@ func Test_getTime_success_tabular(t *testing.T) {
 		},
 		{
 			"Unix timestamp int64 - apply timezone",
-			[]Option{WithZone(types.WAW)},
+			[]any{WithZone(types.WAW)},
 			int64(946778645),
 			"946778645",
 			timeTypeInt64,

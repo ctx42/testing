@@ -15,7 +15,7 @@ import (
 func Greater[T constraints.Ordered](
 	t tester.T,
 	want, have T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -32,7 +32,7 @@ func Greater[T constraints.Ordered](
 func GreaterOrEqual[T constraints.Ordered](
 	t tester.T,
 	want, have T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -49,7 +49,7 @@ func GreaterOrEqual[T constraints.Ordered](
 func Smaller[T constraints.Ordered](
 	t tester.T,
 	want, have T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -66,7 +66,7 @@ func Smaller[T constraints.Ordered](
 func SmallerOrEqual[T constraints.Ordered](
 	t tester.T,
 	want, have T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -85,7 +85,7 @@ func SmallerOrEqual[T constraints.Ordered](
 func Delta[T, E constraints.Number](
 	t tester.T,
 	want T, delta E, have T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -105,7 +105,7 @@ func Delta[T, E constraints.Number](
 func DeltaSlice[T, E constraints.Number](
 	t tester.T,
 	want []T, delta E, have []T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -124,7 +124,7 @@ func DeltaSlice[T, E constraints.Number](
 func Epsilon[T, E constraints.Number](
 	t tester.T,
 	want T, epsilon E, have T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -144,7 +144,7 @@ func Epsilon[T, E constraints.Number](
 func EpsilonSlice[T, E constraints.Number](
 	t tester.T,
 	want []T, epsilon E, have []T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -163,7 +163,7 @@ func EpsilonSlice[T, E constraints.Number](
 func Increasing[T constraints.Ordered](
 	t tester.T,
 	seq []T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -178,7 +178,7 @@ func Increasing[T constraints.Ordered](
 func NotIncreasing[T constraints.Ordered](
 	t tester.T,
 	seq []T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -197,7 +197,7 @@ func NotIncreasing[T constraints.Ordered](
 func Decreasing[T constraints.Ordered](
 	t tester.T,
 	seq []T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -212,7 +212,7 @@ func Decreasing[T constraints.Ordered](
 func NotDecreasing[T constraints.Ordered](
 	t tester.T,
 	seq []T,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()

@@ -32,7 +32,7 @@ func Test_Empty(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -88,7 +88,7 @@ func Test_NotEmpty(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 

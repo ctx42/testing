@@ -10,26 +10,25 @@ import (
 
 // Nil checks "have" is nil. Returns nil if it's, otherwise returns an error
 // with a message indicating the expected and actual values.
-func Nil(have any, opts ...Option) error {
+func Nil(have any, opts ...any) error {
 	if is, _ := core.IsNil(have); is {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
 	const mHeader = "expected value to be nil"
-	return notice.New(mHeader).
-		Want("nil").
-		SetTrail(ops.Trail).
-		Have("%s", ops.Dumper.Any(have))
+	msg := notice.New(mHeader).Want("nil").Have("%s", ops.Dumper.Any(have))
+	return AddRows(ops, msg)
 }
 
 // NotNil checks if "have" is not nil. Returns nil if it is not nil, otherwise
 // returns an error with a message indicating the expected and actual values.
 //
 // The returned error might be one or more errors joined with [errors.Join].
-func NotNil(have any, opts ...Option) error {
+func NotNil(have any, opts ...any) error {
 	if is, _ := core.IsNil(have); !is {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected non-nil value").SetTrail(ops.Trail)
+	msg := notice.New("expected non-nil value")
+	return AddRows(ops, msg)
 }

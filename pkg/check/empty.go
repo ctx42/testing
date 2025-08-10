@@ -25,15 +25,15 @@ import (
 //   - len(map) == 0
 //   - len(chan) == 0
 //   - time.Time{}
-func Empty(have any, opts ...Option) error {
+func Empty(have any, opts ...any) error {
 	if isEmpty(have) {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected argument to be empty").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected argument to be empty").
 		Want(dump.ValEmpty).
 		Have("%#v", have)
+	return AddRows(ops, msg)
 }
 
 // isEmpty returns true if "have" is empty.
@@ -66,10 +66,11 @@ func isEmpty(have any) bool {
 // returns an error with a message indicating the expected and actual values.
 //
 // See [check.Empty] for the list of values which are considered empty.
-func NotEmpty(have any, opts ...Option) error {
+func NotEmpty(have any, opts ...any) error {
 	if !isEmpty(have) {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected non-empty value").SetTrail(ops.Trail)
+	msg := notice.New("expected non-empty value")
+	return AddRows(ops, msg)
 }

@@ -19,7 +19,7 @@ import (
 // [check.Options.TimeFormat] is used during parsing and the returned date is
 // always in UTC. The int and int64 types are interpreted as Unix Timestamp,
 // and the date returned is also in UTC.
-func Time(t tester.T, want, have any, opts ...check.Option) bool {
+func Time(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Time(want, have, opts...); e != nil {
 		t.Error(e)
@@ -37,7 +37,7 @@ func Time(t tester.T, want, have any, opts ...check.Option) bool {
 // [check.Options.TimeFormat] is used during parsing and the returned date is
 // always in UTC. The int and int64 types are interpreted as Unix Timestamp,
 // and the date returned is also in UTC.
-func Exact(t tester.T, want, have any, opts ...check.Option) bool {
+func Exact(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Exact(want, have, opts...); e != nil {
 		t.Error(e)
@@ -55,7 +55,7 @@ func Exact(t tester.T, want, have any, opts ...check.Option) bool {
 // [check.Options.TimeFormat] is used during parsing and the returned date is
 // always in UTC. The int and int64 types are interpreted as Unix Timestamp,
 // and the date returned is also in UTC.
-func Before(t tester.T, mark, date any, opts ...check.Option) bool {
+func Before(t tester.T, mark, date any, opts ...any) bool {
 	t.Helper()
 	if e := check.Before(mark, date, opts...); e != nil {
 		t.Error(e)
@@ -73,7 +73,7 @@ func Before(t tester.T, mark, date any, opts ...check.Option) bool {
 // [check.Options.TimeFormat] is used during parsing and the returned date is
 // always in UTC. The int and int64 types are interpreted as Unix Timestamp,
 // and the date returned is also in UTC.
-func After(t tester.T, mark, date time.Time, opts ...check.Option) bool {
+func After(t tester.T, mark, date time.Time, opts ...any) bool {
 	t.Helper()
 	if e := check.After(mark, date, opts...); e != nil {
 		t.Error(e)
@@ -91,7 +91,7 @@ func After(t tester.T, mark, date time.Time, opts ...check.Option) bool {
 // [check.Options.TimeFormat] is used during parsing and the returned date is
 // always in UTC. The int and int64 types are interpreted as Unix Timestamp,
 // and the date returned is also in UTC.
-func BeforeOrEqual(t tester.T, mark, date time.Time, opts ...check.Option) bool {
+func BeforeOrEqual(t tester.T, mark, date time.Time, opts ...any) bool {
 	t.Helper()
 	if e := check.BeforeOrEqual(mark, date, opts...); e != nil {
 		t.Error(e)
@@ -109,7 +109,7 @@ func BeforeOrEqual(t tester.T, mark, date time.Time, opts ...check.Option) bool 
 // [check.Options.TimeFormat] is used during parsing and the returned date is
 // always in UTC. The int and int64 types are interpreted as Unix Timestamp,
 // and the date returned is also in UTC.
-func AfterOrEqual(t tester.T, mark, date any, opts ...check.Option) bool {
+func AfterOrEqual(t tester.T, mark, date any, opts ...any) bool {
 	t.Helper()
 	if e := check.AfterOrEqual(mark, date, opts...); e != nil {
 		t.Error(e)
@@ -127,7 +127,7 @@ func AfterOrEqual(t tester.T, mark, date any, opts ...check.Option) bool {
 // [check.Options.TimeFormat] is used during parsing and the returned date is
 // always in UTC. The int and int64 types are interpreted as Unix Timestamp,
 // and the date returned is also in UTC.
-func Within(t tester.T, want, within, have any, opts ...check.Option) bool {
+func Within(t tester.T, want, within, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Within(want, within, have, opts...); e != nil {
 		t.Error(e)
@@ -145,7 +145,7 @@ func Within(t tester.T, want, within, have any, opts ...check.Option) bool {
 // used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
-func Recent(t tester.T, have any, opts ...check.Option) bool {
+func Recent(t tester.T, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Recent(have, opts...); e != nil {
 		t.Error(e)
@@ -157,7 +157,7 @@ func Recent(t tester.T, have any, opts ...check.Option) bool {
 // Zone asserts "want" and "have" timezones are equal. Returns true if they are,
 // otherwise marks the test as failed, writes an error message to the test log
 // and returns false.
-func Zone(t tester.T, want, have *time.Location, opts ...check.Option) bool {
+func Zone(t tester.T, want, have *time.Location, opts ...any) bool {
 	t.Helper()
 	if e := check.Zone(want, have, opts...); e != nil {
 		t.Error(e)
@@ -172,7 +172,7 @@ func Zone(t tester.T, want, have *time.Location, opts ...check.Option) bool {
 //
 // The "want" and "have" might be duration representation in the form of string,
 // int, int64 or [time.Duration].
-func Duration(t tester.T, want, have any, opts ...check.Option) bool {
+func Duration(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Duration(want, have, opts...); e != nil {
 		t.Error(e)

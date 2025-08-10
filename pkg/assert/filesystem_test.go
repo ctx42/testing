@@ -39,7 +39,7 @@ func Test_FileExist(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -82,7 +82,7 @@ func Test_NoFileExist(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -125,7 +125,7 @@ func Test_FileContain(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -168,7 +168,7 @@ func Test_DirExist(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -211,7 +211,7 @@ func Test_NoDirExist(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()

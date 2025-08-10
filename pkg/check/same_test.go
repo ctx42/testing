@@ -74,7 +74,7 @@ func Test_Same(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		ptr0 := &types.TPtr{Val: "0"}
 		ptr1 := &types.TPtr{Val: "1"}
@@ -160,7 +160,7 @@ func Test_NotSame(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		ptr0 := &types.TPtr{Val: "0"}
 

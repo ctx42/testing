@@ -13,7 +13,7 @@ import (
 // Zero checks "have" is the zero value for its type. Returns nil if it is,
 // otherwise, it returns an error with a message indicating the expected
 // and actual values.
-func Zero(have any, opts ...Option) error {
+func Zero(have any, opts ...any) error {
 	if is, _ := core.IsNil(have); is {
 		return zeroError(have, opts...)
 	}
@@ -32,24 +32,24 @@ func Zero(have any, opts ...Option) error {
 }
 
 // zeroError returns error for non-zero value of have.
-func zeroError(have any, opts ...Option) error {
+func zeroError(have any, opts ...any) error {
 	ops := DefaultOptions(opts...)
-	return notice.New("expected argument to be zero value").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected argument to be zero value").
 		Want("<zero>").
 		Have("%#v", have)
+	return AddRows(ops, msg)
 }
 
 // NotZero checks "have" is not the zero value for its type. Returns nil if it
 // is, otherwise it returns an error with a message indicating the expected and
 // actual values.
-func NotZero(have any, opts ...Option) error {
+func NotZero(have any, opts ...any) error {
 	if Zero(have) != nil {
 		return nil // nolint: nilerr
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected argument not to be zero value").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected argument not to be zero value").
 		Want("<non-zero>").
 		Have("%#v", have)
+	return AddRows(ops, msg)
 }

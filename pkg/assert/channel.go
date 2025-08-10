@@ -14,7 +14,7 @@ import (
 //
 // The "within" may represent duration in the form of a string, int, int64 or
 // [time.Duration].
-func ChannelWillClose[C any](t tester.T, within any, c <-chan C, opts ...check.Option) bool {
+func ChannelWillClose[C any](t tester.T, within any, c <-chan C, opts ...any) bool {
 	t.Helper()
 	if err := check.ChannelWillClose(within, c, opts...); err != nil {
 		t.Error(err)

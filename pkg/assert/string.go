@@ -11,7 +11,7 @@ import (
 // Contain asserts "want" is a substring of "have". Returns true if it's,
 // otherwise marks the test as failed, writes an error message to the test log
 // and returns false.
-func Contain(t tester.T, want, have string, opts ...check.Option) bool {
+func Contain(t tester.T, want, have string, opts ...any) bool {
 	t.Helper()
 	if e := check.Contain(want, have, opts...); e != nil {
 		t.Error(e)
@@ -23,7 +23,7 @@ func Contain(t tester.T, want, have string, opts ...check.Option) bool {
 // NotContain asserts "want" is not a substring of "have". Returns true if it's
 // not, otherwise marks the test as failed, writes an error message to the test
 // log and returns false.
-func NotContain(t tester.T, want, have string, opts ...check.Option) bool {
+func NotContain(t tester.T, want, have string, opts ...any) bool {
 	t.Helper()
 	if e := check.NotContain(want, have, opts...); e != nil {
 		t.Error(e)

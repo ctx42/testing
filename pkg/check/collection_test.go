@@ -12,7 +12,7 @@ import (
 )
 
 func Test_Len(t *testing.T) {
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -147,7 +147,7 @@ func Test_Len_error_tabular(t *testing.T) {
 }
 
 func Test_Cap(t *testing.T) {
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -297,7 +297,7 @@ func Test_Has(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		val := []int{1, 2, 3}
 		opt := WithTrail("type.field")
@@ -355,7 +355,7 @@ func Test_HasNo(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		val := []int{1, 2, 3}
 		opt := WithTrail("type.field")
@@ -443,7 +443,7 @@ func Test_HasKey(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		var m map[string]any
 		opt := WithTrail("type.field")
@@ -497,7 +497,7 @@ func Test_HasNoKey(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		val := map[string]int{"A": 1, "B": 2, "C": 3}
 		opt := WithTrail("type.field")
@@ -621,7 +621,7 @@ func Test_SliceSubset(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		want := []int{9, 9, 0, 1, 2}
 		have := []int{2, 1, 0}

@@ -201,7 +201,7 @@ type T struct {
     Any []any
 }
 
-chk := func(want, have any, opts ...check.Option) error {
+chk := func(want, have any, opts ...any) error {
     wVal := want.(float64)
     hVal := want.(float64)
     return check.Epsilon(wVal, 0.01, hVal, opts...)
@@ -274,7 +274,7 @@ assertions for such types.
 ```go
 type T struct{ value float64 }
 
-chk := func(want, have any, opts ...check.Option) error {
+chk := func(want, have any, opts ...any) error {
     w := want.(T)
     h := have.(T)
     return check.Epsilon(w.value, h.value, 0.001, opts...)

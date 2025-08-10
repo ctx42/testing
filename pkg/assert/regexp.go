@@ -15,7 +15,7 @@ import (
 // The "want" can be either a regular expression string or instance of
 // [regexp.Regexp]. The [fmt.Sprint] s used to get string representation of
 // have argument.
-func Regexp(t tester.T, want, have any, opts ...check.Option) bool {
+func Regexp(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Regexp(want, have, opts...); e != nil {
 		t.Error(e)

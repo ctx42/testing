@@ -12,7 +12,7 @@ import (
 )
 
 // AssertTA is custom assertion example.
-func AssertTA(t tester.T, want, have *types.TA, opts ...check.Option) bool {
+func AssertTA(t tester.T, want, have *types.TA, opts ...any) bool {
 	t.Helper()
 
 	ops := check.DefaultOptions(opts...)

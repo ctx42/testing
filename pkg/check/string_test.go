@@ -11,7 +11,7 @@ import (
 )
 
 func Test_Contain(t *testing.T) {
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -79,7 +79,7 @@ func Test_Contain_error_tabular(t *testing.T) {
 }
 
 func Test_NotContain(t *testing.T) {
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 

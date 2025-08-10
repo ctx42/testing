@@ -14,7 +14,7 @@ import (
 // error message to the test log and returns false.
 //
 // Currently, only strings are supported.
-func Count(t tester.T, count int, what, where any, opts ...check.Option) bool {
+func Count(t tester.T, count int, what, where any, opts ...any) bool {
 	t.Helper()
 	if e := check.Count(count, what, where, opts...); e != nil {
 		t.Error(e)
@@ -26,7 +26,7 @@ func Count(t tester.T, count int, what, where any, opts ...check.Option) bool {
 // Type asserts that both arguments are of the same type. Returns true if
 // they are, otherwise marks the test as failed, writes an error message to the
 // test log and returns false.
-func Type(t tester.T, want, have any, opts ...check.Option) bool {
+func Type(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Type(want, have, opts...); e != nil {
 		t.Fatal(e)
@@ -38,7 +38,7 @@ func Type(t tester.T, want, have any, opts ...check.Option) bool {
 // Fields asserts struct or pointer to a struct "s" has "want" number of
 // fields. Returns true if it does, otherwise marks the test as failed, writes
 // an error message to the test log and returns false.
-func Fields(t tester.T, want int, s any, opts ...check.Option) bool {
+func Fields(t tester.T, want int, s any, opts ...any) bool {
 	t.Helper()
 	if e := check.Fields(want, s, opts...); e != nil {
 		t.Error(e)

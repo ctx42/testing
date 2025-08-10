@@ -16,30 +16,30 @@ import (
 // Example:
 //
 //	check.JSON(`{"hello": "world"}`, `{"foo": "bar"}`)
-func JSON(want, have string, opts ...Option) error {
+func JSON(want, have string, opts ...any) error {
 	var wantItf, haveItf any
 
 	ops := DefaultOptions(opts...)
 	if err := json.Unmarshal([]byte(want), &wantItf); err != nil {
-		return notice.New("did not expect the unmarshalling error").
-			SetTrail(ops.Trail).
+		msg := notice.New("did not expect the unmarshalling error").
 			Append("argument", "want").
 			Append("error", "%s", err)
+		return AddRows(ops, msg)
 	}
 	if err := json.Unmarshal([]byte(have), &haveItf); err != nil {
-		return notice.New("did not expect the unmarshalling error").
-			SetTrail(ops.Trail).
+		msg := notice.New("did not expect the unmarshalling error").
 			Append("argument", "have").
 			Append("error", "%s", err)
+		return AddRows(ops, msg)
 	}
 
 	if err := Equal(wantItf, haveItf, WithOptions(ops)); err != nil {
 		w, _ := json.Marshal(wantItf) // nolint:errchkjson
 		h, _ := json.Marshal(haveItf) // nolint:errchkjson
-		return notice.New("expected JSON strings to be equal").
-			SetTrail(ops.Trail).
+		msg := notice.New("expected JSON strings to be equal").
 			Want("%v", string(w)).
 			Have("%v", string(h))
+		return AddRows(ops, msg)
 	}
 	return nil
 }

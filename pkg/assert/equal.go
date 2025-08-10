@@ -11,7 +11,7 @@ import (
 // Equal asserts both values are equal. Returns true if they are, otherwise
 // marks the test as failed, writes an error message to the test log and
 // returns false.
-func Equal(t tester.T, want, have any, opts ...check.Option) bool {
+func Equal(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if err := check.Equal(want, have, opts...); err != nil {
 		t.Error(err)
@@ -23,7 +23,7 @@ func Equal(t tester.T, want, have any, opts ...check.Option) bool {
 // NotEqual asserts both values are not equal. Returns true if they are not,
 // otherwise marks the test as failed, writes an error message to the test log
 // and returns false.
-func NotEqual(t tester.T, want, have any, opts ...check.Option) bool {
+func NotEqual(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if err := check.NotEqual(want, have, opts...); err != nil {
 		t.Error(err)

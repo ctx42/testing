@@ -75,7 +75,7 @@ const (
 // used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
-func Time(want, have any, opts ...Option) error {
+func Time(want, have any, opts ...any) error {
 	ops := DefaultOptions(opts...)
 
 	wTim, wStr, _, err := getTime(want, opts...)
@@ -92,11 +92,11 @@ func Time(want, have any, opts ...Option) error {
 
 	diff := wTim.Sub(hTim)
 	wantFmt, haveFmt := formatDates(wTim, wStr, hTim, hStr)
-	return notice.New("expected equal dates").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected equal dates").
 		Want("%s", wantFmt).
 		Have("%s", haveFmt).
 		Append("diff", "%s", diff.String())
+	return AddRows(ops, msg)
 }
 
 // Exact checks "want" and "have" dates are equal and are in the same timezone.
@@ -108,7 +108,7 @@ func Time(want, have any, opts ...Option) error {
 // used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
-func Exact(want, have any, opts ...Option) error {
+func Exact(want, have any, opts ...any) error {
 	wTim, wStr, _, err := getTime(want, opts...)
 	if err != nil {
 		return notice.From(err, "want")
@@ -122,11 +122,11 @@ func Exact(want, have any, opts ...Option) error {
 		diff := wTim.Sub(hTim)
 		ops := DefaultOptions(opts...)
 		wantFmt, haveFmt := formatDates(wTim, wStr, hTim, hStr)
-		return notice.New("expected equal dates").
-			SetTrail(ops.Trail).
+		msg := notice.New("expected equal dates").
 			Want("%s", wantFmt).
 			Have("%s", haveFmt).
 			Append("diff", "%s", diff.String())
+		return AddRows(ops, msg)
 	}
 
 	return Zone(wTim.Location(), hTim.Location(), opts...)
@@ -140,7 +140,7 @@ func Exact(want, have any, opts ...Option) error {
 // used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
-func Before(mark, date any, opts ...Option) error {
+func Before(mark, date any, opts ...any) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
 		return notice.From(err, "date")
@@ -156,11 +156,11 @@ func Before(mark, date any, opts ...Option) error {
 	diff := dTim.Sub(mTim)
 	markFmt, dateFmt := formatDates(mTim, mStr, dTim, dStr)
 	ops := DefaultOptions(opts...)
-	return notice.New("expected date to be before mark").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected date to be before mark").
 		Append("date", "%s", dateFmt).
 		Append("mark", "%s", markFmt).
 		Append("diff", "%s", diff.String())
+	return AddRows(ops, msg)
 }
 
 // After checks "date" is after "mark". Returns nil if it is, otherwise it
@@ -171,7 +171,7 @@ func Before(mark, date any, opts ...Option) error {
 // used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
-func After(mark, date any, opts ...Option) error {
+func After(mark, date any, opts ...any) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
 		return notice.From(err, "date")
@@ -187,11 +187,11 @@ func After(mark, date any, opts ...Option) error {
 	diff := dTim.Sub(mTim)
 	markFmt, dateFmt := formatDates(mTim, mStr, dTim, dStr)
 	ops := DefaultOptions(opts...)
-	return notice.New("expected date to be after mark").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected date to be after mark").
 		Append("date", "%s", dateFmt).
 		Append("mark", "%s", markFmt).
 		Append("diff", "%s", diff.String())
+	return AddRows(ops, msg)
 }
 
 // BeforeOrEqual checks "date" is equal or before "mark". Returns nil if it is,
@@ -203,7 +203,7 @@ func After(mark, date any, opts ...Option) error {
 // used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
-func BeforeOrEqual(mark, date any, opts ...Option) error {
+func BeforeOrEqual(mark, date any, opts ...any) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
 		return notice.From(err, "date")
@@ -219,11 +219,11 @@ func BeforeOrEqual(mark, date any, opts ...Option) error {
 	diff := dTim.Sub(mTim)
 	markFmt, dateFmt := formatDates(mTim, mStr, dTim, dStr)
 	ops := DefaultOptions(opts...)
-	return notice.New("expected date to be equal or before mark").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected date to be equal or before mark").
 		Append("date", "%s", dateFmt).
 		Append("mark", "%s", markFmt).
 		Append("diff", "%s", diff.String())
+	return AddRows(ops, msg)
 }
 
 // AfterOrEqual checks "date" is equal or after "mark". Returns nil if it is,
@@ -235,7 +235,7 @@ func BeforeOrEqual(mark, date any, opts ...Option) error {
 // used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
-func AfterOrEqual(mark, date any, opts ...Option) error {
+func AfterOrEqual(mark, date any, opts ...any) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
 		return notice.From(err, "date")
@@ -251,11 +251,11 @@ func AfterOrEqual(mark, date any, opts ...Option) error {
 	diff := dTim.Sub(mTim)
 	markFmt, dateFmt := formatDates(mTim, mStr, dTim, dStr)
 	ops := DefaultOptions(opts...)
-	return notice.New("expected date to be equal or after mark").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected date to be equal or after mark").
 		Append("date", "%s", dateFmt).
 		Append("mark", "%s", markFmt).
 		Append("diff", "%s", diff.String())
+	return AddRows(ops, msg)
 }
 
 // Within checks "want" and "have" dates are equal "within" given duration.
@@ -270,7 +270,7 @@ func AfterOrEqual(mark, date any, opts ...Option) error {
 //
 // The "within" may represent duration in the form of a string, int, int64 or
 // [time.Duration].
-func Within(want, within, have any, opts ...Option) error {
+func Within(want, within, have any, opts ...any) error {
 	wTim, wStr, _, err := getTime(want, opts...)
 	if err != nil {
 		return notice.From(err, "want")
@@ -291,18 +291,17 @@ func Within(want, within, have any, opts ...Option) error {
 
 	wantFmt, haveFmt := formatDates(wTim, wStr, hTim, hStr)
 	ops := DefaultOptions(opts...)
-
-	return notice.New("expected dates to be within").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected dates to be within").
 		Want("%s", wantFmt).
 		Have("%s", haveFmt).
 		Append("max diff +/-", "%s", durStr).
 		Append("have diff", "%s", diff.String())
+	return AddRows(ops, msg)
 }
 
 // WithinChecker is a partial application function for [Within].
 func WithinChecker(within any) Checker {
-	return func(want, have any, opts ...Option) error {
+	return func(want, have any, opts ...any) error {
 		return Within(want, within, have, opts...)
 	}
 }
@@ -316,7 +315,7 @@ func WithinChecker(within any) Checker {
 // during parsing and the returned date is always in UTC. The int and int64
 // types are interpreted as Unix Timestamp, and the date returned is also in
 // UTC.
-func Recent(have any, opts ...Option) error {
+func Recent(have any, opts ...any) error {
 	ops := DefaultOptions(opts...)
 	return Within(ops.now(), ops.Recent, have, opts...)
 }
@@ -329,7 +328,7 @@ func Recent(have any, opts ...Option) error {
 //
 // The "want" and "have" may represent timezones in the form of a string,
 // nil (UTC), or [time.Location].
-func Zone(want, have any, opts ...Option) error {
+func Zone(want, have any, opts ...any) error {
 	wZone, wStr, _, err := getZone(want, opts...)
 	if err != nil {
 		return notice.From(err, "want")
@@ -343,10 +342,10 @@ func Zone(want, have any, opts ...Option) error {
 	}
 
 	ops := DefaultOptions(opts...)
-	return notice.New("expected timezones to be equal").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected timezones to be equal").
 		Want("%s", wStr).
 		Have("%s", hStr)
+	return AddRows(ops, msg)
 }
 
 // Duration checks "want" and "have" durations are equal. Returns nil if they
@@ -355,7 +354,7 @@ func Zone(want, have any, opts ...Option) error {
 //
 // The "want" and "have" may represent duration in the form of a string, int,
 // int64 or [time.Duration].
-func Duration(want, have any, opts ...Option) error {
+func Duration(want, have any, opts ...any) error {
 	wDur, wStr, _, err := getDur(want, opts...)
 	if err != nil {
 		return notice.From(err, "want")
@@ -369,10 +368,10 @@ func Duration(want, have any, opts ...Option) error {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected equal time durations").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected equal time durations").
 		Want("%s", wStr).
 		Have("%s", hStr)
+	return AddRows(ops, msg)
 }
 
 // formatDates formats two dates for comparison in an error message.
@@ -426,7 +425,7 @@ func formatDates(
 //
 // When an error is returned, it will always have [ErrTimeParse], [ErrTimeType]
 // in its chain.
-func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
+func getTime(tim any, opts ...any) (time.Time, string, timeRep, error) {
 	ops := DefaultOptions(opts...)
 	switch val := tim.(type) {
 	case time.Time:
@@ -449,14 +448,13 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 		var pe *time.ParseError
 		if errors.As(err, &pe) {
 			msg := notice.New("failed to parse time").
-				SetTrail(ops.Trail).
 				Append("format", "%s", ops.TimeFormat).
 				Append("value", "%s", pe.Value).
 				Wrap(ErrTimeParse)
 			if pe.Message != "" {
 				msg = msg.Append("error", "%s", strings.Trim(pe.Message, " :"))
 			}
-			err = msg
+			err = AddRows(ops, msg)
 		}
 		return time.Time{}, val, timeTypeStr, err
 
@@ -483,10 +481,9 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 	default:
 		str := fmt.Sprintf("%v", val)
 		msg := notice.New("failed to parse time").
-			SetTrail(ops.Trail).
 			Append("cause", "%s", ErrTimeType).
 			Wrap(ErrTimeType)
-		return time.Time{}, str, "", msg
+		return time.Time{}, str, "", AddRows(ops, msg)
 	}
 }
 
@@ -496,7 +493,7 @@ func getTime(tim any, opts ...Option) (time.Time, string, timeRep, error) {
 //
 // When an error is returned, it will always have [ErrDurParse], [ErrZoneType]
 // in its chain.
-func getZone(zone any, opts ...Option) (*time.Location, string, zoneRep, error) {
+func getZone(zone any, opts ...any) (*time.Location, string, zoneRep, error) {
 	switch val := zone.(type) {
 	case nil:
 		return time.UTC, "UTC", zoneZone, nil
@@ -513,10 +510,9 @@ func getZone(zone any, opts ...Option) (*time.Location, string, zoneRep, error) 
 		}
 		ops := DefaultOptions(opts...)
 		msg := notice.New("failed to parse timezone").
-			SetTrail(ops.Trail).
 			Append("value", "%s", zone).
 			Wrap(ErrZoneParse)
-		return nil, val, zoneString, msg
+		return nil, val, zoneString, AddRows(ops, msg)
 
 	case *time.Location:
 		valStr := val.String()
@@ -526,10 +522,9 @@ func getZone(zone any, opts ...Option) (*time.Location, string, zoneRep, error) 
 		str := fmt.Sprintf("%v", val)
 		ops := DefaultOptions(opts...)
 		msg := notice.New("failed to parse timezone").
-			SetTrail(ops.Trail).
 			Append("cause", "%s", ErrZoneType).
 			Wrap(ErrZoneType)
-		return nil, str, "", msg
+		return nil, str, "", AddRows(ops, msg)
 	}
 }
 
@@ -539,7 +534,7 @@ func getZone(zone any, opts ...Option) (*time.Location, string, zoneRep, error) 
 //
 // When an error is returned, it will always have [ErrDurParse], [ErrDurType]
 // in its chain.
-func getDur(dur any, opts ...Option) (time.Duration, string, durRep, error) {
+func getDur(dur any, opts ...any) (time.Duration, string, durRep, error) {
 	switch val := dur.(type) {
 	case time.Duration:
 		return val, val.String(), durTypeDur, nil
@@ -552,10 +547,9 @@ func getDur(dur any, opts ...Option) (time.Duration, string, durRep, error) {
 
 		ops := DefaultOptions(opts...)
 		msg := notice.New("failed to parse duration").
-			SetTrail(ops.Trail).
 			Append("value", "%s", dur).
 			Wrap(ErrDurParse)
-		return 0, val, durTypeStr, msg
+		return 0, val, durTypeStr, AddRows(ops, msg)
 
 	case int:
 		str := strconv.Itoa(val)
@@ -569,9 +563,8 @@ func getDur(dur any, opts ...Option) (time.Duration, string, durRep, error) {
 		str := fmt.Sprintf("%v", val)
 		ops := DefaultOptions(opts...)
 		msg := notice.New("failed to parse duration").
-			SetTrail(ops.Trail).
 			Append("cause", "%s", ErrDurType).
 			Wrap(ErrDurType)
-		return 0, str, "", msg
+		return 0, str, "", AddRows(ops, msg)
 	}
 }

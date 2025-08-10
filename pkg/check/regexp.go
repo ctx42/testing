@@ -14,22 +14,24 @@ import (
 // otherwise, it returns an error with a message indicating the expected and
 // actual values.
 //
-// The "want" can be either regular expression string or instance of
+// The "want" can be either a regular expression string or instance of
 // [regexp.Regexp]. The [fmt.Sprint] is used to get string representation of
 // have argument.
-func Regexp(want, have any, opts ...Option) error {
+func Regexp(want, have any, opts ...any) error {
 	match, err := matchRegexp(want, have)
 	if err != nil {
-		return notice.New("expected valid regexp").Append("error", "%q", err)
+		ops := DefaultOptions(opts...)
+		msg := notice.New("expected valid regexp").Append("error", "%q", err)
+		return AddRows(ops, msg)
 	}
 	if match {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected regexp to match").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected regexp to match").
 		Append("regexp", "%s", want).
 		Have("%q", have)
+	return AddRows(ops, msg)
 }
 
 // matchRegexp return true if a specified regexp matches a string.

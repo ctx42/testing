@@ -15,15 +15,15 @@ import (
 // Pointer variable sameness is determined based on the equality of both type
 // and value. It works with pointers to objects, slices, maps and functions.
 // For arrays, it always returns error.
-func Same(want, have any, opts ...Option) error {
+func Same(want, have any, opts ...any) error {
 	if core.Same(want, have) {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected same pointers").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected same pointers").
 		Want("%p %#v", want, want).
 		Have("%p %#v", have, have)
+	return AddRows(ops, msg)
 }
 
 // NotSame checks "want" and "have" are generic pointers and that both of them
@@ -32,13 +32,13 @@ func Same(want, have any, opts ...Option) error {
 //
 // Both arguments must be pointer variables. Pointer variable sameness is
 // determined based on the equality of both type and value.
-func NotSame(want, have any, opts ...Option) error {
+func NotSame(want, have any, opts ...any) error {
 	if Same(want, have) == nil {
 		ops := DefaultOptions(opts...)
-		return notice.New("expected different pointers").
-			SetTrail(ops.Trail).
+		msg := notice.New("expected different pointers").
 			Want("%p %#v", want, want).
 			Have("%p %#v", have, have)
+		return AddRows(ops, msg)
 	}
 	return nil
 }

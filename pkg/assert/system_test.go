@@ -44,7 +44,7 @@ func Test_ExitCode(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()

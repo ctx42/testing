@@ -9,13 +9,13 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// ChannelWillClose checks channel will be closed "within" given time duration.
-// Returns nil if it was, otherwise returns an error with a message indicating
-// the expected and actual values.
+// ChannelWillClose checks the channel will be closed "within" a given time
+// duration. Returns nil if it was, otherwise returns an error with a message
+// indicating the expected and actual values.
 //
-// The "within" may represent duration in form of a string, int, int64 or
+// The "within" may represent duration in the form of a string, int, int64 or
 // [time.Duration].
-func ChannelWillClose[C any](within any, c <-chan C, opts ...Option) error {
+func ChannelWillClose[C any](within any, c <-chan C, opts ...any) error {
 	if c == nil {
 		return nil
 	}
@@ -32,9 +32,9 @@ func ChannelWillClose[C any](within any, c <-chan C, opts ...Option) error {
 		select {
 		case <-tim.C:
 			ops := DefaultOptions(opts...)
-			return notice.New("timeout waiting for channel to close").
-				SetTrail(ops.Trail).
+			msg := notice.New("timeout waiting for channel to close").
 				Append("within", "%s", durStr)
+			return AddRows(ops, msg)
 
 		case _, open := <-c:
 			if !open {

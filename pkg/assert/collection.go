@@ -14,7 +14,7 @@ import (
 // Len asserts "have" has "want" length. Returns true if it is, otherwise it
 // marks the test as failed, writes an error message to the test log and
 // returns false.
-func Len(t tester.T, want int, have any, opts ...check.Option) bool {
+func Len(t tester.T, want int, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Len(want, have, opts...); e != nil {
 		var cnt int
@@ -34,7 +34,7 @@ func Len(t tester.T, want int, have any, opts ...check.Option) bool {
 // Cap asserts "have" has "want" capacity. Returns true if it is, otherwise it
 // marks the test as failed, writes an error message to the test log and
 // returns false.
-func Cap(t tester.T, want int, have any, opts ...check.Option) bool {
+func Cap(t tester.T, want int, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Cap(want, have, opts...); e != nil {
 		var cnt int
@@ -54,7 +54,7 @@ func Cap(t tester.T, want int, have any, opts ...check.Option) bool {
 // Has asserts the slice has "want" value. Returns true if it does, otherwise
 // marks the test as failed, writes an error message to the test log and
 // returns false.
-func Has[T comparable](t tester.T, want T, bag []T, opts ...check.Option) bool {
+func Has[T comparable](t tester.T, want T, bag []T, opts ...any) bool {
 	t.Helper()
 	if e := check.Has(want, bag, opts...); e != nil {
 		t.Error(e)
@@ -66,7 +66,7 @@ func Has[T comparable](t tester.T, want T, bag []T, opts ...check.Option) bool {
 // HasNo asserts slice does not have a "want" value. Returns true if it does
 // not, otherwise marks the test as failed, writes an error message to the test
 // log and returns false.
-func HasNo[T comparable](t tester.T, want T, bag []T, opts ...check.Option) bool {
+func HasNo[T comparable](t tester.T, want T, bag []T, opts ...any) bool {
 	t.Helper()
 	if e := check.HasNo(want, bag, opts...); e != nil {
 		t.Error(e)
@@ -78,7 +78,7 @@ func HasNo[T comparable](t tester.T, want T, bag []T, opts ...check.Option) bool
 // HasKey asserts the map has a key. Returns true if it does, otherwise marks
 // the test as failed, writes an error message to the test log and returns
 // false.
-func HasKey[K comparable, V any](t tester.T, key K, set map[K]V, opts ...check.Option) (V, bool) {
+func HasKey[K comparable, V any](t tester.T, key K, set map[K]V, opts ...any) (V, bool) {
 	t.Helper()
 	val, e := check.HasKey(key, set, opts...)
 	if e != nil {
@@ -91,7 +91,7 @@ func HasKey[K comparable, V any](t tester.T, key K, set map[K]V, opts ...check.O
 // HasNoKey asserts the map has no key. Returns true if it doesn't, otherwise
 // marks the test as failed, writes an error message to the test log and
 // returns false.
-func HasNoKey[K comparable, V any](t tester.T, key K, set map[K]V, opts ...check.Option) bool {
+func HasNoKey[K comparable, V any](t tester.T, key K, set map[K]V, opts ...any) bool {
 	t.Helper()
 	if e := check.HasNoKey(key, set, opts...); e != nil {
 		t.Error(e)
@@ -108,7 +108,7 @@ func HasKeyValue[K, V comparable](
 	key K,
 	want V,
 	set map[K]V,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -123,7 +123,7 @@ func HasKeyValue[K, V comparable](
 // in the "want" slice must be in the "have" slice. Returns nil if they are,
 // otherwise returns an error with a message indicating the expected and actual
 // values.
-func SliceSubset[T comparable](t tester.T, want, have []T, opts ...check.Option) bool {
+func SliceSubset[T comparable](t tester.T, want, have []T, opts ...any) bool {
 	t.Helper()
 	if e := check.SliceSubset(want, have, opts...); e != nil {
 		t.Error(e)
@@ -140,7 +140,7 @@ func SliceSubset[T comparable](t tester.T, want, have []T, opts ...check.Option)
 func MapSubset[K cmp.Ordered, V any](
 	t tester.T,
 	want, have map[K]V,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()
@@ -158,7 +158,7 @@ func MapSubset[K cmp.Ordered, V any](
 func MapsSubset[K cmp.Ordered, V any](
 	t tester.T,
 	want, have []map[K]V,
-	opts ...check.Option,
+	opts ...any,
 ) bool {
 
 	t.Helper()

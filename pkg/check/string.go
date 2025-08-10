@@ -12,27 +12,27 @@ import (
 // Contain checks "want" is a substring of "have". Returns nil if it's,
 // otherwise returns an error with a message indicating the expected and actual
 // values.
-func Contain(want, have string, opts ...Option) error {
+func Contain(want, have string, opts ...any) error {
 	if strings.Contains(have, want) {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected string to contain substring").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected string to contain substring").
 		Append("string", "%q", have).
 		Append("substring", "%q", want)
+	return AddRows(ops, msg)
 }
 
 // NotContain checks "want" is not a substring of "have". Returns nil if it's,
 // otherwise returns an error with a message indicating the expected and actual
 // values.
-func NotContain(want, have string, opts ...Option) error {
+func NotContain(want, have string, opts ...any) error {
 	if strings.Contains(have, want) {
 		ops := DefaultOptions(opts...)
-		return notice.New("expected string not to contain substring").
-			SetTrail(ops.Trail).
+		msg := notice.New("expected string not to contain substring").
 			Append("string", "%q", have).
 			Append("substring", "%q", want)
+		return AddRows(ops, msg)
 	}
 	return nil
 }

@@ -10,7 +10,7 @@ import (
 
 // True asserts "have" is true. Returns true if it's, otherwise marks the test
 // as failed, writes an error message to the test log and returns false.
-func True(t tester.T, have bool, opts ...check.Option) bool {
+func True(t tester.T, have bool, opts ...any) bool {
 	t.Helper()
 	if e := check.True(have, opts...); e != nil {
 		t.Error(e)
@@ -21,7 +21,7 @@ func True(t tester.T, have bool, opts ...check.Option) bool {
 
 // False asserts "have" is false. Returns true if it's, otherwise marks the
 // test as failed, writes an error message to the test log and returns false.
-func False(t tester.T, have bool, opts ...check.Option) bool {
+func False(t tester.T, have bool, opts ...any) bool {
 	t.Helper()
 	if err := check.False(have, opts...); err != nil {
 		t.Error(err)

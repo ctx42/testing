@@ -12,7 +12,7 @@ import (
 // points to a filesystem entry, which is not a file, or there is an error when
 // trying to check the path. Returns true on success, otherwise marks the test
 // as failed, writes an error message to the test log and returns false.
-func FileExist(t tester.T, pth string, opts ...check.Option) bool {
+func FileExist(t tester.T, pth string, opts ...any) bool {
 	t.Helper()
 	if e := check.FileExist(pth, opts...); e != nil {
 		t.Error(e)
@@ -25,7 +25,7 @@ func FileExist(t tester.T, pth string, opts ...check.Option) bool {
 // path points to an existing filesystem entry. Returns true on success,
 // otherwise marks the test as failed, writes an error message to the test log
 // and returns false.
-func NoFileExist(t tester.T, pth string, opts ...check.Option) bool {
+func NoFileExist(t tester.T, pth string, opts ...any) bool {
 	t.Helper()
 	if e := check.NoFileExist(pth, opts...); e != nil {
 		t.Error(e)
@@ -40,7 +40,7 @@ func NoFileExist(t tester.T, pth string, opts ...check.Option) bool {
 // then [Contain] assertion is used to check it contains the "want" string.
 // Returns true on success, otherwise marks the test as failed, writes an error
 // message to the test log and returns false.
-func FileContain[T check.Content](t tester.T, want T, pth string, opts ...check.Option) bool {
+func FileContain[T check.Content](t tester.T, want T, pth string, opts ...any) bool {
 	t.Helper()
 	if e := check.FileContain(want, pth, opts...); e != nil {
 		t.Error(e)
@@ -53,7 +53,7 @@ func FileContain[T check.Content](t tester.T, want T, pth string, opts ...check.
 // points to a filesystem entry, which is not a directory, or there is an error
 // when trying to check the path. Returns true on success, otherwise marks the
 // test as failed, writes an error message to the test log and returns false.
-func DirExist(t tester.T, pth string, opts ...check.Option) bool {
+func DirExist(t tester.T, pth string, opts ...any) bool {
 	t.Helper()
 	if e := check.DirExist(pth, opts...); e != nil {
 		t.Error(e)
@@ -66,7 +66,7 @@ func DirExist(t tester.T, pth string, opts ...check.Option) bool {
 // path points to an existing filesystem entry. Returns true on success,
 // otherwise marks the test as failed, writes an error message to the test log
 // and returns false.
-func NoDirExist(t tester.T, pth string, opts ...check.Option) bool {
+func NoDirExist(t tester.T, pth string, opts ...any) bool {
 	t.Helper()
 	if e := check.NoDirExist(pth, opts...); e != nil {
 		t.Error(e)

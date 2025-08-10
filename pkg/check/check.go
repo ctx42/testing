@@ -16,14 +16,15 @@ import (
 // expected and actual values.
 //
 // Currently, only strings are supported.
-func Count(count int, what, where any, opts ...Option) error {
+func Count(count int, what, where any, opts ...any) error {
 	if src, ok := where.(string); ok {
 		var ok bool
 		var subT string
 		if subT, ok = what.(string); !ok {
 			ops := DefaultOptions(opts...)
 			const mHeader = "expected argument \"what\" to be string got %T"
-			return notice.New(mHeader, what).SetTrail(ops.Trail)
+			msg := notice.New(mHeader, what)
+			return AddRows(ops, msg)
 		}
 		haveCnt := strings.Count(src, subT)
 		if count == haveCnt {
@@ -31,45 +32,42 @@ func Count(count int, what, where any, opts ...Option) error {
 		}
 
 		ops := DefaultOptions(opts...)
-		return notice.New("expected string to contain substrings").
-			SetTrail(ops.Trail).
+		msg := notice.New("expected string to contain substrings").
 			Append("want count", "%d", count).
 			Append("have count", "%d", haveCnt).
 			Append("what", "%q", what).
 			Append("where", "%q", where)
+		return AddRows(ops, msg)
 	}
 
 	ops := DefaultOptions(opts...)
-	return notice.New("unsupported \"where\" type: %T", where).
-		SetTrail(ops.Trail)
+	msg := notice.New("unsupported \"where\" type: %T", where)
+	return AddRows(ops, msg)
 }
 
 // Type checks that both arguments are of the same type. Returns nil if they
 // are, otherwise it returns an error with a message indicating the expected
 // and actual values.
-func Type(want, have any, opts ...Option) error {
+func Type(want, have any, opts ...any) error {
 	wTyp := reflect.TypeOf(want)
 	hTyp := reflect.TypeOf(have)
 	if wTyp == hTyp {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	return notice.New("expected same types").
-		SetTrail(ops.Trail).
-		Want("%T", want).
-		Have("%T", have)
+	msg := notice.New("expected same types").Want("%T", want).Have("%T", have)
+	return AddRows(ops, msg)
 }
 
 // Fields checks a struct or pointer to a struct "s" has "want" number of
 // fields. Returns nil if it does, otherwise it returns an error with a message
 // indicating the expected and actual values.
-func Fields(want int, s any, opts ...Option) error {
+func Fields(want int, s any, opts ...any) error {
 	sVal := reflect.Indirect(reflect.ValueOf(s))
 	ops := DefaultOptions(opts...)
 	if sVal.Kind() != reflect.Struct {
-		return notice.New("expected struct type").
-			SetTrail(ops.Trail).
-			Append("got type", "%T", s)
+		msg := notice.New("expected struct type").Append("got type", "%T", s)
+		return AddRows(ops, msg)
 	}
 
 	have := sVal.Type().NumField()
@@ -77,8 +75,8 @@ func Fields(want int, s any, opts ...Option) error {
 		return nil
 	}
 
-	return notice.New("expected struct to have number of fields").
-		SetTrail(ops.Trail).
+	msg := notice.New("expected struct to have number of fields").
 		Want("%d", want).
 		Have("%d", have)
+	return AddRows(ops, msg)
 }

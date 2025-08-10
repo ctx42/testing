@@ -11,7 +11,7 @@ import (
 // ExitCode asserts "err" is a pointer to [exec.ExitError] with exit code equal
 // to "want". Returns true if it is, otherwise marks the test as failed, writes
 // an error message to the test log and returns false.
-func ExitCode(t tester.T, want int, err error, opts ...check.Option) bool {
+func ExitCode(t tester.T, want int, err error, opts ...any) bool {
 	t.Helper()
 	if e := check.ExitCode(want, err, opts...); e != nil {
 		t.Error(e)

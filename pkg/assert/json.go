@@ -15,7 +15,7 @@ import (
 // Example:
 //
 //	assert.JSON(t, `{"hello": "world"}`, `{"foo": "bar"}`)
-func JSON(t tester.T, want, have string, opts ...check.Option) bool {
+func JSON(t tester.T, want, have string, opts ...any) bool {
 	t.Helper()
 	if e := check.JSON(want, have, opts...); e != nil {
 		t.Error(e)

@@ -51,7 +51,7 @@ func Test_Len(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -110,7 +110,7 @@ func Test_Cap(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -157,7 +157,7 @@ func Test_Has(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -204,7 +204,7 @@ func Test_HasNo(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -254,7 +254,7 @@ func Test_HasKey(t *testing.T) {
 		affirm.Equal(t, false, haveHas)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -303,7 +303,7 @@ func Test_HasNoKey(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -350,7 +350,7 @@ func Test_HasKeyValue(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -401,7 +401,7 @@ func Test_SliceSubset(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -465,7 +465,7 @@ func Test_MapSubset(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -532,7 +532,7 @@ func Test_MapsSubset(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()

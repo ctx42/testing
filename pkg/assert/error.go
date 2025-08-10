@@ -10,7 +10,7 @@ import (
 
 // Error asserts "err" is not nil. Returns true if it's, otherwise marks the
 // test as failed, writes an error message to the test log and returns false.
-func Error(t tester.T, err error, opts ...check.Option) bool {
+func Error(t tester.T, err error, opts ...any) bool {
 	t.Helper()
 	if e := check.Error(err, opts...); e != nil {
 		t.Error(e)
@@ -21,7 +21,7 @@ func Error(t tester.T, err error, opts ...check.Option) bool {
 
 // NoError asserts "err" is nil. Returns true if it is not, otherwise marks the
 // test as failed, writes an error message to the test log and returns false.
-func NoError(t tester.T, err error, opts ...check.Option) bool {
+func NoError(t tester.T, err error, opts ...any) bool {
 	t.Helper()
 	if e := check.NoError(err, opts...); e != nil {
 		t.Fatal(e)
@@ -33,7 +33,7 @@ func NoError(t tester.T, err error, opts ...check.Option) bool {
 // ErrorIs asserts whether any error in "err" tree matches the "want" target.
 // Returns true if it does, otherwise marks the test as failed, writes an error
 // message to the test log and returns false.
-func ErrorIs(t tester.T, want, err error, opts ...check.Option) bool {
+func ErrorIs(t tester.T, want, err error, opts ...any) bool {
 	t.Helper()
 	if e := check.ErrorIs(want, err, opts...); e != nil {
 		t.Fatal(e)
@@ -46,7 +46,7 @@ func ErrorIs(t tester.T, want, err error, opts ...check.Option) bool {
 // and if one is found, sets a target to that error. Returns true if it does,
 // otherwise marks the test as failed, writes an error message to the test log
 // and returns false.
-func ErrorAs(t tester.T, want any, err error, opts ...check.Option) bool {
+func ErrorAs(t tester.T, want any, err error, opts ...any) bool {
 	t.Helper()
 	if e := check.ErrorAs(want, err, opts...); e != nil {
 		t.Error(e)
@@ -58,7 +58,7 @@ func ErrorAs(t tester.T, want any, err error, opts ...check.Option) bool {
 // ErrorEqual asserts "err" is not nil and its message equals to "want".
 // Returns true if it is, otherwise marks the test as failed, writes an error
 // message to the test log and returns false.
-func ErrorEqual(t tester.T, want string, err error, opts ...check.Option) bool {
+func ErrorEqual(t tester.T, want string, err error, opts ...any) bool {
 	t.Helper()
 	if e := check.ErrorEqual(want, err, opts...); e != nil {
 		t.Error(e)
@@ -70,7 +70,7 @@ func ErrorEqual(t tester.T, want string, err error, opts ...check.Option) bool {
 // ErrorContain asserts "err" is not nil and its message contains "want".
 // Returns true if it does, otherwise marks the test as failed, writes an error
 // message to the test log and returns false.
-func ErrorContain(t tester.T, want string, err error, opts ...check.Option) bool {
+func ErrorContain(t tester.T, want string, err error, opts ...any) bool {
 	t.Helper()
 	if e := check.ErrorContain(want, err, opts...); e != nil {
 		t.Error(e)
@@ -86,7 +86,7 @@ func ErrorContain(t tester.T, want string, err error, opts ...check.Option) bool
 // The "want" can be either a regular expression string or instance of
 // [regexp.Regexp]. The [fmt.Sprint] is used to get string representation of
 // have argument.
-func ErrorRegexp(t tester.T, want string, err error, opts ...check.Option) bool {
+func ErrorRegexp(t tester.T, want string, err error, opts ...any) bool {
 	t.Helper()
 	if e := check.ErrorRegexp(want, err, opts...); e != nil {
 		t.Error(e)

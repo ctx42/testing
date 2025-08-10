@@ -14,7 +14,7 @@ import (
 //
 // Both arguments must be pointer variables. Pointer variable sameness is
 // determined based on the equality of both type and value.
-func Same(t tester.T, want, have any, opts ...check.Option) bool {
+func Same(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Same(want, have, opts...); e != nil {
 		t.Error(e)
@@ -29,7 +29,7 @@ func Same(t tester.T, want, have any, opts ...check.Option) bool {
 //
 // Both arguments must be pointer variables. Pointer variable sameness is
 // determined based on the equality of both type and value.
-func NotSame(t tester.T, want, have any, opts ...check.Option) bool {
+func NotSame(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.NotSame(want, have, opts...); e != nil {
 		t.Error(e)

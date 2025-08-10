@@ -18,7 +18,7 @@ import (
 // Equal recursively checks both values are equal. Returns nil if they are,
 // otherwise it returns an error with a message indicating the expected and
 // actual values.
-func Equal(want, have any, opts ...Option) error {
+func Equal(want, have any, opts ...any) error {
 	ops := DefaultOptions(opts...)
 	if _, ok := ops.Dumper.Dumpers[typByte]; !ok {
 		ops.Dumper.Dumpers[typByte] = dumpByte
@@ -31,7 +31,7 @@ func Equal(want, have any, opts ...Option) error {
 // NotEqual checks both values are not equal using. Returns nil if they are not,
 // otherwise it returns an error with a message indicating the expected and
 // actual values.
-func NotEqual(want, have any, opts ...Option) error {
+func NotEqual(want, have any, opts ...any) error {
 	if err := Equal(want, have, opts...); err == nil {
 		return equalError(want, have, opts...).
 			SetHeader("expected values not to be equal")
@@ -53,7 +53,7 @@ type visit struct {
 func deepEqual(
 	wVal, hVal reflect.Value,
 	visited map[visit]bool,
-	opts ...Option,
+	opts ...any,
 ) error {
 
 	ops := DefaultOptions(opts...)
@@ -85,17 +85,17 @@ func deepEqual(
 		ops.LogTrail()
 		if wVal.IsValid() {
 			wStr := ops.Dumper.Value(wVal)
-			return notice.New("expected values to be equal").
-				SetTrail(ops.Trail).
+			msg := notice.New("expected values to be equal").
 				Want("%s", wStr).
 				Have("%s", dump.ValNil)
+			return AddRows(ops, msg)
 		}
 
 		hStr := ops.Dumper.Value(hVal)
-		return notice.New("expected values to be equal").
-			SetTrail(ops.Trail).
+		msg := notice.New("expected values to be equal").
 			Want("%s", dump.ValNil).
 			Have("%s", hStr)
+		return AddRows(ops, msg)
 	}
 
 	// Check both types are the same.
@@ -114,10 +114,10 @@ func deepEqual(
 		}
 
 		ops.LogTrail()
-		return notice.New("expected values to be equal").
-			SetTrail(ops.Trail).
+		msg := notice.New("expected values to be equal").
 			Append("want type", "%s", wTyp).
 			Append("have type", "%s", hTyp)
+		return AddRows(ops, msg)
 	}
 
 	// Detect already compared pointers.
@@ -142,10 +142,10 @@ func deepEqual(
 		hItf, hOk := core.Value(hVal)
 		if !wOk || !hOk {
 			// TODO(rz): test this.
-			return notice.New("not able to compare using a custom checker").
-				SetTrail(ops.Trail).
+			msg := notice.New("not able to compare using a custom checker").
 				Append("want type", "%s", wTyp).
 				Append("have type", "%s", hTyp)
+			return AddRows(ops, msg)
 		}
 		return chk(wItf, hItf, WithOptions(ops))
 	}
@@ -180,13 +180,13 @@ func deepEqual(
 		if wVal.Len() != hVal.Len() {
 			ops.LogTrail()
 			wStr, hStr, diff := ops.Dumper.DiffValue(wVal, hVal)
-			return notice.New("expected values to be equal").
-				SetTrail(ops.Trail).
+			msg := notice.New("expected values to be equal").
 				Prepend("have len", "%d", hVal.Len()).
 				Prepend("want len", "%d", wVal.Len()).
 				Want("%s", wStr).
 				Have("%s", hStr).
 				Append("diff", "%s", diff)
+			return AddRows(ops, msg)
 		}
 		if knd == reflect.Slice && wVal.Pointer() == hVal.Pointer() {
 			ops.LogTrail()
@@ -207,13 +207,13 @@ func deepEqual(
 		if wVal.Len() != hVal.Len() {
 			ops.LogTrail()
 			wStr, hStr, diff := ops.Dumper.DiffValue(wVal, hVal)
-			return notice.New("expected values to be equal").
-				SetTrail(ops.Trail).
+			msg := notice.New("expected values to be equal").
 				Prepend("have len", "%d", hVal.Len()).
 				Prepend("want len", "%d", wVal.Len()).
 				Want("%s", wStr).
 				Have("%s", hStr).
 				Append("diff", "%s", diff)
+			return AddRows(ops, msg)
 		}
 		if wVal.Pointer() == hVal.Pointer() {
 			ops.LogTrail()
@@ -381,10 +381,10 @@ func deepEqual(
 		if w == h {
 			return nil
 		}
-		err := notice.New("expected values to be equal").SetTrail(ops.Trail).
+		msg := notice.New("expected values to be equal").
 			Want("%s", dump.ChanDumper(ops.Dumper, 0, wVal)).
 			Have("%s", dump.ChanDumper(ops.Dumper, 0, hVal))
-		return err
+		return AddRows(ops, msg)
 
 	case reflect.Func:
 		ops.LogTrail()
@@ -392,10 +392,10 @@ func deepEqual(
 		if w == h {
 			return nil
 		}
-		err := notice.New("expected values to be equal").SetTrail(ops.Trail).
+		msg := notice.New("expected values to be equal").
 			Want("%s", dump.FuncDumper(ops.Dumper, 0, wVal)).
 			Have("%s", dump.FuncDumper(ops.Dumper, 0, hVal))
-		return err
+		return AddRows(ops, msg)
 
 	case reflect.Uintptr:
 		ops.LogTrail()
@@ -403,10 +403,10 @@ func deepEqual(
 		if w == h {
 			return nil
 		}
-		err := notice.New("expected values to be equal").SetTrail(ops.Trail).
+		msg := notice.New("expected values to be equal").
 			Want("%s", dump.HexPtrDumper(ops.Dumper, 0, wVal)).
 			Have("%s", dump.HexPtrDumper(ops.Dumper, 0, hVal))
-		return err
+		return AddRows(ops, msg)
 
 	case reflect.UnsafePointer:
 		ops.LogTrail()
@@ -414,23 +414,23 @@ func deepEqual(
 		if w == h {
 			return nil
 		}
-		err := notice.New("expected values to be equal").SetTrail(ops.Trail).
+		msg := notice.New("expected values to be equal").
 			Want("%s", dump.HexPtrDumper(ops.Dumper, 0, wVal)).
 			Have("%s", dump.HexPtrDumper(ops.Dumper, 0, hVal))
-		return err
+		return AddRows(ops, msg)
 
 	default:
 		ops.LogTrail()
-		return notice.New("cannot compare values").
-			SetTrail(ops.Trail).
+		msg := notice.New("cannot compare values").
 			Append("cause", "%s", "value cannot be used without panicking").
 			Append("hint", "%s", "use WithSkipTrail or WithSkipUnexported "+
 				"option to skip this field")
+		return AddRows(ops, msg)
 	}
 }
 
 // equalError returns error for not equal values.
-func equalError(want, have any, opts ...Option) *notice.Notice {
+func equalError(want, have any, opts ...any) *notice.Notice {
 	wTyp, hTyp := fmt.Sprintf("%T", want), fmt.Sprintf("%T", have)
 	if wTyp == hTyp {
 		wTyp, hTyp = "", ""
@@ -441,7 +441,7 @@ func equalError(want, have any, opts ...Option) *notice.Notice {
 		ops.Dumper.Dumpers[typByte] = dumpByte
 	}
 
-	msg := notice.New("expected values to be equal").SetTrail(ops.Trail)
+	msg := notice.New("expected values to be equal")
 	if wTyp != "" {
 		_ = msg.
 			Append("want type", "%s", wTyp).
@@ -458,7 +458,7 @@ func equalError(want, have any, opts ...Option) *notice.Notice {
 	if diff != "" && assignable {
 		_ = msg.Append("diff", "%s", diff)
 	}
-	return msg
+	return AddRows(ops, msg)
 }
 
 // dumpByte is a custom bumper for bytes.

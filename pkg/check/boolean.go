@@ -9,20 +9,22 @@ import (
 
 // True checks "have" is true. Returns nil if it's, otherwise it returns an
 // error with a message indicating the expected and actual values.
-func True(have bool, opts ...Option) error {
+func True(have bool, opts ...any) error {
 	if !have {
 		ops := DefaultOptions(opts...)
-		return notice.New("expected value to be true").SetTrail(ops.Trail)
+		msg := notice.New("expected value to be true")
+		return AddRows(ops, msg)
 	}
 	return nil
 }
 
 // False checks "have" is false. Returns nil if it's, otherwise it returns an
 // error with a message indicating the expected and actual values.
-func False(have bool, opts ...Option) error {
+func False(have bool, opts ...any) error {
 	if have {
 		ops := DefaultOptions(opts...)
-		return notice.New("expected value to be false").SetTrail(ops.Trail)
+		msg := notice.New("expected value to be false")
+		return AddRows(ops, msg)
 	}
 	return nil
 }

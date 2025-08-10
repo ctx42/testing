@@ -13,7 +13,7 @@ import (
 //
 // The "timeout" may represent duration in the form of a string, int, int64 or
 // [time.Duration].
-func Wait(within any, fn func() bool, opts ...Option) error {
+func Wait(within any, fn func() bool, opts ...any) error {
 	ops := DefaultOptions(opts...)
 
 	dur, durStr, _, err := getDur(within, opts...)
@@ -34,10 +34,10 @@ func Wait(within any, fn func() bool, opts ...Option) error {
 			if !sleep.Stop() {
 				<-sleep.C
 			}
-			return notice.New("expected function to return true").
-				SetTrail(ops.Trail).
+			msg := notice.New("expected function to return true").
 				Append("within", "%s", durStr).
 				Append("throttle", ops.WaitThrottle.String())
+			return AddRows(ops, msg)
 
 		default:
 			if fn() {

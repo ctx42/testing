@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/pkg/dump"
+	"github.com/ctx42/testing/pkg/notice"
 )
 
 // globLog is a global logger used package-wide.
@@ -52,7 +53,13 @@ var (
 // Checker is signature for generic check function comparing two arguments
 // returning an error if they are not. The returned error might be one or more
 // errors joined with [errors.Join].
-type Checker func(want, have any, opts ...Option) error
+//
+// The options may be one of the [Option] instances or formatted string.
+//
+// Example:
+//
+//	Checker("want", "have", "A%d", 42, WithTrail("type.field"))
+type Checker func(want, have any, opts ...any) error
 
 // typeCheckers is the global map of custom checkers for given types.
 var typeCheckers map[reflect.Type]Checker
@@ -249,6 +256,15 @@ func WithWaitThrottle(throttle time.Duration) Option {
 	}
 }
 
+// WithComment is a [Checker] option setting a comment to be added to all error
+// messages.
+func WithComment(format string, args ...any) Option {
+	return func(ops Options) Options {
+		ops.Comment = fmt.Sprintf(format, args...)
+		return ops
+	}
+}
+
 // WithOptions is a [Checker] option which passes all options.
 func WithOptions(src Options) Option {
 	return func(ops Options) Options {
@@ -266,6 +282,7 @@ func WithOptions(src Options) Option {
 		ops.IncreaseSoft = src.IncreaseSoft
 		ops.DecreaseSoft = src.DecreaseSoft
 		ops.WaitThrottle = src.WaitThrottle
+		ops.Comment = src.Comment
 		ops.now = src.now
 		return ops
 	}
@@ -316,13 +333,16 @@ type Options struct {
 	// Option for [Wait] throttling the calls to a test function.
 	WaitThrottle time.Duration
 
+	// Comment row for all error messages.
+	Comment string
+
 	// Function used to get current time. Used preliminary to inject a clock in
 	// tests of checks and assertions using [time.Now].
 	now func() time.Time
 }
 
 // DefaultOptions returns default [Options].
-func DefaultOptions(opts ...Option) Options {
+func DefaultOptions(opts ...any) Options {
 	ops := Options{
 		Dumper: dump.New(
 			dump.WithTimeFormat(DumpTimeFormat),
@@ -335,7 +355,36 @@ func DefaultOptions(opts ...Option) Options {
 		WaitThrottle: 10 * time.Millisecond,
 		now:          time.Now,
 	}
-	ops = ops.set(opts)
+
+	var cmtFmt string
+	var cmtArgs []any
+	var chkOpts []Option
+
+	for _, arg := range opts {
+		switch a := arg.(type) {
+		case func(Options) Options:
+			chkOpts = append(chkOpts, a)
+		case Option:
+			chkOpts = append(chkOpts, a)
+		case string:
+			if cmtFmt == "" {
+				cmtFmt = a
+			} else {
+				cmtArgs = append(cmtArgs, a)
+			}
+		default:
+			if cmtFmt == "" {
+				panic("cannot use a non-string comment format")
+			}
+			cmtArgs = append(cmtArgs, a)
+		}
+	}
+
+	if cmtFmt != "" {
+		chkOpts = append(chkOpts, WithComment(cmtFmt, cmtArgs...))
+	}
+
+	ops = ops.set(chkOpts)
 
 	if ops.TypeCheckers == nil {
 		ops.TypeCheckers = make(map[reflect.Type]Checker)
@@ -442,7 +491,7 @@ func (ops Options) ArrTrail(kind string, idx int) Options {
 //
 // Example:
 //
-//	func fileCheck(want, have any, opts ...check.Option) error {
+//	func fileCheck(want, have any, opts ...any) error {
 //		ops := check.DefaultOptions(opts...)
 //		if err := check.Type(file{}, have, check.WithOptions(ops)); err != nil {
 //			return err
@@ -462,4 +511,12 @@ func FieldName(ops Options, typeName string) func(fldName string) Option {
 	return func(fldName string) Option {
 		return WithOptions(ops.StructTrail(typeName, fldName))
 	}
+}
+
+// AddRows adds rows based on the [Options] instance to the [notice.Notice].
+func AddRows(ops Options, msg *notice.Notice) *notice.Notice {
+	if ops.Comment != "" {
+		_ = msg.Prepend("comment", ops.Comment)
+	}
+	return msg.SetTrail(ops.Trail)
 }

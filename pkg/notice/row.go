@@ -26,3 +26,15 @@ func (r Row) String() string { return fmt.Sprintf(r.Format, r.Args...) }
 func (r Row) PadName(length int) string {
 	return Pad(r.Name, length)
 }
+
+type Position string
+
+const (
+	PositionBefore Position = "before"
+	PositionAfter  Position = "after"
+)
+
+type PositionedRow struct {
+	Row
+	Position string
+}

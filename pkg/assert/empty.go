@@ -12,7 +12,7 @@ import (
 // test as failed, writes an error message to the test log and returns false.
 //
 // See [check.Empty] for the list of values which are considered empty.
-func Empty(t tester.T, have any, opts ...check.Option) bool {
+func Empty(t tester.T, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Empty(have, opts...); e != nil {
 		t.Error(e)
@@ -26,7 +26,7 @@ func Empty(t tester.T, have any, opts ...check.Option) bool {
 // returns false.
 //
 // See [check.Empty] for the list of values which are considered empty.
-func NotEmpty(t tester.T, have any, opts ...check.Option) bool {
+func NotEmpty(t tester.T, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.NotEmpty(have, opts...); e != nil {
 		t.Error(e)

@@ -16,6 +16,7 @@ import (
 	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/must"
+	"github.com/ctx42/testing/pkg/notice"
 )
 
 func Test_RegisterTypeChecker(t *testing.T) {
@@ -24,7 +25,7 @@ func Test_RegisterTypeChecker(t *testing.T) {
 	origLog := globLog
 	buf := &bytes.Buffer{}
 	globLog = log.New(buf, "", 0)
-	chk := func(_, _ any, _ ...Option) error { return errors.New("123456") }
+	chk := func(_, _ any, _ ...any) error { return errors.New("123456") }
 	t.Cleanup(func() { globLog = origLog; typeCheckers = nil })
 
 	t.Run("is registered", func(t *testing.T) {
@@ -150,7 +151,7 @@ func Test_WithTypeChecker(t *testing.T) {
 	origLog := globLog
 	buf := &bytes.Buffer{}
 	globLog = log.New(buf, "", 0)
-	cChk := func(_, _ any, _ ...Option) error { return errors.New("123456") }
+	cChk := func(_, _ any, _ ...any) error { return errors.New("123456") }
 	t.Cleanup(func() { globLog = origLog; typeCheckers = nil })
 
 	t.Run("setting", func(t *testing.T) {
@@ -191,7 +192,7 @@ func Test_WithTypeChecker(t *testing.T) {
 func Test_WithTrailChecker(t *testing.T) {
 	// --- Given ---
 	ops := Options{}
-	chk := func(want, have any, opts ...Option) error { return nil }
+	chk := func(want, have any, opts ...any) error { return nil }
 
 	// --- When ---
 	have := WithTrailChecker("type.field", chk)(ops)
@@ -269,6 +270,17 @@ func Test_WithWaitThrottle(t *testing.T) {
 	affirm.Equal(t, time.Second, have.WaitThrottle)
 }
 
+func Test_WithComment(t *testing.T) {
+	// --- Given ---
+	ops := Options{}
+
+	// --- When ---
+	have := WithComment("A%d", 42)(ops)
+
+	// --- Then ---
+	affirm.Equal(t, "A42", have.Comment)
+}
+
 func Test_WithOptions(t *testing.T) {
 	// --- Given ---
 	waw := must.Value(time.LoadLocation("Europe/Warsaw"))
@@ -304,6 +316,7 @@ func Test_WithOptions(t *testing.T) {
 		IncreaseSoft:   true,
 		DecreaseSoft:   true,
 		WaitThrottle:   10 * time.Millisecond,
+		Comment:        "comment",
 		now:            time.Now,
 	}
 
@@ -325,7 +338,7 @@ func Test_WithOptions(t *testing.T) {
 
 	// When those fail, add fields above.
 	affirm.Equal(t, 14, reflect.ValueOf(have.Dumper).NumField())
-	affirm.Equal(t, 15, reflect.ValueOf(have).NumField())
+	affirm.Equal(t, 16, reflect.ValueOf(have).NumField())
 }
 
 func Test_DefaultOptions(t *testing.T) {
@@ -353,8 +366,9 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, false, have.IncreaseSoft)
 		affirm.Equal(t, false, have.DecreaseSoft)
 		affirm.Equal(t, 10*time.Millisecond, have.WaitThrottle)
+		affirm.Equal(t, "", have.Comment)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 15, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 16, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("with options", func(t *testing.T) {
@@ -381,15 +395,16 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, false, have.IncreaseSoft)
 		affirm.Equal(t, false, have.DecreaseSoft)
 		affirm.Equal(t, 10*time.Millisecond, have.WaitThrottle)
+		affirm.Equal(t, "", have.Comment)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 15, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 16, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("TypeCheckers field is a clone of a global map", func(t *testing.T) {
 		// --- Given ---
 		t.Setenv("___", "___")
 		affirm.Nil(t, typeCheckers)
-		chk := func(_, _ any, _ ...Option) error { return errors.New("123456") }
+		chk := func(_, _ any, _ ...any) error { return errors.New("123456") }
 		t.Cleanup(func() { typeCheckers = nil })
 		typeCheckers = map[reflect.Type]Checker{reflect.TypeOf(123): chk}
 
@@ -402,38 +417,88 @@ func Test_DefaultOptions(t *testing.T) {
 
 	t.Run("the time check is not overwritten when set", func(t *testing.T) {
 		// --- Given ---
-		chk := func(_, _ any, _ ...Option) error { return nil }
+		chk := func(_, _ any, _ ...any) error { return nil }
 		opt := WithTypeChecker(time.Time{}, chk)
 
 		// --- When ---
-		ops := DefaultOptions(opt)
+		have := DefaultOptions(opt)
 
 		// --- Then ---
-		affirm.Equal(t, true, core.Same(chk, ops.TypeCheckers[typTime]))
+		affirm.Equal(t, true, core.Same(chk, have.TypeCheckers[typTime]))
 	})
 
 	t.Run("the timezone check is not overwritten when set", func(t *testing.T) {
 		// --- Given ---
-		chk := func(_, _ any, _ ...Option) error { return nil }
+		chk := func(_, _ any, _ ...any) error { return nil }
 		opt := WithTypeChecker(time.Location{}, chk)
 
 		// --- When ---
-		ops := DefaultOptions(opt)
+		have := DefaultOptions(opt)
 
 		// --- Then ---
-		affirm.Equal(t, true, core.Same(chk, ops.TypeCheckers[typZone]))
+		affirm.Equal(t, true, core.Same(chk, have.TypeCheckers[typZone]))
 	})
 
 	t.Run("timezone ptr check is not overwritten when set", func(t *testing.T) {
 		// --- Given ---
-		chk := func(_, _ any, _ ...Option) error { return nil }
+		chk := func(_, _ any, _ ...any) error { return nil }
 		opt := WithTypeChecker(&time.Location{}, chk)
 
 		// --- When ---
-		ops := DefaultOptions(opt)
+		have := DefaultOptions(opt)
 
 		// --- Then ---
-		affirm.Equal(t, true, core.Same(chk, ops.TypeCheckers[typZonePtr]))
+		affirm.Equal(t, true, core.Same(chk, have.TypeCheckers[typZonePtr]))
+	})
+
+	t.Run("with formated comment", func(t *testing.T) {
+		// --- When ---
+		ops := DefaultOptions("A%d", 42)
+
+		// --- Then ---
+		affirm.Equal(t, "A42", ops.Comment)
+	})
+
+	t.Run("with option", func(t *testing.T) {
+		// --- Given ---
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		have := DefaultOptions(opt)
+
+		// --- Then ---
+		affirm.Equal(t, "type.field", have.Trail)
+	})
+
+	t.Run("with Option type", func(t *testing.T) {
+		// --- Given ---
+		opt := WithCmpBaseTypes
+
+		// --- When ---
+		have := DefaultOptions(opt)
+
+		// --- Then ---
+		affirm.Equal(t, true, have.CmpSimpleType)
+	})
+
+	t.Run("with option and formated comment", func(t *testing.T) {
+		// --- Given ---
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		have := DefaultOptions("A%s", opt, "BC")
+
+		// --- Then ---
+		affirm.Equal(t, "ABC", have.Comment)
+		affirm.Equal(t, "type.field", have.Trail)
+	})
+
+	t.Run("error - cannot use a non-string comment format", func(t *testing.T) {
+		// --- When ---
+		msg := affirm.Panic(t, func() { DefaultOptions(42, "A%d") })
+
+		// --- Then ---
+		affirm.Equal(t, "cannot use a non-string comment format", *msg)
 	})
 }
 
@@ -595,5 +660,72 @@ func Test_FieldName(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "ABC[1].myField", have(Options{}).Trail)
 		affirm.Equal(t, true, have(Options{}).SkipUnexported)
+	})
+}
+
+func Test_AddRows(t *testing.T) {
+	t.Run("empty options", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{}
+		msg := notice.New("header").Want("%s", "want")
+
+		// --- When ---
+		have := AddRows(ops, msg)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg, have))
+		affirm.Equal(t, "header:\n  want: want", have.Error())
+	})
+
+	t.Run("with trail", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{Trail: "type.field"}
+		msg := notice.New("header").Want("%s", "want")
+
+		// --- When ---
+		have := AddRows(ops, msg)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg, have))
+		wMsg := "" +
+			"header:\n" +
+			"  trail: type.field\n" +
+			"   want: want"
+		affirm.Equal(t, wMsg, have.Error())
+	})
+
+	t.Run("with comment", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{Comment: "abc"}
+		msg := notice.New("header").Want("%s", "want")
+
+		// --- When ---
+		have := AddRows(ops, msg)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg, have))
+		wMsg := "" +
+			"header:\n" +
+			"  comment: abc\n" +
+			"     want: want"
+		affirm.Equal(t, wMsg, have.Error())
+	})
+
+	t.Run("with trail and comment", func(t *testing.T) {
+		// --- Given ---
+		ops := Options{Trail: "type.field", Comment: "abc"}
+		msg := notice.New("header").Want("%s", "want")
+
+		// --- When ---
+		have := AddRows(ops, msg)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg, have))
+		wMsg := "" +
+			"header:\n" +
+			"    trail: type.field\n" +
+			"  comment: abc\n" +
+			"     want: want"
+		affirm.Equal(t, wMsg, have.Error())
 	})
 }

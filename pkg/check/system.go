@@ -13,7 +13,7 @@ import (
 // ExitCode checks "err" is pointer to [exec.ExitError] with exit code equal to
 // "want". Returns nil if it's, otherwise it returns an error with a message
 // indicating the expected and actual values.
-func ExitCode(want int, err error, opts ...Option) error {
+func ExitCode(want int, err error, opts ...any) error {
 	if want == 0 && err == nil {
 		return nil
 	}
@@ -26,15 +26,15 @@ func ExitCode(want int, err error, opts ...Option) error {
 		have := ee.ExitCode()
 		if want != have {
 			ops := DefaultOptions(opts...)
-			return notice.New("expected exit code").
-				SetTrail(ops.Trail).
+			msg := notice.New("expected exit code").
 				Want("%d", want).
 				Have("%d", have)
+			return AddRows(ops, msg)
 		}
 		return nil
 	}
 
 	ops := DefaultOptions(opts...)
-	return notice.New("expected err to have \"%T\" in its chain", ee).
-		SetTrail(ops.Trail)
+	msg := notice.New("expected err to have \"%T\" in its chain", ee)
+	return AddRows(ops, msg)
 }
