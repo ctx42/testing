@@ -1,3 +1,6 @@
+## v0.35.0 (Mon, 11 Aug 2025 07:51:26 UTC)
+- feat!: Add the ability to pass comment rows in a very simple way to all assertions and checkers  - loses #2.
+
 ## v0.34.0 (Fri, 08 Aug 2025 10:14:24 UTC)
 - style: Move custom assertions examples to the examples directory.
 - feat!: Remove the kit/memfs package use github.com/ctx42/memfs if you need this functionality.
