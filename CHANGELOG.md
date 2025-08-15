@@ -1,3 +1,6 @@
+## v0.35.1 (Fri, 15 Aug 2025 07:50:25 UTC)
+- fix: Fix misleading check.ErrorAs error message.
+
 ## v0.35.0 (Mon, 11 Aug 2025 07:51:26 UTC)
 - feat!: Add the ability to pass comment rows in a very simple way to all assertions and checkers  - loses #2.
 
