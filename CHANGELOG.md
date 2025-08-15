@@ -1,3 +1,6 @@
+## v0.35.2 (Fri, 15 Aug 2025 08:21:06 UTC)
+- feat: Improve the error messages written to the log by check.ErrorAs.
+
 ## v0.35.1 (Fri, 15 Aug 2025 07:50:25 UTC)
 - fix: Fix misleading check.ErrorAs error message.
 
