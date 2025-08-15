@@ -249,7 +249,7 @@ func Test_ErrorAs(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - target is a value", func(t *testing.T) {
 		// --- Given ---
 		var target types.TVal
 
@@ -258,31 +258,50 @@ func Test_ErrorAs(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error to have a target in its tree:\n" +
-			"  want: *types.TVal\n" +
-			"  have: *types.TPtr"
+		wMsg := "" +
+			"expected error to have a target in its tree:\n" +
+			"  target: *types.TVal\n" +
+			"   error: *types.TPtr"
 		affirm.Equal(t, wMsg, err.Error())
 
 		affirm.Equal(t, "", target.Val)
 	})
 
+	t.Run("error - target is a pointer", func(t *testing.T) {
+		// --- Given ---
+		var target *types.TPtr
+
+		// --- When ---
+		err := ErrorAs(&target, types.TVal{Val: "A"})
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected error to have a target in its tree:\n" +
+			"  target: *types.TPtr\n" +
+			"   error: types.TVal"
+		affirm.Equal(t, wMsg, err.Error())
+
+		affirm.Nil(t, target)
+	})
+
 	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
-		var target types.TVal
+		var target *types.TPtr
 
 		// --- When ---
-		err := ErrorAs(&target, &types.TPtr{Val: "A"}, opt)
+		err := ErrorAs(&target, errors.New("msg"), opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "expected error to have a target in its tree:\n" +
-			"  trail: type.field\n" +
-			"   want: *types.TVal\n" +
-			"   have: *types.TPtr"
+			"   trail: type.field\n" +
+			"  target: *types.TPtr\n" +
+			"   error: *errors.errorString"
 		affirm.Equal(t, wMsg, err.Error())
 
-		affirm.Equal(t, "", target.Val)
+		affirm.Nil(t, target)
 	})
 }
 

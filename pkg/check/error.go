@@ -5,6 +5,7 @@ package check
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/ctx42/testing/internal/core"
@@ -65,9 +66,14 @@ func ErrorAs(want any, err error, opts ...any) error {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
+
+	tgt := fmt.Sprintf("%T", want)
+	if strings.HasPrefix(tgt, "**") {
+		tgt = tgt[1:]
+	}
 	msg := notice.New("expected error to have a target in its tree").
-		Want("%T", want).
-		Have("%T", err)
+		Append("target", "%s", tgt).
+		Append("error", "%T", err)
 	return AddRows(ops, msg)
 }
 
