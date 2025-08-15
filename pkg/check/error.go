@@ -66,8 +66,8 @@ func ErrorAs(want any, err error, opts ...any) error {
 	}
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected error to have a target in its tree").
-		Want("(%T) %#v", err, err).
-		Have("(%T) %#v", want, want)
+		Want("%T", want).
+		Have("%T", err)
 	return AddRows(ops, msg)
 }
 
