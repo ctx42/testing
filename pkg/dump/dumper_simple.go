@@ -52,7 +52,7 @@ func SimpleDumper(dmp Dump, lvl int, val reflect.Value) string {
 			format = `%q`
 		case dmp.FlatStrings > 0 && length <= dmp.FlatStrings:
 			format = `%q`
-		case strings.Contains(str, "\n"):
+		case dmp.AlwaysMultiline || strings.Contains(str, "\n"):
 			format = "%v"
 		default:
 			format = "%q"

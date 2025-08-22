@@ -140,4 +140,15 @@ func Test_SampleDumper(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
+
+	t.Run("with WithAlwaysMultiline", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithFlatStrings(0), WithAlwaysMultiline)
+
+		// --- When ---
+		have := SimpleDumper(dmp, 0, reflect.ValueOf("str0"))
+
+		// --- Then ---
+		affirm.Equal(t, "str0", have)
+	})
 }

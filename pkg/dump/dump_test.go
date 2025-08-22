@@ -109,6 +109,17 @@ func Test_WithCompact(t *testing.T) {
 	affirm.Equal(t, true, dmp.Compact)
 }
 
+func Test_WithAlwaysMultiline(t *testing.T) {
+	// --- Given ---
+	dmp := &Dump{}
+
+	// --- When ---
+	WithAlwaysMultiline(dmp)
+
+	// --- Then ---
+	affirm.Equal(t, true, dmp.AlwaysMultiline)
+}
+
 func Test_WithPtrAddr(t *testing.T) {
 	// --- Given ---
 	dmp := &Dump{}

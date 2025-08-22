@@ -117,6 +117,10 @@ func WithFlatStrings(n int) Option {
 // unnecessary whitespaces.
 func WithCompact(dmp *Dump) { dmp.Compact = true }
 
+// WithAlwaysMultiline is an option for [New] which makes [Dump] treat all
+// strings as multiline strings, even if they are not.
+func WithAlwaysMultiline(dmp *Dump) { dmp.AlwaysMultiline = true }
+
 // WithPtrAddr is an option for [New] which makes [Dump] display pointer
 // addresses.
 func WithPtrAddr(dmp *Dump) { dmp.PtrAddr = true }
@@ -171,6 +175,9 @@ type Dump struct {
 
 	// Do not use any indents or whitespace separators.
 	Compact bool
+
+	// Always treat strings as if they were multiline.
+	AlwaysMultiline bool
 
 	// Controls how [time.Time] is formated.
 	//
