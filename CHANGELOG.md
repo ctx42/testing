@@ -1,3 +1,6 @@
+## v0.36.0 (Fri, 22 Aug 2025 20:14:42 UTC)
+- feat: Add dump.WithAlwaysMultiline option which forces dumper to treat all strings as multiline even when they are not.
+
 ## v0.35.2 (Fri, 15 Aug 2025 08:21:06 UTC)
 - feat: Improve the error messages written to the log by check.ErrorAs.
 
