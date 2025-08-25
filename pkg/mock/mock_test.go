@@ -325,7 +325,7 @@ func Test_Mock_OnAny(t *testing.T) {
 }
 
 func Test_Mock_Proxy(t *testing.T) {
-	t.Run("with default name", func(t *testing.T) {
+	t.Run("with a default name", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -345,7 +345,7 @@ func Test_Mock_Proxy(t *testing.T) {
 		assert.Equal(t, "AAA", call.Method)
 	})
 
-	t.Run("with custom name", func(t *testing.T) {
+	t.Run("with a custom name", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -543,7 +543,7 @@ func Test_Mock_Call(t *testing.T) {
 		assert.False(t, mck.failed)
 	})
 
-	t.Run("error - when method called too many times", func(t *testing.T) {
+	t.Run("error - when a method is called too many times", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -561,7 +561,7 @@ func Test_Mock_Call(t *testing.T) {
 		assert.True(t, mck.failed)
 	})
 
-	t.Run("error - when existing method called with different arguments", func(t *testing.T) {
+	t.Run("error - when an existing method is called with different arguments", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(1)
@@ -631,6 +631,25 @@ func Test_Mock_Call(t *testing.T) {
 
 		// --- When ---
 		assert.Panic(t, func() { mck.Call("Two", 2) })
+		assert.True(t, mck.failed)
+	})
+
+	t.Run("error - when time does not match exactly", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.ExpectFail()
+		wMsg := goldy.Open(t, "testdata/call_deps_not_met_timezone.gld")
+		tspy.ExpectLogEqual(wMsg.String())
+		tspy.Close()
+
+		tim := time.Date(2020, 1, 2, 3, 4, 5, 0, types.WAW)
+
+		mck := NewMock(tspy, WithNoStack)
+		mck.On("Time", tim.UTC())
+
+		// --- When ---
+		assert.Panic(t, func() { mck.Call("Time", tim) })
 		assert.True(t, mck.failed)
 	})
 

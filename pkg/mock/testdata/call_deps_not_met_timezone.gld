@@ -1,0 +1,7 @@
+Logs a message when a mocked method is called with the same time but with
+different timezone.
+---
+[mock] unexpected method call:
+         closest: Time(time.Time)
+  argument match:
+                  0: FAIL: (time.Time=time.Date(2020, time.January, 2, 2, 4, 5, 0, time.UTC)) != (time.Time=time.Date(2020, time.January, 2, 3, 4, 5, 0, time.Location("Europe/Warsaw")))

@@ -1,4 +1,4 @@
-Logs a message when a mocked method is called before its required dependency.
+Logs a message when a mocked method is called without required dependency.
 ---
 [mock] unexpected method call:
           method: Two(int) string
