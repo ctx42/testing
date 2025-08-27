@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+// TODO(rz): use notice package for messages.
+
 // Arguments hold an array of method arguments or return values.
 type Arguments []any
 
@@ -100,6 +102,8 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 			}
 
 			diffCnt++
+			// TODO(rz): For really long strings we should display values one below
+			//  the other for easier comparison.
 			msg := "%d: FAIL: %s%s != %s"
 			msg = fmt.Sprintf(msg, i, am.Desc(), panicMsg, haveFmt)
 			out = append(out, msg)
@@ -117,6 +121,8 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 
 		// Not match
 		diffCnt++
+		// TODO(rz): For really long strings we should display values one below
+		//  the other for easier comparison.
 		msg := fmt.Sprintf("%d: FAIL: %s != %s", i, wantFmt, haveFmt)
 		out = append(out, msg)
 	}
