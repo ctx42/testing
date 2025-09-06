@@ -23,12 +23,12 @@ func Count(t tester.T, count int, what, where any, opts ...any) bool {
 	return true
 }
 
-// Type asserts that both arguments are of the same type. Returns true if
+// SameType asserts that both arguments are of the same type. Returns true if
 // they are, otherwise marks the test as failed, writes an error message to the
 // test log and returns false.
-func Type(t tester.T, want, have any, opts ...any) bool {
+func SameType(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
-	if e := check.Type(want, have, opts...); e != nil {
+	if e := check.SameType(want, have, opts...); e != nil {
 		t.Fatal(e)
 		return false
 	}

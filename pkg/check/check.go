@@ -45,10 +45,10 @@ func Count(count int, what, where any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// Type checks that both arguments are of the same type. Returns nil if they
-// are, otherwise it returns an error with a message indicating the expected
-// and actual values.
-func Type(want, have any, opts ...any) error {
+// SameType checks that both arguments are of the same type. Returns nil if
+// they are, otherwise it returns an error with a message indicating the
+// expected and actual values.
+func SameType(want, have any, opts ...any) error {
 	wTyp := reflect.TypeOf(want)
 	hTyp := reflect.TypeOf(have)
 	if wTyp == hTyp {

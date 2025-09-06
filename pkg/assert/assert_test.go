@@ -56,13 +56,13 @@ func Test_Count(t *testing.T) {
 	})
 }
 
-func Test_Type(t *testing.T) {
+func Test_SameType(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
 		// --- When ---
-		have := Type(tspy, true, true)
+		have := SameType(tspy, true, true)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -76,7 +76,7 @@ func Test_Type(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		msg := affirm.Panic(t, func() { Type(tspy, 1, uint(1)) })
+		msg := affirm.Panic(t, func() { SameType(tspy, 1, uint(1)) })
 
 		// --- Then ---
 		affirm.Equal(t, tester.FailNowMsg, *msg)
@@ -92,7 +92,7 @@ func Test_Type(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		msg := affirm.Panic(t, func() { Type(tspy, 1, uint(1), opt) })
+		msg := affirm.Panic(t, func() { SameType(tspy, 1, uint(1), opt) })
 
 		// --- Then ---
 		affirm.Equal(t, tester.FailNowMsg, *msg)

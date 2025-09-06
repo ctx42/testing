@@ -316,7 +316,7 @@ func Test_Config_create(t *testing.T) {
 		assert.NoError(t, err)
 		assert.FileExist(t, pth)
 		assert.NotNil(t, have.tgtOut)
-		assert.Type(t, &os.File{}, have.tgtOut)
+		assert.SameType(t, &os.File{}, have.tgtOut)
 	})
 
 	t.Run("error", func(t *testing.T) {
