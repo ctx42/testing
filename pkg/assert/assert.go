@@ -35,6 +35,25 @@ func SameType(t tester.T, want, have any, opts ...any) bool {
 	return true
 }
 
+// Type asserts that the "src" can be type assigned to the pointer of the
+// "target" (same as target, ok := src.(target)). Returns true if it can be
+// done, otherwise marks the test as failed, writes an error message to the
+// test log and returns false.
+//
+// Example:
+//
+//	var target int
+//	var src any = 42
+//	assert.Type(t, &target, src)
+func Type(t tester.T, want, have any, opts ...any) bool {
+	t.Helper()
+	if e := check.Type(want, have, opts...); e != nil {
+		t.Fatal(e)
+		return false
+	}
+	return true
+}
+
 // Fields asserts struct or pointer to a struct "s" has "want" number of
 // fields. Returns true if it does, otherwise marks the test as failed, writes
 // an error message to the test log and returns false.

@@ -2,6 +2,7 @@ package check
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
@@ -196,6 +197,98 @@ func Test_SameType_error_tabular(t *testing.T) {
 			affirm.Equal(t, tc.wMsg, err.Error())
 		})
 	}
+}
+
+func Test_Type(t *testing.T) {
+	t.Run("assert type int", func(t *testing.T) {
+		// --- Given ---
+		var target int
+
+		// --- When ---
+		err := Type(&target, 42)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.Equal(t, 42, target)
+	})
+
+	t.Run("assert type string", func(t *testing.T) {
+		// --- Given ---
+		var target string
+
+		// --- When ---
+		err := Type(&target, "abc")
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.Equal(t, "abc", target)
+	})
+
+	t.Run("assert type struct", func(t *testing.T) {
+		// --- Given ---
+		var target *types.TPrv
+		h := types.TPrv{Pub: 42}.SetInt(44)
+
+		// --- When ---
+		err := Type(&target, &h)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.Equal(t, true, reflect.DeepEqual(target, &h))
+	})
+
+	t.Run("error - target must be a pointer", func(t *testing.T) {
+		// --- Given ---
+		var target int
+
+		// --- When ---
+		err := Type(target, 42)
+
+		// --- Then ---
+		affirm.Equal(t, "expected target to be a non-nil pointer", err.Error())
+	})
+
+	t.Run("error - target must be a non-nil pointer", func(t *testing.T) {
+		// --- When ---
+		err := Type(nil, 42)
+
+		// --- Then ---
+		affirm.Equal(t, "expected target to be a non-nil pointer", err.Error())
+	})
+
+	t.Run("error - cannot assert type", func(t *testing.T) {
+		// --- Given ---
+		var target *types.TPrv
+		src := types.TIntStr{}
+
+		// --- When ---
+		err := Type(&target, &src)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected type to be assignable to the target:\n" +
+			"  target: *types.TPrv\n" +
+			"     src: *types.TIntStr"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - cannot assert type", func(t *testing.T) {
+		// --- Given ---
+		target := &types.TPrv{}
+		src := types.TIntStr{}
+
+		// --- When ---
+		err := Type(target, &src)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected type to be assignable to the target:\n" +
+			"  target: types.TPrv\n" +
+			"     src: *types.TIntStr"
+		affirm.Equal(t, wMsg, err.Error())
+	})
 }
 
 func Test_Fields(t *testing.T) {

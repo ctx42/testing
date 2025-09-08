@@ -5,6 +5,7 @@
 package check
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -56,6 +57,36 @@ func SameType(want, have any, opts ...any) error {
 	}
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected same types").Want("%T", want).Have("%T", have)
+	return AddRows(ops, msg)
+}
+
+// Type checks that the "src" can be type assigned to the pointer to the
+// "target" (same as target, ok := src.(target)). Returns nil if it can be done,
+// otherwise it returns an error. The "target" must be a pointer to a type.
+func Type(target, src any, opts ...any) error {
+	if target == nil {
+		return notice.New("expected target to be a non-nil pointer")
+	}
+	tgtVal := reflect.ValueOf(target)
+	tgtTyp := tgtVal.Type()
+	if tgtTyp.Kind() != reflect.Ptr || tgtVal.IsNil() {
+		return notice.New("expected target to be a non-nil pointer")
+	}
+	tgtType := tgtTyp.Elem()
+	if reflect.TypeOf(src).AssignableTo(tgtType) {
+		tgtVal.Elem().Set(reflect.ValueOf(src))
+		return nil
+	}
+
+	tgtTypStr := fmt.Sprintf("%T", tgtVal.Interface())
+	if len(tgtTypStr) > 0 && tgtTypStr[0] == '*' {
+		tgtTypStr = tgtTypStr[1:]
+	}
+
+	ops := DefaultOptions(opts...)
+	msg := notice.New("expected type to be assignable to the target").
+		Append("target", "%s", tgtTypStr).
+		Append("src", "%T", src)
 	return AddRows(ops, msg)
 }
 
