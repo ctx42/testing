@@ -1,3 +1,9 @@
+## v0.37.0 (Mon, 08 Sep 2025 11:04:37 UTC)
+- test: Add test showing error when mocked method argument has the same time but different timezone.
+- misc: Add TODO improvements.
+- feat!: Change `check.Type` to `check.SameType` and `assert.Type` to `assert.SameType` in preparation for adding `check.Type` and `assert.Type` which actually asserts a type (`a.(int)`).
+- feat: Implement `check.Type` and `assert.Type` to type assert types.
+
 ## v0.36.0 (Fri, 22 Aug 2025 20:14:42 UTC)
 - feat: Add dump.WithAlwaysMultiline option which forces dumper to treat all strings as multiline even when they are not.
 
