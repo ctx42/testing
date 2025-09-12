@@ -1,3 +1,6 @@
+## v0.37.1 (Fri, 12 Sep 2025 09:39:36 UTC)
+- doc: Update readme file.
+
 ## v0.37.0 (Mon, 08 Sep 2025 11:04:37 UTC)
 - test: Add test showing error when mocked method argument has the same time but different timezone.
 - misc: Add TODO improvements.
