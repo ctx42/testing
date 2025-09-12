@@ -1,37 +1,37 @@
 ![gopher.png](doc/gopher.png)
 
-This repository is work in progress open-sourcing libraries I've created during 
-my time as a Go developer.
-
 [![Go Report Card](https://goreportcard.com/badge/github.com/ctx42/testing)](https://goreportcard.com/report/github.com/ctx42/testing)
 [![GoDoc](https://img.shields.io/badge/api-Godoc-blue.svg)](https://pkg.go.dev/github.com/ctx42/testing)
 ![Tests](https://github.com/ctx42/testing/actions/workflows/go.yml/badge.svg?branch=master)
 
-I’ve written several [blog posts](http://blog.ctx42.com/tags/gtm/) tied to this
-repository. If you’re curious about the behind-the-scenes details of how this
-package is coming together, check them out and share your thoughts—I’d love to
-hear what you think! Any feedback is greatly appreciated.
-
 ---
 
 <!-- TOC -->
-* [Introduction to Ctx42 Testing Module](#introduction-to-ctx42-testing-module)
+* [Goal](#goal)
   * [Simplicity and Usability](#simplicity-and-usability)
   * [Modular and Extensible Design](#modular-and-extensible-design)
   * [Installation](#installation)
   * [Packages](#packages)
     * [Main Packages](#main-packages)
     * [Supporting Packets](#supporting-packets)
+  * [Blog posts](#blog-posts)
 <!-- TOC -->
 
-# Introduction to Ctx42 Testing Module
+With **zero external dependencies** module provides:
 
-This repository marks the beginning of CTX42 Testing Module, a collection of 
-testing and assertion packages poised to help developers approach testing. As 
-it develops, it will offer a comprehensive suite of tools designed to make 
-testing more efficient, enjoyable, and integral to the development process.
+- `assert` (71 hand-picked assertion functions), `mock` and `mocker` packages.
+- Golden file testing helpers in `goldy` package.
+- Assortment of helpers in `kit` package. 
+- Configurable any type string dumper in `dunmp` package.
+- Build your own assertions with ease using `check` package.
+- Test your test helpers with `tester` package.
 
-Whether you're a seasoned tester or just starting out, tools in this module is 
+# Goal
+
+Provide a comprehensive suite of tools designed to make testing more efficient, 
+enjoyable to write, and integral to the development process.
+
+Whether you're a seasoned tester or just starting out, tools in this module are 
 being crafted to meet your needs, providing a solid foundation for ensuring 
 code reliability in projects of all sizes.
 
@@ -89,3 +89,10 @@ Packages are used to create custom checks, assertions, and helpers.
 
 Click on the package link to see its README.md file with documentation. Also, 
 most of the packages contain `examples_test.go` file with usage examples.
+
+## Blog posts
+
+I’ve written several [blog posts](http://blog.ctx42.com/tags/gtm/) tied to this
+repository. If you’re curious about the behind-the-scenes details of how this
+package is coming together, check them out and share your thoughts — I’d love 
+to hear what you think! Any feedback is greatly appreciated.
