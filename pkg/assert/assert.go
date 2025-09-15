@@ -26,9 +26,25 @@ func Count(t tester.T, count int, what, where any, opts ...any) bool {
 // SameType asserts that both arguments are of the same type. Returns true if
 // they are, otherwise marks the test as failed, writes an error message to the
 // test log and returns false.
+//
+// Assertion uses [reflect.TypeOf] equality to determine the type.
 func SameType(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.SameType(want, have, opts...); e != nil {
+		t.Fatal(e)
+		return false
+	}
+	return true
+}
+
+// NotSameType asserts that the arguments are not of the same type. Returns
+// true if they are not, otherwise marks the test as failed, writes an error
+// message to the test log and returns false.
+//
+// Assertion uses [reflect.TypeOf] equality to determine the type.
+func NotSameType(t tester.T, want, have any, opts ...any) bool {
+	t.Helper()
+	if e := check.NotSameType(want, have, opts...); e != nil {
 		t.Fatal(e)
 		return false
 	}

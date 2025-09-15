@@ -19,7 +19,7 @@
 
 With **zero external dependencies** module provides:
 
-- `assert` (71 hand-picked assertion functions), `mock` and `mocker` packages.
+- `assert` (72 hand-picked assertion functions), `mock` and `mocker` packages.
 - Golden file testing helpers in `goldy` package.
 - Assortment of helpers in `kit` package. 
 - Configurable any type string dumper in `dunmp` package.

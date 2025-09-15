@@ -199,6 +199,94 @@ func Test_SameType_error_tabular(t *testing.T) {
 	}
 }
 
+func Test_NotSameType(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
+		// --- Given ---
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		err := NotSameType(42, 42, opt)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected different types:\n" +
+			"  trail: type.field\n" +
+			"   want: int\n" +
+			"   have: int"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
+func Test_NotSameType_success_tabular(t *testing.T) {
+	var itf types.TItf
+
+	tt := []struct {
+		testN string
+
+		val0 any
+		val1 any
+	}{
+		{"int - float", 42, 42.0},
+		{"bool - int", true, 42},
+		{"nil ptr 1", &types.TPtr{}, itf},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			err := NotSameType(tc.val0, tc.val1)
+
+			// --- Then ---
+			affirm.Nil(t, err)
+		})
+	}
+}
+
+func Test_NotSameType_error_tabular(t *testing.T) {
+	var ptr *types.TPtr
+	var itf types.TItf
+	itf = &types.TPtr{}
+
+	tt := []struct {
+		testN string
+
+		val0 any
+		val1 any
+		wMsg string
+	}{
+		{
+			"same types",
+			42,
+			42,
+			"expected different types:\n  want: int\n  have: int",
+		},
+		{
+			"same ptr types",
+			&types.TPtr{},
+			&types.TPtr{},
+			"expected different types:\n  want: *types.TPtr\n  have: *types.TPtr",
+		},
+		{
+			"same ptr and interface",
+			ptr,
+			itf,
+			"expected different types:\n  want: *types.TPtr\n  have: *types.TPtr",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			err := NotSameType(tc.val0, tc.val1)
+
+			// --- Then ---
+			affirm.NotNil(t, err)
+			affirm.Equal(t, tc.wMsg, err.Error())
+		})
+	}
+}
+
 func Test_Type(t *testing.T) {
 	t.Run("assert type int", func(t *testing.T) {
 		// --- Given ---

@@ -49,6 +49,8 @@ func Count(count int, what, where any, opts ...any) error {
 // SameType checks that both arguments are of the same type. Returns nil if
 // they are, otherwise it returns an error with a message indicating the
 // expected and actual values.
+//
+// Check uses [reflect.TypeOf] equality to determine the type.
 func SameType(want, have any, opts ...any) error {
 	wTyp := reflect.TypeOf(want)
 	hTyp := reflect.TypeOf(have)
@@ -57,6 +59,23 @@ func SameType(want, have any, opts ...any) error {
 	}
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected same types").Want("%T", want).Have("%T", have)
+	return AddRows(ops, msg)
+}
+
+// NotSameType checks that the arguments are not of the same type. Returns nil
+// if they are not, otherwise it returns an error with a message indicating the
+// expected and actual values.
+//
+// Check uses [reflect.TypeOf] equality to determine the type.
+func NotSameType(want, have any, opts ...any) error {
+	wTyp := reflect.TypeOf(want)
+	hTyp := reflect.TypeOf(have)
+	if wTyp != hTyp {
+		return nil
+	}
+	ops := DefaultOptions(opts...)
+	msg := notice.New("expected different types").
+		Want("%T", want).Have("%T", have)
 	return AddRows(ops, msg)
 }
 

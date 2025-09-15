@@ -99,6 +99,49 @@ func Test_SameType(t *testing.T) {
 	})
 }
 
+func Test_NotSameType(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+
+		// --- When ---
+		have := NotSameType(tspy, true, 42)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectFatal()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		// --- When ---
+		msg := affirm.Panic(t, func() { NotSameType(tspy, 42, 42) })
+
+		// --- Then ---
+		affirm.Equal(t, tester.FailNowMsg, *msg)
+	})
+
+	t.Run("log message with trails", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectFatal()
+		tspy.ExpectLogContain("  trail: type.field\n")
+		tspy.Close()
+
+		opt := check.WithTrail("type.field")
+
+		// --- When ---
+		msg := affirm.Panic(t, func() { NotSameType(tspy, 42, 42, opt) })
+
+		// --- Then ---
+		affirm.Equal(t, tester.FailNowMsg, *msg)
+	})
+}
+
 func Test_Type(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
