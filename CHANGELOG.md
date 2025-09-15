@@ -1,3 +1,6 @@
+## v0.38.0 (Mon, 15 Sep 2025 13:26:27 UTC)
+- feat: Implement `check.NotSameType` and `assert.NotSameType`.
+
 ## v0.37.1 (Fri, 12 Sep 2025 09:39:36 UTC)
 - doc: Update readme file.
 
