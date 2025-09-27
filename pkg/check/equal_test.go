@@ -12,8 +12,8 @@ import (
 	"unsafe"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/cases"
 	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/cases"
 	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/must"
 )

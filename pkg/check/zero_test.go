@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/cases"
+	"github.com/ctx42/testing/pkg/cases"
 )
 
 func Test_Zero(t *testing.T) {

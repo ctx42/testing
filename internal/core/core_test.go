@@ -10,8 +10,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/ctx42/testing/internal/cases"
 	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/cases"
 )
 
 const expMsg = "expected same:\n  want: %v\n  have: %v"
