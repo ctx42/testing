@@ -98,7 +98,7 @@ func Type(target, src any, opts ...any) error {
 	}
 
 	tgtTypStr := fmt.Sprintf("%T", tgtVal.Interface())
-	if len(tgtTypStr) > 0 && tgtTypStr[0] == '*' {
+	if tgtTypStr != "" && tgtTypStr[0] == '*' {
 		tgtTypStr = tgtTypStr[1:]
 	}
 

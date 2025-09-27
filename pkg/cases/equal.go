@@ -338,5 +338,5 @@ func EqualConstants() []EqualCase {
 	}
 }
 
-// ptr returns pointer to any type.
+// ptr returns the pointer to any type.
 func ptr[M any](v M) *M { return &v }

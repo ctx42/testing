@@ -432,9 +432,6 @@ func (ops Options) StructTrail(typeName, fldName string) Options {
 	if typeName != "" && ops.Trail == "" {
 		left = typeName
 	}
-	// if typeName != "" && ops.Trail != "" && !strings.HasSuffix(left, "]") {
-	// 	left = ops.Trail + "." + typeName
-	// }
 	if left != "" && fldName != "" {
 		ops.Trail = left + "." + fldName
 		return ops
