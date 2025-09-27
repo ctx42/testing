@@ -1,3 +1,6 @@
+## v0.39.0 (Sat, 27 Sep 2025 08:18:49 UTC)
+- feat: Expose internal `cases` package used for testing nil, equal, empty and zero values.
+
 ## v0.38.0 (Mon, 15 Sep 2025 13:26:27 UTC)
 - feat: Implement `check.NotSameType` and `assert.NotSameType`.
 
