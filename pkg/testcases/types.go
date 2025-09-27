@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: (c) 2025 Rafal Zajac <rzajac@gmail.com>
 // SPDX-License-Identifier: MIT
 
-// Package types provides example types used in tests.
-package types
+package testcases
 
 import (
 	"errors"

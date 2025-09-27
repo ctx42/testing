@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_GetTimeDumper_tabular(t *testing.T) {
@@ -23,37 +23,37 @@ func Test_GetTimeDumper_tabular(t *testing.T) {
 		{
 			"empty format",
 			"",
-			time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW),
+			time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW),
 			`"2000-01-02T03:04:05+01:00"`,
 		},
 		{
 			"TimeAsRFC3339",
 			TimeAsRFC3339,
-			time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW),
+			time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW),
 			`"2000-01-02T03:04:05+01:00"`,
 		},
 		{
 			"TimeAsUnix",
 			TimeAsUnix,
-			time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW),
+			time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW),
 			"946778645",
 		},
 		{
 			"custom",
 			time.TimeOnly,
-			time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW),
+			time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW),
 			`"03:04:05"`,
 		},
 		{
 			"TimeAsGoString",
 			TimeAsGoString,
-			time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW),
+			time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW),
 			`time.Date(2000, time.January, 2, 3, 4, 5, 0, time.Location("Europe/Warsaw"))`,
 		},
 		{
 			"unsupported",
 			"abc",
-			time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW),
+			time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW),
 			`"abc"`,
 		},
 	}
@@ -74,7 +74,7 @@ func Test_TimeDumperFmt(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		dmp := New()
-		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW)
+		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW)
 		val := reflect.ValueOf(tim)
 		dumper := TimeDumperFmt(time.DateOnly)
 
@@ -101,7 +101,7 @@ func Test_TimeDumperFmt(t *testing.T) {
 	t.Run("uses indent and level", func(t *testing.T) {
 		// --- Given ---
 		dmp := New(WithIndent(2))
-		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW)
+		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW)
 		val := reflect.ValueOf(tim)
 		dumper := TimeDumperFmt(time.DateOnly)
 
@@ -129,7 +129,7 @@ func Test_TimeDumperUnix(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		dmp := New()
-		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW)
+		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW)
 		val := reflect.ValueOf(tim)
 
 		// --- When ---
@@ -167,7 +167,7 @@ func Test_TimeDumperUnix(t *testing.T) {
 	t.Run("uses indent and level", func(t *testing.T) {
 		// --- Given ---
 		dmp := New(WithIndent(2))
-		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW)
+		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW)
 		val := reflect.ValueOf(tim)
 
 		// --- When ---
@@ -207,7 +207,7 @@ func Test_TimeDumperDate(t *testing.T) {
 	t.Run("non UTC timezone", func(t *testing.T) {
 		// --- Given ---
 		dmp := New()
-		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW)
+		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW)
 		val := reflect.ValueOf(tim)
 
 		// --- When ---

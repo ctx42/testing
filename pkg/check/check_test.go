@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_Count(t *testing.T) {
@@ -135,9 +135,9 @@ func Test_SameType(t *testing.T) {
 }
 
 func Test_SameType_success_tabular(t *testing.T) {
-	var ptr *types.TPtr
-	var itf types.TItf
-	itf = &types.TPtr{}
+	var ptr *testcases.TPtr
+	var itf testcases.TItf
+	itf = &testcases.TPtr{}
 
 	tt := []struct {
 		testN string
@@ -148,10 +148,10 @@ func Test_SameType_success_tabular(t *testing.T) {
 		{"int", 42, 44},
 		{"float64", 42.0, 44.0},
 		{"bool", true, false},
-		{"nil ptr 0", ptr, &types.TPtr{}},
-		{"nil ptr 1", &types.TPtr{}, ptr},
-		{"nil itf 0", itf, &types.TPtr{}},
-		{"nil itf 1", &types.TPtr{}, itf},
+		{"nil ptr 0", ptr, &testcases.TPtr{}},
+		{"nil ptr 1", &testcases.TPtr{}, ptr},
+		{"nil itf 0", itf, &testcases.TPtr{}},
+		{"nil itf 1", &testcases.TPtr{}, itf},
 	}
 
 	for _, tc := range tt {
@@ -181,9 +181,9 @@ func Test_SameType_error_tabular(t *testing.T) {
 		},
 		{
 			"different ptr types",
-			&types.TPtr{},
-			&types.TVal{},
-			"expected same types:\n  want: *types.TPtr\n  have: *types.TVal",
+			&testcases.TPtr{},
+			&testcases.TVal{},
+			"expected same types:\n  want: *testcases.TPtr\n  have: *testcases.TVal",
 		},
 	}
 
@@ -219,7 +219,7 @@ func Test_NotSameType(t *testing.T) {
 }
 
 func Test_NotSameType_success_tabular(t *testing.T) {
-	var itf types.TItf
+	var itf testcases.TItf
 
 	tt := []struct {
 		testN string
@@ -229,7 +229,7 @@ func Test_NotSameType_success_tabular(t *testing.T) {
 	}{
 		{"int - float", 42, 42.0},
 		{"bool - int", true, 42},
-		{"nil ptr 1", &types.TPtr{}, itf},
+		{"nil ptr 1", &testcases.TPtr{}, itf},
 	}
 
 	for _, tc := range tt {
@@ -244,9 +244,9 @@ func Test_NotSameType_success_tabular(t *testing.T) {
 }
 
 func Test_NotSameType_error_tabular(t *testing.T) {
-	var ptr *types.TPtr
-	var itf types.TItf
-	itf = &types.TPtr{}
+	var ptr *testcases.TPtr
+	var itf testcases.TItf
+	itf = &testcases.TPtr{}
 
 	tt := []struct {
 		testN string
@@ -263,15 +263,15 @@ func Test_NotSameType_error_tabular(t *testing.T) {
 		},
 		{
 			"same ptr types",
-			&types.TPtr{},
-			&types.TPtr{},
-			"expected different types:\n  want: *types.TPtr\n  have: *types.TPtr",
+			&testcases.TPtr{},
+			&testcases.TPtr{},
+			"expected different types:\n  want: *testcases.TPtr\n  have: *testcases.TPtr",
 		},
 		{
 			"same ptr and interface",
 			ptr,
 			itf,
-			"expected different types:\n  want: *types.TPtr\n  have: *types.TPtr",
+			"expected different types:\n  want: *testcases.TPtr\n  have: *testcases.TPtr",
 		},
 	}
 
@@ -314,8 +314,8 @@ func Test_Type(t *testing.T) {
 
 	t.Run("assert type struct", func(t *testing.T) {
 		// --- Given ---
-		var target *types.TPrv
-		h := types.TPrv{Pub: 42}.SetInt(44)
+		var target *testcases.TPrv
+		h := testcases.TPrv{Pub: 42}.SetInt(44)
 
 		// --- When ---
 		err := Type(&target, &h)
@@ -346,8 +346,8 @@ func Test_Type(t *testing.T) {
 
 	t.Run("error - cannot assert type", func(t *testing.T) {
 		// --- Given ---
-		var target *types.TPrv
-		src := types.TIntStr{}
+		var target *testcases.TPrv
+		src := testcases.TIntStr{}
 
 		// --- When ---
 		err := Type(&target, &src)
@@ -356,15 +356,15 @@ func Test_Type(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected type to be assignable to the target:\n" +
-			"  target: *types.TPrv\n" +
-			"     src: *types.TIntStr"
+			"  target: *testcases.TPrv\n" +
+			"     src: *testcases.TIntStr"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
 	t.Run("error - cannot assert type", func(t *testing.T) {
 		// --- Given ---
-		target := &types.TPrv{}
-		src := types.TIntStr{}
+		target := &testcases.TPrv{}
+		src := testcases.TIntStr{}
 
 		// --- When ---
 		err := Type(target, &src)
@@ -373,8 +373,8 @@ func Test_Type(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected type to be assignable to the target:\n" +
-			"  target: types.TPrv\n" +
-			"     src: *types.TIntStr"
+			"  target: testcases.TPrv\n" +
+			"     src: *testcases.TIntStr"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }
@@ -393,7 +393,7 @@ func Test_Fields(t *testing.T) {
 
 	t.Run("value object", func(t *testing.T) {
 		// --- When ---
-		err := Fields(7, types.TA{})
+		err := Fields(7, testcases.TA{})
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -401,7 +401,7 @@ func Test_Fields(t *testing.T) {
 
 	t.Run("pointer to object", func(t *testing.T) {
 		// --- When ---
-		err := Fields(7, &types.TA{})
+		err := Fields(7, &testcases.TA{})
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -412,7 +412,7 @@ func Test_Fields(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Fields(1, &types.TA{}, opt)
+		err := Fields(1, &testcases.TA{}, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)

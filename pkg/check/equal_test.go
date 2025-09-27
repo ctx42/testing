@@ -12,10 +12,9 @@ import (
 	"unsafe"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
-	"github.com/ctx42/testing/pkg/cases"
 	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/must"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_Equal(t *testing.T) {
@@ -82,7 +81,7 @@ func Test_Equal_invalid_arguments(t *testing.T) {
 
 	t.Run("equal untyped nil and nil interface", func(t *testing.T) {
 		// --- Given ---
-		var itf types.TItf
+		var itf testcases.TItf
 
 		// --- When ---
 		err := Equal(nil, itf)
@@ -93,7 +92,7 @@ func Test_Equal_invalid_arguments(t *testing.T) {
 
 	t.Run("equal nil interface and untyped nil ", func(t *testing.T) {
 		// --- Given ---
-		var itf types.TItf
+		var itf testcases.TItf
 
 		// --- When ---
 		err := Equal(itf, nil)
@@ -209,7 +208,7 @@ func Test_Equal_custom_trail_checkers(t *testing.T) {
 
 		// Both are defining the same time in different timezone.
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 5, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -230,7 +229,7 @@ func Test_Equal_custom_trail_checkers(t *testing.T) {
 
 		// Both are defining the same time in different timezone.
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 5, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -258,7 +257,7 @@ func Test_Equal_custom_type_checkers(t *testing.T) {
 		}
 
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 5, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -452,8 +451,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail)}
 
-		want := types.TTim{Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)}
-		have := types.TTim{Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)}
+		want := testcases.TTim{Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)}
+		have := testcases.TTim{Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -505,8 +504,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail)}
 
-		want := types.TLoc{Loc: must.Value(time.LoadLocation("Europe/Warsaw"))}
-		have := types.TLoc{Loc: must.Value(time.LoadLocation("Europe/Warsaw"))}
+		want := testcases.TLoc{Loc: must.Value(time.LoadLocation("Europe/Warsaw"))}
+		have := testcases.TLoc{Loc: must.Value(time.LoadLocation("Europe/Warsaw"))}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -521,8 +520,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail)}
 
-		want := types.TLoc{Loc: types.WAW}
-		have := types.TLoc{Loc: nil}
+		want := testcases.TLoc{Loc: testcases.WAW}
+		have := testcases.TLoc{Loc: nil}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -542,8 +541,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail)}
 
-		want := types.TC{TD: types.TD("abc"), Int: 123}
-		have := types.TC{TD: types.TD("abc"), Int: 123}
+		want := testcases.TC{TD: testcases.TD("abc"), Int: 123}
+		have := testcases.TC{TD: testcases.TD("abc"), Int: 123}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -561,8 +560,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 			WithSkipTrail("TPrv.vInt", "TPrv.tim"),
 		}
 
-		want := types.NewTPrv().SetInt(1)
-		have := types.NewTPrv().SetInt(2)
+		want := testcases.NewTPrv().SetInt(1)
+		have := testcases.NewTPrv().SetInt(2)
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -589,8 +588,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail)}
 
-		want := types.TIntStr{Int: 42, Str: "abc"}
-		have := types.TIntStr{Int: 44, Str: "xyz"}
+		want := testcases.TIntStr{Int: 42, Str: "abc"}
+		have := testcases.TIntStr{Int: 44, Str: "xyz"}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -614,8 +613,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("not equal when want is the nil struct pointer", func(t *testing.T) {
 		// --- Given ---
-		var want *types.TA
-		have := &types.TA{Str: "abc"}
+		var want *testcases.TA
+		have := &testcases.TA{Str: "abc"}
 
 		// --- When ---
 		err := Equal(want, have)
@@ -639,8 +638,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("not equal when have is a nil struct pointer", func(t *testing.T) {
 		// --- Given ---
-		want := &types.TA{Str: "abc"}
-		var have *types.TA
+		want := &testcases.TA{Str: "abc"}
+		var have *testcases.TA
 
 		// --- When ---
 		err := Equal(want, have)
@@ -667,8 +666,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithSkipUnexported}
 
-		want := types.TNested{STAp: []*types.TA{{TAp: &types.TA{Int: 42}}}}
-		have := types.TNested{STAp: []*types.TA{{TAp: &types.TA{Int: 44}}}}
+		want := testcases.TNested{STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 42}}}}
+		have := testcases.TNested{STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 44}}}}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -713,8 +712,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 			WithSkipUnexported,
 		}
 
-		want := types.TNested{STAp: []*types.TA{{TAp: &types.TA{Int: 42}}}}
-		have := types.TNested{STAp: []*types.TA{{TAp: &types.TA{Int: 44}}}}
+		want := testcases.TNested{STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 42}}}}
+		have := testcases.TNested{STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 44}}}}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -749,8 +748,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail)}
 
-		want := types.NewTPrv().SetInt(1)
-		have := types.NewTPrv().SetInt(2)
+		want := testcases.NewTPrv().SetInt(1)
+		have := testcases.NewTPrv().SetInt(2)
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -780,8 +779,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 	t.Run("equal private function field", func(t *testing.T) {
 		// --- Given ---
 		fn := func() int { return 0 }
-		typ0 := types.NewTPrv().SetFn(fn)
-		typ1 := types.NewTPrv().SetFn(fn)
+		typ0 := testcases.NewTPrv().SetFn(fn)
+		typ1 := testcases.NewTPrv().SetFn(fn)
 
 		// --- When ---
 		err := Equal(typ0, typ1)
@@ -792,8 +791,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("error - not equal private function field", func(t *testing.T) {
 		// --- Given ---
-		typ0 := types.NewTPrv().SetFn(func() int { return 0 })
-		typ1 := types.NewTPrv().SetFn(func() int { return 1 })
+		typ0 := testcases.NewTPrv().SetFn(func() int { return 0 })
+		typ1 := testcases.NewTPrv().SetFn(func() int { return 1 })
 
 		// --- When ---
 		err := Equal(typ0, typ1)
@@ -809,9 +808,9 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("equal private pointer field", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TVal{Val: "abc"}
-		typ0 := types.NewTPrv().SetPtr(ptr)
-		typ1 := types.NewTPrv().SetPtr(ptr)
+		ptr := &testcases.TVal{Val: "abc"}
+		typ0 := testcases.NewTPrv().SetPtr(ptr)
+		typ1 := testcases.NewTPrv().SetPtr(ptr)
 
 		// --- When ---
 		err := Equal(typ0, typ1)
@@ -822,10 +821,10 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("error - not equal private pointer field", func(t *testing.T) {
 		// --- Given ---
-		ptr0 := &types.TVal{Val: "abc"}
-		ptr1 := &types.TVal{Val: "xyz"}
-		typ0 := types.NewTPrv().SetPtr(ptr0)
-		typ1 := types.NewTPrv().SetPtr(ptr1)
+		ptr0 := &testcases.TVal{Val: "abc"}
+		ptr1 := &testcases.TVal{Val: "xyz"}
+		typ0 := testcases.NewTPrv().SetPtr(ptr0)
+		typ1 := testcases.NewTPrv().SetPtr(ptr1)
 
 		// --- When ---
 		err := Equal(typ0, typ1)
@@ -841,9 +840,9 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("error - not equal private field nil pointer", func(t *testing.T) {
 		// --- Given ---
-		ptr0 := &types.TVal{Val: "abc"}
-		typ0 := types.NewTPrv().SetPtr(ptr0)
-		typ1 := types.NewTPrv().SetPtr(nil)
+		ptr0 := &testcases.TVal{Val: "abc"}
+		typ0 := testcases.NewTPrv().SetPtr(ptr0)
+		typ1 := testcases.NewTPrv().SetPtr(nil)
 
 		// --- When ---
 		err := Equal(typ0, typ1)
@@ -863,8 +862,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 	t.Run("equal private slice field", func(t *testing.T) {
 		// --- Given ---
 		s := []int{1, 2}
-		typ0 := types.NewTPrv().SetSInt(s)
-		typ1 := types.NewTPrv().SetSInt(s)
+		typ0 := testcases.NewTPrv().SetSInt(s)
+		typ1 := testcases.NewTPrv().SetSInt(s)
 
 		// --- When ---
 		err := Equal(typ0, typ1)
@@ -877,8 +876,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		// --- Given ---
 		s0 := []int{1, 2}
 		s1 := []int{1, 3}
-		typ0 := types.NewTPrv().SetSInt(s0)
-		typ1 := types.NewTPrv().SetSInt(s1)
+		typ0 := testcases.NewTPrv().SetSInt(s0)
+		typ1 := testcases.NewTPrv().SetSInt(s1)
 
 		// --- When ---
 		err := Equal(typ0, typ1)
@@ -895,8 +894,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 	t.Run("equal private array field", func(t *testing.T) {
 		// --- Given ---
 		a := [2]int{1, 2}
-		typ0 := types.NewTPrv().SetAInt(a)
-		typ1 := types.NewTPrv().SetAInt(a)
+		typ0 := testcases.NewTPrv().SetAInt(a)
+		typ1 := testcases.NewTPrv().SetAInt(a)
 
 		// --- When ---
 		err := Equal(typ0, typ1)
@@ -909,8 +908,8 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		// --- Given ---
 		a0 := [2]int{1, 2}
 		a1 := [2]int{1, 3}
-		typ0 := types.NewTPrv().SetAInt(a0)
-		typ1 := types.NewTPrv().SetAInt(a1)
+		typ0 := testcases.NewTPrv().SetAInt(a0)
+		typ1 := testcases.NewTPrv().SetAInt(a1)
 
 		// --- When ---
 		err := Equal(typ0, typ1)
@@ -926,10 +925,10 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("recursive", func(t *testing.T) {
 		// --- Given ---
-		s0 := types.TRec{Int: 1, Rec: &types.TRec{Int: 2}}
+		s0 := testcases.TRec{Int: 1, Rec: &testcases.TRec{Int: 2}}
 		s0.Rec.Rec = &s0
 
-		s1 := types.TRec{Int: 1, Rec: &types.TRec{Int: 2}}
+		s1 := testcases.TRec{Int: 1, Rec: &testcases.TRec{Int: 2}}
 		s1.Rec.Rec = &s1
 
 		// --- When ---
@@ -1625,7 +1624,7 @@ func Test_Equal_kind_UnsafePointer(t *testing.T) {
 }
 
 func Test_Equal_EqualCases_tabular(t *testing.T) {
-	for _, tc := range cases.EqualCases() {
+	for _, tc := range testcases.EqualCases() {
 		t.Run("Equal "+tc.Desc, func(t *testing.T) {
 			// --- When ---
 			have := Equal(tc.Val0, tc.Val1)

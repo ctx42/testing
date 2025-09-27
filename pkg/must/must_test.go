@@ -8,13 +8,13 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_Value(t *testing.T) {
 	t.Run("no error", func(t *testing.T) {
 		// --- When ---
-		have := Value(types.NewTInt(42))
+		have := Value(testcases.NewTInt(42))
 
 		// --- Then ---
 		affirm.Equal(t, 42, have.V)
@@ -22,7 +22,7 @@ func Test_Value(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		// --- When ---
-		msg := affirm.Panic(t, func() { Value(types.NewTInt(40)) })
+		msg := affirm.Panic(t, func() { Value(testcases.NewTInt(40)) })
 
 		// --- Then ---
 		affirm.Equal(t, "not cool", *msg)

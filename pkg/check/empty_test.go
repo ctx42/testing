@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/pkg/cases"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_Empty(t *testing.T) {
@@ -51,7 +51,7 @@ func Test_Empty(t *testing.T) {
 }
 
 func Test_Empty_ZENValues(t *testing.T) {
-	for _, tc := range cases.ZENValues() {
+	for _, tc := range testcases.ZENValues() {
 		t.Run("Empty "+tc.Desc, func(t *testing.T) {
 			// --- When ---
 			have := Empty(tc.Val)

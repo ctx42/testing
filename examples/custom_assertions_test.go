@@ -4,14 +4,14 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/check"
+	"github.com/ctx42/testing/pkg/testcases"
 	"github.com/ctx42/testing/pkg/tester"
 
 	"github.com/ctx42/testing/pkg/assert"
 )
 
-func AssertTA(t tester.T, want, have *types.TA, opts ...any) bool {
+func AssertTA(t tester.T, want, have *testcases.TA, opts ...any) bool {
 	t.Helper()
 
 	ops := check.DefaultOptions(opts...)
@@ -33,8 +33,8 @@ func Test_AssertTA(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.Close()
 
-		w := &types.TA{Int: 1, Str: "a", TAp: &types.TA{Int: 2, Str: "b"}}
-		h := &types.TA{Int: 1, Str: "a", TAp: &types.TA{Int: 2, Str: "b"}}
+		w := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2, Str: "b"}}
+		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2, Str: "b"}}
 
 		// --- When ---
 		AssertTA(tspy, w, h)
@@ -52,8 +52,8 @@ func Test_AssertTA(t *testing.T) {
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
-		w := &types.TA{Int: 1, Str: "a", TAp: &types.TA{Int: 2, Str: "b"}}
-		h := &types.TA{Int: 1, Str: "a", TAp: &types.TA{Int: 3, Str: "b"}}
+		w := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2, Str: "b"}}
+		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 3, Str: "b"}}
 
 		// --- When ---
 		AssertTA(tspy, w, h)

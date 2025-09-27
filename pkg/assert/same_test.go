@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/check"
+	"github.com/ctx42/testing/pkg/testcases"
 	"github.com/ctx42/testing/pkg/tester"
 )
 
@@ -16,7 +16,7 @@ func Test_Same(t *testing.T) {
 	t.Run("pointers", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
-		ptr0 := &types.TPtr{Val: "0"}
+		ptr0 := &testcases.TPtr{Val: "0"}
 
 		// --- When ---
 		have := Same(tspy, ptr0, ptr0)
@@ -32,8 +32,8 @@ func Test_Same(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		w := types.TPtr{Val: "0"}
-		h := &types.TPtr{Val: "0"}
+		w := testcases.TPtr{Val: "0"}
+		h := &testcases.TPtr{Val: "0"}
 
 		// --- When ---
 		have := Same(tspy, w, h)
@@ -49,8 +49,8 @@ func Test_Same(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		w := &types.TPtr{Val: "0"}
-		h := types.TPtr{Val: "0"}
+		w := &testcases.TPtr{Val: "0"}
+		h := testcases.TPtr{Val: "0"}
 
 		// --- When ---
 		have := Same(tspy, w, h)
@@ -66,8 +66,8 @@ func Test_Same(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		ptr0 := &types.TPtr{Val: "0"}
-		ptr1 := &types.TPtr{Val: "1"}
+		ptr0 := &testcases.TPtr{Val: "0"}
+		ptr1 := &testcases.TPtr{Val: "1"}
 
 		// --- When ---
 		have := Same(tspy, ptr0, ptr1)
@@ -83,8 +83,8 @@ func Test_Same(t *testing.T) {
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		ptr0 := &types.TPtr{Val: "0"}
-		ptr1 := &types.TPtr{Val: "1"}
+		ptr0 := &testcases.TPtr{Val: "0"}
+		ptr1 := &testcases.TPtr{Val: "1"}
 
 		opt := check.WithTrail("type.field")
 
@@ -101,8 +101,8 @@ func Test_NotSame(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		ptr0 := &types.TPtr{Val: "0"}
-		ptr1 := &types.TPtr{Val: "1"}
+		ptr0 := &testcases.TPtr{Val: "0"}
+		ptr1 := &testcases.TPtr{Val: "1"}
 
 		// --- When ---
 		have := NotSame(tspy, ptr0, ptr1)
@@ -118,7 +118,7 @@ func Test_NotSame(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		ptr0 := &types.TPtr{Val: "0"}
+		ptr0 := &testcases.TPtr{Val: "0"}
 
 		// --- When ---
 		have := NotSame(tspy, ptr0, ptr0)
@@ -134,7 +134,7 @@ func Test_NotSame(t *testing.T) {
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		ptr0 := &types.TPtr{Val: "0"}
+		ptr0 := &testcases.TPtr{Val: "0"}
 
 		opt := check.WithTrail("type.field")
 

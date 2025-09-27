@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_typeString(t *testing.T) {
@@ -23,8 +23,8 @@ func Test_typeString(t *testing.T) {
 		{"string", reflect.ValueOf("abc"), "string"},
 		{"int", reflect.ValueOf(123), "int"},
 		{"invalid", reflect.ValueOf(nil), "<invalid>"},
-		{"struct", reflect.ValueOf(types.TA{}), "types.TA"},
-		{"ptr struct", reflect.ValueOf(&types.TA{}), "*types.TA"},
+		{"struct", reflect.ValueOf(testcases.TA{}), "testcases.TA"},
+		{"ptr struct", reflect.ValueOf(&testcases.TA{}), "*testcases.TA"},
 	}
 
 	for _, tc := range tt {
@@ -57,10 +57,10 @@ func Test_isPrintableChar(t *testing.T) {
 }
 
 func Test_valToString_tabular(t *testing.T) {
-	var itf, nilItf types.TItf
-	itf = types.TVal{}
-	var ptr, nilPtr *types.TPtr
-	ptr = &types.TPtr{}
+	var itf, nilItf testcases.TItf
+	itf = testcases.TVal{}
+	var ptr, nilPtr *testcases.TPtr
+	ptr = &testcases.TPtr{}
 
 	tt := []struct {
 		testN string
@@ -88,11 +88,11 @@ func Test_valToString_tabular(t *testing.T) {
 		{"string", "abc", `"abc"`},
 		{"bool", true, "true"},
 
-		{"struct", types.TA{}, "types.TA"},
+		{"struct", testcases.TA{}, "testcases.TA"},
 		{"nil interface", nilItf, "<invalid>"},
-		{"non-nil interface", itf, "types.TVal"},
+		{"non-nil interface", itf, "testcases.TVal"},
 		{"nil pointer", nilPtr, "nil"},
-		{"non-nil pointer", ptr, "*types.TPtr"},
+		{"non-nil pointer", ptr, "*testcases.TPtr"},
 
 		{"complex64", complex(float32(1.0), float32(2.0)), "(1+2i)"},
 		{"complex128", complex(3.0, 4.0), "(3+4i)"},

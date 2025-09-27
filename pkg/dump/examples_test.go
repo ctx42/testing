@@ -8,15 +8,15 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/dump"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func ExampleDump_Any() {
-	val := types.TA{
+	val := testcases.TA{
 		Dur: 3,
 		Int: 42,
-		Loc: types.WAW,
+		Loc: testcases.WAW,
 		Str: "abc",
 		Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
 		TAp: nil,
@@ -40,7 +40,7 @@ func ExampleDump_Any() {
 func ExampleDump_Any_flatCompact() {
 	val := map[string]any{
 		"int": 42,
-		"loc": types.WAW,
+		"loc": testcases.WAW,
 		"nil": nil,
 	}
 

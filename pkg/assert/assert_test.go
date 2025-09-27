@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/check"
+	"github.com/ctx42/testing/pkg/testcases"
 	"github.com/ctx42/testing/pkg/tester"
 )
 
@@ -197,7 +197,7 @@ func Test_Fields(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := Fields(tspy, 7, types.TA{})
+		have := Fields(tspy, 7, testcases.TA{})
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -211,7 +211,7 @@ func Test_Fields(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := Fields(tspy, 1, &types.TA{})
+		have := Fields(tspy, 1, &testcases.TA{})
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -227,7 +227,7 @@ func Test_Fields(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Fields(tspy, 1, &types.TA{}, opt)
+		have := Fields(tspy, 1, &testcases.TA{}, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

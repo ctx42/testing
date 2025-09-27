@@ -10,14 +10,13 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/ctx42/testing/internal/types"
-	"github.com/ctx42/testing/pkg/cases"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 const expMsg = "expected same:\n  want: %v\n  have: %v"
 
 func Test_IsNil_tabular_ZENValues(t *testing.T) {
-	for _, tc := range cases.ZENValues() {
+	for _, tc := range testcases.ZENValues() {
 		t.Run("Nil "+tc.Desc, func(t *testing.T) {
 			// --- When ---
 			hNil, hWrapped := IsNil(tc.Val)
@@ -89,12 +88,12 @@ func Test_WillPanic(t *testing.T) {
 
 func Test_Same_tabular(t *testing.T) {
 	// Pointers.
-	ptr0 := &types.TPtr{Val: "0"}
-	ptr1 := &types.TPtr{Val: "1"}
+	ptr0 := &testcases.TPtr{Val: "0"}
+	ptr1 := &testcases.TPtr{Val: "1"}
 
 	// Interfaces.
-	var itfPtr0, itfPtr1 types.TItf
-	itfPtr0, itfPtr1 = &types.TPtr{Val: "0"}, &types.TPtr{Val: "1"}
+	var itfPtr0, itfPtr1 testcases.TItf
+	itfPtr0, itfPtr1 = &testcases.TPtr{Val: "0"}, &testcases.TPtr{Val: "1"}
 
 	// Functions.
 	fn0 := func() {}
@@ -146,12 +145,12 @@ func Test_Same_tabular(t *testing.T) {
 	}{
 		{"ptr same", ptr0, ptr0, true},
 		{"ptr not same", ptr0, ptr1, false},
-		{"ptr different types not same", &types.TPtr{}, &types.TVal{}, false},
+		{"ptr different types not same", &testcases.TPtr{}, &testcases.TVal{}, false},
 		{"prt nil both", nil, nil, false},
 
 		{"itf ptr same", itfPtr0, itfPtr0, true},
 		{"itf ptr not same", itfPtr0, itfPtr1, false},
-		{"obj val not same", types.TVal{}, types.TVal{}, false},
+		{"obj val not same", testcases.TVal{}, testcases.TVal{}, false},
 
 		{"func same", fn0, fn0, true},
 		{"func not same", fn0, fn1, false},
@@ -222,7 +221,7 @@ func Test_Same_tabular(t *testing.T) {
 }
 
 func Test_Pointer_tabular(t *testing.T) {
-	s2 := []*types.TA{{TAp: &types.TA{Int: 42}}}
+	s2 := []*testcases.TA{{TAp: &testcases.TA{Int: 42}}}
 
 	tt := []struct {
 		testN string
@@ -232,7 +231,7 @@ func Test_Pointer_tabular(t *testing.T) {
 	}{
 		{"nil", reflect.ValueOf(nil), true},
 		{"struct value", reflect.ValueOf(struct{}{}), true},
-		{"nil struct pointer", reflect.ValueOf((*types.TIntStr)(nil)), true},
+		{"nil struct pointer", reflect.ValueOf((*testcases.TIntStr)(nil)), true},
 		{
 			"struct pointer",
 			reflect.ValueOf(&struct{ Int int }{Int: 123}),
@@ -264,7 +263,7 @@ func Test_Pointer_tabular(t *testing.T) {
 func Test_Value(t *testing.T) {
 	t.Run("struct by pointer - with exported fields", func(t *testing.T) {
 		// --- Given ---
-		ps := &types.TIntStr{Int: 42, Str: "abc"}
+		ps := &testcases.TIntStr{Int: 42, Str: "abc"}
 		val := reflect.ValueOf(ps)
 
 		// --- When ---
@@ -274,15 +273,15 @@ func Test_Value(t *testing.T) {
 		if !haveOK {
 			t.Error("expected success")
 		}
-		have := haveVal.(*types.TIntStr)
-		if !reflect.DeepEqual(have, &types.TIntStr{Int: 42, Str: "abc"}) {
+		have := haveVal.(*testcases.TIntStr)
+		if !reflect.DeepEqual(have, &testcases.TIntStr{Int: 42, Str: "abc"}) {
 			t.Errorf("expected correct field value")
 		}
 	})
 
 	t.Run("struct by pointer - exported field", func(t *testing.T) {
 		// --- Given ---
-		ps := &types.TIntStr{Int: 42, Str: "abc"}
+		ps := &testcases.TIntStr{Int: 42, Str: "abc"}
 		val := reflect.ValueOf(ps).Elem().FieldByName("Int")
 
 		// --- When ---
@@ -342,7 +341,7 @@ func Test_Value(t *testing.T) {
 
 	t.Run("struct by value - private int field", func(t *testing.T) {
 		// --- Given ---
-		prv := types.NewTPrv().SetInt(42)
+		prv := testcases.NewTPrv().SetInt(42)
 		val := reflect.ValueOf(prv).FieldByName("vInt")
 
 		// --- When ---
@@ -359,7 +358,7 @@ func Test_Value(t *testing.T) {
 
 	t.Run("struct by value - private pointer field", func(t *testing.T) {
 		// --- Given ---
-		prv := types.NewTPrv().SetPtr(&types.TVal{Val: "abc"})
+		prv := testcases.NewTPrv().SetPtr(&testcases.TVal{Val: "abc"})
 		val := reflect.ValueOf(prv).FieldByName("ptr")
 
 		// --- When ---
@@ -369,7 +368,7 @@ func Test_Value(t *testing.T) {
 		if !haveOK {
 			t.Error("expected success")
 		}
-		have := haveVal.(*types.TVal)
+		have := haveVal.(*testcases.TVal)
 		if have.Val != "abc" {
 			t.Errorf("expected correct field value")
 		}
@@ -377,7 +376,7 @@ func Test_Value(t *testing.T) {
 
 	t.Run("struct by value - private slice field", func(t *testing.T) {
 		// --- Given ---
-		prv := types.NewTPrv().SetSInt([]int{1, 2, 3})
+		prv := testcases.NewTPrv().SetSInt([]int{1, 2, 3})
 		val := reflect.ValueOf(prv).FieldByName("sInt")
 
 		// --- When ---
@@ -395,7 +394,7 @@ func Test_Value(t *testing.T) {
 
 	t.Run("struct by value - private array field", func(t *testing.T) {
 		// --- Given ---
-		prv := types.NewTPrv().SetAInt([...]int{1, 2})
+		prv := testcases.NewTPrv().SetAInt([...]int{1, 2})
 		val := reflect.ValueOf(prv).FieldByName("aInt")
 
 		// --- When ---
@@ -413,7 +412,7 @@ func Test_Value(t *testing.T) {
 
 	t.Run("struct by value - private map field", func(t *testing.T) {
 		// --- Given ---
-		prv := types.NewTPrv().SetMapII(map[int]int{1: 11, 2: 22})
+		prv := testcases.NewTPrv().SetMapII(map[int]int{1: 11, 2: 22})
 		val := reflect.ValueOf(prv).FieldByName("vMap")
 
 		// --- When ---
@@ -432,7 +431,7 @@ func Test_Value(t *testing.T) {
 	t.Run("struct by value - private time field", func(t *testing.T) {
 		// --- Given ---
 		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		prv := types.NewTPrv().SetTim(tim)
+		prv := testcases.NewTPrv().SetTim(tim)
 		val := reflect.ValueOf(prv).FieldByName("tim")
 
 		// --- When ---
@@ -450,7 +449,7 @@ func Test_Value(t *testing.T) {
 	t.Run("struct by value - private function field", func(t *testing.T) {
 		// --- Given ---
 		fn := func() int { return 42 }
-		prv := types.NewTPrv().SetFn(fn)
+		prv := testcases.NewTPrv().SetFn(fn)
 		val := reflect.ValueOf(prv).FieldByName("fn")
 
 		// --- When ---
@@ -468,7 +467,7 @@ func Test_Value(t *testing.T) {
 	t.Run("struct by value - private chan field", func(t *testing.T) {
 		// --- Given ---
 		ch := make(chan int)
-		prv := types.NewTPrv().SetCh(ch)
+		prv := testcases.NewTPrv().SetCh(ch)
 		val := reflect.ValueOf(prv).FieldByName("ch")
 
 		// --- When ---
@@ -485,8 +484,8 @@ func Test_Value(t *testing.T) {
 
 	t.Run("interface", func(t *testing.T) {
 		// --- Given ---
-		var itf types.TItf
-		itf = &types.TPtr{}
+		var itf testcases.TItf
+		itf = &testcases.TPtr{}
 		val := reflect.ValueOf(itf)
 
 		// --- When ---
@@ -505,7 +504,7 @@ func Test_Value(t *testing.T) {
 func Test_Value_tabular_success(t *testing.T) {
 	chn := make(chan int)
 	m := make(map[string]int)
-	ptr := &types.TPtr{}
+	ptr := &testcases.TPtr{}
 
 	tt := []struct {
 		testN string
@@ -536,7 +535,7 @@ func Test_Value_tabular_success(t *testing.T) {
 		{"pointer", ptr, ptr},
 		{"slice", []int{1, 2, 3}, []int{1, 2, 3}},
 		{"string", "abc", "abc"},
-		{"struct", types.TPtr{}, types.TPtr{}},
+		{"struct", testcases.TPtr{}, testcases.TPtr{}},
 
 		{"uintptr", uintptr(42), uintptr(42)},
 		{"unsafe pointer", unsafe.Pointer(ptr), unsafe.Pointer(ptr)},
@@ -580,7 +579,7 @@ func Test_value(t *testing.T) {
 func Test_ValueSimple_tabular(t *testing.T) {
 	chn := make(chan int)
 	m := make(map[string]int)
-	ptr := &types.TPtr{}
+	ptr := &testcases.TPtr{}
 
 	tt := []struct {
 		testN string
@@ -614,7 +613,7 @@ func Test_ValueSimple_tabular(t *testing.T) {
 		{"pointer", ptr, nil, false},
 		{"slice", []int{1, 2, 3}, nil, false},
 		{"string", "abc", "abc", true},
-		{"struct", types.TPtr{}, nil, false},
+		{"struct", testcases.TPtr{}, nil, false},
 		{"unsafe pointer", uintptr(unsafe.Pointer(ptr)), nil, false},
 	}
 

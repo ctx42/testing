@@ -1,6 +1,6 @@
 Map of simple structs.
 ---
-map[int]types.TRec{
+map[int]testcases.TRec{
   0: {
     Int: 0,
     Rec: nil,

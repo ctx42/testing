@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/assert"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_AnyString_tabular(t *testing.T) {
@@ -107,8 +107,8 @@ func Test_AnyCtx_tabular(t *testing.T) {
 }
 
 func Test_MatchSame(t *testing.T) {
-	ptr0 := &types.TInt{}
-	ptr1 := &types.TInt{}
+	ptr0 := &testcases.TInt{}
+	ptr1 := &testcases.TInt{}
 
 	t.Run("same ptr", func(t *testing.T) {
 		// --- When ---

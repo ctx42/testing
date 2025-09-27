@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/assert"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_callStack(t *testing.T) {
@@ -139,7 +139,7 @@ func Test_isTestFunction_tabular(t *testing.T) {
 
 func Test_methodName(t *testing.T) {
 	// --- Given ---
-	ptr := &types.TPtr{}
+	ptr := &testcases.TPtr{}
 	met := reflect.ValueOf(ptr.AAA)
 
 	// --- When ---

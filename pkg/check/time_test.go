@@ -9,14 +9,14 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_Time(t *testing.T) {
 	t.Run("equal both time.Time", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 5, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
 		err := Time(want, have)
@@ -29,7 +29,7 @@ func Test_Time(t *testing.T) {
 	t.Run("not equal both time.Time", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 6, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
 
 		// --- When ---
 		err := Time(want, have)
@@ -133,7 +133,7 @@ func Test_Time(t *testing.T) {
 	t.Run("log message with trail", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 6, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
 		opt := WithTrail("type.field")
 
 		// --- When ---
@@ -221,7 +221,7 @@ func Test_Exact(t *testing.T) {
 	t.Run("error - not exact timezone", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 5, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
 		err := Exact(want, have)
@@ -922,7 +922,7 @@ func Test_Zone(t *testing.T) {
 
 	t.Run("not equal instance", func(t *testing.T) {
 		// --- When ---
-		err := Zone(time.UTC, types.WAW)
+		err := Zone(time.UTC, testcases.WAW)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -975,7 +975,7 @@ func Test_Zone(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Zone(time.UTC, types.WAW, opt)
+		err := Zone(time.UTC, testcases.WAW, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -1051,9 +1051,9 @@ func Test_Duration(t *testing.T) {
 func Test_formatDates(t *testing.T) {
 	t.Run("same format", func(t *testing.T) {
 		// --- Given ---
-		wTim := time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW)
+		wTim := time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW)
 		wTimStr := "2000-01-02T03:04:05+02:00"
-		hTim := time.Date(2001, 1, 2, 3, 4, 5, 0, types.WAW)
+		hTim := time.Date(2001, 1, 2, 3, 4, 5, 0, testcases.WAW)
 		hTimStr := "2001-01-02T03:04:05+02:00"
 
 		// --- When ---
@@ -1081,7 +1081,7 @@ func Test_formatDates(t *testing.T) {
 
 	t.Run("want date string is longer", func(t *testing.T) {
 		// --- Given ---
-		wTim := time.Date(2001, 1, 2, 3, 4, 5, 0, types.WAW)
+		wTim := time.Date(2001, 1, 2, 3, 4, 5, 0, testcases.WAW)
 		wTimStr := "2001-01-02T03:04:05+01:00"
 		hTim := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		hTimStr := "2000-01-02T03:04:05Z"
@@ -1098,7 +1098,7 @@ func Test_formatDates(t *testing.T) {
 		// --- Given ---
 		wTim := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		wTimStr := "2000-01-02T03:04:05Z"
-		hTim := time.Date(2001, 1, 2, 3, 4, 5, 0, types.WAW)
+		hTim := time.Date(2001, 1, 2, 3, 4, 5, 0, testcases.WAW)
 		hTimStr := "2001-01-02T03:04:05+01:00"
 
 		// --- When ---
@@ -1208,21 +1208,21 @@ func Test_getTime_success_tabular(t *testing.T) {
 		},
 		{
 			"time.Time in UTC - apply different timezone",
-			[]any{WithZone(types.WAW)},
+			[]any{WithZone(testcases.WAW)},
 			time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
 			"2000-01-02T04:04:05+01:00",
 			timeTypeTim,
 			time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
-			types.WAW,
+			testcases.WAW,
 		},
 		{
 			"time.Time in WAW",
 			nil,
-			time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW),
+			time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW),
 			"2000-01-02T03:04:05+01:00",
 			timeTypeTim,
-			time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW),
-			types.WAW,
+			time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW),
+			testcases.WAW,
 		},
 		{
 			"RFC3339",
@@ -1235,12 +1235,12 @@ func Test_getTime_success_tabular(t *testing.T) {
 		},
 		{
 			"RFC3339 - apply timezone",
-			[]any{WithZone(types.WAW)},
+			[]any{WithZone(testcases.WAW)},
 			"2000-01-02T03:04:05+01:00",
 			"2000-01-02T03:04:05+01:00",
 			timeTypeStr,
 			time.Date(2000, 1, 2, 2, 4, 5, 0, time.UTC),
-			types.WAW,
+			testcases.WAW,
 		},
 		{
 			"Unix timestamp int",
@@ -1253,12 +1253,12 @@ func Test_getTime_success_tabular(t *testing.T) {
 		},
 		{
 			"Unix timestamp int - apply timezone",
-			[]any{WithZone(types.WAW)},
+			[]any{WithZone(testcases.WAW)},
 			946778645,
 			"946778645",
 			timeTypeInt,
 			time.Date(2000, 1, 2, 2, 4, 5, 0, time.UTC),
-			types.WAW,
+			testcases.WAW,
 		},
 		{
 			"Unix timestamp int64",
@@ -1271,12 +1271,12 @@ func Test_getTime_success_tabular(t *testing.T) {
 		},
 		{
 			"Unix timestamp int64 - apply timezone",
-			[]any{WithZone(types.WAW)},
+			[]any{WithZone(testcases.WAW)},
 			int64(946778645),
 			"946778645",
 			timeTypeInt64,
 			time.Date(2000, 1, 2, 2, 4, 5, 0, time.UTC),
-			types.WAW,
+			testcases.WAW,
 		},
 	}
 
@@ -1304,29 +1304,29 @@ func Test_getZone(t *testing.T) {
 		affirm.Nil(t, err)
 		affirm.Equal(t, zoneString, haveRep)
 		affirm.Equal(t, "Europe/Warsaw", haveStr)
-		affirm.Equal(t, types.WAW.String(), haveZone.String())
+		affirm.Equal(t, testcases.WAW.String(), haveZone.String())
 	})
 
 	t.Run("timezone pointer instance", func(t *testing.T) {
 		// --- When ---
-		haveZone, haveStr, haveRep, err := getZone(types.WAW)
+		haveZone, haveStr, haveRep, err := getZone(testcases.WAW)
 
 		// --- Then ---
 		affirm.Nil(t, err)
 		affirm.Equal(t, zoneZone, haveRep)
 		affirm.Equal(t, "Europe/Warsaw", haveStr)
-		affirm.Equal(t, types.WAW.String(), haveZone.String())
+		affirm.Equal(t, testcases.WAW.String(), haveZone.String())
 	})
 
 	t.Run("timezone instance", func(t *testing.T) {
 		// --- When ---
-		haveZone, haveStr, haveRep, err := getZone(*types.WAW)
+		haveZone, haveStr, haveRep, err := getZone(*testcases.WAW)
 
 		// --- Then ---
 		affirm.Nil(t, err)
 		affirm.Equal(t, zoneZone, haveRep)
 		affirm.Equal(t, "Europe/Warsaw", haveStr)
-		affirm.Equal(t, types.WAW.String(), haveZone.String())
+		affirm.Equal(t, testcases.WAW.String(), haveZone.String())
 	})
 
 	t.Run("parsing error", func(t *testing.T) {

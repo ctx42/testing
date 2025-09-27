@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_Panic(t *testing.T) {
@@ -137,7 +137,7 @@ func Test_PanicContain(t *testing.T) {
 
 	t.Run("panics with other type", func(t *testing.T) {
 		// --- Given ---
-		v := types.TInt{V: 42}
+		v := testcases.TInt{V: 42}
 
 		// --- When ---
 		err := PanicContain("{42}", func() { panic(v) })
@@ -213,7 +213,7 @@ func Test_PanicMsg(t *testing.T) {
 
 	t.Run("panics with other type", func(t *testing.T) {
 		// --- Given ---
-		v := types.TInt{V: 42}
+		v := testcases.TInt{V: 42}
 
 		// --- When ---
 		msg, err := PanicMsg(func() { panic(v) })

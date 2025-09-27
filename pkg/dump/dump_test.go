@@ -16,8 +16,8 @@ import (
 
 	"github.com/ctx42/testing/internal/affirm"
 	"github.com/ctx42/testing/internal/core"
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/goldy"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_RegisterTypeDumper(t *testing.T) {
@@ -267,12 +267,12 @@ func Test_New(t *testing.T) {
 }
 
 func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
-	var itfNil types.TItf
-	var itfVal, itfPtr types.TItf
-	var sNil *types.TA
-	itfVal = types.TVal{}
-	itfPtr = &types.TPtr{}
-	sPtr := &types.TPtr{Val: "a"}
+	var itfNil testcases.TItf
+	var itfVal, itfPtr testcases.TItf
+	var sNil *testcases.TA
+	itfVal = testcases.TVal{}
+	itfPtr = &testcases.TPtr{}
+	sPtr := &testcases.TPtr{Val: "a"}
 	var aAnyNil any
 	es := []error{errors.New("error message")}
 	esNil := []error{nil}
@@ -374,7 +374,7 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 func Test_Dump_Any(t *testing.T) {
 	t.Run("nil interface value", func(t *testing.T) {
 		// --- Given ---
-		var itfNil types.TItf
+		var itfNil testcases.TItf
 		dmp := New()
 
 		// --- When ---

@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_HexPtrDumper(t *testing.T) {
@@ -66,7 +66,7 @@ func Test_HexPtrDumper(t *testing.T) {
 }
 
 func Test_HexPtrDumper_tabular(t *testing.T) {
-	sPtr := &types.TPtr{Val: "a"}
+	sPtr := &testcases.TPtr{Val: "a"}
 
 	tt := []struct {
 		testN string

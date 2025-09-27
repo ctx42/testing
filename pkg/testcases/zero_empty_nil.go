@@ -1,12 +1,10 @@
 // SPDX-FileCopyrightText: (c) 2025 Rafal Zajac <rzajac@gmail.com>
 // SPDX-License-Identifier: MIT
 
-package cases
+package testcases
 
 import (
 	"time"
-
-	"github.com/ctx42/testing/internal/types"
 )
 
 // ZENValue represents a value and if it's considered zero, empty or nil value.
@@ -21,8 +19,8 @@ type ZENValue struct {
 
 // ZENValues returns cases for zero, empty and nil values.
 func ZENValues() []ZENValue {
-	var nilPtr *types.TPtr
-	var nilItf types.TItf
+	var nilPtr *TPtr
+	var nilItf TItf
 	var nilChan chan int
 	var nilMap map[int]string
 	var nilSlice []int
@@ -50,7 +48,7 @@ func ZENValues() []ZENValue {
 		},
 		{
 			Desc:         "non nil pointer but empty struct",
-			Val:          &types.TPtr{},
+			Val:          &TPtr{},
 			IsZero:       false,
 			IsEmpty:      true,
 			IsNil:        false,
@@ -58,7 +56,7 @@ func ZENValues() []ZENValue {
 		},
 		{
 			Desc:         "non nil pointer not empty struct",
-			Val:          &types.TPtr{Val: "abc"},
+			Val:          &TPtr{Val: "abc"},
 			IsZero:       false,
 			IsEmpty:      false,
 			IsNil:        false,
@@ -66,7 +64,7 @@ func ZENValues() []ZENValue {
 		},
 		{
 			Desc:         "nil interface 1",
-			Val:          types.TItf(nil),
+			Val:          TItf(nil),
 			IsZero:       false,
 			IsEmpty:      true,
 			IsNil:        true,

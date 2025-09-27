@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_ArrayDumper(t *testing.T) {
@@ -113,8 +113,8 @@ func Test_ArrayDumper_tabular(t *testing.T) {
 		{
 			"array of structs",
 			New(),
-			[]types.TRec{{Int: 1}, {Int: 2}},
-			"[]types.TRec{\n" +
+			[]testcases.TRec{{Int: 1}, {Int: 2}},
+			"[]testcases.TRec{\n" +
 				"  {\n    Int: 1,\n    Rec: nil,\n  },\n" +
 				"  {\n    Int: 2,\n    Rec: nil,\n  },\n" +
 				"}",

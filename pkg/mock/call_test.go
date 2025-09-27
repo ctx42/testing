@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/assert"
 	"github.com/ctx42/testing/pkg/goldy"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_newCall(t *testing.T) {
@@ -39,7 +39,7 @@ func Test_newCall(t *testing.T) {
 func Test_newProxy(t *testing.T) {
 	t.Run("regular", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{}
+		ptr := &testcases.TPtr{}
 		met := reflect.ValueOf(ptr.AAA)
 
 		// --- When ---
@@ -65,7 +65,7 @@ func Test_newProxy(t *testing.T) {
 
 	t.Run("variadic", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{}
+		ptr := &testcases.TPtr{}
 		met := reflect.ValueOf(ptr.Variadic)
 
 		// --- When ---
@@ -91,7 +91,7 @@ func Test_newProxy(t *testing.T) {
 
 	t.Run("custom name", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{}
+		ptr := &testcases.TPtr{}
 		met := reflect.ValueOf(ptr.Variadic)
 
 		// --- When ---
@@ -131,7 +131,7 @@ func Test_Call_withStack(t *testing.T) {
 func Test_Call_With(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{Val: "c"}
+		ptr := &testcases.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.AAA)
 		call := newProxy(prx)
 
@@ -194,7 +194,7 @@ func Test_Call_Return(t *testing.T) {
 
 	t.Run("panics if proxy call", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{Val: "c"}
+		ptr := &testcases.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.AAA)
 		call := newProxy(prx)
 
@@ -234,7 +234,7 @@ func Test_Call_Panic(t *testing.T) {
 
 	t.Run("panics if proxy call", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{Val: "c"}
+		ptr := &testcases.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.AAA)
 		call := newProxy(prx)
 
@@ -643,7 +643,7 @@ func Test_Call_call(t *testing.T) {
 
 	t.Run("calls proxy method", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{Val: "c"}
+		ptr := &testcases.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.Variadic)
 		call := newProxy(prx)
 
@@ -657,7 +657,7 @@ func Test_Call_call(t *testing.T) {
 
 	t.Run("alter called before proxied call", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{Val: "c"}
+		ptr := &testcases.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.Identity)
 		arg := "abc"
 		alter := func(args Arguments) { *(args.Get(0).(*string)) += " xyz" }
@@ -676,7 +676,7 @@ func Test_Call_call(t *testing.T) {
 func Test_Call_proxyCall(t *testing.T) {
 	t.Run("regular call", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{Val: "c"}
+		ptr := &testcases.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.AAA)
 		call := newProxy(prx)
 
@@ -691,7 +691,7 @@ func Test_Call_proxyCall(t *testing.T) {
 
 	t.Run("regular call with arguments", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{Val: "|"}
+		ptr := &testcases.TPtr{Val: "|"}
 		prx := reflect.ValueOf(ptr.Wrap)
 		call := newProxy(prx)
 
@@ -705,7 +705,7 @@ func Test_Call_proxyCall(t *testing.T) {
 
 	t.Run("variadic proxy without variadic arguments", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{Val: "v"}
+		ptr := &testcases.TPtr{Val: "v"}
 		prx := reflect.ValueOf(ptr.Variadic)
 		call := newProxy(prx)
 
@@ -719,7 +719,7 @@ func Test_Call_proxyCall(t *testing.T) {
 
 	t.Run("variadic proxy with one variadic arguments", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{Val: "v"}
+		ptr := &testcases.TPtr{Val: "v"}
 		prx := reflect.ValueOf(ptr.Variadic)
 		call := newProxy(prx)
 
@@ -733,7 +733,7 @@ func Test_Call_proxyCall(t *testing.T) {
 
 	t.Run("variadic proxy with multiple variadic arguments", func(t *testing.T) {
 		// --- Given ---
-		ptr := &types.TPtr{Val: "v"}
+		ptr := &testcases.TPtr{Val: "v"}
 		prx := reflect.ValueOf(ptr.Variadic)
 		call := newProxy(prx)
 

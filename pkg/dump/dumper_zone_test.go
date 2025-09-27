@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_ZoneDumper(t *testing.T) {
@@ -35,14 +35,14 @@ func Test_ZoneDumper_tabular(t *testing.T) {
 	}{
 		{
 			"timezone",
-			*types.WAW,
+			*testcases.WAW,
 			0,
 			0,
 			`"Europe/Warsaw"`,
 		},
 		{
 			"uses indent and level",
-			*types.WAW,
+			*testcases.WAW,
 			2,
 			1,
 			"      \"Europe/Warsaw\"",

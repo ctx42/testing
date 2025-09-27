@@ -9,19 +9,19 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/goldy"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_StructDumper(t *testing.T) {
 	t.Run("simple struct with private fields", func(t *testing.T) {
 		// --- Given ---
-		s := types.TA{
+		s := testcases.TA{
 			Int: 1,
 			Str: "2",
 			Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
 			Dur: 3,
-			Loc: types.WAW,
+			Loc: testcases.WAW,
 			TAp: nil,
 		}
 		dmp := New()
@@ -36,12 +36,12 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("simple struct without private fields", func(t *testing.T) {
 		// --- Given ---
-		s := types.TA{
+		s := testcases.TA{
 			Int: 1,
 			Str: "2",
 			Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
 			Dur: 3,
-			Loc: types.WAW,
+			Loc: testcases.WAW,
 			TAp: nil,
 		}
 		dmp := New(WithNoPrivate)
@@ -56,12 +56,12 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("simple flat & compact struct", func(t *testing.T) {
 		// --- Given ---
-		s := types.TA{
+		s := testcases.TA{
 			Int: 1,
 			Str: "2",
 			Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
 			Dur: 3,
-			Loc: types.WAW,
+			Loc: testcases.WAW,
 			TAp: nil,
 		}
 		dmp := New(WithFlat, WithCompact)
@@ -76,9 +76,9 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("multi level struct", func(t *testing.T) {
 		// --- Given ---
-		s := types.TRec{
+		s := testcases.TRec{
 			Int: 1,
-			Rec: &types.TRec{
+			Rec: &testcases.TRec{
 				Int: 2,
 			},
 		}
@@ -94,9 +94,9 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("multi-level struct with indent", func(t *testing.T) {
 		// --- Given ---
-		s := types.TRec{
+		s := testcases.TRec{
 			Int: 1,
-			Rec: &types.TRec{
+			Rec: &testcases.TRec{
 				Int: 2,
 			},
 		}
@@ -112,9 +112,9 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("multi-level flat & compact struct", func(t *testing.T) {
 		// --- Given ---
-		s := types.TRec{
+		s := testcases.TRec{
 			Int: 1,
-			Rec: &types.TRec{
+			Rec: &testcases.TRec{
 				Int: 2,
 			},
 		}

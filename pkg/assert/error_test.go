@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/check"
+	"github.com/ctx42/testing/pkg/testcases"
 	"github.com/ctx42/testing/pkg/tester"
 )
 
@@ -155,11 +155,11 @@ func Test_ErrorIs(t *testing.T) {
 func Test_ErrorAs(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		var target *types.TPtr
+		var target *testcases.TPtr
 		tspy := tester.New(t).Close()
 
 		// --- When ---
-		have := ErrorAs(tspy, &target, &types.TPtr{Val: "A"})
+		have := ErrorAs(tspy, &target, &testcases.TPtr{Val: "A"})
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -173,10 +173,10 @@ func Test_ErrorAs(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		var target types.TVal
+		var target testcases.TVal
 
 		// --- When ---
-		have := ErrorAs(tspy, &target, &types.TPtr{Val: "A"})
+		have := ErrorAs(tspy, &target, &testcases.TPtr{Val: "A"})
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -190,11 +190,11 @@ func Test_ErrorAs(t *testing.T) {
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		var target types.TVal
+		var target testcases.TVal
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := ErrorAs(tspy, &target, &types.TPtr{Val: "A"}, opt)
+		have := ErrorAs(tspy, &target, &testcases.TPtr{Val: "A"}, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

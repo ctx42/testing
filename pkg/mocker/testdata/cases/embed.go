@@ -3,8 +3,8 @@ package cases
 import (
 	"io"
 
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/mocker/testdata/pkga"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 type ItfA interface {
@@ -32,7 +32,7 @@ type Embedder interface {
 	ItfA
 	ItfB
 	io.Closer
-	types.TItf
+	testcases.TItf
 }
 
 // EmptyEmbed embeds empty interface.

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/check"
+	"github.com/ctx42/testing/pkg/testcases"
 	"github.com/ctx42/testing/pkg/tester"
 )
 
@@ -20,7 +20,7 @@ func Test_Time(t *testing.T) {
 		tspy.Close()
 
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 5, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
 		got := Time(tspy, want, have)
@@ -38,7 +38,7 @@ func Test_Time(t *testing.T) {
 		tspy.Close()
 
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 6, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
 
 		// --- When ---
 		got := Time(tspy, want, have)
@@ -56,7 +56,7 @@ func Test_Time(t *testing.T) {
 		tspy.Close()
 
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 6, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
@@ -91,7 +91,7 @@ func Test_Exact(t *testing.T) {
 		tspy.Close()
 
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 3, 4, 5, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
 		got := Exact(tspy, want, have)
@@ -384,7 +384,7 @@ func Test_Within(t *testing.T) {
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
-		have := time.Date(2000, 1, 2, 4, 4, 6, 0, types.WAW)
+		have := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
 
 		// --- When ---
 		got := Within(tspy, true, "1s", have)
@@ -401,7 +401,7 @@ func Test_Within(t *testing.T) {
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
-		want := time.Date(2000, 1, 2, 4, 4, 6, 0, types.WAW)
+		want := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
 
 		// --- When ---
 		got := Within(tspy, want, "1s", true)
@@ -479,7 +479,7 @@ func Test_Zone(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := Zone(tspy, nil, types.WAW)
+		have := Zone(tspy, nil, testcases.WAW)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -495,7 +495,7 @@ func Test_Zone(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Zone(tspy, nil, types.WAW, opt)
+		have := Zone(tspy, nil, testcases.WAW, opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

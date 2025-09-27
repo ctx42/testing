@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/pkg/cases"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_Zero(t *testing.T) {
@@ -60,7 +60,7 @@ func Test_zeroError(t *testing.T) {
 }
 
 func Test_Zero_ZENValues(t *testing.T) {
-	for _, tc := range cases.ZENValues() {
+	for _, tc := range testcases.ZENValues() {
 		t.Run("Zero "+tc.Desc, func(t *testing.T) {
 			// --- When ---
 			have := Zero(tc.Val)

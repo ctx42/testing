@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
-	"github.com/ctx42/testing/internal/types"
+	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_Error(t *testing.T) {
@@ -84,7 +84,7 @@ func Test_NoError(t *testing.T) {
 
 	t.Run("nil interface", func(t *testing.T) {
 		// --- Given ---
-		var e *types.TPtr
+		var e *testcases.TPtr
 
 		// --- When ---
 		err := NoError(e)
@@ -93,13 +93,13 @@ func Test_NoError(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "expected the error to be nil:\n" +
 			"  want: nil\n" +
-			"  have: *types.TPtr"
+			"  have: *testcases.TPtr"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
 	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
-		var e *types.TPtr
+		var e *testcases.TPtr
 		opt := WithTrail("type.field")
 
 		// --- When ---
@@ -110,13 +110,13 @@ func Test_NoError(t *testing.T) {
 		wMsg := "expected the error to be nil:\n" +
 			"  trail: type.field\n" +
 			"   want: nil\n" +
-			"   have: *types.TPtr"
+			"   have: *testcases.TPtr"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
 	t.Run("empty non-nil error", func(t *testing.T) {
 		// --- Given ---
-		e := &types.TPtr{}
+		e := &testcases.TPtr{}
 
 		// --- When ---
 		err := NoError(e)
@@ -226,10 +226,10 @@ func Test_ErrorIs_error_tabular(t *testing.T) {
 func Test_ErrorAs(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		var target *types.TPtr
+		var target *testcases.TPtr
 
 		// --- When ---
-		err := ErrorAs(&target, &types.TPtr{Val: "A"})
+		err := ErrorAs(&target, &testcases.TPtr{Val: "A"})
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -238,7 +238,7 @@ func Test_ErrorAs(t *testing.T) {
 
 	t.Run("nil", func(t *testing.T) {
 		// --- Given ---
-		var target *types.TPtr
+		var target *testcases.TPtr
 
 		// --- When ---
 		err := ErrorAs(target, nil)
@@ -251,17 +251,17 @@ func Test_ErrorAs(t *testing.T) {
 
 	t.Run("error - target is a value", func(t *testing.T) {
 		// --- Given ---
-		var target types.TVal
+		var target testcases.TVal
 
 		// --- When ---
-		err := ErrorAs(&target, &types.TPtr{Val: "A"})
+		err := ErrorAs(&target, &testcases.TPtr{Val: "A"})
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected error to have a target in its tree:\n" +
-			"  target: *types.TVal\n" +
-			"   error: *types.TPtr"
+			"  target: *testcases.TVal\n" +
+			"   error: *testcases.TPtr"
 		affirm.Equal(t, wMsg, err.Error())
 
 		affirm.Equal(t, "", target.Val)
@@ -269,17 +269,17 @@ func Test_ErrorAs(t *testing.T) {
 
 	t.Run("error - target is a pointer", func(t *testing.T) {
 		// --- Given ---
-		var target *types.TPtr
+		var target *testcases.TPtr
 
 		// --- When ---
-		err := ErrorAs(&target, types.TVal{Val: "A"})
+		err := ErrorAs(&target, testcases.TVal{Val: "A"})
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected error to have a target in its tree:\n" +
-			"  target: *types.TPtr\n" +
-			"   error: types.TVal"
+			"  target: *testcases.TPtr\n" +
+			"   error: testcases.TVal"
 		affirm.Equal(t, wMsg, err.Error())
 
 		affirm.Nil(t, target)
@@ -288,7 +288,7 @@ func Test_ErrorAs(t *testing.T) {
 	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
-		var target *types.TPtr
+		var target *testcases.TPtr
 
 		// --- When ---
 		err := ErrorAs(&target, errors.New("msg"), opt)
@@ -297,7 +297,7 @@ func Test_ErrorAs(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "expected error to have a target in its tree:\n" +
 			"   trail: type.field\n" +
-			"  target: *types.TPtr\n" +
+			"  target: *testcases.TPtr\n" +
 			"   error: *errors.errorString"
 		affirm.Equal(t, wMsg, err.Error())
 
@@ -438,7 +438,7 @@ func Test_ErrorContain(t *testing.T) {
 
 	t.Run("nil interface", func(t *testing.T) {
 		// --- Given ---
-		var e *types.TPtr
+		var e *testcases.TPtr
 
 		// --- When ---
 		err := ErrorContain("abc", e)
@@ -447,7 +447,7 @@ func Test_ErrorContain(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "expected error not to be nil:\n" +
 			"  want: <non-nil>\n" +
-			"  have: *types.TPtr"
+			"  have: *testcases.TPtr"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }
@@ -549,7 +549,7 @@ func Test_ErrorRegexp(t *testing.T) {
 
 	t.Run("nil interface", func(t *testing.T) {
 		// --- Given ---
-		var e *types.TPtr
+		var e *testcases.TPtr
 
 		// --- When ---
 		err := ErrorRegexp("^ab", e)
@@ -558,7 +558,7 @@ func Test_ErrorRegexp(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "expected error not to be nil:\n" +
 			"  want: <non-nil>\n" +
-			"  have: *types.TPtr"
+			"  have: *testcases.TPtr"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }

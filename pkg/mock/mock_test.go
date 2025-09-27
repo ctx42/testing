@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ctx42/testing/internal/types"
 	"github.com/ctx42/testing/pkg/assert"
 	"github.com/ctx42/testing/pkg/goldy"
+	"github.com/ctx42/testing/pkg/testcases"
 	"github.com/ctx42/testing/pkg/tester"
 )
 
@@ -334,7 +334,7 @@ func Test_Mock_Proxy(t *testing.T) {
 		tspy.Close()
 
 		mck := NewMock(tspy)
-		ptr := &types.TPtr{Val: "abc"}
+		ptr := &testcases.TPtr{Val: "abc"}
 
 		// --- When ---
 		call := mck.Proxy(ptr.AAA)
@@ -354,7 +354,7 @@ func Test_Mock_Proxy(t *testing.T) {
 		tspy.Close()
 
 		mck := NewMock(tspy)
-		ptr := &types.TPtr{Val: "abc"}
+		ptr := &testcases.TPtr{Val: "abc"}
 
 		// --- When ---
 		call := mck.Proxy(ptr.AAA, "MyName")
@@ -643,7 +643,7 @@ func Test_Mock_Call(t *testing.T) {
 		tspy.ExpectLogEqual(wMsg.String())
 		tspy.Close()
 
-		tim := time.Date(2020, 1, 2, 3, 4, 5, 0, types.WAW)
+		tim := time.Date(2020, 1, 2, 3, 4, 5, 0, testcases.WAW)
 
 		mck := NewMock(tspy, WithNoStack)
 		mck.On("Time", tim.UTC())
@@ -835,7 +835,7 @@ func Test_Mock_Call(t *testing.T) {
 		tspy.Close()
 
 		mck := NewMock(tspy)
-		ptr := &types.TPtr{Val: "b"}
+		ptr := &testcases.TPtr{Val: "b"}
 		mck.Proxy(ptr.Wrap)
 
 		// --- When ---
@@ -854,7 +854,7 @@ func Test_Mock_Call(t *testing.T) {
 		tspy.Close()
 
 		mck := NewMock(tspy)
-		ptr := &types.TPtr{Val: "b"}
+		ptr := &testcases.TPtr{Val: "b"}
 		mck.Proxy(ptr.Variadic)
 
 		// --- When ---
@@ -1220,7 +1220,7 @@ func Test_Mock_find(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		ptr := &types.TPtr{Val: "b"}
+		ptr := &testcases.TPtr{Val: "b"}
 		mck := NewMock(tspy)
 		mck.On("Error").Return(nil)
 		call := mck.Proxy(ptr.Wrap)
@@ -1241,7 +1241,7 @@ func Test_Mock_find(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		ptr := &types.TPtr{Val: "b"}
+		ptr := &testcases.TPtr{Val: "b"}
 		mck := NewMock(tspy)
 		mck.On("Error").Return(nil)
 		mck.Proxy(ptr.Wrap)
@@ -1265,7 +1265,7 @@ func Test_Mock_find(t *testing.T) {
 
 		mck := NewMock(tspy)
 		mck.On("Error").Return(nil)
-		ptr := &types.TPtr{Val: "b"}
+		ptr := &testcases.TPtr{Val: "b"}
 		mck.Proxy(ptr.Wrap).Once()
 		mck.Call("Wrap", "a", "c")
 
