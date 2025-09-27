@@ -1,3 +1,6 @@
+## v0.40.0 (Sat, 27 Sep 2025 08:47:03 UTC)
+- feat: Add `pkg/kit/reflectkit` package with helpers related to the `reflection` package.
+
 ## v0.39.0 (Sat, 27 Sep 2025 08:18:49 UTC)
 - feat: Expose internal `cases` package used for testing nil, equal, empty and zero values.
 
