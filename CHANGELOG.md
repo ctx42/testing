@@ -1,3 +1,6 @@
+## v0.41.0 (Sat, 27 Sep 2025 19:59:05 UTC)
+- feat!: Rename `pkg/cases` to `pkg/testcases` which is a better name.
+
 ## v0.40.0 (Sat, 27 Sep 2025 08:47:03 UTC)
 - feat: Add `pkg/kit/reflectkit` package with helpers related to the `reflection` package.
 
