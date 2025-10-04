@@ -266,6 +266,18 @@ func Test_New(t *testing.T) {
 	})
 }
 
+func Test_Any(t *testing.T) {
+	// --- When ---
+	have := Any(map[string]int{"A": 1, "B": 2})
+
+	// --- Then ---
+	want := "map[string]int{\n" +
+		"  \"A\": 1,\n" +
+		"  \"B\": 2,\n" +
+		"}"
+	affirm.Equal(t, want, have)
+}
+
 func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 	var itfNil testcases.TItf
 	var itfVal, itfPtr testcases.TItf

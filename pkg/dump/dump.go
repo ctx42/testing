@@ -269,6 +269,10 @@ func New(opts ...Option) Dump {
 	return dmp
 }
 
+// Any dumps any value to its string representation using the default [Dump]
+// configuration.
+func Any(val any) string { return New().Any(val) }
+
 // Any dumps any value to its string representation.
 func (dmp Dump) Any(val any) string {
 	str, _ := dmp.value(0, reflect.ValueOf(val))
