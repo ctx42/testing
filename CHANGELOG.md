@@ -1,3 +1,6 @@
+## v0.42.0 (Sat, 04 Oct 2025 07:34:13 UTC)
+- feat: Add convenience function `dump.Any` that dumps values using default configuration.
+
 ## v0.41.0 (Sat, 27 Sep 2025 19:59:05 UTC)
 - feat!: Rename `pkg/cases` to `pkg/testcases` which is a better name.
 
