@@ -22,15 +22,17 @@ var globLog = log.New(os.Stderr, "*** DUMP ", log.Llongfile)
 
 // Strings used by dump package to indicate special values.
 const (
-	ValNotNil     = "<not-nil>"          // Represents any not-nil value.
-	ValNil        = "nil"                // The [reflect.Value] is nil.
-	ValAddr       = "<addr>"             // The [reflect.Value] is an address.
-	ValFunc       = "<func>"             // The [reflect.Value] is a function.
-	ValChan       = "<chan>"             // The [reflect.Value] is a channel.
-	ValInvalid    = "<invalid>"          // The [reflect.Value] is invalid.
-	ValMaxNesting = "<...>"              // The maximum nesting reached.
-	ValEmpty      = "<empty>"            // Empty value.
-	ValErrUsage   = "<dump-usage-error>" // The [reflect.Value] is unexpected in the given context.
+	ValNotNil     = "<not-nil>" // Represents any not-nil value.
+	ValNil        = "nil"       // The [reflect.Value] is nil.
+	ValAddr       = "<addr>"    // The [reflect.Value] is an address.
+	ValFunc       = "<func>"    // The [reflect.Value] is a function.
+	ValChan       = "<chan>"    // The [reflect.Value] is a channel.
+	ValInvalid    = "<invalid>" // The [reflect.Value] is invalid.
+	ValMaxNesting = "<...>"     // The maximum nesting reached.
+	ValEmpty      = "<empty>"   // Empty value.
+
+	// ValErrUsage the [reflect.Value] is unexpected in the given context.
+	ValErrUsage = "<dump-usage-error>"
 )
 
 // Package wide default configuration.

@@ -127,7 +127,7 @@ func HasKeyValue[K, V comparable](key K, want V, set map[K]V, opts ...any) error
 	if err != nil {
 		return err
 	}
-	if want == have {
+	if err = Equal(want, have, opts...); err == nil {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
