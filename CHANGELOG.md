@@ -1,3 +1,6 @@
+## v0.42.1 (Tue, 07 Oct 2025 11:19:59 UTC)
+- feat: Use `check.Equal` to compare values in `check.HasKeyValue` - with this change more complicated structures can be compared.
+
 ## v0.42.0 (Sat, 04 Oct 2025 07:34:13 UTC)
 - feat: Add convenience function `dump.Any` that dumps values using default configuration.
 
