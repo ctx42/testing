@@ -279,12 +279,13 @@ func Test_Config_create(t *testing.T) {
 		}
 
 		// --- When ---
-		have, err := cfg.create()
+		hCfg, hCreated, err := cfg.create()
 
 		// --- Then ---
 		assert.NoError(t, err)
 		assert.NoFileExist(t, pth)
-		assert.Same(t, buf, have.tgtOut)
+		assert.Same(t, buf, hCfg.tgtOut)
+		assert.False(t, hCreated)
 	})
 
 	t.Run("path is not absolute", func(t *testing.T) {
@@ -296,27 +297,36 @@ func Test_Config_create(t *testing.T) {
 		}
 
 		// --- When ---
-		have, err := cfg.create()
+		fCfg, hCreated, err := cfg.create()
 
 		// --- Then ---
 		assert.NoError(t, err)
 		assert.NoFileExist(t, "_target_.go")
-		assert.Same(t, buf, have.tgtOut)
+		assert.Same(t, buf, fCfg.tgtOut)
+		assert.False(t, hCreated)
 	})
 
 	t.Run("file created", func(t *testing.T) {
 		// --- Given ---
 		pth := filepath.Join(t.TempDir(), "_target_.go")
-		cfg := &Config{tgtFilename: pth}
+		cfg := &Config{
+			tgtFilename: pth,
+			tgtPkg: &gopkg{
+				pkgName: "name",
+				pkgDir:  t.TempDir(),
+			},
+		}
 
 		// --- When ---
-		have, err := cfg.create()
+		hCfg, hCreated, err := cfg.create()
 
 		// --- Then ---
 		assert.NoError(t, err)
 		assert.FileExist(t, pth)
-		assert.NotNil(t, have.tgtOut)
-		assert.SameType(t, &os.File{}, have.tgtOut)
+		assert.NotNil(t, hCfg.tgtOut)
+		assert.SameType(t, &os.File{}, hCfg.tgtOut)
+		assert.FileContain(t, "package name", pth)
+		assert.True(t, hCreated)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -325,10 +335,11 @@ func Test_Config_create(t *testing.T) {
 		cfg := &Config{tgtFilename: pth}
 
 		// --- When ---
-		have, err := cfg.create()
+		hCfg, hCreated, err := cfg.create()
 
 		// --- Then ---
 		assert.ErrorContain(t, "no such file or directory", err)
-		assert.Nil(t, have.tgtOut)
+		assert.Nil(t, hCfg.tgtOut)
+		assert.False(t, hCreated)
 	})
 }

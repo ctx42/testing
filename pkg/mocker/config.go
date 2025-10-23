@@ -140,13 +140,21 @@ func newConfig(name string, opts ...Option) (Config, error) {
 }
 
 // create creates the target file if needed.
-func (cfg Config) create() (_ Config, err error) {
+func (cfg Config) create() (Config, bool, error) {
 	if cfg.tgtOut == nil && filepath.IsAbs(cfg.tgtFilename) {
 		fName := cfg.tgtFilename
 		fMode := os.O_RDWR | os.O_CREATE | os.O_TRUNC
-		if cfg.tgtOut, err = os.OpenFile(fName, fMode, 0664); err != nil {
-			return cfg, err
+		file, err := os.OpenFile(fName, fMode, 0664)
+		if err != nil {
+			return cfg, false, err
 		}
+		cfg.tgtOut = file
+		_, err = file.WriteString("package " + cfg.tgtPkg.pkgName)
+		if err != nil {
+			_ = os.Remove(fName)
+			return cfg, false, err
+		}
+		return cfg, true, nil
 	}
-	return cfg, nil
+	return cfg, false, nil
 }
