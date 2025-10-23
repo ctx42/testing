@@ -1,3 +1,6 @@
+## v0.42.2 (Thu, 23 Oct 2025 08:12:43 UTC)
+- fix: Fix a case where mocker was not able to generate mock in the same directory/package as the interface.
+
 ## v0.42.1 (Tue, 07 Oct 2025 11:19:59 UTC)
 - feat: Use `check.Equal` to compare values in `check.HasKeyValue` - with this change more complicated structures can be compared.
 
