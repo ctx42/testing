@@ -143,7 +143,7 @@ func (met *method) genArgTypes() string {
 }
 
 // genRets generates code representing method's return arguments. Returns an
-// empty string if method has no return arguments.
+// empty string if the method has no return arguments.
 //
 // Examples:
 //
@@ -198,9 +198,9 @@ func (met *method) genSig(recType string, argNames bool) string {
 	return code
 }
 
-// genOnSig generates code for method's "OnXXX" helper signature where method's
-// argument types are replaced with "any" to allow usage of [mock.ArgMatcher],
-// and the return value of [mock.Call].
+// genOnSig generates code for the method's "OnXXX" helper signature where
+// method's argument types are replaced with "any" to allow usage of
+// [mock.ArgMatcher], and the return value of [mock.Call].
 //
 // Examples:
 //
@@ -346,7 +346,11 @@ func (met *method) genSingleRet(idx int, ret argument, indent int) []string {
 	// Else cast.
 	code = fmt.Sprintf("%s} else if _r := _rets.Get(%d); _r != nil {", ind, idx)
 	lines = append(lines, code)
-	code = fmt.Sprintf("%s\t_r%d = _r.(%s)", ind, idx, ret.typ)
+	if ret.typ == "any" {
+		code = fmt.Sprintf("%s\t_r%d = _r", ind, idx)
+	} else {
+		code = fmt.Sprintf("%s\t_r%d = _r.(%s)", ind, idx, ret.typ)
+	}
 	lines = append(lines, code, ind+"}")
 
 	return lines

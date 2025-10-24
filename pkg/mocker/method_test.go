@@ -908,6 +908,75 @@ func Test_method_genRetCheck_tabular(t *testing.T) {
 	}
 }
 
+func Test_method_genSingleRet_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		args   []argument
+		ret    argument
+		indent int
+		want   []string
+	}{
+		{
+			"only return arg",
+			[]argument{},
+			argument{name: "", typ: "int"},
+			0,
+			[]string{
+				"var _r1 int",
+				"if _rFn, ok := _rets.Get(1).(func() int); ok {",
+				"\t_r1 = _rFn()",
+				"} else if _r := _rets.Get(1); _r != nil {",
+				"\t_r1 = _r.(int)",
+				"}",
+			},
+		},
+		{
+			"arg and ret arg",
+			[]argument{
+				{name: "a", typ: "int"},
+			},
+			argument{name: "", typ: "int"},
+			0,
+			[]string{
+				"var _r1 int",
+				"if _rFn, ok := _rets.Get(1).(func(int) int); ok {",
+				"\t_r1 = _rFn(a)",
+				"} else if _r := _rets.Get(1); _r != nil {",
+				"\t_r1 = _r.(int)",
+				"}",
+			},
+		},
+		{
+			"ret argument is of any type",
+			[]argument{},
+			argument{name: "", typ: "any"},
+			0,
+			[]string{
+				"var _r1 any",
+				"if _rFn, ok := _rets.Get(1).(func() any); ok {",
+				"\t_r1 = _rFn()",
+				"} else if _r := _rets.Get(1); _r != nil {",
+				"\t_r1 = _r",
+				"}",
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- Given ---
+			met := &method{args: tc.args}
+
+			// --- When ---
+			have := met.genSingleRet(1, tc.ret, tc.indent)
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
+}
+
 func Test_method_genReturn_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
