@@ -1,3 +1,6 @@
+## v0.42.3 (Fri, 24 Oct 2025 15:01:58 UTC)
+- fix: When the return argument is type `any` in mock generation, no casting is required.
+
 ## v0.42.2 (Thu, 23 Oct 2025 08:12:43 UTC)
 - fix: Fix a case where mocker was not able to generate mock in the same directory/package as the interface.
 
