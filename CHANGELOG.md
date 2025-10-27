@@ -1,3 +1,6 @@
+## v0.42.4 (Mon, 27 Oct 2025 13:30:07 UTC)
+- fix: When finding methods, do not consider methods that were already called the expected number of times.
+
 ## v0.42.3 (Fri, 24 Oct 2025 15:01:58 UTC)
 - fix: When the return argument is type `any` in mock generation, no casting is required.
 
