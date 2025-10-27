@@ -270,6 +270,9 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 			continue
 		}
 		err = call.CanCall()
+		if errors.Is(err, ErrTooManyCalls) {
+			continue // TODO(rz): test this.
+		}
 		if call.argsAny && err == nil {
 			return call, nil
 		}
@@ -280,7 +283,8 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 		}
 	}
 
-	// Find a proxy method which was added without need for matching arguments.
+	// Find a proxy method which was added without a need for matching
+	// arguments.
 	for _, call := range mck.expected {
 		if call.Method != method {
 			continue
@@ -298,7 +302,7 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 
 	var msg *notice.Notice
 
-	// Try to find method that is most similar to the one we are processing.
+	// Try to find a method that is most similar to the one we are processing.
 	if closest, diff := mck.closest(method, args...); closest != nil {
 		// Similar method found.
 		desc := formatMethod(closest.Method, closest.args, closest.returns)
