@@ -463,6 +463,9 @@ func equalError(want, have any, opts ...any) *notice.Notice {
 
 // dumpByte is a custom bumper for bytes.
 func dumpByte(dmp dump.Dump, lvl int, val reflect.Value) string {
+	if !val.CanInterface() {
+		return dump.ValCannotPrint
+	}
 	v := val.Interface().(byte) // nolint: forcetypeassert
 	var str string
 	if isPrintableChar(v) {

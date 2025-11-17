@@ -1887,4 +1887,17 @@ func Test_dumpByte(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "      0x01", have)
 	})
+
+	t.Run("uses indent and level", func(t *testing.T) {
+		// --- Given ---
+		dmp := dump.New(dump.WithIndent(2))
+		val := reflect.ValueOf(reflect.TypeOf(42)).Elem()
+		val = val.Field(0).Field(4)
+
+		// --- When ---
+		have := dumpByte(dmp, 1, val)
+
+		// --- Then ---
+		affirm.Equal(t, dump.ValCannotPrint, have)
+	})
 }

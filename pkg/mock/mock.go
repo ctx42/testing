@@ -271,7 +271,7 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 		}
 		err = call.CanCall()
 		if errors.Is(err, ErrTooManyCalls) {
-			continue // TODO(rz): test this.
+			continue
 		}
 		if call.argsAny && err == nil {
 			return call, nil

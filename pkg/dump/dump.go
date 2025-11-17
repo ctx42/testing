@@ -33,6 +33,12 @@ const (
 
 	// ValErrUsage the [reflect.Value] is unexpected in the given context.
 	ValErrUsage = "<dump-usage-error>"
+
+	// ValCannotPrint Represents value that cannot be printed.
+	//
+	// Due to:
+	//  - value not being exported
+	ValCannotPrint = "<dump-cannot-print>"
 )
 
 // Package wide default configuration.
