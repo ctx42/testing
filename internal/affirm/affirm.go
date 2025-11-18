@@ -49,7 +49,7 @@ func DeepEqual(t core.T, want, have any) bool {
 // test as failed, writes an error message to the test log and returns false.
 func Nil(t core.T, have any) bool {
 	t.Helper()
-	if is, _ := core.IsNil(have); is {
+	if is := core.IsNil(have); is {
 		return true
 	}
 	t.Errorf(expected, nil, have)
@@ -61,7 +61,7 @@ func Nil(t core.T, have any) bool {
 // returns false.
 func NotNil(t core.T, have any) bool {
 	t.Helper()
-	if is, _ := core.IsNil(have); !is {
+	if is := core.IsNil(have); !is {
 		return true
 	}
 	typ := fmt.Sprintf("  type: %T\n", have)

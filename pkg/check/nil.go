@@ -11,9 +11,7 @@ import (
 // Nil checks "have" is nil. Returns nil if it's, otherwise returns an error
 // with a message indicating the expected and actual values.
 func Nil(have any, opts ...any) error {
-	// TODO(rz): Should typed nils (isWrapped) be an error by default?
-	//   Add option to disable.
-	if is, _ := core.IsNil(have); is {
+	if is := core.IsNil(have); is {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
@@ -27,7 +25,7 @@ func Nil(have any, opts ...any) error {
 //
 // The returned error might be one or more errors joined with [errors.Join].
 func NotNil(have any, opts ...any) error {
-	if is, _ := core.IsNil(have); !is {
+	if is := core.IsNil(have); !is {
 		return nil
 	}
 	ops := DefaultOptions(opts...)

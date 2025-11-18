@@ -19,7 +19,7 @@ func Test_IsNil_tabular_ZENValues(t *testing.T) {
 	for _, tc := range testcases.ZENValues() {
 		t.Run("Nil "+tc.Desc, func(t *testing.T) {
 			// --- When ---
-			hNil, hWrapped := IsNil(tc.Val)
+			hNil := IsNil(tc.Val)
 
 			// --- Then ---
 			if tc.IsNil && !hNil {
@@ -28,9 +28,6 @@ func Test_IsNil_tabular_ZENValues(t *testing.T) {
 			}
 			if !tc.IsNil && hNil {
 				t.Errorf("expected not-nil value:\n  have: %#v", hNil)
-			}
-			if tc.IsWrappedNil != hWrapped {
-				t.Errorf("expected wrapped nil value:\n  have: %#v", tc.Val)
 			}
 		})
 	}

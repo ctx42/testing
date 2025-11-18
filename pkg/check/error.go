@@ -30,7 +30,7 @@ func NoError(err error, opts ...any) error {
 	}
 	ops := DefaultOptions(opts...)
 	const mHeader = "expected the error to be nil"
-	if is, _ := core.IsNil(err); is {
+	if is := core.IsNil(err); is {
 		msg := notice.New(mHeader).Want(dump.ValNil).Have("%T", err)
 		return AddRows(ops, msg)
 	}
@@ -101,7 +101,7 @@ func ErrorEqual(want string, err error, opts ...any) error {
 // Returns nil if it's, otherwise it returns an error with a message indicating
 // the expected and actual values.
 func ErrorContain(want string, err error, opts ...any) error {
-	if is, _ := core.IsNil(err); is {
+	if is := core.IsNil(err); is {
 		ops := DefaultOptions(opts...)
 		msg := notice.New("expected error not to be nil").
 			Want("<non-nil>").
@@ -129,7 +129,7 @@ func ErrorContain(want string, err error, opts ...any) error {
 // [regexp.Regexp]. The [fmt.Sprint] is used to get string representation of
 // have argument.
 func ErrorRegexp(want any, err error, opts ...any) error {
-	if is, _ := core.IsNil(err); is {
+	if is := core.IsNil(err); is {
 		ops := DefaultOptions(opts...)
 		msg := notice.New("expected error not to be nil").
 			Want("<non-nil>").

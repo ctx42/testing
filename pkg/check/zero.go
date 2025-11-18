@@ -14,7 +14,7 @@ import (
 // otherwise, it returns an error with a message indicating the expected
 // and actual values.
 func Zero(have any, opts ...any) error {
-	if is, _ := core.IsNil(have); is {
+	if is := core.IsNil(have); is {
 		return zeroError(have, opts...)
 	}
 	type z interface{ IsZero() bool }

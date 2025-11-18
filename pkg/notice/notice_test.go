@@ -958,9 +958,8 @@ func Test_Join(t *testing.T) {
 		have := Join(nil, nil, nil)
 
 		// --- Then ---
-		isNil, isWrapped := core.IsNil(have)
+		isNil := core.IsNil(have)
 		affirm.Equal(t, true, isNil)
-		affirm.Equal(t, false, isWrapped)
 	})
 
 	t.Run("join two errors", func(t *testing.T) {
