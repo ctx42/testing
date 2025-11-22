@@ -1,3 +1,8 @@
+## v0.43.0 (Sat, 22 Nov 2025 19:12:54 UTC)
+- feat: Introduce `dump.ValCannotPrint` for cases when value cannot be printed.
+- feat!: Remove testcases.ZenValue.IsWrappedNil field.
+- doc: Update documentation.
+
 ## v0.42.4 (Mon, 27 Oct 2025 13:30:07 UTC)
 - fix: When finding methods, do not consider methods that were already called the expected number of times.
 
