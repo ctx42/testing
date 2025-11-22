@@ -22,7 +22,7 @@ A `WetBuffer` uses `Buffer` and ensures it's written to and its contents are exa
 ```go
 func TestAction(t *testing.T) {
     // --- Given ---
-    buf := tstkit.WetBuffer(t, "wet-buffer")
+    buf := iokit.WetBuffer(t, "wet-buffer")
 
     // --- When ---
     Action(buf) // Writes to buf.
@@ -36,7 +36,7 @@ func TestAction(t *testing.T) {
 To skip the examination requirement:
 
 ```go
-buf := tstkit.WetBuffer(t, "wet-buffer").SkipExamine()
+buf := iokit.WetBuffer(t, "wet-buffer").SkipExamine()
 buf.WriteString("data") // No failure for unexamined content
 ```
 
@@ -47,7 +47,7 @@ A DryBuffer ensures the buffer remains empty.
 ```go
 func TestAction(t *testing.T) {
     // --- Given ---
-    buf := tstkit.DryBuffer(t, "dry-buffer")
+    buf := iokit.DryBuffer(t, "dry-buffer")
 
     // --- When ---
     DoSomething(buf) // Must not write to buf.

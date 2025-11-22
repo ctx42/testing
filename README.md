@@ -13,7 +13,7 @@
   * [Installation](#installation)
   * [Packages](#packages)
     * [Main Packages](#main-packages)
-    * [Supporting Packets](#supporting-packets)
+    * [Supporting Packages](#supporting-packages)
   * [Blog posts](#blog-posts)
 <!-- TOC -->
 
@@ -22,7 +22,7 @@ With **zero external dependencies** module provides:
 - `assert` (72 hand-picked assertion functions), `mock` and `mocker` packages.
 - Golden file testing helpers in `goldy` package.
 - Assortment of helpers in `kit` package. 
-- Configurable any type string dumper in `dunmp` package.
+- Configurable any type string dumper in `dump` package.
 - Build your own assertions with ease using `check` package.
 - Test your test helpers with `tester` package.
 
@@ -51,10 +51,10 @@ all tailored to streamline your testing workflow.
 The `testing` module is built as a collection of modular, laser-focused
 packages, each targeting a specific aspect of testing. For instance, you might
 leverage the `assert` package for assertions, the `mock` and `mocker` packages
-for test doubles, or the `tstkit` package to keep your tests readable and
+for test doubles, or the `kit` package to keep your tests readable and
 minimalistic. The modularity lets you customize your testing setup to fit your
 project’s exact needs, avoiding unnecessary overhead. Beyond customization, the 
-extensible architecture invites you to create your own test helpers ensuring.
+extensible architecture invites you to create your own test helpers.
 
 ## Installation
 To install CTX42 Testing Module, use go get:
@@ -79,12 +79,12 @@ Packages used in test cases.
 - Package [mocker](pkg/mocker/README.md) provides an interface mock generator.
 - Package [must](pkg/must/README.md) provide basic test helpers which panic on error.
 
-### Supporting Packets
+### Supporting Packages
 
 Packages are used to create custom checks, assertions, and helpers.
 
 - Package [dump](pkg/dump/README.md) provides a configurable renderer of any type to a string.
-- Package [notice](pkg/notice/README.md) helps to create nicely formated assertion messages.
+- Package [notice](pkg/notice/README.md) helps to create nicely formatted assertion messages.
 - Package [tester](pkg/tester/README.md) provides facilities to test `Test Helpers`.
 
 Click on the package link to see its README.md file with documentation. Also, 
