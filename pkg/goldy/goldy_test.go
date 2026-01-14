@@ -4,6 +4,7 @@
 package goldy
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -36,6 +37,7 @@ func Test_Open(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
+		affirm.NotNil(t, have.comment)
 		affirm.Equal(t, true, core.Same(tspy, have.t))
 	})
 
@@ -173,6 +175,42 @@ func Test_Open(t *testing.T) {
 		affirm.Equal(t, true, tspy.Failed())
 		wMsg := "map has no entry for key \"first\""
 		affirm.Equal(t, true, strings.Contains(tspy.Log(), wMsg))
+	})
+}
+
+func Test_Create(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		tspy := core.NewSpy().Capture()
+		pth := filepath.Join(t.TempDir(), "empty.gld")
+
+		// --- When ---
+		have := Create(tspy, pth)
+
+		// --- Then ---
+		affirm.NotNil(t, have)
+		affirm.Equal(t, false, tspy.Failed())
+		affirm.NotNil(t, have.comment)
+		affirm.Equal(t, true, core.Same(tspy, have.t))
+
+		content, err := os.ReadFile(pth)
+		affirm.Nil(t, err)
+		affirm.Equal(t, 0, len(content))
+	})
+
+	t.Run("error - cannot create the file", func(t *testing.T) {
+		// --- Given ---
+		tspy := core.NewSpy().Capture()
+		pth := filepath.Join(t.TempDir(), "not-existing-dir", "empty.gld")
+
+		// --- When ---
+		have := Create(tspy, pth)
+
+		// --- Then ---
+		affirm.Nil(t, have)
+		affirm.Equal(t, true, tspy.Failed())
+		wMsg := "error creating file: open %s: no such file or directory\n"
+		affirm.Equal(t, fmt.Sprintf(wMsg, pth), tspy.Log())
 	})
 }
 

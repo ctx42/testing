@@ -3,6 +3,7 @@
   * [Usage](#usage)
     * [Opening Golden Files](#opening-golden-files)
     * [Golden File Format](#golden-file-format)
+    * [Creating Golden File](#creating-golden-file)
     * [Example](#example)
       * [Directory Structure](#directory-structure)
       * [Test](#test)
@@ -22,8 +23,9 @@ files in tests.
 
 ## Usage
 
-The `goldy` package provides a single function, `goldy.Open`, which reads the
-content of a golden file.
+The goldy package provides two main functions:
+- `goldy.Open` – reads the content of an existing golden file,
+- `goldy.Create` – creates a new golden file.
 
 ### Opening Golden Files
 
@@ -50,6 +52,23 @@ Content #2.
 ```
 
 It's customary for golden files to have `.gld` extension. 
+
+### Creating Golden File
+
+```go
+gld := goldy.Create(t, "testdata/example.gld")
+gld.SetComment("Multi\nline\ncontent")
+gld.SetContent("Content #1.\nContent #2.")
+gld.Save()
+
+// File contents:
+// Multi
+// line
+// content
+// ---
+// Content #1.
+// Content #2.
+```
 
 ### Example
 

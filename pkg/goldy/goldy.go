@@ -44,16 +44,17 @@ type Goldy struct {
 	t       core.T         // Test manager.
 }
 
-// Open instantiates [Goldy] based on the provided path to the golden file and
-// options. The golden file content starts after the mandatory [Marker] line,
-// anything before it is ignored. It's customary to have short golden file
-// documentation before the marker.
+// Open creates a new [Goldy] instance based on the provided path to the golden
+// file and options. The golden file content starts after the mandatory [Marker]
+// line, anything before it is ignored. It's customary to have short golden
+// file documentation before the marker.
 func Open(t core.T, pth string, opts ...func(*Goldy)) *Goldy {
 	t.Helper()
 
 	fil, err := os.Open(pth)
 	if err != nil {
 		t.Fatalf("error opening file: %v", err)
+		return nil // TODO(rz): test this.
 	}
 	defer func() { _ = fil.Close() }()
 
@@ -99,6 +100,24 @@ func Open(t core.T, pth string, opts ...func(*Goldy)) *Goldy {
 		return gld.renderTemplate()
 	}
 	return gld
+}
+
+// Create creates a new [Goldy] instance representing an empty golden file.
+func Create(t core.T, pth string) *Goldy {
+	t.Helper()
+
+	fil, err := os.Create(pth)
+	if err != nil {
+		t.Fatalf("error creating file: %v", err)
+		return nil
+	}
+	defer func() { _ = fil.Close() }()
+
+	return &Goldy{
+		pth:     pth,
+		content: make([]byte, 0, 4*1024),
+		t:       t,
+	}
 }
 
 // String implements [fmt.Stringer] and returns golden file content.
