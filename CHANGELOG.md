@@ -1,3 +1,6 @@
+## v0.44.0 (Wed, 14 Jan 2026 12:30:02 UTC)
+- feat: Add `goldy.Create` function creating new empty golden file.
+
 ## v0.43.0 (Sat, 22 Nov 2025 19:12:54 UTC)
 - feat: Introduce `dump.ValCannotPrint` for cases when value cannot be printed.
 - feat!: Remove testcases.ZenValue.IsWrappedNil field.
