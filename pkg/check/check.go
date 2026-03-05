@@ -12,9 +12,9 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Count checks there is "count" occurrences of "what" in "where". Returns nil
-// if it's, otherwise it returns an error with a message indicating the
-// expected and actual values.
+// Count checks there are "count" occurrences of "what" in "where". Returns
+// nil if the count matches, otherwise it returns an error with a message
+// indicating the expected and actual values.
 //
 // Currently, only strings are supported.
 func Count(count int, what, where any, opts ...any) error {
@@ -46,20 +46,23 @@ func Count(count int, what, where any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// SameType checks that both arguments are of the same type. Returns nil if
-// they are, otherwise it returns an error with a message indicating the
-// expected and actual values.
+// SameType checks that both arguments are of the same type.
 //
-// Check uses [reflect.TypeOf] equality to determine the type.
-func SameType(want, have any, opts ...any) error {
+// It returns the value cast to type T and a nil error if the types match.
+// Otherwise, it returns the zero value of T and an error describing the
+// expected type and the actual type received.
+//
+// Type comparison uses [reflect.TypeOf] equality.
+func SameType[T any](want T, have any, opts ...any) (T, error) {
 	wTyp := reflect.TypeOf(want)
 	hTyp := reflect.TypeOf(have)
 	if wTyp == hTyp {
-		return nil
+		return have.(T), nil
 	}
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected same types").Want("%T", want).Have("%T", have)
-	return AddRows(ops, msg)
+	var zero T
+	return zero, AddRows(ops, msg)
 }
 
 // NotSameType checks that the arguments are not of the same type. Returns nil
@@ -109,7 +112,7 @@ func Type(target, src any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// Fields checks a struct or pointer to a struct "s" has "want" number of
+// Fields checks that a struct or pointer to a struct "s" has "want" number of
 // fields. Returns nil if it does, otherwise it returns an error with a message
 // indicating the expected and actual values.
 func Fields(want int, s any, opts ...any) error {

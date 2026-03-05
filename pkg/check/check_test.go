@@ -121,7 +121,7 @@ func Test_SameType(t *testing.T) {
 		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := SameType(42, 4.2, opt)
+		have, err := SameType(42, 4.2, opt)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -131,6 +131,7 @@ func Test_SameType(t *testing.T) {
 			"   want: int\n" +
 			"   have: float64"
 		affirm.Equal(t, wMsg, err.Error())
+		affirm.Equal(t, 0, have)
 	})
 }
 
@@ -157,10 +158,11 @@ func Test_SameType_success_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			err := SameType(tc.val0, tc.val1)
+			have, err := SameType(tc.val0, tc.val1)
 
 			// --- Then ---
 			affirm.Nil(t, err)
+			affirm.Equal(t, tc.val1, have)
 		})
 	}
 }
@@ -190,11 +192,12 @@ func Test_SameType_error_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			err := SameType(tc.val0, tc.val1)
+			have, err := SameType(tc.val0, tc.val1)
 
 			// --- Then ---
 			affirm.NotNil(t, err)
 			affirm.Equal(t, tc.wMsg, err.Error())
+			affirm.Nil(t, have)
 		})
 	}
 }
