@@ -1,3 +1,7 @@
+## v0.45.0 (Thu, 05 Mar 2026 20:15:05 UTC)
+- doc: Improve documentation.
+- feat!: Make `check.SameType` and `assert.SameType` generic, returning typed value.
+
 ## v0.44.0 (Wed, 14 Jan 2026 12:30:02 UTC)
 - feat: Add `goldy.Create` function creating new empty golden file.
 
