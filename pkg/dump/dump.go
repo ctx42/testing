@@ -384,8 +384,12 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 		if typ == typError || typ.String() == "*errors.errorString" {
 			str = ValNil
 			if !val.IsNil() {
-				err := val.Interface().(error) // nolint: forcetypeassert
-				str = fmt.Sprintf("%q", err.Error())
+				if val.CanInterface() {
+					err := val.Interface().(error) // nolint: forcetypeassert
+					str = fmt.Sprintf("%q", err.Error())
+				} else {
+					str = ValCannotPrint
+				}
 			}
 			prn := NewPrinter(dmp)
 			return prn.Tab(dmp.Indent + lvl).Write(str).String(), knd

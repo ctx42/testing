@@ -289,6 +289,9 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 	es := []error{errors.New("error message")}
 	esNil := []error{nil}
 
+	type notExported struct{ err error }
+	notExp := notExported{err: errors.New("not-exported")}
+
 	tt := []struct {
 		testN string
 
@@ -367,6 +370,12 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 			New(WithFlat, WithCompact, WithPtrAddr),
 			esNil,
 			"[]error{nil}",
+		},
+		{
+			"private field",
+			New(WithFlat, WithCompact, WithPtrAddr),
+			notExp,
+			"{err:<dump-cannot-print>}",
 		},
 	}
 
