@@ -1,3 +1,6 @@
+## v0.45.1 (Mon, 20 Apr 2026 13:09:24 UTC)
+- fix(dump): prevent panic on unexported error-typed fields.
+
 ## v0.45.0 (Thu, 05 Mar 2026 20:15:05 UTC)
 - doc: Improve documentation.
 - feat!: Make `check.SameType` and `assert.SameType` generic, returning typed value.
