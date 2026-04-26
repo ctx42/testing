@@ -19,10 +19,11 @@ unwrapping errors.
 
 ### Create a Message
 
+<!-- gmdoceg:ExampleNew -->
 ```go
 msg := notice.New("expected values to be equal").
-    Want("%s", "abc").
-    Have("%s", "xyz")
+	Want("%s", "abc").
+	Have("%s", "xyz")
 
 fmt.Println(msg)
 // Output:
@@ -33,13 +34,14 @@ fmt.Println(msg)
 
 ### Wrap Errors
 
+<!-- gmdoceg:ExampleNotice_Wrap -->
 ```go
 ErrMy := errors.New("my error")
 
 msg := notice.New("expected values to be equal").
-    Want("%s", "abc").
-    Have("%s", "xyz").
-    Wrap(ErrMy)
+	Want("%s", "abc").
+	Have("%s", "xyz").
+	Wrap(ErrMy)
 
 is := errors.Is(msg, ErrMy)
 fmt.Println(is)
@@ -48,21 +50,22 @@ fmt.Println(is)
 
 ### Add Metadata
 
+<!-- gmdoceg:ExampleNotice_MetaSet -->
 ```go
 msg := notice.New("expected values to be equal").
-    Want("%s", "abc").
-    Have("%s", "xyz").
-    MetaSet("key", 123)
+	Want("%s", "abc").
+	Have("%s", "xyz").
+	MetaSet("key", 123)
 
 fmt.Println(msg.MetaLookup("key"))
-// Output: value true
-}
+// Output: 123 true
 ```
 
 For more examples see the [examples_test.go](examples_test.go) file.
 
 ## Indenting Lines
 
+<!-- gmdoceg:ExampleIndent -->
 ```go
 lines := notice.Indent(4, ' ', "line1\nline2\nline3")
 

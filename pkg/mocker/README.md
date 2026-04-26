@@ -60,17 +60,18 @@ For more control, use configuration options to specify the source package,
 target package, and output destination. This example generates a mock for an
 interface in another package and writes it to a buffer:
 
+<!-- gmdoceg:ExampleGenerate_usingImportPaths -->
 ```go
 out := &bytes.Buffer{}
 
 err := mocker.Generate(
-    "Case00",
-    mocker.WithSrc("github.com/ctx42/testing/pkg/mocker/testdata/cases"),
-    mocker.WithTgt("github.com/ctx42/testing/pkg/goldy"),
-    mocker.WithTgtOutput(out),
+	"Case00",
+	mocker.WithSrc("github.com/ctx42/testing/pkg/mocker/testdata/cases"),
+	mocker.WithTgt("github.com/ctx42/testing/pkg/goldy"),
+	mocker.WithTgtOutput(out),
 )
 if err != nil {
-    panic(err)
+	panic(err)
 }
 
 fmt.Println(out.String())

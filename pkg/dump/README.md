@@ -28,28 +28,30 @@ comparison or diffing tools to pinpoint discrepancies quickly and accurately.
 
 ## Basic Usage
 
+<!-- gmdoceg:ExampleDump_Any -->
 ```go
-val := types.TA{
-    Dur: 3,
-    Int: 42,
-    Loc: types.WAW,
-    Str: "abc",
-    Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
-    TAp: nil,
+val := testcases.TA{
+	Dur: 3,
+	Int: 42,
+	Loc: testcases.WAW,
+	Str: "abc",
+	Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
+	TAp: nil,
 }
 
-have := dump.Default().Any(val)
+have := dump.New().Any(val)
 
 fmt.Println(have)
 // Output:
-//	{
-//		Int: 42,
-//		Str: "abc",
-//		Tim: "2000-01-02T03:04:05Z",
-//		Dur: "3ns",
-//		Loc: "Europe/Warsaw",
-//		TAp: nil,
-//	}
+// {
+//   Int: 42,
+//   Str: "abc",
+//   Tim: "2000-01-02T03:04:05Z",
+//   Dur: "3ns",
+//   Loc: "Europe/Warsaw",
+//   TAp: nil,
+//   private: 0,
+// }
 ```
 
 The default dump renders the struct in a nicely formatted, multiline string.
@@ -65,11 +67,12 @@ values are rendered to suit your needs. Here are some key options:
 
 For a compact, single-line representation, use the Flat option:
 
+<!-- gmdoceg:ExampleDump_Any_flatCompact -->
 ```go
 val := map[string]any{
-    "int": 42,
-    "loc": types.WAW,
-    "nil": nil,
+	"int": 42,
+	"loc": testcases.WAW,
+	"nil": nil,
 }
 
 have := dump.New(dump.WithFlat).Any(val)
@@ -83,9 +86,10 @@ For maps, keys are sorted (when possible) to maintain consistency.
 
 ### Custom Time Formats
 
-You can customize how `time.Time` values are displayed using the 
+You can customize how `time.Time` values are displayed using the
 `dump.WithTimeFormat` option:
 
+<!-- gmdoceg:ExampleDump_Any_customTimeFormat -->
 ```go
 val := map[time.Time]int{time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC): 42}
 
@@ -129,9 +133,10 @@ type Dumper func(dmp Dump, level int, val reflect.Value) string
 
 For example:
 
+<!-- gmdoceg:ExampleDump_Any_customDumper -->
 ```go
 var i int
-customIntDumper := func(dmp Dump, lvl int, val reflect.Value) string {
+dumper := func(dmp dump.Dump, lvl int, val reflect.Value) string {
 	switch val.Kind() {
 	case reflect.Int:
 		return fmt.Sprintf("%X", val.Int())
@@ -139,8 +144,13 @@ customIntDumper := func(dmp Dump, lvl int, val reflect.Value) string {
 		panic("unexpected kind")
 	}
 }
+opts := []dump.Option{
+	dump.WithFlat,
+	dump.WithCompact,
+	dump.WithDumper(i, dumper),
+}
 
-have := dump.New(dump.WithFlat, dump.WithCompact, dump.WithDumper(i, customIntDumper)).Any(42)
+have := dump.New(opts...).Any(42)
 
 fmt.Println(have)
 // Output:
@@ -156,77 +166,52 @@ The `dump` package shines when dealing with complicated or recursive data
 structures. It includes cycle detection to prevent infinite loops. Here’s an
 example with a recursive struct:
 
+<!-- gmdoceg:ExampleDump_Any_recursive -->
 ```go
 type Node struct {
-    Value    int
-    Children []*Node
+	Value    int
+	Children []*Node
 }
 
 val := &Node{
-    Value: 1,
-    Children: []*Node{
-        {Value: 2},
-        {Value: 3, Children: []*Node{{Value: 4}}},
-    },
+	Value: 1,
+	Children: []*Node{
+		{
+			Value:    2,
+			Children: nil,
+		},
+		{
+			Value: 3,
+			Children: []*Node{
+				{
+					Value:    4,
+					Children: nil,
+				},
+			},
+		},
+	},
 }
 
 have := dump.New().Any(val)
 fmt.Println(have)
 // Output:
 // {
-//		Value: 1,
-//		Children: []*dump_test.Node{{
-//			Value: 2,
-//			Children: nil,
-//		}, {
-//			Value: 3,
-//			Children: {{
-//				Value: 4,
-//				Children: nil,
-//			}},
-//		}},
-//	}
-```
-
-```go
-type Node struct {
-    Value    int
-    Children []*Node
-}
-
-val := &Node{
-    Value: 1,
-    Children: []*Node{
-        {Value: 2, Children: nil},
-        {
-            Value: 3,
-            Children: []*Node{
-                {Value: 4, Children: nil},
-            },
-        },
-    },
-}
-
-have := dump.New().Any(val)
-fmt.Println(have)
-// Output:
-// {
-// 	Value: 1,
-// 	Children: []*dump_test.Node{
-// 		{
-// 			Value: 2,
-// 			Children: nil,
-// 		},
-// 		{
-// 			Value: 3,
-// 			Children: []*dump_test.Node{
-// 				{
-// 					Value: 4,
-// 					Children: nil,
-// 				},
-// 			},
-// 		},
-// 	},
+//   Value: 1,
+//   Children: []*dump_test.Node{
+//     {
+//       Value: 2,
+//       Children: nil,
+//     },
+//     {
+//       Value: 3,
+//       Children: []*dump_test.Node{
+//         {
+//           Value: 4,
+//           Children: nil,
+//         },
+//       },
+//     },
+//   },
 // }
 ```
 

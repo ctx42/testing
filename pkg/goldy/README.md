@@ -55,13 +55,28 @@ It's customary for golden files to have `.gld` extension.
 
 ### Creating Golden File
 
+<!-- gmdoceg:ExampleCreate -->
 ```go
-gld := goldy.Create(t, "testdata/example.gld")
+tspy := core.NewSpy()
+
+dir, err := os.MkdirTemp("", "example-create-*")
+if err != nil {
+	panic(err)
+}
+defer func() { _ = os.RemoveAll(dir) }()
+pth := filepath.Join(dir, "example.gld")
+
+gld := goldy.Create(tspy, pth)
 gld.SetComment("Multi\nline\ncontent")
 gld.SetContent("Content #1.\nContent #2.")
 gld.Save()
 
-// File contents:
+have, err := os.ReadFile(pth)
+if err != nil {
+	panic(err)
+}
+fmt.Println(string(have))
+// Output:
 // Multi
 // line
 // content

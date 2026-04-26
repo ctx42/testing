@@ -16,37 +16,39 @@ about the check, improving assertion message comprehension.
 
 You use checks like any other function returning error.
 
-```go
-	have := errors.New("test error")
-
-	err := NoError(have, WithTrail("type.field"))
-
-	fmt.Println(err)
-	// Output:
-	// expected the error to be nil:
-	//	trail: type.field
-	//	 want: <nil>
-	//	 have: "test error"
-```
-
-The main purpose of returning an error from a check, instead of true false like 
-it is in case of `assert` package is to allow user to customize the message
-and/or add context.
-
+<!-- gmdoceg:ExampleNoError_withTrail -->
 ```go
 have := errors.New("test error")
 
-err := NoError(have, WithTrail("type.field"))
+err := check.NoError(have, check.WithTrail("type.field"))
+
+fmt.Println(err)
+// Output:
+// expected the error to be nil:
+//   trail: type.field
+//    want: nil
+//    have: "test error"
+```
+
+The main purpose of returning an error from a check, instead of true false like
+it is in case of `assert` package is to allow user to customize the message
+and/or add context.
+
+<!-- gmdoceg:ExampleNoError_changeMessage -->
+```go
+have := errors.New("test error")
+
+err := check.NoError(have, check.WithTrail("type.field"))
 
 err = notice.From(err, "prefix").Append("context", "wow")
 
 fmt.Println(err)
 // Output:
 // [prefix] expected the error to be nil:
-//	   trail: type.field
-//	    want: <nil>
-//	    have: "test error"
-//	context: wow
+//     trail: type.field
+//      want: nil
+//      have: "test error"
+//   context: wow
 ```
 
 ## Custom Assertions
