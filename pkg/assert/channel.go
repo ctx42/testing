@@ -10,9 +10,9 @@ import (
 
 // ChannelWillClose asserts the channel will be closed "within" a given time
 // duration. Returns true if it was, otherwise marks the test as failed, writes
-// an error message to the test log and returns false.
+// an error message to the test log, and returns false.
 //
-// The "within" may represent duration in the form of a string, int, int64 or
+// The "within" may represent duration in the form of a string, int, int64, or
 // [time.Duration].
 func ChannelWillClose[C any](t tester.T, within any, c <-chan C, opts ...any) bool {
 	t.Helper()

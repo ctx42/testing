@@ -9,7 +9,7 @@ import (
 )
 
 // Panic asserts "fn" panics. Returns true if it panicked, otherwise marks the
-// test as failed, writes an error message to the test log and returns false.
+// test as failed, writes an error message to the test log, and returns false.
 func Panic(t tester.T, fn check.TestFunc, opts ...any) bool {
 	t.Helper()
 	if e := check.Panic(fn, opts...); e != nil {
@@ -20,7 +20,7 @@ func Panic(t tester.T, fn check.TestFunc, opts ...any) bool {
 }
 
 // NoPanic asserts "fn" does not panic. Returns true if it did not panic,
-// otherwise marks the test as failed, writes an error message to the test log
+// otherwise marks the test as failed, writes an error message to the test log,
 // and returns false.
 func NoPanic(t tester.T, fn check.TestFunc, opts ...any) bool {
 	t.Helper()
@@ -34,7 +34,7 @@ func NoPanic(t tester.T, fn check.TestFunc, opts ...any) bool {
 // PanicContain asserts "fn" panics, and the recovered panic value represented
 // as a string contains "want". Returns true if it panics and does contain the
 // wanted string, otherwise marks the test as failed, writes an error message
-// to the test log and returns false.
+// to the test log, and returns false.
 func PanicContain(t tester.T, want string, fn check.TestFunc, opts ...any) bool {
 	t.Helper()
 	if e := check.PanicContain(want, fn, opts...); e != nil {

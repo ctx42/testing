@@ -13,7 +13,7 @@ import (
 // duration. Returns nil if it was, otherwise returns an error with a message
 // indicating the expected and actual values.
 //
-// The "within" may represent duration in the form of a string, int, int64 or
+// The "within" may represent duration in the form of a string, int, int64, or
 // [time.Duration].
 func ChannelWillClose[C any](within any, c <-chan C, opts ...any) error {
 	if c == nil {
@@ -32,7 +32,7 @@ func ChannelWillClose[C any](within any, c <-chan C, opts ...any) error {
 		select {
 		case <-tim.C:
 			ops := DefaultOptions(opts...)
-			msg := notice.New("timeout waiting for channel to close").
+			msg := notice.New("timeout waiting for the channel to close").
 				Append("within", "%s", durStr)
 			return AddRows(ops, msg)
 

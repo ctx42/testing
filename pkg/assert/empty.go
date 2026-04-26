@@ -9,7 +9,7 @@ import (
 )
 
 // Empty asserts "have" is empty. Returns true if it's, otherwise marks the
-// test as failed, writes an error message to the test log and returns false.
+// test as failed, writes an error message to the test log, and returns false.
 //
 // See [check.Empty] for the list of values which are considered empty.
 func Empty(t tester.T, have any, opts ...any) bool {
@@ -22,7 +22,7 @@ func Empty(t tester.T, have any, opts ...any) bool {
 }
 
 // NotEmpty asserts "have" is not empty. Returns true if it is not, otherwise
-// marks the test as failed, writes an error message to the test log and
+// marks the test as failed, writes an error message to the test log, and
 // returns false.
 //
 // See [check.Empty] for the list of values which are considered empty.

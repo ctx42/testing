@@ -11,7 +11,7 @@ import (
 
 // Greater checks the "have" value is greater than the "want" value. Returns
 // true if it is, otherwise marks the test as failed, writes an error message
-// to the test log and returns false.
+// to the test log, and returns false.
 func Greater[T constraints.Ordered](
 	t tester.T,
 	want, have T,
@@ -28,7 +28,7 @@ func Greater[T constraints.Ordered](
 
 // GreaterOrEqual checks the "have" value is greater or equal than the "want"
 // value. Returns true if it is, otherwise marks the test as failed, writes an
-// error message to the test log and returns false.
+// error message to the test log, and returns false.
 func GreaterOrEqual[T constraints.Ordered](
 	t tester.T,
 	want, have T,
@@ -45,7 +45,7 @@ func GreaterOrEqual[T constraints.Ordered](
 
 // Smaller checks the "have" value is smaller than the "want" value. Returns
 // true if it is, otherwise marks the test as failed, writes an error message
-// to the test log and returns false.
+// to the test log, and returns false.
 func Smaller[T constraints.Ordered](
 	t tester.T,
 	want, have T,
@@ -62,7 +62,7 @@ func Smaller[T constraints.Ordered](
 
 // SmallerOrEqual checks the "have" value is smaller or equal than the "want"
 // value. Returns true if it is, otherwise marks the test as failed, writes an
-// error message to the test log and returns false.
+// error message to the test log, and returns false.
 func SmallerOrEqual[T constraints.Ordered](
 	t tester.T,
 	want, have T,
@@ -79,7 +79,7 @@ func SmallerOrEqual[T constraints.Ordered](
 
 // Delta asserts both values are within the given delta. Returns true if they
 // are, otherwise marks the test as failed, writes an error message to the test
-// log and returns false.
+// log, and returns false.
 //
 //	|w-h|/|w| <= delta
 func Delta[T, E constraints.Number](
@@ -118,7 +118,7 @@ func DeltaSlice[T, E constraints.Number](
 
 // Epsilon asserts the relative error is less than epsilon. Returns true if it
 // is, otherwise marks the test as failed, writes an error message to the test
-// log and returns false.
+// log, and returns false.
 //
 //	|w-h|/|w| <= epsilon
 func Epsilon[T, E constraints.Number](
@@ -138,7 +138,7 @@ func Epsilon[T, E constraints.Number](
 // EpsilonSlice asserts the relative error is less than epsilon for all
 // respective values in the provided slices. It returns true if all differences
 // are within the delta; otherwise, marks the test as failed, writes an error
-// message to the test log and returns false.
+// message to the test log, and returns false.
 //
 //	|w[i]-h[i]|/|w[i]| <= epsilon
 func EpsilonSlice[T, E constraints.Number](
@@ -158,7 +158,7 @@ func EpsilonSlice[T, E constraints.Number](
 // Increasing checks if the given sequence has values in the increasing order.
 // You may use the [check.WithIncreasingSoft] option to allow consecutive
 // values to be equal. It returns true if the sequence is increasing otherwise,
-// marks the test as failed, writes an error message to the test log and
+// marks the test as failed, writes an error message to the test log, and
 // returns false.
 func Increasing[T constraints.Ordered](
 	t tester.T,
@@ -192,7 +192,7 @@ func NotIncreasing[T constraints.Ordered](
 // Decreasing checks if the given sequence has values in the decreasing order.
 // You may use the [check.WithDecreasingSoft] option to allow consecutive
 // values to be equal. It returns true if the sequence is decreasing otherwise,
-// marks the test as failed, writes an error message to the test log and
+// marks the test as failed, writes an error message to the test log, and
 // returns false.
 func Decreasing[T constraints.Ordered](
 	t tester.T,

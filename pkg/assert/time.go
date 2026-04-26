@@ -30,7 +30,7 @@ func Time(t tester.T, want, have any, opts ...any) bool {
 
 // Exact asserts "want" and "have" dates are equal and are in the same timezone.
 // Returns true if they are, otherwise marks the test as failed, writes an
-// error message to the test log and returns false.
+// error message to the test log, and returns false.
 //
 // The "want" and "have" might be date representations in the form of a string,
 // int, int64 or [time.Time]. For string representations the
@@ -84,7 +84,7 @@ func After(t tester.T, mark, date time.Time, opts ...any) bool {
 
 // BeforeOrEqual asserts "date" is equal or before the "mark" date. Returns
 // true if it is, otherwise marks the test as failed, writes an error message
-// to the test log and returns false.
+// to the test log, and returns false.
 //
 // The "date" and "mark" might be date representations in the form of a string,
 // int, int64 or [time.Time]. For string representations the
@@ -120,7 +120,7 @@ func AfterOrEqual(t tester.T, mark, date any, opts ...any) bool {
 
 // Within asserts "want" and "have" dates are equal "within" given duration.
 // Returns true if they are, otherwise marks the test as failed, writes an
-// error message to the test log and returns false.
+// error message to the test log, and returns false.
 //
 // The "want" and "have" might be date representations in the form of a string,
 // int, int64 or [time.Time]. For string representations the
@@ -138,7 +138,7 @@ func Within(t tester.T, want, within, have any, opts ...any) bool {
 
 // Recent asserts "have" is within [check.Options.Recent] from [time.Now].
 // Returns nil if it is, otherwise marks the test as failed, writes an error
-// message to the test log and returns false.
+// message to the test log, and returns false.
 //
 // The "have" may represent date in the form of a string, int, int64 or
 // [time.Time]. For string representations the [check.Options.TimeFormat] is
@@ -168,7 +168,7 @@ func Zone(t tester.T, want, have *time.Location, opts ...any) bool {
 
 // Duration asserts "want" and "have" durations are equal. Returns true if they
 // are, otherwise marks the test as failed, writes an error message to the test
-// log and returns false.
+// log, and returns false.
 //
 // The "want" and "have" might be duration representation in the form of string,
 // int, int64 or [time.Duration].

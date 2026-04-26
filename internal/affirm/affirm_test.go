@@ -172,7 +172,7 @@ func Test_Panic(t *testing.T) {
 		}
 	})
 
-	t.Run("other type", func(t *testing.T) {
+	t.Run("integer type", func(t *testing.T) {
 		// --- Given ---
 		tspy := core.NewSpy()
 

@@ -22,7 +22,7 @@ func Contain(t tester.T, want, have string, opts ...any) bool {
 
 // NotContain asserts "want" is not a substring of "have". Returns true if it's
 // not, otherwise marks the test as failed, writes an error message to the test
-// log and returns false.
+// log, and returns false.
 func NotContain(t tester.T, want, have string, opts ...any) bool {
 	t.Helper()
 	if e := check.NotContain(want, have, opts...); e != nil {

@@ -222,7 +222,7 @@ In this example, the custom checker `chk` compares float64 values at the trail
 `T.Any[1]` with a tolerance of 0.01. The assertion passes because 2.123 and
 2.124 are within the specified epsilon.
 
-Also, see the example in [custom_assertion_test.go](custom_assertions_test.go).
+Also, see the example in [custom_assertion_test.go](../../examples/custom_assertions_test.go).
 
 ### Understanding Trails
 
@@ -389,7 +389,7 @@ values were not equal `3 != 8`. The skipped paths are always marked with
 The `assert.Equal` will fail the test if the compared values (structs) have
 unexported fields. This happens by design to make sure the equality check
 doesn't silently ignore unexported fields. In cases like this the testing
-module requires from a developer either explicitly specify fields to skip
+module requires from a developer either to explicitly specify fields to skip
 during comparison or enable a mode that ignores all unexported fields, as
 supported by the testing framework.
 

@@ -9,7 +9,7 @@ import (
 )
 
 // Equal asserts both values are equal. Returns true if they are, otherwise
-// marks the test as failed, writes an error message to the test log and
+// marks the test as failed, writes an error message to the test log, and
 // returns false.
 func Equal(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()

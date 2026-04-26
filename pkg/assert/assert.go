@@ -52,8 +52,8 @@ func NotSameType(t tester.T, want, have any, opts ...any) bool {
 	return true
 }
 
-// Type asserts that "have" can be type assigned to the pointer "want"
-// (same as target, ok := src.(target)). Returns true if it can be done,
+// Type asserts that "have" type can be assigned to the pointer "want"
+// (same as target, `ok := src.(target)`). Returns true if it can be done,
 // otherwise marks the test as failed, writes an error message to the
 // test log, and returns false.
 //

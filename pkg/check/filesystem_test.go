@@ -42,7 +42,7 @@ func Test_FileExist(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected path to be existing file:\n" +
+		wMsg := "expected path to be an existing file:\n" +
 			"  trail: type.field\n" +
 			"   path: testdata/dir"
 		affirm.Equal(t, wMsg, err.Error())
@@ -56,7 +56,7 @@ func Test_NoFileExist(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected path to not existing file:\n" +
+		wMsg := "expected path to a not existing file:\n" +
 			"  path: testdata/file.txt"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -108,7 +108,7 @@ func Test_FileContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected file to contain string:\n" +
+		wMsg := "expected the file to contain string:\n" +
 			"  path: testdata/file.txt\n" +
 			"  want: \"not there\""
 		affirm.Equal(t, wMsg, err.Error())
@@ -123,7 +123,7 @@ func Test_FileContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected file to contain string:\n" +
+		wMsg := "expected the file to contain string:\n" +
 			"  trail: type.field\n" +
 			"   path: testdata/file.txt\n" +
 			"   want: \"not there\""
@@ -139,7 +139,7 @@ func Test_FileContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected no error reading file:\n" +
+		wMsg := "expected no error reading the file:\n" +
 			"  trail: type.field\n" +
 			"   path: testdata/not_existing.txt\n" +
 			"  error: open testdata/not_existing.txt: no such file or directory"
@@ -152,7 +152,7 @@ func Test_FileContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected no error reading file:\n" +
+		wMsg := "expected no error reading the file:\n" +
 			"   path: testdata/dir\n" +
 			"  error: read testdata/dir: is a directory"
 		affirm.Equal(t, wMsg, err.Error())
@@ -192,7 +192,7 @@ func Test_DirExist(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected path to be existing directory:\n" +
+		wMsg := "expected the path to be an existing directory:\n" +
 			"  trail: type.field\n" +
 			"   path: testdata/file.txt"
 		affirm.Equal(t, wMsg, err.Error())

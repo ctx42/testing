@@ -183,7 +183,7 @@ func Value(val reflect.Value) (any, bool) {
 	}
 }
 
-// Value extracts the underlying value from a [reflect.Value] representing an
+// Value extracts the underlying value from a [reflection.Value] representing an
 // unexported or unaddressable field, returning it as an "any" with a boolean
 // indicating success.
 //

@@ -9,7 +9,7 @@ import (
 )
 
 // Zero asserts "have" is the zero value for its type. Returns true if it is,
-// otherwise marks the test as failed, writes an error message to the test log
+// otherwise marks the test as failed, writes an error message to the test log,
 // and returns false.
 func Zero(t tester.T, have any, opts ...any) bool {
 	t.Helper()
@@ -22,7 +22,7 @@ func Zero(t tester.T, have any, opts ...any) bool {
 
 // NotZero asserts "have" is not the zero value for its type. Returns true if
 // it is not, otherwise marks the test as failed, writes an error message to
-// the test log and returns false.
+// the test log, and returns false.
 func NotZero(t tester.T, have any, opts ...any) bool {
 	t.Helper()
 	if err := check.NotZero(have, opts...); err != nil {

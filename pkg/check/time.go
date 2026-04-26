@@ -71,8 +71,8 @@ const (
 // values.
 //
 // The "want" and "have" may represent dates in the form of a string, int,
-// int64 or [time.Time]. For string representations the [Options.TimeFormat] is
-// used during parsing and the returned date is always in UTC. The int and
+// int64, or [time.Time]. For string representations the [Options.TimeFormat]
+// is used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
 func Time(want, have any, opts ...any) error {
@@ -104,8 +104,8 @@ func Time(want, have any, opts ...any) error {
 // the expected and actual values.
 //
 // The "want" and "have" may represent dates in the form of a string, int,
-// int64 or [time.Time]. For string representations the [Options.TimeFormat] is
-// used during parsing and the returned date is always in UTC. The int and
+// int64, or [time.Time]. For string representations the [Options.TimeFormat]
+// is used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
 func Exact(want, have any, opts ...any) error {
@@ -136,8 +136,8 @@ func Exact(want, have any, opts ...any) error {
 // returns an error with a message indicating the expected and actual values.
 //
 // The "want" and "have" may represent dates in the form of a string, int,
-// int64 or [time.Time]. For string representations the [Options.TimeFormat] is
-// used during parsing and the returned date is always in UTC. The int and
+// int64, or [time.Time]. For string representations the [Options.TimeFormat]
+// is used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
 func Before(mark, date any, opts ...any) error {
@@ -167,8 +167,8 @@ func Before(mark, date any, opts ...any) error {
 // returns an error with a message indicating the expected and actual values.
 //
 // The "date" and "mark" may represent dates in the form of a string, int,
-// int64 or [time.Time]. For string representations the [Options.TimeFormat] is
-// used during parsing and the returned date is always in UTC. The int and
+// int64, or [time.Time]. For string representations the [Options.TimeFormat]
+// is used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
 func After(mark, date any, opts ...any) error {
@@ -199,8 +199,8 @@ func After(mark, date any, opts ...any) error {
 // actual values.
 //
 // The "date" and "mark" may represent dates in the form of a string, int,
-// int64 or [time.Time]. For string representations the [Options.TimeFormat] is
-// used during parsing and the returned date is always in UTC. The int and
+// int64, or [time.Time]. For string representations the [Options.TimeFormat]
+// is used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
 func BeforeOrEqual(mark, date any, opts ...any) error {
@@ -231,8 +231,8 @@ func BeforeOrEqual(mark, date any, opts ...any) error {
 // actual values.
 //
 // The "date" and "mark" may represent dates in the form of a string, int,
-// int64 or [time.Time]. For string representations the [Options.TimeFormat] is
-// used during parsing and the returned date is always in UTC. The int and
+// int64, or [time.Time]. For string representations the [Options.TimeFormat]
+// is used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
 func AfterOrEqual(mark, date any, opts ...any) error {
@@ -263,12 +263,12 @@ func AfterOrEqual(mark, date any, opts ...any) error {
 // indicating the expected and actual values.
 //
 // The "want" and "have" may represent dates in the form of a string, int,
-// int64 or [time.Time]. For string representations the [Options.TimeFormat] is
-// used during parsing and the returned date is always in UTC. The int and
+// int64, or [time.Time]. For string representations the [Options.TimeFormat]
+// is used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
 //
-// The "within" may represent duration in the form of a string, int, int64 or
+// The "within" may represent duration in the form of a string, int, int64, or
 // [time.Duration].
 func Within(want, within, have any, opts ...any) error {
 	wTim, wStr, _, err := getTime(want, opts...)
@@ -416,9 +416,9 @@ func formatDates(
 	return want, have
 }
 
-// getTime returns the date represented by "tim", its string representation and
-// type of the argument passed. The "tim" may represent date in the form of a
-// string, int, int64 or [time.Time]. For string representations the
+// getTime returns the date represented by "tim", its string representation,
+// and type of the argument passed. The "tim" may represent date in the form of
+// a string, int, int64, or [time.Time]. For string representations the
 // [Options.TimeFormat] is used during parsing and the returned date is always
 // in UTC. The int and int64 types are interpreted as Unix Timestamp, and the
 // date returned is also in UTC.
@@ -530,7 +530,7 @@ func getZone(zone any, opts ...any) (*time.Location, string, zoneRep, error) {
 
 // getDur returns duration represented by "dur", its string representation, and
 // the type of the argument passed. The "dur" may represent duration in the
-// form of a string, int, int64 or [time.Duration].
+// form of a string, int, int64, or [time.Duration].
 //
 // When an error is returned, it will always have [ErrDurParse], [ErrDurType]
 // in its chain.

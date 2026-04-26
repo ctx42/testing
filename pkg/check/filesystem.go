@@ -11,7 +11,7 @@ import (
 )
 
 // FileExist checks "pth" points to an existing file. Returns an error if the
-// path points to a filesystem entry which is not a file or there is an error
+// path points to a filesystem entry, which is not a file, or there is an error
 // when trying to check the path. On success, it returns nil.
 func FileExist(pth string, opts ...any) error {
 	inf, err := os.Lstat(pth)
@@ -30,14 +30,14 @@ func FileExist(pth string, opts ...any) error {
 	}
 	if inf.IsDir() {
 		ops := DefaultOptions(opts...)
-		msg := notice.New("expected path to be existing file").
+		msg := notice.New("expected path to be an existing file").
 			Append("path", "%s", pth)
 		return AddRows(ops, msg)
 	}
 	return nil
 }
 
-// NoFileExist checks "pth" points to not existing file. Returns an error if
+// NoFileExist checks "pth" points to a not existing file. Returns an error if
 // the path points to an existing filesystem entry. On success, it returns nil.
 func NoFileExist(pth string, opts ...any) error {
 	inf, err := os.Lstat(pth)
@@ -59,7 +59,7 @@ func NoFileExist(pth string, opts ...any) error {
 	}
 
 	ops := DefaultOptions(opts...)
-	msg := notice.New("expected path to not existing file").
+	msg := notice.New("expected path to a not existing file").
 		Append("path", "%s", pth)
 	return AddRows(ops, msg)
 }
@@ -69,16 +69,17 @@ type Content interface {
 	string | []byte
 }
 
-// FileContain checks file at "pth" can be read and its string content contains
-// "want". It fails if the path points to a filesystem entry which is not a
-// file or there is an error reading the file. The file is read in full then
-// [strings.Contains] is used to check it contains "want" string. When it fails
-// it returns an error with a message indicating the expected and actual values.
+// FileContain checks the file at "pth" can be read, and its string content
+// contains "want". It fails if the path points to a filesystem entry, which is
+// not a file, or there is an error reading the file. The file is read in full,
+// then [strings.Contains] is used to check it contains a "want" string. When
+// it fails, it returns an error with a message indicating the expected and
+// actual values.
 func FileContain[T Content](want T, pth string, opts ...any) error {
 	content, err := os.ReadFile(pth)
 	if err != nil {
 		ops := DefaultOptions(opts...)
-		msg := notice.New("expected no error reading file").
+		msg := notice.New("expected no error reading the file").
 			Append("path", "%s", pth).
 			Append("error", "%s", err)
 		return AddRows(ops, msg)
@@ -88,15 +89,15 @@ func FileContain[T Content](want T, pth string, opts ...any) error {
 	}
 
 	ops := DefaultOptions(opts...)
-	msg := notice.New("expected file to contain string").
+	msg := notice.New("expected the file to contain string").
 		Append("path", "%s", pth).
 		Want("%q", want)
 	return AddRows(ops, msg)
 }
 
 // DirExist checks "pth" points to an existing directory. It fails if the path
-// points to a filesystem entry which is not a directory or there is an error
-// when trying to check the path. When it fails it returns an error with a
+// points to a filesystem entry, which is not a directory, or there is an error
+// when trying to check the path. When it fails, it returns an error with a
 // detailed message indicating the expected and actual values.
 func DirExist(pth string, opts ...any) error {
 	inf, err := os.Lstat(pth)
@@ -116,7 +117,7 @@ func DirExist(pth string, opts ...any) error {
 	}
 	if !inf.IsDir() {
 		ops := DefaultOptions(opts...)
-		msg := notice.New("expected path to be existing directory").
+		msg := notice.New("expected the path to be an existing directory").
 			Append("path", "%s", pth)
 		return AddRows(ops, msg)
 	}
@@ -124,7 +125,7 @@ func DirExist(pth string, opts ...any) error {
 }
 
 // NoDirExist checks "pth" points to not existing directory. It fails if the
-// path points to an existing filesystem entry. When it fails it returns an
+// path points to an existing filesystem entry. When it fails, it returns an
 // error with a detailed message indicating the expected and actual values.
 func NoDirExist(pth string, opts ...any) error {
 	inf, err := os.Lstat(pth)
