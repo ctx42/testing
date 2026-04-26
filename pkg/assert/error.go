@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: (c) 2025 Rafal Zajac <rzajac@gmail.com>
+// SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
 package assert
@@ -19,7 +19,7 @@ func Error(t tester.T, err error, opts ...any) bool {
 	return true
 }
 
-// NoError asserts "err" is nil. Returns true if it is not, otherwise marks the
+// NoError asserts "err" is nil. Returns true if it is, otherwise marks the
 // test as failed, writes an error message to the test log, and returns false.
 func NoError(t tester.T, err error, opts ...any) bool {
 	t.Helper()

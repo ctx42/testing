@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: (c) 2025 Rafal Zajac <rzajac@gmail.com>
+// SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
 package check
@@ -184,7 +184,7 @@ func WithSkipTrail(skip ...string) Option {
 }
 
 // WithSkipUnexported is a [Checker] option instructing equality checks to skip
-// exported fields.
+// unexported fields.
 func WithSkipUnexported(ops Options) Options {
 	ops.SkipUnexported = true
 	return ops
@@ -204,7 +204,8 @@ func WithDecreasingSoft(ops Options) Options {
 	return ops
 }
 
-// WithCmpBaseTypes is a [Checker] option turning on simple base type comparisons.
+// WithCmpBaseTypes is a [Checker] option turning on simple base type
+// comparisons.
 //
 // During a normal operation, when comparing values with different types, the
 // error is returned. Then this option is used, and both values have the same

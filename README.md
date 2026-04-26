@@ -7,92 +7,59 @@
 ---
 
 <!-- TOC -->
-* [Goal](#goal)
-  * [Simplicity and Usability](#simplicity-and-usability)
-  * [Modular and Extensible Design](#modular-and-extensible-design)
-  * [Installation](#installation)
-  * [Packages](#packages)
-    * [Main Packages](#main-packages)
-    * [Supporting Packages](#supporting-packages)
-  * [Blog posts](#blog-posts)
+* [Overview](#overview)
+* [Installation](#installation)
+* [Packages](#packages)
+  * [Main Packages](#main-packages)
+  * [Supporting Packages](#supporting-packages)
 <!-- TOC -->
 
-With **zero external dependencies** module provides:
+Zero-dependency testing toolkit for Go:
 
-- `assert` (72 hand-picked assertion functions), `mock` and `mocker` packages.
-- Golden file testing helpers in `goldy` package.
-- Assortment of helpers in `kit` package. 
-- Configurable any type string dumper in `dump` package.
-- Build your own assertions with ease using `check` package.
-- Test your test helpers with `tester` package.
+- `assert` — more than 72 hand-picked assertion functions.
+- `mock` and `mocker` — test doubles and mock code generation.
+- `goldy` — golden file testing.
+- `kit` — assorted test helpers.
+- `dump` — configurable any-type-to-string renderer.
+- `check` — composable checks for building custom assertions.
+- `tester` — tools for testing your own test helpers.
 
-# Goal
+# Overview
 
-Provide a comprehensive suite of tools designed to make testing more efficient, 
-enjoyable to write, and integral to the development process.
+Focused set of testing tools with zero external dependencies. Each package
+targets a specific aspect of testing — use only what you need. The `check`
+package returns plain errors, making it easy to compose custom assertions.
+The `tester` package lets you test those helpers against a spy `T`
+implementation. The API is chainable where it makes sense, and error
+messages are descriptive.
 
-Whether you're a seasoned tester or just starting out, tools in this module are 
-being crafted to meet your needs, providing a solid foundation for ensuring 
-code reliability in projects of all sizes.
-
-## Simplicity and Usability
-
-At the heart of the module lies a commitment to minimalism and an exceptional
-developer experience (DX). By maintaining zero external dependencies, the
-framework stays lightweight and fast, free from the potential complexities and
-conflicts that third-party modules can introduce. Our documentation is being
-carefully designed to be thorough, clear, and packed with practical examples,
-empowering you to master the module with ease. Expect a great DX with features 
-like a fluent, chainable API, descriptive error messages for quick debugging, 
-all tailored to streamline your testing workflow.
-
-## Modular and Extensible Design
-
-The `testing` module is built as a collection of modular, laser-focused
-packages, each targeting a specific aspect of testing. For instance, you might
-leverage the `assert` package for assertions, the `mock` and `mocker` packages
-for test doubles, or the `kit` package to keep your tests readable and
-minimalistic. The modularity lets you customize your testing setup to fit your
-project’s exact needs, avoiding unnecessary overhead. Beyond customization, the 
-extensible architecture invites you to create your own test helpers.
-
-## Installation
-To install CTX42 Testing Module, use go get:
+# Installation
 
 ```shell
 go get github.com/ctx42/testing
 ```
 
-This will make all the package modules available to you.
+# Packages
 
-## Packages
+## Main Packages
 
-### Main Packages
+Packages used in test files.
 
-Packages used in test cases. 
+- Package [assert](pkg/assert/README.md) — assertion toolkit (72 functions).
+- Package [check](pkg/check/README.md) — equality checks used by `assert`; returns `error` for composability.
+- Package [goldy](pkg/goldy/README.md) — golden file support.
+- Package [kit](pkg/kit/README.md) — test helpers that are not assertions.
+- Package [mock](pkg/mock/README.md) — primitives for writing interface mocks.
+- Package [mocker](pkg/mocker/README.md) — interface mock code generator.
+- Package [must](pkg/must/README.md) — helpers that panic on error.
 
-- Package [assert](pkg/assert/README.md) provides assertion toolkit.
-- Package [check](pkg/check/README.md) provides equality toolkit used by `assert` package.
-- Package [goldy](pkg/goldy/README.md) provides basic golden file support.
-- Package [kit](pkg/kit/README.md) provides all sorts of test helpers that are not assertions.
-- Package [mock](pkg/mock/README.md) provides primitives for writing interface mocks.
-- Package [mocker](pkg/mocker/README.md) provides an interface mock generator.
-- Package [must](pkg/must/README.md) provide basic test helpers which panic on error.
+## Supporting Packages
 
-### Supporting Packages
+Packages for building custom checks, assertions, and helpers.
 
-Packages are used to create custom checks, assertions, and helpers.
+- Package [dump](pkg/dump/README.md) — configurable renderer of any type to a string.
+- Package [notice](pkg/notice/README.md) — formatted assertion message builder.
+- Package [tester](pkg/tester/README.md) — facilities for testing test helpers.
 
-- Package [dump](pkg/dump/README.md) provides a configurable renderer of any type to a string.
-- Package [notice](pkg/notice/README.md) helps to create nicely formatted assertion messages.
-- Package [tester](pkg/tester/README.md) provides facilities to test `Test Helpers`.
-
-Click on the package link to see its README.md file with documentation. Also, 
-most of the packages contain `examples_test.go` file with usage examples.
-
-## Blog posts
-
-I’ve written several [blog posts](http://blog.ctx42.com/tags/gtm/) tied to this
-repository. If you’re curious about the behind-the-scenes details of how this
-package is coming together, check them out and share your thoughts — I’d love 
-to hear what you think! Any feedback is greatly appreciated.
+Each package has its own README, and most include an `examples_test.go` file
+with usage examples.

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: (c) 2025 Rafal Zajac <rzajac@gmail.com>
+// SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
 package notice
@@ -45,7 +45,8 @@ func Pad(str string, length int) string {
 func TrialCmp(x, y *Notice) int {
 	if x.Trail < y.Trail {
 		return -1
-	} else if x.Trail > y.Trail {
+	}
+	if x.Trail > y.Trail {
 		return 1
 	}
 	return 0

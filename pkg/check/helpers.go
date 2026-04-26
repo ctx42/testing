@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: (c) 2025 Rafal Zajac <rzajac@gmail.com>
+// SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
 package check
@@ -75,9 +75,8 @@ func valToString(key reflect.Value) string {
 	case reflect.Ptr:
 		if key.IsNil() {
 			return dump.ValNil
-		} else {
-			return "*" + valToString(key.Elem())
 		}
+		return "*" + valToString(key.Elem())
 
 	case reflect.Complex64:
 		return strconv.FormatComplex(key.Complex(), 'f', -1, 64)
