@@ -1,3 +1,8 @@
+## v0.46.0 (Sun, 26 Apr 2026 12:40:34 UTC)
+- chore: bump copyright year to 2026 and apply module check fixes.
+- docs: fix documentation and sync README examples with Example functions.
+- docs(README): rewrite root README.
+
 ## v0.45.1 (Mon, 20 Apr 2026 13:09:24 UTC)
 - fix(dump): prevent panic on unexported error-typed fields.
 
