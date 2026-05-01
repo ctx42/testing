@@ -1,3 +1,6 @@
+## v0.47.0 (Fri, 01 May 2026 19:22:08 UTC)
+- chore: bump go version from 1.25 to 1.26.
+
 ## v0.46.1 (Fri, 01 May 2026 19:20:49 UTC)
 - docs: fix grammar, punctuation, and article usage in comments.
 - chore: bump go version from 1.24 to 1.25.
