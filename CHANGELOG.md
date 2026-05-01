@@ -1,3 +1,7 @@
+## v0.46.1 (Fri, 01 May 2026 19:20:49 UTC)
+- docs: fix grammar, punctuation, and article usage in comments.
+- chore: bump go version from 1.24 to 1.25.
+
 ## v0.46.0 (Sun, 26 Apr 2026 12:40:34 UTC)
 - chore: bump copyright year to 2026 and apply module check fixes.
 - docs: fix documentation and sync README examples with Example functions.
