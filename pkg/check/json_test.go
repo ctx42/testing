@@ -13,7 +13,7 @@ func Test_JSON(t *testing.T) {
 	t.Run("equal", func(t *testing.T) {
 		// --- Given ---
 		want := ` {"hello": "world"} `
-		have := " { \"hello\"\t:\n\n \"world\"\n\n\t}    "
+		have := `{"hello": "world"}`
 
 		// --- When ---
 		err := JSON(want, have)
@@ -25,7 +25,7 @@ func Test_JSON(t *testing.T) {
 	t.Run("not equal", func(t *testing.T) {
 		// --- Given ---
 		want := ` {"hello": "world"} `
-		have := " { \"hello\"\t:\n\n \"ms\"\n\n\t}    "
+		have := `{"hello": "ms"}`
 		opt := WithTrail("type.field")
 
 		// --- When ---
@@ -33,10 +33,10 @@ func Test_JSON(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected JSON strings to be equal:\n" +
-			"  trail: type.field\n" +
-			"   want: {\"hello\":\"world\"}\n" +
-			"   have: {\"hello\":\"ms\"}"
+		wMsg := `expected JSON strings to be equal:
+  trail: type.field
+   want: {"hello":"world"}
+   have: {"hello":"ms"}`
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
@@ -79,4 +79,41 @@ func Test_JSON(t *testing.T) {
 			"object key string"
 		affirm.Equal(t, wMsg, err.Error())
 	})
+
+	t.Run("equal bytes want", func(t *testing.T) {
+		// --- Given ---
+		want := []byte(` {"hello": "world"} `)
+		have := `{"hello": "world"}`
+
+		// --- When ---
+		err := JSON(want, have)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("equal bytes have", func(t *testing.T) {
+		// --- Given ---
+		want := ` {"hello": "world"} `
+		have := []byte(`{"hello": "world"}`)
+
+		// --- When ---
+		err := JSON(want, have)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("equal bytes", func(t *testing.T) {
+		// --- Given ---
+		want := []byte(` {"hello": "world"} `)
+		have := []byte(`{"hello": "world"}`)
+
+		// --- When ---
+		err := JSON(want, have)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
 }

@@ -9,6 +9,12 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
+// Text is a type constraint that allows the generic parameter to be either
+// string or []byte representing text.
+type Text interface {
+	string | []byte
+}
+
 // JSON checks that two JSON strings are equivalent. Returns nil if they are,
 // otherwise it returns an error with a message indicating the expected and
 // actual values.
@@ -16,17 +22,17 @@ import (
 // Example:
 //
 //	check.JSON(`{"hello": "world"}`, `{"foo": "bar"}`)
-func JSON(want, have string, opts ...any) error {
+func JSON[W, H Text](want W, have H, opts ...any) error {
 	var wantItf, haveItf any
 
 	ops := DefaultOptions(opts...)
-	if err := json.Unmarshal([]byte(want), &wantItf); err != nil {
+	if err := json.Unmarshal(toBytes(want), &wantItf); err != nil {
 		msg := notice.New("did not expect the unmarshalling error").
 			Append("argument", "want").
 			Append("error", "%s", err)
 		return AddRows(ops, msg)
 	}
-	if err := json.Unmarshal([]byte(have), &haveItf); err != nil {
+	if err := json.Unmarshal(toBytes(have), &haveItf); err != nil {
 		msg := notice.New("did not expect the unmarshalling error").
 			Append("argument", "have").
 			Append("error", "%s", err)
@@ -42,4 +48,12 @@ func JSON(want, have string, opts ...any) error {
 		return AddRows(ops, msg)
 	}
 	return nil
+}
+
+// toBytes converts a string or []byte value to []byte.
+func toBytes[T Text](v T) []byte {
+	if s, ok := any(v).(string); ok {
+		return []byte(s)
+	}
+	return any(v).([]byte)
 }

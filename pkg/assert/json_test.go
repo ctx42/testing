@@ -17,7 +17,7 @@ func Test_JSON(t *testing.T) {
 		tspy := tester.New(t).Close()
 
 		want := ` {"hello": "world"} `
-		have := " { \"hello\"\t:\n\n \"world\"\n\n\t}    "
+		have := `{"hello": "world"}`
 
 		// --- When ---
 		got := JSON(tspy, want, have)
@@ -34,13 +34,55 @@ func Test_JSON(t *testing.T) {
 		tspy.Close()
 
 		want := ` {"hello": "world"} `
-		have := " { \"hello\"\t:\n\n \"ms\"\n\n\t}    "
+		have := `{"hello": "ms"}`
 
 		// --- When ---
 		got := JSON(tspy, want, have)
 
 		// --- Then ---
 		affirm.Equal(t, false, got)
+	})
+
+	t.Run("success bytes want", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+
+		want := []byte(` {"hello": "world"} `)
+		have := `{"hello": "world"}`
+
+		// --- When ---
+		got := JSON(tspy, want, have)
+
+		// --- Then ---
+		affirm.Equal(t, true, got)
+	})
+
+	t.Run("success bytes have", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+
+		want := ` {"hello": "world"} `
+		have := []byte(`{"hello": "world"}`)
+
+		// --- When ---
+		got := JSON(tspy, want, have)
+
+		// --- Then ---
+		affirm.Equal(t, true, got)
+	})
+
+	t.Run("success bytes", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+
+		want := []byte(` {"hello": "world"} `)
+		have := []byte(`{"hello": "world"}`)
+
+		// --- When ---
+		got := JSON(tspy, want, have)
+
+		// --- Then ---
+		affirm.Equal(t, true, got)
 	})
 
 	t.Run("additional message rows added", func(t *testing.T) {
@@ -51,7 +93,7 @@ func Test_JSON(t *testing.T) {
 		tspy.Close()
 
 		want := ` {"hello": "world"} `
-		have := " { \"hello\"\t:\n\n \"ms\"\n\n\t}    "
+		have := `{"hello": "ms"}`
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
