@@ -1,3 +1,6 @@
+## v0.48.0 (Fri, 08 May 2026 09:27:31 UTC)
+- feat(check)!: accept string or []byte in JSON.
+
 ## v0.47.0 (Fri, 01 May 2026 19:22:08 UTC)
 - chore: bump go version from 1.25 to 1.26.
 
