@@ -8,9 +8,10 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// Equal asserts both values are equal. Returns true if they are, otherwise
-// marks the test as failed, writes an error message to the test log, and
-// returns false.
+// Equal asserts that want and have are equal using [check.Equal].
+//
+// See the package documentation for customization options
+// ([check.WithTrail], [check.WithTypeChecker], [dump] options, etc.).
 func Equal(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if err := check.Equal(want, have, opts...); err != nil {
@@ -20,9 +21,9 @@ func Equal(t tester.T, want, have any, opts ...any) bool {
 	return true
 }
 
-// NotEqual asserts both values are not equal. Returns true if they are not,
-// otherwise marks the test as failed, writes an error message to the test log
-// and returns false.
+// NotEqual asserts that want and have are not equal using [check.NotEqual].
+//
+// See the package documentation for customization options.
 func NotEqual(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if err := check.NotEqual(want, have, opts...); err != nil {

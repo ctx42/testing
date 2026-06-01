@@ -8,8 +8,9 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// Panic asserts "fn" panics. Returns true if it panicked, otherwise marks the
-// test as failed, writes an error message to the test log, and returns false.
+// Panic asserts that "fn" panics.
+//
+// See [check.Panic] for the error-returning form.
 func Panic(t tester.T, fn check.TestFunc, opts ...any) bool {
 	t.Helper()
 	if e := check.Panic(fn, opts...); e != nil {
@@ -19,9 +20,9 @@ func Panic(t tester.T, fn check.TestFunc, opts ...any) bool {
 	return true
 }
 
-// NoPanic asserts "fn" does not panic. Returns true if it did not panic,
-// otherwise marks the test as failed, writes an error message to the test log,
-// and returns false.
+// NoPanic asserts that "fn" does not panic.
+//
+// See [check.NoPanic] for the error-returning form.
 func NoPanic(t tester.T, fn check.TestFunc, opts ...any) bool {
 	t.Helper()
 	if e := check.NoPanic(fn, opts...); e != nil {
@@ -31,11 +32,15 @@ func NoPanic(t tester.T, fn check.TestFunc, opts ...any) bool {
 	return true
 }
 
-// PanicContain asserts "fn" panics, and the recovered panic value represented
-// as a string contains "want". Returns true if it panics and does contain the
-// wanted string, otherwise marks the test as failed, writes an error message
-// to the test log, and returns false.
-func PanicContain(t tester.T, want string, fn check.TestFunc, opts ...any) bool {
+// PanicContain asserts that "fn" panics and the recovered panic value
+// (as string) contains "want" (see [check.PanicContain]).
+func PanicContain(
+	t tester.T,
+	want string,
+	fn check.TestFunc,
+	opts ...any,
+) bool {
+
 	t.Helper()
 	if e := check.PanicContain(want, fn, opts...); e != nil {
 		t.Error(e)
@@ -44,9 +49,8 @@ func PanicContain(t tester.T, want string, fn check.TestFunc, opts ...any) bool 
 	return true
 }
 
-// PanicMsg asserts the "fn" panics and returns the recovered panic value
-// represented as a string. If the function did not panic, it marks the test as
-// failed and writes an error message to the test log.
+// PanicMsg asserts that "fn" panics and returns the recovered panic value
+// as a string (see [check.PanicMsg]).
 func PanicMsg(t tester.T, fn check.TestFunc, opts ...any) *string {
 	t.Helper()
 	msg, e := check.PanicMsg(fn, opts...)

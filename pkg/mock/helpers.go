@@ -17,7 +17,8 @@ import (
 // of each stack frame leading from the current test to the assert call that
 // failed.
 //
-// Copied from: https://github.com/stretchr/testify/blob/5ac6528bffc1ed7557980c3c563caf8308568446/assert/assertions.go#L214
+// Copied from testify (assertions.go):
+// https://github.com/stretchr/testify/blob/5ac6528bffc1ed7557980c3c563caf8308568446/assert/assertions.go#L214
 func callStack() []string {
 	var pc uintptr
 	var ok bool
@@ -75,7 +76,7 @@ func callStack() []string {
 	return callers
 }
 
-// formatMethod returns formated string representing the method and its input
+// formatMethod returns formatted string representing the method and its input
 // and return arguments.
 func formatMethod(method string, args, rets Arguments) string {
 	var out []string
@@ -91,7 +92,7 @@ func formatMethod(method string, args, rets Arguments) string {
 	return strings.Join(out, "\n")
 }
 
-// formatArgs returns formated multi-line string representing arguments. Uses
+// formatArgs returns formatted multi-line string representing arguments. Uses
 // internal [dump.Dump].
 func formatArgs(args Arguments) string {
 	if len(args) == 0 {
@@ -123,7 +124,8 @@ func isTestName(name, prefix string) bool {
 
 // methodName returns method name.
 //
-// Copied from:	https://github.com/emicklei/go-restful/blob/1959514610d2124125005c8a6a3962d6cca32a16/route_builder.go#L375
+// Copied from go-restful:
+// https://github.com/emicklei/go-restful/blob/1959514610d2124125005c8a6a3962d6cca32a16/route_builder.go#L375
 //
 // Example:
 //

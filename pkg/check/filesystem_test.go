@@ -56,7 +56,7 @@ func Test_NoFileExist(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected path to a not existing file:\n" +
+		wMsg := "expected path to not be an existing file:\n" +
 			"  path: testdata/file.txt"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -78,7 +78,7 @@ func Test_NoFileExist(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected path to be not existing file:\n" +
+		wMsg := "expected path to not be an existing file:\n" +
 			"  trail: type.field\n" +
 			"   path: testdata/dir"
 		affirm.Equal(t, wMsg, err.Error())
@@ -108,7 +108,7 @@ func Test_FileContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the file to contain string:\n" +
+		wMsg := "expected the file to contain the string:\n" +
 			"  path: testdata/file.txt\n" +
 			"  want: \"not there\""
 		affirm.Equal(t, wMsg, err.Error())
@@ -123,7 +123,7 @@ func Test_FileContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the file to contain string:\n" +
+		wMsg := "expected the file to contain the string:\n" +
 			"  trail: type.field\n" +
 			"   path: testdata/file.txt\n" +
 			"   want: \"not there\""
@@ -209,7 +209,7 @@ func Test_NoDirExist(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected path to not existing directory:\n" +
+		wMsg := "expected path to not be an existing directory:\n" +
 			"  trail: type.field\n" +
 			"   path: testdata/dir"
 		affirm.Equal(t, wMsg, err.Error())
@@ -232,7 +232,7 @@ func Test_NoDirExist(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected path to be not existing directory:\n" +
+		wMsg := "expected path to not be an existing directory:\n" +
 			"  trail: type.field\n" +
 			"   path: testdata/file.txt"
 		affirm.Equal(t, wMsg, err.Error())

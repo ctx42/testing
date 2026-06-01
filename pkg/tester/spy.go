@@ -27,24 +27,29 @@ const (
 	closeCall                      // Call to [Spy.Close] method.
 )
 
-// Strategy is the strategy of matching logs produced by Helper Under Test
-// (HUT).
+// Strategy controls how [Spy.ExpectLog] matches log messages produced by
+// the helper under test.
+//
+// See the package README section on examining log messages for usage with
+// ExpectLog and related methods.
 type Strategy string
 
-// Log matching strategies.
+// Log matching strategies for [Spy.ExpectLog].
 const (
-	// Equal is a strategy where messages logged by HUT are matched exactly.
+	// Equal requires the produced log message to be identical to the
+	// expected string (after formatting).
 	Equal Strategy = "equal"
 
-	// Contains is a strategy where messages logged by HUT contain a string.
+	// Contains requires the produced log message to contain the expected
+	// substring.
 	Contains Strategy = "contains"
 
-	// NotContains is a strategy where messages logged by HUT don't contain a
-	// string.
+	// NotContains requires the produced log message to NOT contain the
+	// expected substring.
 	NotContains Strategy = "not-contains"
 
-	// Regexp is a strategy where messages logged by the HUT match regular
-	// expression.
+	// Regexp requires the produced log message to match the expected
+	// regular expression.
 	Regexp Strategy = "regexp"
 )
 
@@ -86,18 +91,37 @@ const (
 	errExpectLogAfterIgnoreLogs = "calling ExpectLog* after IgnoreLogs is not allowed"
 )
 
-// FailNowMsg represents a message the [Spy.FailNow] method uses in panic.
+// FailNowMsg is the exact panic message produced when [Spy.FailNow] (or
+// Fatal/Fatalf) is called on the spy. Tests that intentionally exercise
+// FailNow paths can match against this constant.
 const FailNowMsg = "FailNow was called directly"
 
-// Spy is a spy for [tester.T] interface.
+// Spy is a test double implementing [T] (and therefore a subset of
+// [testing.TB]) that records calls and lets you set precise expectations.
 //
-// Creating test helpers is an integral part of comprehensive testing, but
-// those helpers in turn also need to be tested to make sure assertions made by
-// them are implemented correctly. The Spy is a tool that makes testing such
-// helpers very easy.
+// It is the standard way to test custom assertion helpers and other code
+// that takes a test manager as an argument. Typical usage (the pattern
+// used throughout this module, including in pkg/goldy tests):
 //
-// Pass an instance of Spy to the Helper Under Test (HUT) and assert the
-// expected behavior using Spy.Expect* methods.
+// Happy path:
+//
+//	tspy := New(t)
+//	tspy.Close()          // no more expectations
+//	have := MyHelper(tspy, ...)
+//	affirm.False(t, tspy.Failed())
+//
+// Error path:
+//
+//	tspy := New(t)
+//	tspy.ExpectError()
+//	tspy.ExpectLogEqual("expected message with %s", "detail")
+//	tspy.Close()
+//	have := MyHelper(tspy, badInput)
+//	affirm.Nil(t, have)
+//
+// After Close, call [Spy.AssertExpectations] explicitly if you did not
+// let the automatic cleanup handle it. See the package [README] for the
+// complete guide to Expect*, log strategies, cleanups, TempDir, etc.
 type Spy struct {
 	// Set to true if requirement for number of calls to the mocked Helper
 	// method was explicitly set.
@@ -203,41 +227,30 @@ type Spy struct {
 	mx sync.Mutex
 }
 
-// New returns new instance of [Spy] which implements [T] interface. The tt
-// argument is used to proxy calls to [testing.T.TempDir], [testing.T.Setenv]
-// and [testing.T.Context] as well as to report errors when the [Spy]
-// expectations are not met by Helper Under Test (HUT). The constructor
-// function adds a cleanup function to tt which calls [Spy.Finish] and
-// [Spy.AssertExpectations] methods to determine if the tt should be failed.
+// New creates a new [Spy] bound to the real test runner tt.
 //
-// The call to New should be followed by zero or more calls to Spy.Expect*
-// methods and finished with call to [Spy.Close] method:
+// tt is used for:
+//   - proxying TempDir, Setenv, Name, and Context
+//   - reporting failures when expectations are not met
 //
-//	tspy := New(t)
-//	tspy.ExpectError()
-//	// tspy.ExpectXXX()
-//	tspy.Close()
+// New registers a [testing.TB.Cleanup] that automatically calls Finish and
+// AssertExpectations when the test ends.
 //
-// To assert expectations manually call the [Spy.AssertExpectations], or it
-// will be called automatically when test (tt) finishes.
+// The standard lifecycle (used by this module and recommended for all users):
 //
-// Full example:
+//	tspy := New(t)           // create
+//	tspy.ExpectError()       // set expectations (0 or more)
+//	tspy.ExpectLogEqual(...)
+//	tspy.Close()             // signal no more expectations
 //
-//	t.Run("closes file at the end of test", func(t *testing.T) {
-//		// --- Given ---
-//		tspy := tester.New(t).ExpectCleanups(1).Close()
+//	// exercise the helper under test with tspy
+//	have := MyHelper(tspy, input)
 //
-//		// --- When ---
-//		fil := OpenFile(tspy, "testdata/file.txt")
+//	// either let the cleanup assert, or call explicitly:
+//	tspy.AssertExpectations()
 //
-//		// --- Then ---
-//		tspy.AssertExpectations()
-//		assert.ErrorIs(t, os.ErrClosed, fil.Close())
-//	})
-//
-// If the optional argument expectHelpers is provided the [Spy.ExpectHelpers]
-// will be called with it. See [Spy.ExpectHelpers] method documentation for
-// details.
+// The optional expectHelpers argument is a convenience for the common case
+// of wanting an exact number of Helper calls; see [Spy.ExpectHelpers].
 func New(tt *testing.T, expectHelpers ...int) *Spy {
 	tt.Helper()
 	spy := &Spy{tt: tt, wantHelperCnt: -1}
@@ -260,7 +273,8 @@ func New(tt *testing.T, expectHelpers ...int) *Spy {
 	return spy
 }
 
-// ExpectCleanups sets the number of expected calls to the [Spy.Cleanup] method.
+// ExpectCleanups declares how many times the helper under test must call
+// Cleanup. Use 0 to assert that no cleanups were registered.
 func (spy *Spy) ExpectCleanups(cnt int) *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -281,8 +295,8 @@ func (spy *Spy) Cleanup(f func()) {
 	spy.haveCleanups = append(spy.haveCleanups, f)
 }
 
-// ExpectError sets the expectation that HUT should call one of the [Spy.Error]
-// or [Spy.Errorf] methods at least once.
+// ExpectError declares that the helper under test must call Error or Errorf
+// at least once. Mutually exclusive with [Spy.ExpectFail].
 func (spy *Spy) ExpectError() *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -310,8 +324,8 @@ func (spy *Spy) Errorf(format string, args ...any) {
 	spy.haveError = true
 }
 
-// ExpectFatal sets expectation that HUT should call one of the [Spy.Fatal] or
-// [Spy.Fatalf] methods at least once.
+// ExpectFatal declares that the helper under test must call Fatal or Fatalf
+// at least once. Mutually exclusive with [Spy.ExpectFail].
 func (spy *Spy) ExpectFatal() *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -352,11 +366,10 @@ func (spy *Spy) failNow() {
 	panic(FailNowMsg)
 }
 
-// Failed reports whether the HUT called any of the [Spy.Error], [Spy.Errorf],
-// [Spy.Fatal], [Spy.Fatalf] or [Spy.FailNow] methods. It's worth noting this
-// method returning false DOES NOT mean the Spy expectations were met. The
-// HUT may have never called the methods listed previously, but the spy itself
-// didn't meet expectations.
+// Failed reports whether the helper under test called any Error*, Fatal*,
+// or FailNow method. Note that returning false does not mean all [Spy]
+// expectations were satisfied — the spy may still have unmet call-count or
+// log expectations.
 func (spy *Spy) Failed() bool {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -365,11 +378,11 @@ func (spy *Spy) Failed() bool {
 	return spy.haveFatal || spy.haveError
 }
 
-// ExpectHelpers sets expectation how many times HUT should call [Spy.Helper]
-// method. The value -1 means the [Spy.Helper] method must be run at least once.
+// ExpectHelpers sets the exact number of times the helper under test must
+// call Helper. The value -1 (the default) means "at least once".
 //
-// Method will panic if the cnt value is less than -1 or the method is called
-// more than once.
+// Must be called at most once and before Close. Panics on invalid cnt (< -1)
+// or multiple calls.
 func (spy *Spy) ExpectHelpers(cnt int) *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -396,8 +409,8 @@ func (spy *Spy) Helper() {
 	spy.haveHelperCnt++
 }
 
-// ExpectSetenv sets expectation that given environment variable is set by the
-// HUT.
+// ExpectSetenv declares that the helper must call Setenv with exactly this
+// key and value.
 func (spy *Spy) ExpectSetenv(key, value string) *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -422,7 +435,7 @@ func (spy *Spy) Setenv(key, value string) {
 	spy.tt.Setenv(key, value)
 }
 
-// ExpectSkipped sets expectation that HUT will skip the test.
+// ExpectSkipped declares that the helper under test must call Skip.
 func (spy *Spy) ExpectSkipped() *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -439,9 +452,8 @@ func (spy *Spy) Skip(args ...any) {
 	spy.haveSkipped = true
 }
 
-// ExpectTempDir sets expectation the HUT should call [Spy.TempDir] cnt number
-// of times. If cnt is -1 the [Spy.TempDir] method can be called any number of
-// times.
+// ExpectTempDir declares how many times TempDir must be called. -1 means
+// "any number of times" (including zero).
 func (spy *Spy) ExpectTempDir(cnt int) *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -451,9 +463,8 @@ func (spy *Spy) ExpectTempDir(cnt int) *Spy {
 	return spy
 }
 
-// GetTempDir returns the Nth (zero-indexed) temporary directory path returned
-// by [Spy.TempDir] method. It will fail the test if the [Spy.TempDir] method
-// was never called or the index of the directory is invalid.
+// GetTempDir returns the path of the Nth TempDir call (0-based). Requires
+// that ExpectTempDir was called first; otherwise it reports an error.
 func (spy *Spy) GetTempDir(idx int) string {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -496,8 +507,9 @@ func (spy *Spy) Context() context.Context {
 	return spy.ctx
 }
 
-// IgnoreLogs instruct Spy to ignore checking logged messages. Method will
-// panic if any of the Spy.ExpectLog* methods were already called.
+// IgnoreLogs tells the Spy to stop requiring that every log message be
+// accounted for by an ExpectLog* call. Must not be called after any
+// ExpectLog* method. See the "Ignore Log Messages" section in the README.
 func (spy *Spy) IgnoreLogs() *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -511,12 +523,9 @@ func (spy *Spy) IgnoreLogs() *Spy {
 	return spy
 }
 
-// ExpectLog sets expectation the HUT should call one of the [Spy.Log] or
-// [Spy.Logf] methods with a given message. The expected message is constructed
-// using format and args arguments, which are the same as in [fmt.Sprintf]. The
-// matcher strategy is used to match the message.
-//
-// Method call will panic if [Spy.IgnoreLogs] was called before.
+// ExpectLog declares that the helper under test must produce a log message
+// (via Log or Logf) that matches the given strategy and formatted string.
+// Panics if [Spy.IgnoreLogs] was already called.
 func (spy *Spy) ExpectLog(matcher Strategy, msg string, args ...any) *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -540,32 +549,18 @@ func (spy *Spy) ExpectLog(matcher Strategy, msg string, args ...any) *Spy {
 	return spy
 }
 
-// ExpectLogEqual sets expectation the HUT should call one of the Log* methods.
-// The expected message is constructed using format and args arguments which
-// are the same as in [fmt.Sprintf]. The [Equal] strategy is used to match
-// messages.
-//
-// Method call will panic if [Spy.IgnoreLogs] was called before.
+// ExpectLogEqual is a convenience for ExpectLog([Equal], ...). The message
+// must match exactly after formatting.
 func (spy *Spy) ExpectLogEqual(format string, args ...any) *Spy {
 	return spy.ExpectLog(Equal, format, args...)
 }
 
-// ExpectLogContain sets expectation the HUT should call one of the Log*
-// methods. The expected message is constructed using format and args arguments
-// which are the same as in [fmt.Sprintf]. The [Contains] strategy is used to
-// match a log message.
-//
-// Method call will panic if [Spy.IgnoreLogs] was called before.
+// ExpectLogContain is a convenience for ExpectLog([Contains], ...).
 func (spy *Spy) ExpectLogContain(format string, args ...any) *Spy {
 	return spy.ExpectLog(Contains, format, args...)
 }
 
-// ExpectLogNotContain sets expectation the HUT should call one of the Log*
-// methods. The expected message is constructed using format and args arguments
-// which are the same as in [fmt.Sprintf]. The [NotContains] strategy is used
-// to match log messages.
-//
-// Method call will panic if [Spy.IgnoreLogs] was called before.
+// ExpectLogNotContain is a convenience for ExpectLog([NotContains], ...).
 func (spy *Spy) ExpectLogNotContain(format string, args ...any) *Spy {
 	return spy.ExpectLog(NotContains, format, args...)
 }
@@ -599,7 +594,9 @@ func (spy *Spy) logf(format string, args ...any) {
 	spy.haveLogMgs = append(spy.haveLogMgs, msg)
 }
 
-// ExamineLog returns so far logged messages.
+// ExamineLog returns the concatenation of all messages logged so far by
+// the helper under test (via Log/Logf). Useful for custom assertions when
+// the built-in ExpectLog* matchers are not sufficient.
 func (spy *Spy) ExamineLog() string {
 	spy.tt.Helper()
 	spy.mx.Lock()
@@ -607,9 +604,8 @@ func (spy *Spy) ExamineLog() string {
 	return strings.Join(spy.haveLogMgs, "\n")
 }
 
-// ExpectedNames sets expectation the HUT should call [Spy.Name] cnt number of
-// times.
-func (spy *Spy) ExpectedNames(cnt int) *Spy {
+// ExpectNames declares how many times Name must be called on the spy.
+func (spy *Spy) ExpectNames(cnt int) *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
 	spy.tt.Helper()
@@ -627,8 +623,10 @@ func (spy *Spy) Name() string {
 	return spy.tt.Name()
 }
 
-// ExpectFail sets expectation the HUT should call one of the Fatal* or Error*
-// methods.
+// ExpectFail declares that the helper under test must call at least one of
+// the error or fatal methods (Error*, Fatal*, or FailNow). This is the
+// broadest "I expect the helper to report a problem" expectation.
+// Mutually exclusive with ExpectError and ExpectFatal.
 func (spy *Spy) ExpectFail() *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -646,8 +644,11 @@ func (spy *Spy) ExpectFail() *Spy {
 	return spy
 }
 
-// Close closes the instance. You cannot add any expectations to a closed
-// instance.
+// Close marks the end of the expectation setup phase. After Close, no more
+// Expect* calls are allowed. This is the required last step before passing
+// the Spy to the helper under test in the patterns shown in [New].
+//
+// Returns the Spy for chaining: tspy := New(t).ExpectError().Close()
 func (spy *Spy) Close() *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
@@ -657,10 +658,10 @@ func (spy *Spy) Close() *Spy {
 	return spy
 }
 
-// Finish marks the end of the test. It can be called by hand, or it's called
-// automatically by a cleanup function as described in [New]. After
-// [Spy.Finish] is called, most of the Spy methods will panic when called -
-// check specific method documentation for details.
+// Finish runs all registered cleanups and marks the Spy as finished. After
+// Finish, most methods will panic if called (see per-method docs). Finish
+// is called automatically by the cleanup registered in [New]; you normally
+// only call it explicitly in advanced scenarios.
 func (spy *Spy) Finish() *Spy {
 	spy.mx.Lock()
 	spy.tt.Helper()
@@ -681,8 +682,12 @@ func (spy *Spy) Finish() *Spy {
 	return spy
 }
 
-// AssertExpectations asserts all expectations and returns true on success,
-// false otherwise. Each failed expectation is logged using tt instance.
+// AssertExpectations verifies that every expectation set via the Expect*
+// methods was satisfied by the helper under test. It returns true on
+// success. Failures are reported via the underlying *testing.T.
+//
+// In normal usage you do not need to call this explicitly — the cleanup
+// registered by [New] does it for you when the test ends.
 func (spy *Spy) AssertExpectations() bool {
 	spy.tt.Helper()
 	spy.mx.Lock()
@@ -727,7 +732,11 @@ func (spy *Spy) assertExpectations() bool {
 	if ok {
 		ok = ret
 	}
-	ret = spy.checkCallMaybeCnt("TempDir", spy.wantTempDirCnt, len(spy.haveTempDirs))
+	ret = spy.checkCallMaybeCnt(
+		"TempDir",
+		spy.wantTempDirCnt,
+		len(spy.haveTempDirs),
+	)
 	if ok {
 		ok = ret
 	}

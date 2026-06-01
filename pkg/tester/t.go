@@ -7,10 +7,17 @@ import (
 	"context"
 )
 
-// TODO(rz): add missing methods.
-// var _ testing.TB = (T)(nil)
-
-// T is a subset of [testing.TB] interface it has been defined to allow mocking.
+// T is a deliberate, minimal subset of [testing.TB].
+//
+// It is intentionally not a full implementation of testing.TB so that it
+// can be easily implemented by test doubles (especially [Spy]) when testing
+// custom assertion functions and other test helpers.
+//
+// Any real *testing.T, *testing.B, or *testing.F satisfies T. Compile-time
+// assertions exist in the package tests.
+//
+// See the package [README] for the list of methods helpers may use and for
+// the recommended refactoring pattern from *testing.T to tester.T.
 type T interface {
 	// Cleanup registers a function to be called when the test and all its
 	// subtests complete. Cleanup functions will be called in last added,

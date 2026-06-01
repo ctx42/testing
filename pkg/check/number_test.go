@@ -478,7 +478,7 @@ func Test_Increasing(t *testing.T) {
 		seq := []float64{1, 2, 2, 4}
 
 		// --- When ---
-		err := Increasing(seq, WithIncreasingSoft)
+		err := Increasing(seq, WithIncreasingSoft())
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -537,7 +537,7 @@ func Test_NotIncreasing(t *testing.T) {
 		seq := []float64{4, 3, 2, 1}
 
 		// --- When ---
-		err := NotIncreasing(seq, WithIncreasingSoft)
+		err := NotIncreasing(seq, WithIncreasingSoft())
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -563,7 +563,7 @@ func Test_NotIncreasing(t *testing.T) {
 		seq := []float64{1, 2, 2, 4}
 
 		// --- When ---
-		err := NotIncreasing(seq, WithIncreasingSoft)
+		err := NotIncreasing(seq, WithIncreasingSoft())
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -627,7 +627,7 @@ func Test_Decreasing(t *testing.T) {
 		seq := []float64{4, 3, 3, 1}
 
 		// --- When ---
-		err := Decreasing(seq, WithDecreasingSoft)
+		err := Decreasing(seq, WithDecreasingSoft())
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -686,7 +686,7 @@ func Test_NotDecreasing(t *testing.T) {
 		seq := []float64{1, 2, 3, 4}
 
 		// --- When ---
-		err := NotDecreasing(seq, WithDecreasingSoft)
+		err := NotDecreasing(seq, WithDecreasingSoft())
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -712,7 +712,7 @@ func Test_NotDecreasing(t *testing.T) {
 		seq := []float64{4, 3, 3, 1}
 
 		// --- When ---
-		err := NotDecreasing(seq, WithDecreasingSoft)
+		err := NotDecreasing(seq, WithDecreasingSoft())
 
 		// --- Then ---
 		affirm.NotNil(t, err)

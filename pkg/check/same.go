@@ -8,13 +8,12 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Same checks "want" and "have" are generic pointers and that both of them
-// reference the same object. Returns nil if they are, otherwise it returns an
-// error with a message indicating the expected and actual values.
+// Same checks that "want" and "have" are pointers to the same object.
 //
-// Pointer variable sameness is determined based on the equality of both type
-// and value. It works with pointers to objects, slices, maps and functions.
-// For arrays, it always returns error.
+// Sameness is based on type + value equality (via [internal/core.Same]).
+// Works for pointers, slices, maps, funcs. Arrays always fail.
+//
+// See [assert.Same] for the assertion wrapper.
 func Same(want, have any, opts ...any) error {
 	if core.Same(want, have) {
 		return nil
@@ -26,12 +25,13 @@ func Same(want, have any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// NotSame checks "want" and "have" are generic pointers and that both of them
-// reference the same object. Returns nil if it is, otherwise it returns an
-// error with a message indicating the expected and actual values.
+// NotSame checks that "want" and "have" are not pointers to the same object.
 //
-// Both arguments must be pointer variables. Pointer variable sameness is
-// determined based on the equality of both type and value.
+// NotSame checks that "want" and "have" are not pointers to the same object.
+//
+// Both must be pointer variables. Sameness check is type + value equality.
+//
+// See [assert.NotSame] for the assertion wrapper.
 func NotSame(want, have any, opts ...any) error {
 	if Same(want, have) == nil {
 		ops := DefaultOptions(opts...)

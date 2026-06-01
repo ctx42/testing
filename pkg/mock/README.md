@@ -24,8 +24,12 @@
 Mocking is a unit testing technique that isolates the code under test from
 external dependencies. By replacing dependencies with controlled objects that
 simulate real behavior, mocks ensure tests focus solely on the logic being
-tested, not on external systems. The mock package supports three types of
-replacement objects: fakes, stubs, and mocks.
+tested, not on external systems.
+
+The `mock` package provides the primitives (expectations, matchers, call
+recording) and works together with [mocker] for code generation and
+[tester] for testable spies. See the root README Design section for how
+these pieces fit the overall layered testing toolkit.
 
 >**Fakes**: Fakes implement the same interface as the real dependency but operate
 independently, returning hardcoded results. While simple, they are
@@ -154,10 +158,13 @@ The `mock` package provides common matchers for convenience:
 - `mock.AnyString` – Matches any string.
 - `mock.AnyInt` – Matches any integer.
 - `mock.AnyBool` – Matches any boolean.
-- `mock.MatchOfType` – Matches an argument’s type as string (e.g., "int", "*http.Request").
+- `mock.MatchOfType` – Matches an argument’s type as string
+  (e.g., "int", "*http.Request").
 - `mock.MatchType` – Matches an argument’s type using `reflect` package.
-- `mock.MatchError` – Matches a non-nil error with a specific message or error (via `errors.Is`).
-- `mock.MatchErrorContain` – Matches a non-nil error containing a given substring.
+- `mock.MatchError` – Matches a non-nil error with a specific message
+  or error (via `errors.Is`).
+- `mock.MatchErrorContain` – Matches a non-nil error containing a
+  given substring.
 
 ## Return Values
 

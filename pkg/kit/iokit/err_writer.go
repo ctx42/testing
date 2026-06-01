@@ -11,21 +11,21 @@ import (
 // ErrWrite is the default write error.
 var ErrWrite = errors.New("write error")
 
-// ErrorWriter implements [io.Writer] that writes up to n bytes from an
-// underlying writer then returns an error. If n is negative, it behaves as a
-// standard writer without returning an error. See [ErrWriter] constructor
-// function for details.
+// ErrorWriter implements [io.Writer] that writes up to a configured number of
+// bytes to an underlying writer, then returns the configured error.
+//
+// See [ErrWriter] for the constructor and the With*Err options for customization.
 type ErrorWriter struct {
-	*Options           // Writer options.
-	w        io.Writer // Underlying writer.
-	n        int       // At most bytes to write without error.
-	off      int       // Number of bytes written.
+	*Options
+	w   io.Writer
+	n   int
+	off int
 }
 
-// ErrWriter wraps the "dst" [io.Writer] and controls how many bytes can be
-// written to it (n) before it returns an error. If the "n" is negative, it
-// behaves like a regular writer. With [WithWriteErr] option, you can customize
-// the returned error.
+// ErrWriter wraps "dst" and allows up to n bytes to be written before returning
+// an error. If n < 0 it behaves like a normal writer.
+//
+// Use the With*Err options to customize the error.
 func ErrWriter(dst io.Writer, n int, opts ...Option) *ErrorWriter {
 	ew := &ErrorWriter{
 		Options: defaultOptions(),
@@ -41,6 +41,9 @@ func ErrWriter(dst io.Writer, n int, opts ...Option) *ErrorWriter {
 	return ew
 }
 
+// Write implements [io.Writer]. It writes to the underlying writer up to the
+// configured limit, then returns the configured error (or the underlying
+// writer's error).
 func (ew *ErrorWriter) Write(p []byte) (int, error) {
 	// Write no more than n bytes.
 	if ew.n >= 0 && ew.off+len(p) > ew.n {

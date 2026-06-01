@@ -3,38 +3,44 @@
 
 package iokit
 
-// Option represents an option function.
+// Option configures error-injecting readers and writers (see With*Err functions).
 type Option func(*Options)
 
-// WithReadErr is an [Option] setting custom read error.
+// WithReadErr returns an [Option] that sets a custom error to be returned
+// from read operations once the byte limit is reached.
 func WithReadErr(err error) Option {
 	return func(opts *Options) { opts.errRead = err }
 }
 
-// WithSeekErr is an [option] setting custom seek error.
+// WithSeekErr returns an [Option] that sets a custom error to be returned
+// from seek operations.
 func WithSeekErr(err error) Option {
 	return func(opts *Options) { opts.errSeek = err }
 }
 
-// WithWriteErr is an [option] setting custom write error.
+// WithWriteErr returns an [Option] that sets a custom error to be returned
+// from write operations once the byte limit is reached.
 func WithWriteErr(err error) Option {
 	return func(opts *Options) { opts.errWrite = err }
 }
 
-// WithCloseErr is an [option] setting custom close error.
+// WithCloseErr returns an [Option] that sets a custom error to be returned
+// from Close (the underlying Close is still called).
 func WithCloseErr(err error) Option {
 	return func(opts *Options) { opts.errClose = err }
 }
 
-// Options represent options used by iokit tools.
+// Options holds the configurable error values for iokit error readers and
+// writers. Use the With*Err functions to customize them.
 type Options struct {
-	errRead  error // Read error.
-	errSeek  error // Seek error.
-	errWrite error // Write error.
-	errClose error // Close error.
+	errRead  error
+	errSeek  error
+	errWrite error
+	errClose error
 }
 
-// defaultOptions returns default options.
+// defaultOptions returns the default Options used by ErrReader/ErrWriter
+// constructors (ErrRead for reads, ErrWrite for writes, no close error).
 func defaultOptions() *Options {
 	return &Options{
 		errRead:  ErrRead,

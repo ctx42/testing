@@ -153,8 +153,8 @@ func Test_Mock_On(t *testing.T) {
 		assert.Equal(t, Arguments{"str", 42, true}, call0.args)
 		assert.False(t, call0.argsAny)
 		assert.Len(t, 0, call0.returns)
-		assert.Len(t, 3, call0.cStack.Stack)
-		assert.Contain(t, "mock_test.go", call0.cStack.Stack[2])
+		assert.Len(t, 3, call0.Stack)
+		assert.Contain(t, "mock_test.go", call0.Stack[2])
 		assert.Equal(t, 0, call0.wantCalls)
 		assert.Equal(t, 0, call0.haveCalls)
 		assert.False(t, call0.optional)
@@ -268,8 +268,8 @@ func Test_Mock_OnAny(t *testing.T) {
 		assert.Empty(t, call0.args)
 		assert.True(t, call0.argsAny)
 		assert.Len(t, 0, call0.returns)
-		assert.Len(t, 3, call0.cStack.Stack)
-		assert.Contain(t, "mock_test.go", call0.cStack.Stack[2])
+		assert.Len(t, 3, call0.Stack)
+		assert.Contain(t, "mock_test.go", call0.Stack[2])
 		assert.Equal(t, 0, call0.wantCalls)
 		assert.Equal(t, 0, call0.haveCalls)
 		assert.False(t, call0.optional)
@@ -808,7 +808,7 @@ func Test_Mock_Call(t *testing.T) {
 		const cnt = 1000
 		go func() {
 			// Edit the call changing its return arguments.
-			for i := 0; i < cnt; i++ {
+			for range cnt {
 				mck.Call("ConcurrencyTestMethod", 1)
 			}
 			wg.Done()
@@ -816,7 +816,7 @@ func Test_Mock_Call(t *testing.T) {
 
 		go func() {
 			// Continuously call the mocked method.
-			for i := 0; i < cnt; i++ {
+			for range cnt {
 				mck.Call("ConcurrencyTestMethod", 1)
 			}
 			wg.Done()
@@ -1608,3 +1608,7 @@ func Test_Mock_AssertCallCount(t *testing.T) {
 		assert.True(t, mck.failed)
 	})
 }
+
+// Note: Meaningful benchmarks for the mock package require either
+// generated mocks or the mocker tool. Basic call recording benchmarks
+// are intentionally omitted for now to avoid coupling to test-only helpers.

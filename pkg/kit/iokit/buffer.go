@@ -19,8 +19,12 @@ const (
 	BuffDefault = "default" // BuffDefault applies no cleanup checks.
 )
 
-// Buffer is a thread-safe buffer that wraps [bytes.Buffer]. It tracks write
-// and read operations and supports test cleanup checks based on its kind.
+// Buffer is a thread-safe wrapper around [bytes.Buffer] that tracks write and
+// read operations and supports automatic test cleanup verification.
+//
+// See [NewBuffer], [DryBuffer], and [WetBuffer] for the recommended
+// constructors. The type works well with [tester.T] for registering cleanup
+// checks.
 type Buffer struct {
 	name string        // Buffer name for identification in the test log.
 	kind string        // Buffer kind: [BufferDry], [BufferWet], [BuffDefault].
@@ -35,14 +39,12 @@ type Buffer struct {
 	examine bool
 }
 
-// NewBuffer creates a new thread-safe [Buffer] with the [BuffDefault] kind. An
-// optional name can be provided. If no name is provided, [Buffer.Name] returns
-// an empty string.
+// NewBuffer creates a new thread-safe [Buffer] with the [BuffDefault] kind
+// (no automatic cleanup checks). An optional name can be provided.
 //
-// Example:
+// Prefer [DryBuffer] or [WetBuffer] for most test scenarios.
 //
-//	buf := NewBuffer("my-buffer") // Named buffer.
-//	buf := NewBuffer()            // Unnamed buffer.
+// See the package [README] for usage examples.
 func NewBuffer(names ...string) *Buffer {
 	tsb := &Buffer{
 		kind:    BuffDefault,
@@ -56,16 +58,15 @@ func NewBuffer(names ...string) *Buffer {
 	return tsb
 }
 
-// Name returns the buffer's name or an empty string if no name was provided
-// during creation.
+// Name returns the buffer's name (or empty if none was provided at creation).
 func (buf *Buffer) Name() string { return buf.name }
 
-// Kind returns the buffer's kind.
+// Kind returns the buffer's kind (Dry, Wet, or Default).
 func (buf *Buffer) Kind() string { return buf.kind }
 
-// SkipExamine disables the cleanup requirement for the test to examine the
-// buffer. This is useful when the buffer is [WetBuffer] but we do not want to
-// examine what was written to it. Implements fluent interface.
+// SkipExamine disables the automatic cleanup check that the test must call
+// String() to examine the buffer. Useful for [WetBuffer] when you don't care
+// about the content. Implements fluent interface.
 func (buf *Buffer) SkipExamine() *Buffer {
 	buf.mx.Lock()
 	defer buf.mx.Unlock()
@@ -73,8 +74,7 @@ func (buf *Buffer) SkipExamine() *Buffer {
 	return buf
 }
 
-// Write writes the byte slice p to the buffer, incrementing the write counter.
-// It is thread-safe and implements the [io.Writer] interface.
+// Write implements [io.Writer]. Thread-safe; increments internal write count.
 func (buf *Buffer) Write(p []byte) (n int, err error) {
 	buf.mx.Lock()
 	defer buf.mx.Unlock()
@@ -82,8 +82,7 @@ func (buf *Buffer) Write(p []byte) (n int, err error) {
 	return buf.buf.Write(p)
 }
 
-// WriteString writes the string s to the buffer, incrementing the write
-// counter. It is thread-safe and implements the [io.StringWriter] interface.
+// WriteString implements [io.StringWriter]. Thread-safe; increments write count.
 func (buf *Buffer) WriteString(s string) (n int, err error) {
 	buf.mx.Lock()
 	defer buf.mx.Unlock()
@@ -91,17 +90,16 @@ func (buf *Buffer) WriteString(s string) (n int, err error) {
 	return buf.buf.WriteString(s)
 }
 
-// MustWriteString writes the string s to the buffer, incrementing the write
-// counter. It panics if the write operation fails. This is useful in tests
-// where write failures are unexpected and should halt execution.
+// MustWriteString writes s to the buffer and panics on failure. Useful in
+// tests where write errors are not expected.
 func (buf *Buffer) MustWriteString(s string) int {
 	n, _ := buf.WriteString(s) // Panics when out-of-memory.
 	return n
 }
 
-// String returns the current contents of the buffer as a string, incrementing
-// the read counter. It is thread-safe and implements the [fmt.Stringer]
-// interface and is intended for inspecting buffer data during tests.
+// String returns the current contents as a string (thread-safe) and
+// increments the read counter. Implements [fmt.Stringer]. This is the
+// primary way tests inspect what was written.
 func (buf *Buffer) String() string {
 	buf.mx.Lock()
 	defer buf.mx.Unlock()
@@ -127,15 +125,12 @@ func (buf *Buffer) Reset() {
 	buf.buf.Reset()
 }
 
-// DryBuffer creates a thread-safe [Buffer] with the dry kind [BufferDry],
-// which fails the test during cleanup if any data was written to it. An
-// optional name can be provided for use in test log output. The provided
-// [tester.T] is used to register cleanup checks and report failures.
+// DryBuffer creates a thread-safe [Buffer] with the [BufferDry] kind.
 //
-// Example:
+// It registers a cleanup check via the provided [tester.T] that fails the test
+// if any data was written to the buffer.
 //
-//	buf := DryBuffer(t, "dry-buffer")
-//	buf.WriteString("data") // Will fail test during cleanup.
+// See the package [README] and [WetBuffer] for the complementary "wet" behavior.
 func DryBuffer(t tester.T, names ...string) *Buffer {
 	t.Helper()
 	buf := NewBuffer(names...)
@@ -157,17 +152,15 @@ func DryBuffer(t tester.T, names ...string) *Buffer {
 	return buf
 }
 
-// WetBuffer creates a thread-safe [Buffer] with the wet kind [BufferWet],
-// which fails the test during cleanup if no data was written or if the
-// contents were not read via [Buffer.String]. An optional name can be provided
-// for use in test log output. The provided [tester.T] is used to register
-// cleanup checks and report failures.
+// WetBuffer creates a thread-safe [Buffer] with the [BufferWet] kind.
 //
-// Example:
+// It registers a cleanup check via the provided [tester.T] that fails the test
+// if no data was written, or (by default) if the contents were never examined
+// via [Buffer.String].
 //
-//	buf := WetBuffer(t, "wet-buffer")
-//	buf.WriteString("data")
-//	// Must call buf.SkipExamine() or buf.String() to avoid test failure.
+// Use [Buffer.SkipExamine] to disable the examination requirement.
+//
+// See the package [README] and [DryBuffer] for the complementary "dry" behavior.
 func WetBuffer(t tester.T, names ...string) *Buffer {
 	t.Helper()
 	buf := NewBuffer(names...)

@@ -7,20 +7,33 @@ import (
 	"time"
 )
 
-// EqualCase represents two values and if they are considered equal.
+// EqualCase represents one test case for equality behavior.
 type EqualCase struct {
-	Desc     string // The case description.
-	Val0     any    // The first value.
-	Val1     any    // The second value.
-	AreEqual bool   // Are the values equal?
+	Desc     string // Human-readable description of the case.
+	Val0     any    // First value.
+	Val1     any    // Second value.
+	AreEqual bool   // Whether the two values are considered equal.
 }
 
-// EqualCases returns cases to test equality.
+// EqualCases returns a large, battle-tested set of cases for verifying
+// custom equality logic.
+//
+// The collection covers primitives, structs (exported/unexported fields),
+// pointers, interfaces, slices, maps, channels, time values, and more.
+// It is the same data used inside this module to test [check.Equal],
+// [assert.Equal], and registered type checkers.
+//
+// Recommended usage when testing your own equality helper:
+//
+//	for _, tc := range testcases.EqualCases() {
+//	    got := myEqual(tc.Val0, tc.Val1)
+//	    if got != tc.AreEqual { ... }
+//	}
 func EqualCases() []EqualCase {
 	var itfVal0, itfVal1, itfPtr0, itfPtr1, itfNil TItf
 	itfVal0, itfVal1 = TVal{}, TVal{}
 	itfPtr0, itfPtr1 = &TPtr{}, &TPtr{}
-	mPtr := ptr(map[string]int{"A": 1})
+	mPtr := new(map[string]int{"A": 1})
 	tim := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 	ch0, ch1 := make(chan int), make(chan int)
 
@@ -45,20 +58,20 @@ func EqualCases() []EqualCase {
 		},
 		{
 			"equal type pointer",
-			ptr(TStrType("abc")),
-			ptr(TStrType("abc")),
+			new(TStrType("abc")),
+			new(TStrType("abc")),
 			true,
 		},
 		{
 			"not equal type value pointer",
-			ptr(TStrType("ab")),
-			ptr(TStrType("abc")),
+			new(TStrType("ab")),
+			new(TStrType("abc")),
 			false,
 		},
 		{"func", TFuncA, TFuncA, true},
 		{"not equal func", TFuncA, TFuncB, false},
-		{"func ptr", ptr(TFuncA), ptr(TFuncA), true},
-		{"not equal func ptr", ptr(TFuncA), ptr(TFuncB), false},
+		{"func ptr", new(TFuncA), new(TFuncA), true},
+		{"not equal func ptr", new(TFuncA), new(TFuncB), false},
 		{"equal []any", []any{1, "b", 3.4, tim}, []any{1, "b", 3.4, tim}, true},
 		{
 			"not equal []any",
@@ -335,6 +348,3 @@ func EqualConstants() []EqualCase {
 		{"CComplex128 A!=complex128", CComplex128A, 8i + 12, false},
 	}
 }
-
-// ptr returns the pointer to any type.
-func ptr[M any](v M) *M { return &v }

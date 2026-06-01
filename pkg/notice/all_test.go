@@ -5,6 +5,7 @@ package notice
 
 import (
 	"fmt"
+	"strings"
 )
 
 // FWD is a test helper function printing notice chain in the forward direction
@@ -16,18 +17,18 @@ import (
 //	| hdr0 (A) -> hdr1 (B) # The given node doesn't have the previous node.
 //	hdr0 (A) -> hdr1 (B) # The given node has the previous node.
 func FWD(node *Notice) string {
-	var have string
+	var have strings.Builder
 	if node != nil && node.prev == nil {
-		have += "| "
+		have.WriteString("| ")
 	}
 	for node != nil {
-		have += fmt.Sprintf("%s (%s)", node.Header, node.Trail)
+		_, _ = fmt.Fprintf(&have, "%s (%s)", node.Header, node.Trail)
 		node = node.next
 		if node != nil {
-			have += " -> "
+			have.WriteString(" -> ")
 		}
 	}
-	return have
+	return have.String()
 }
 
 // REV is a test helper function printing notice chain in the backward
@@ -39,16 +40,16 @@ func FWD(node *Notice) string {
 //	| hdr0 (A) -> hdr1 (B) # The given node doesn't have the next node.
 //	hdr0 (A) -> hdr1 (B) # The given node has the next node.
 func REV(node *Notice) string {
-	var have string
+	var have strings.Builder
 	if node != nil && node.next == nil {
-		have += "| "
+		have.WriteString("| ")
 	}
 	for node != nil {
-		have += fmt.Sprintf("%s (%s)", node.Header, node.Trail)
+		_, _ = fmt.Fprintf(&have, "%s (%s)", node.Header, node.Trail)
 		node = node.prev
 		if node != nil {
-			have += " -> "
+			have.WriteString(" -> ")
 		}
 	}
-	return have
+	return have.String()
 }

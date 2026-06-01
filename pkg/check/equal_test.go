@@ -63,7 +63,7 @@ func Test_Equal(t *testing.T) {
 		m1 := map[string]any{"A": 42}
 
 		// --- When ---
-		err := Equal(m0, m1, WithCmpBaseTypes)
+		err := Equal(m0, m1, WithCmpBaseTypes())
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -664,7 +664,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 	t.Run("not equal deeply nested", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithSkipUnexported}
+		opts := []any{WithTrailLog(&trail), WithSkipUnexported()}
 
 		want := testcases.TNested{STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 42}}}}
 		have := testcases.TNested{STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 44}}}}
@@ -709,7 +709,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		opts := []any{
 			WithTrailLog(&trail),
 			WithSkipTrail("TNested.STAp[0].TAp.Int"),
-			WithSkipUnexported,
+			WithSkipUnexported(),
 		}
 
 		want := testcases.TNested{STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 42}}}}
@@ -1891,7 +1891,7 @@ func Test_dumpByte(t *testing.T) {
 	t.Run("uses indent and level", func(t *testing.T) {
 		// --- Given ---
 		dmp := dump.New(dump.WithIndent(2))
-		val := reflect.ValueOf(reflect.TypeOf(42)).Elem()
+		val := reflect.ValueOf(reflect.TypeFor[int]()).Elem()
 		val = val.Field(0).Field(4)
 
 		// --- When ---
@@ -1900,4 +1900,185 @@ func Test_dumpByte(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, dump.ValCannotPrint, have)
 	})
+}
+
+// -----------------------------------------------------------------------------
+// Benchmarks
+// -----------------------------------------------------------------------------
+
+type benchUser struct {
+	ID        int
+	Name      string
+	Email     string
+	Active    bool
+	CreatedAt time.Time
+	Tags      []string
+	Metadata  map[string]any
+}
+
+type benchOrder struct {
+	ID       int
+	User     benchUser
+	Items    []benchOrderItem
+	Total    float64
+	Status   string
+	Shipped  bool
+	Metadata map[string]any
+}
+
+type benchOrderItem struct {
+	SKU      string
+	Quantity int
+	Price    float64
+}
+
+func makeBenchUser() benchUser {
+	return benchUser{
+		ID:        42,
+		Name:      "Alice Example",
+		Email:     "alice@example.com",
+		Active:    true,
+		CreatedAt: time.Date(2024, 5, 10, 12, 0, 0, 0, time.UTC),
+		Tags:      []string{"premium", "beta", "europe"},
+		Metadata: map[string]any{
+			"plan":   "pro",
+			"region": "eu-west-1",
+			"score":  87.5,
+		},
+	}
+}
+
+func makeBenchOrder() benchOrder {
+	return benchOrder{
+		ID:   1001,
+		User: makeBenchUser(),
+		Items: []benchOrderItem{
+			{SKU: "WIDGET-42", Quantity: 3, Price: 19.99},
+			{SKU: "GADGET-X", Quantity: 1, Price: 49.5},
+		},
+		Total:   109.47,
+		Status:  "shipped",
+		Shipped: true,
+		Metadata: map[string]any{
+			"channel": "web",
+			"promo":   "SPRING25",
+		},
+	}
+}
+
+func Benchmark_Equal_SimpleStruct(b *testing.B) {
+	want := makeBenchUser()
+	have := makeBenchUser()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Equal(want, have)
+	}
+}
+
+func Benchmark_Equal_NestedStruct(b *testing.B) {
+	want := makeBenchOrder()
+	have := makeBenchOrder()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Equal(want, have)
+	}
+}
+
+func Benchmark_Equal_LargeSlice(b *testing.B) {
+	orders := make([]benchOrder, 0, 100)
+	for i := 0; i < 100; i++ {
+		o := makeBenchOrder()
+		o.ID = i
+		orders = append(orders, o)
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Equal(orders, orders)
+	}
+}
+
+func Benchmark_Equal_WithTrail(b *testing.B) {
+	want := makeBenchOrder()
+	have := makeBenchOrder()
+	have.User.Name = "Different Name"
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Equal(want, have, WithTrail("order"))
+	}
+}
+
+func Benchmark_Equal_WithSkipUnexported(b *testing.B) {
+	type s struct {
+		Exported   int
+		unexported string
+	}
+	want := s{Exported: 1, unexported: "a"}
+	have := s{Exported: 1, unexported: "b"}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Equal(want, have, WithSkipUnexported())
+	}
+}
+
+func Benchmark_Equal_DeepWithCustomChecker(b *testing.B) {
+	// Custom checker that does a bit of extra work then delegates.
+	custom := func(want, have any, opts ...any) error {
+		// Simulate some non-trivial work without risking deep recursion
+		// or expensive formatting of large structures.
+		_ = len(want.(benchOrder).Items) + len(have.(benchOrder).Items)
+
+		// Delegate to normal comparison while explicitly disabling this
+		// custom checker for the recursive call (prevents infinite recursion).
+		callOpts := append(append([]any{}, opts...), WithTypeChecker(benchOrder{}, nil))
+		return Equal(want, have, callOpts...)
+	}
+
+	want := makeBenchOrder()
+	have := makeBenchOrder()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Equal(want, have, WithTypeChecker(benchOrder{}, custom))
+	}
+}
+
+func Benchmark_Equal_WithTrail_Deep(b *testing.B) {
+	type inner struct{ Val int }
+	type outer struct{ Items []inner }
+
+	want := outer{Items: []inner{{Val: 1}, {Val: 2}}}
+	have := outer{Items: []inner{{Val: 1}, {Val: 99}}}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Equal(want, have, WithTrail("Items[1].Val"))
+	}
+}
+
+func Benchmark_Equal_WithOptions_Reused(b *testing.B) {
+	ops := DefaultOptions(
+		WithSkipUnexported(),
+		WithTimeFormat(time.RFC3339),
+	)
+
+	type s struct {
+		Exported   int
+		unexported string
+		t          time.Time
+	}
+	want := s{Exported: 42, unexported: "x", t: time.Now()}
+	have := s{Exported: 42, unexported: "x", t: time.Now()}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Equal(want, have, WithOptions(ops))
+	}
 }

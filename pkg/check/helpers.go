@@ -15,10 +15,10 @@ import (
 
 // Types for some of the built-in types.
 var (
-	typTime    = reflect.TypeOf(time.Time{})
-	typZone    = reflect.TypeOf(time.Location{})
-	typZonePtr = reflect.TypeOf(&time.Location{})
-	typByte    = reflect.TypeOf(byte(0))
+	typTime    = reflect.TypeFor[time.Time]()
+	typZone    = reflect.TypeFor[time.Location]()
+	typZonePtr = reflect.TypeFor[*time.Location]()
+	typByte    = reflect.TypeFor[byte]()
 )
 
 // typeString returns a type of the value as a string.
@@ -39,7 +39,6 @@ func isPrintableChar(v byte) bool {
 // nolint: cyclop
 func valToString(key reflect.Value) string {
 	switch key.Kind() {
-
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return fmt.Sprintf("%d", key.Int())
 
@@ -72,7 +71,7 @@ func valToString(key reflect.Value) string {
 		}
 		return fmt.Sprintf("%s%s", pkg, typ.Name())
 
-	case reflect.Ptr:
+	case reflect.Pointer:
 		if key.IsNil() {
 			return dump.ValNil
 		}

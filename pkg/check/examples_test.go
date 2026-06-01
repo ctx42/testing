@@ -299,7 +299,7 @@ func ExampleEqual_skipAllUnexportedFields() {
 		want,
 		have,
 		check.WithTrailLog(&trails),
-		check.WithSkipUnexported,
+		check.WithSkipUnexported(),
 	)
 
 	fmt.Println(err)

@@ -9,14 +9,22 @@ import (
 	"time"
 )
 
-// Formats used by [GetTimeDumper].
+// Special format values for [time.Time] accepted by [WithTimeFormat],
+// [GetTimeDumper], and [Dump.TimeFormat].
 const (
-	TimeAsRFC3339  = ""         // Formats time as [time.RFC3339Nano].
-	TimeAsUnix     = "<unix>"   // Formats time as Unix timestamp (seconds).
-	TimeAsGoString = "<go-str>" // Formats time the same way as [time.GoString].
+	// TimeAsRFC3339 is the default (empty) format, producing RFC3339Nano.
+	TimeAsRFC3339 = ""
+
+	// TimeAsUnix produces a Unix timestamp (seconds since epoch) as a
+	// decimal number.
+	TimeAsUnix = "<unix>"
+
+	// TimeAsGoString produces output identical to time.Time.GoString().
+	TimeAsGoString = "<go-str>"
 )
 
-// GetTimeDumper returns [time.Time] dumper based on format.
+// GetTimeDumper returns a [Dumper] for [time.Time] values using the given
+// format (one of the TimeAs* constants or a standard Go time layout).
 func GetTimeDumper(format string) Dumper {
 	switch format {
 	case "":
@@ -30,11 +38,9 @@ func GetTimeDumper(format string) Dumper {
 	}
 }
 
-// TimeDumperFmt returns [Dumper] for [time.Time] using the given format. The
-// returned function requires val to be a value representing [time.Time] and
-// returns its string representation in the format defined by [Dump]
-// configuration. Returns [valErrUsage] ("<dump-usage-error>") string if the
-// type cannot be matched.
+// TimeDumperFmt returns a [Dumper] that formats [time.Time] using the
+// supplied Go time layout. The returned function returns [ValErrUsage] if
+// the value is not a time.Time.
 func TimeDumperFmt(format string) Dumper {
 	return func(dmp Dump, lvl int, val reflect.Value) string {
 		tim, ok := val.Interface().(time.Time)

@@ -5,14 +5,16 @@ package check
 
 import (
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Len checks "have" has "want" length. Returns nil if it has, otherwise it
-// returns an error with a message indicating the expected and actual values.
+// Len checks that "have" has "want" length.
+//
+// See the package documentation for option handling.
 func Len(want int, have any, opts ...any) (err error) {
 	vv := reflect.ValueOf(have)
 	defer func() {
@@ -34,8 +36,9 @@ func Len(want int, have any, opts ...any) (err error) {
 	return nil
 }
 
-// Cap checks "have" has "want" capacity. Returns nil if it has, otherwise it
-// returns an error with a message indicating the expected and actual values.
+// Cap checks that "have" has "want" capacity.
+//
+// See the package documentation for option handling.
 func Cap(want int, have any, opts ...any) (err error) {
 	vv := reflect.ValueOf(have)
 	defer func() {
@@ -57,13 +60,13 @@ func Cap(want int, have any, opts ...any) (err error) {
 	return nil
 }
 
-// Has checks slice has "want" value. Returns nil if it does, otherwise it
-// returns an error with a message indicating the expected and actual values.
+// Has checks that the slice "bag" contains the value "want".
+//
+// See [assert.Has] for the assertion form and the package documentation for
+// option handling ([DefaultOptions], [WithTrail], custom checkers, etc.).
 func Has[T comparable](want T, bag []T, opts ...any) error {
-	for _, got := range bag {
-		if want == got {
-			return nil
-		}
+	if slices.Contains(bag, want) {
+		return nil
 	}
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected slice to have a value").
@@ -72,9 +75,9 @@ func Has[T comparable](want T, bag []T, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// HasNo checks slice does not have the "want" value. Returns nil if it doesn't,
-// otherwise it returns an error with a message indicating the expected and
-// actual values.
+// HasNo checks that the slice "set" does not contain the value "want".
+//
+// See [assert.HasNo] for the assertion form.
 func HasNo[T comparable](want T, set []T, opts ...any) error {
 	for i, got := range set {
 		if want == got {
@@ -89,9 +92,10 @@ func HasNo[T comparable](want T, set []T, opts ...any) error {
 	return nil
 }
 
-// HasKey checks the map has a key. If the key exists, it returns its value and
-// nil, otherwise it returns zero-value and an error with a message indicating
-// the expected and actual values.
+// HasKey checks that the map "set" contains the key "key".
+//
+// On success it returns the corresponding value and nil.
+// On failure it returns the zero value for V and a descriptive error.
 func HasKey[K comparable, V any](key K, set map[K]V, opts ...any) (V, error) {
 	val, ok := set[key]
 	if ok {
@@ -104,8 +108,9 @@ func HasKey[K comparable, V any](key K, set map[K]V, opts ...any) (V, error) {
 	return val, AddRows(ops, msg)
 }
 
-// HasNoKey checks map has no key. Returns nil if it doesn't, otherwise it
-// returns an error with a message indicating the expected and actual values.
+// HasNoKey checks that the map "set" does not contain the key "key".
+//
+// See [assert.HasNoKey] for the assertion wrapper.
 func HasNoKey[K comparable, V any](key K, set map[K]V, opts ...any) error {
 	val, ok := set[key]
 	if !ok {
@@ -119,10 +124,16 @@ func HasNoKey[K comparable, V any](key K, set map[K]V, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// HasKeyValue checks the map has a key with a given value. Returns nil if it
-// doesn't, otherwise it returns an error with a message indicating the
-// expected and actual values.
-func HasKeyValue[K, V comparable](key K, want V, set map[K]V, opts ...any) error {
+// HasKeyValue checks that the map contains "key" mapped to exactly "want".
+//
+// See [assert.HasKeyValue] for the assertion wrapper.
+func HasKeyValue[K, V comparable](
+	key K,
+	want V,
+	set map[K]V,
+	opts ...any,
+) error {
+
 	have, err := HasKey(key, set, opts...)
 	if err != nil {
 		return err
@@ -138,20 +149,14 @@ func HasKeyValue[K, V comparable](key K, want V, set map[K]V, opts ...any) error
 	return AddRows(ops, msg)
 }
 
-// SliceSubset checks the "have" is a subset "want". In other words, all values
-// in the "want" slice must be in the "have" slice. Returns nil if it does,
-// otherwise returns an error with a message indicating the expected and actual
-// values.
+// SliceSubset checks that every element in "want" also appears in "have"
+// (i.e. "want" is a subset of "have").
+//
+// See [assert.SliceSubset] for the corresponding assertion.
 func SliceSubset[V comparable](want, have []V, opts ...any) error {
 	var missing []V
 	for _, wantVal := range want {
-		found := false
-		for _, haveVal := range have {
-			if wantVal == haveVal {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(have, wantVal)
 		if !found {
 			missing = append(missing, wantVal)
 		}
@@ -167,11 +172,9 @@ func SliceSubset[V comparable](want, have []V, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// MapSubset checks the "want" is a subset "have". In other words, all keys and
-// their corresponding values in the "want" map must be in the "have" map. It
-// is not an error when the "have" map has some other keys. Returns nil if
-// "want" is a subset of "have", otherwise it returns an error with a message
-// indicating the expected and actual values.
+// MapSubset checks that "want" is a subset of "have". All keys and values from
+// "want" must exist in "have". Extra keys in "have" are allowed.
+// See [assert.MapSubset] for the assertion form.
 func MapSubset[K comparable, V any](want, have map[K]V, opts ...any) error {
 	ops := DefaultOptions(opts...)
 
@@ -191,7 +194,7 @@ func MapSubset[K comparable, V any](want, have map[K]V, opts ...any) error {
 	}
 
 	if err != nil {
-		err = notice.SortNotices(notice.From(err).Head(), notice.TrialCmp)
+		err = notice.SortNotices(notice.From(err).Head(), notice.TrailCmp)
 	}
 
 	if len(missing) > 0 {
@@ -204,10 +207,10 @@ func MapSubset[K comparable, V any](want, have map[K]V, opts ...any) error {
 	return err
 }
 
-// MapsSubset checks all the "want" maps are subsets of corresponding "have"
-// maps using [MapSubset]. Returns nil if all "want" maps are subset of
-// corresponding "have" maps, otherwise it returns an error with a message
-// indicating the expected and actual values.
+// MapsSubset checks that every map in "want" is a subset of the corresponding
+// map in "have" (using [MapSubset]).
+//
+// See [assert.MapsSubset] for the assertion form.
 func MapsSubset[K comparable, V any](want, have []map[K]V, opts ...any) error {
 	ops := DefaultOptions(opts...)
 	if len(want) != len(have) {

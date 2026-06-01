@@ -28,7 +28,7 @@ func StructDumper(dmp Dump, lvl int, val reflect.Value) string {
 	lastPrivate := false
 	prn.Write("{").NLI(num)
 
-	for i := 0; i < num; i++ {
+	for i := range num {
 		last := i == num-1
 
 		fld := vTyp.Field(i)

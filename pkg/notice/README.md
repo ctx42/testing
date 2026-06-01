@@ -5,6 +5,7 @@
     * [Wrap Errors](#wrap-errors)
     * [Add Metadata](#add-metadata)
   * [Indenting Lines](#indenting-lines)
+  * [Chaining and Error Inspection](#chaining-and-error-inspection)
 <!-- TOC -->
 
 # Notice Package
@@ -75,3 +76,34 @@ fmt.Println(lines)
 //     line2
 //     line3
 ```
+
+## Chaining and Error Inspection
+
+Notices implement [error] and can be chained into a linked list. This is
+useful when multiple independent expectations fail in one assertion.
+
+```go
+err := notice.Join(
+    notice.New("first failure"),
+    notice.New("second failure"),
+)
+```
+
+The result is a single error whose [notice.Notice.All] returns the full
+list. Walk the chain with:
+
+- [notice.Notice.Head] — first element
+- [notice.Notice.Next] / [notice.Notice.Prev] — traversal
+- [notice.Join] — the builder used above
+
+Each notice delegates [errors.Is] and [errors.As] to its base error
+(default [notice.ErrNotice]). Change the base with [notice.Notice.Wrap]:
+
+```go
+myErr := errors.New("root cause")
+n := notice.New("something failed").Wrap(myErr)
+fmt.Println(errors.Is(n, myErr)) // true
+```
+
+Chains are mutable (see [notice.Notice.Chain]). Prefer [Join] when
+building from multiple values.

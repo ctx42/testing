@@ -7,24 +7,19 @@ import (
 	"io"
 )
 
-// ErrorReadCloser implements [io.ReadCloser] by embedding [ErrorReader]
-// instance and adding a Close method which behavior may be controlled with
-// options. See [ErrReadCloser] constructor function for details.
+// ErrorReadCloser implements [io.ReadCloser] by embedding an [ErrorReader]
+// and adding Close behavior controllable via options.
+//
+// See [ErrReadCloser] for the constructor.
 type ErrorReadCloser struct {
 	*ErrorReader
 	cls io.Closer
 }
 
-// ErrReadCloser wraps the "src" [io.ReadCloser] and controls how many bytes
-// can be read from it (n) before it returns an error. If the "n" is negative,
-// it behaves like a regular reader. The retuned error may be customized with
-// [WithReadErr] option.
+// ErrReadCloser wraps "src" and allows up to n bytes to be read before
+// returning an error. If n < 0 it behaves normally.
 //
-// By default, the [ErrorReadCloser.Close] method calls the original Close
-// method and returns whatever it returned. You may customize what error is
-// returned from [ErrorReadCloser.Close] with a [WithCloseErr] option. When a
-// [WithCloseErr] option is used, the original Close method is also called, but
-// its return value is ignored.
+// Use With*Err options to customize errors (original Close is still called).
 func ErrReadCloser(src io.ReadCloser, n int, opts ...Option) *ErrorReadCloser {
 	return &ErrorReadCloser{
 		ErrorReader: ErrReader(src, n, opts...),
@@ -32,6 +27,9 @@ func ErrReadCloser(src io.ReadCloser, n int, opts ...Option) *ErrorReadCloser {
 	}
 }
 
+// Close implements [io.Closer]. The underlying Close is always invoked.
+// A custom error (if set via [WithCloseErr]) is returned instead of the
+// underlying result.
 func (rc *ErrorReadCloser) Close() error {
 	err := rc.cls.Close() // The underlying Close method is always called.
 	if rc.errClose != nil {

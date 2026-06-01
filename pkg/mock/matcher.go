@@ -8,15 +8,18 @@ import (
 	"reflect"
 )
 
-// Matcher represents argument matcher.
+// Matcher is used for custom argument matching in expectations.
+//
+// Users normally obtain instances via [MatchBy], [MatchOfType], [MatchError],
+// etc. rather than calling NewMatcher directly.
 type Matcher struct {
 	fn   reflect.Value // Matcher function.
 	desc string        // Matcher description.
 }
 
-// NewMatcher returns new instance of an [Matcher]. Takes a function as
-// in [MatchBy] documentation and argument matcher description. Function panics
-// on error.
+// NewMatcher creates a Matcher from a predicate function and a human-readable
+// description (used in diff output). The function must have the shape
+// required by [MatchBy]; otherwise NewMatcher panics.
 func NewMatcher(fn any, desc string) *Matcher {
 	return &Matcher{
 		fn:   matcherFunc(fn),
@@ -24,18 +27,18 @@ func NewMatcher(fn any, desc string) *Matcher {
 	}
 }
 
-// Desc returns argument matcher description.
+// Desc returns the human-readable description of the matcher (shown in
+// diagnostic output when arguments fail to match).
 func (am *Matcher) Desc() string { return am.desc }
 
-// Match runs matcher function with "have" argument and returns true if it
-// matches expected value, otherwise returns false. It will panic if the "have"
-// doesn't match expected type for the matcher.
+// Match reports whether have satisfies the predicate. It panics if have has
+// the wrong dynamic type for the matcher function.
 func (am *Matcher) Match(have any) bool {
 	expectType := am.fn.Type().In(0)
 
 	var expectTypeNilSupported bool
 	switch expectType.Kind() { // nolint:exhaustive
-	case reflect.Slice, reflect.Map, reflect.Ptr:
+	case reflect.Slice, reflect.Map, reflect.Pointer:
 		expectTypeNilSupported = true
 	case reflect.Interface, reflect.Func, reflect.Chan:
 		expectTypeNilSupported = true

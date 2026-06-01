@@ -8,13 +8,18 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// ChannelWillClose asserts the channel will be closed "within" a given time
-// duration. Returns true if it was, otherwise marks the test as failed, writes
-// an error message to the test log, and returns false.
+// ChannelWillClose asserts that the channel will be closed within the given
+// duration.
 //
-// The "within" may represent duration in the form of a string, int, int64, or
-// [time.Duration].
-func ChannelWillClose[C any](t tester.T, within any, c <-chan C, opts ...any) bool {
+// See [check.ChannelWillClose] for details on the timeout format and
+// the package documentation for options.
+func ChannelWillClose[C any](
+	t tester.T,
+	within any,
+	c <-chan C,
+	opts ...any,
+) bool {
+
 	t.Helper()
 	if err := check.ChannelWillClose(within, c, opts...); err != nil {
 		t.Error(err)

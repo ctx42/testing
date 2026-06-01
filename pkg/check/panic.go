@@ -12,10 +12,13 @@ import (
 )
 
 // TestFunc is a signature used by check functions dealing with panics.
+// See [assert.Panic], [assert.NoPanic], etc.
 type TestFunc func()
 
-// Panic checks "fn" panics. Returns nil if it does, otherwise it returns an
-// error with a message with value passed to panic and stack trace.
+// Panic checks that calling "fn" causes a panic.
+//
+// On success (panic occurred) it returns nil.
+// On failure it returns a structured error.
 func Panic(fn TestFunc, opts ...any) error {
 	if _, stack := core.WillPanic(fn); stack == "" {
 		ops := DefaultOptions(opts...)
@@ -25,8 +28,10 @@ func Panic(fn TestFunc, opts ...any) error {
 	return nil
 }
 
-// NoPanic checks "fn" does not panic. Returns nil if it doesn't, otherwise it
-// returns an error with a message with value passed to panic and stack trace.
+// NoPanic checks that calling "fn" does **not** cause a panic.
+//
+// If a panic occurs, the recovered value and stack are included in the
+// returned error.
 func NoPanic(fn TestFunc, opts ...any) error {
 	if val, stack := core.WillPanic(fn); stack != "" {
 		ops := DefaultOptions(opts...)
@@ -38,9 +43,10 @@ func NoPanic(fn TestFunc, opts ...any) error {
 	return nil
 }
 
-// PanicContain checks "fn" panics, and the recovered panic value represented
-// as a string contains "want". Returns nil if it does, otherwise it returns an
-// error with a message with value passed to panic and stack trace.
+// PanicContain checks that "fn" panics and that the string representation
+// of the recovered panic value contains the substring "want".
+//
+// See [assert.PanicContain] for the assertion wrapper.
 func PanicContain(want string, fn TestFunc, opts ...any) error {
 	val, stack := core.WillPanic(fn)
 	if stack == "" {
@@ -67,9 +73,9 @@ func PanicContain(want string, fn TestFunc, opts ...any) error {
 	return nil
 }
 
-// PanicMsg checks "fn" panics and returns the recovered panic value as a
-// string. If the function doesn't panic, it returns nil and an error with a
-// detailed message indicating the expected behavior.
+// PanicMsg checks that "fn" panics and returns the recovered panic value as a
+// string. Returns an error if "fn" did not panic.
+// See [assert.PanicMsg].
 func PanicMsg(fn TestFunc, opts ...any) (*string, error) {
 	val, stack := core.WillPanic(fn)
 	if stack == "" {

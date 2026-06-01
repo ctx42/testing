@@ -1,16 +1,40 @@
 <!-- TOC -->
 * [The `kit` Package](#the-kit-package)
+  * [Sub-packages](#sub-packages)
 <!-- TOC -->
 
 # The `kit` Package
 
-The `kit` package provides a set of test packages and helpers to streamline Go
-testing. Instead of rewriting common test utilities, this package offers a
-curated collection. Its goal is to balance simplicity and functionality, 
-focusing on practical tools generic.
+The `kit` package is the curated home for focused testing utilities in the
+CTX42 testing module. Rather than duplicating common test helpers across
+projects, kit collects practical, well-documented tools that integrate
+naturally with [tester.T] and the assertion packages.
 
-Sub-packages:
+Its goal is to provide high-quality building blocks that are simple to use
+yet powerful enough for real test scenarios.
 
-- [iokit](iokit/README.md) - I/O related test helpers.
-- [timekit](timekit/README.md) - Time related test helpers.
+## Top-level helpers
+
+In addition to the sub-packages, `kit` provides a small number of
+standalone helpers at the package level:
+
+- `SHA1Reader` / `SHA1File` — convenient wrappers for computing SHA-1
+  hashes (they panic on error, which is the expected behavior in tests).
+- [AddGlobalCleanup] / [RunGlobalCleanups] — a global post-test cleanup
+  mechanism intended for use from `TestMain`. See the godoc for important
+  warnings about global mutable state and recommended usage patterns.
+
+## Sub-packages
+
+- [iokit](iokit/README.md) — I/O and buffer-related helpers, including
+  thread-safe buffers with automatic cleanup checks and error-injecting
+  readers/writers.
+- [timekit](timekit/README.md) — Controllable and deterministic clocks
+  (fixed, starting-at, and tick-based) for testing time-dependent code
+  without relying on the real system clock.
+- [reflectkit](reflectkit/reflectkit.go) — Lightweight reflection
+  utilities, primarily for safe struct field inspection during tests.
+
+See the individual sub-package READMEs and godoc for detailed usage,
+examples, and cross-references.
 

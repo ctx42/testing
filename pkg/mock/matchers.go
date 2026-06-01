@@ -13,42 +13,32 @@ import (
 	"github.com/ctx42/testing/internal/core"
 )
 
-// AnyString is a helper matching any argument value of string type.
+// AnyString matches any argument whose dynamic type is string.
 var AnyString = MatchOfType("string")
 
-// AnyInt is a helper matching any argument value of integer type.
+// AnyInt matches any argument whose dynamic type is int.
 var AnyInt = MatchOfType("int")
 
-// AnyBool is a helper matching any argument value of boolean type.
+// AnyBool matches any argument whose dynamic type is bool.
 var AnyBool = MatchOfType("bool")
 
-// AnyCtx matches any non-nil context.
+// AnyCtx matches any non-nil context.Context.
 var AnyCtx = MatchBy(func(ctx context.Context) bool {
 	return ctx != nil
 })
 
-// MatchSame matches two generic pointers point to the same object using
-// [is.SamePointers].
+// MatchSame returns a matcher that reports whether the argument is the same
+// pointer as want (using the same rules as [check.Same]).
 func MatchSame(want any) *Matcher {
 	return MatchBy(func(have any) bool { return core.Same(want, have) })
 }
 
-// MatchBy constructs an [Matcher] instance which validates arguments using
-// a given function. The function must be accepting a single argument (of the
-// expected type) and return a true if argument matches expectations or false
-// when it doesn't. If function doesn't match the required signature, [MatchBy]
-// panics.
+// MatchBy creates a [Matcher] backed by the supplied predicate. The function
+// must have the signature func(T) bool for some type T; any other shape
+// causes a panic at construction time.
 //
-// Examples:
-//
-//	fn := func(have int) bool { ... }
-//	fn := func(have float64) bool { ... }
-//	fn := func(have ExampleItf) bool { ... }
-//	fn := func(have ExampleType) bool { ... }
-//	fn := func(have *ExampleType) bool { ... }
-//
-// MatchBy can be used to match complex mocked method argument like function,
-// structure, channel, map, ...
+// MatchBy is the foundation for all custom matchers and for the predefined
+// ones (MatchOfType, MatchError, Any*, ...).
 //
 // Example:
 //
@@ -62,18 +52,16 @@ func MatchBy(fn any) *Matcher {
 	return NewMatcher(fn, desc)
 }
 
-// MatchOfType constructs an argument matcher (Matcher) instance which
-// ensures argument is of given type.
+// MatchOfType returns a matcher that accepts only arguments whose
+// reflect.Type.String() exactly equals typ.
 //
 // Examples:
 //
 //	MatchOfType("int")
-//	MatchOfType("string")
-//	MatchOfType("mock.ExampleType")
-//	MatchOfType("*mock.ExampleType")
+//	MatchOfType("*http.Request")
 //	MatchOfType("map[string]interface {}")
 //
-// The MatchOfType will not match if the string is an interface name.
+// It does not match interface types by name; use a custom MatchBy for that.
 func MatchOfType(typ string) *Matcher {
 	fn := func(have any) bool {
 		haveTyp := reflect.TypeOf(have)
@@ -84,8 +72,8 @@ func MatchOfType(typ string) *Matcher {
 	return NewMatcher(fn, desc)
 }
 
-// MatchType constructs an argument matcher ([Matcher]) instance which
-// ensures argument is of the same type as the [MatchType] argument.
+// MatchType returns a matcher that accepts arguments whose dynamic type
+// equals the type of typ (using reflect.TypeOf).
 //
 // Examples:
 //
@@ -93,7 +81,6 @@ func MatchOfType(typ string) *Matcher {
 //	MatchType(true)
 //	MatchType("string")
 //	MatchType(mock.ExampleType{})
-//	MatchType(*mock.ExampleType{})
 func MatchType(typ any) *Matcher {
 	typTyp := reflect.TypeOf(typ)
 	typStr := typTyp.String()
@@ -107,20 +94,17 @@ func MatchType(typ any) *Matcher {
 	return NewMatcher(fn, desc)
 }
 
-// MatchErrorContain constructs an argument matcher ([Matcher]) instance
-// which ensures argument is a non nil error with given message.
+// MatchErrorContain returns a matcher that accepts a non-nil error whose
+// Error() string contains the substring want.
 func MatchErrorContain(want string) *Matcher {
 	return MatchBy(func(err error) bool {
 		return strings.Contains(err.Error(), want)
 	})
 }
 
-// MatchError creates an [Matcher] that verifies the argument is a non-nil
-// error. The "want" parameter specifies the expected error behavior:
-//   - If want is a string, the error's message (via Error()) is matched.
-//   - If want is an error, [errors.Is] is used to check.
-//
-// It will panic if "want" is neither.
+// MatchError returns a matcher for non-nil errors. When want is a string it
+// matches the error's Error() text exactly; when want is an error it uses
+// errors.Is. Any other type for want causes a panic at construction.
 func MatchError(want any) *Matcher {
 	var mby *Matcher
 	switch w := want.(type) {
@@ -134,10 +118,11 @@ func MatchError(want any) *Matcher {
 	return mby
 }
 
-// AnySlice is a helper to create slice of length cnt of [mock.Any] values.
+// AnySlice returns a slice of length cnt filled with [Any] sentinels.
+// Useful when building expectations for variadic methods or slices.
 func AnySlice(cnt int) []any {
 	var str []any
-	for i := 0; i < cnt; i++ {
+	for range cnt {
 		str = append(str, Any)
 	}
 	return str

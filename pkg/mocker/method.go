@@ -69,15 +69,16 @@ func (met *method) genReceiver(typ string) string {
 //	(x int)
 //	(x int, y bool)
 func (met *method) genArgs() string {
-	code := "("
+	var code strings.Builder
+	code.WriteString("(")
 	for i, arg := range met.args {
 		if i > 0 {
-			code += ", "
+			code.WriteString(", ")
 		}
-		code += arg.genArg(i)
+		code.WriteString(arg.genArg(i))
 	}
-	code += ")"
-	return code
+	code.WriteString(")")
+	return code.String()
 }
 
 // genAnyArgs generates code representing method's arguments wrapped in
@@ -91,19 +92,20 @@ func (met *method) genArgs() string {
 //	(x any, y any)
 //	(x any, y any, z ...any)
 func (met *method) genAnyArgs() string {
-	code := "("
+	var code strings.Builder
+	code.WriteString("(")
 	for i, arg := range met.args {
 		if i > 0 {
-			code += ", "
+			code.WriteString(", ")
 		}
-		code += arg.genName(i) + " "
+		code.WriteString(arg.genName(i) + " ")
 		if arg.isVariadic() {
-			code += "..."
+			code.WriteString("...")
 		}
-		code += "any"
+		code.WriteString("any")
 	}
-	code += ")"
-	return code
+	code.WriteString(")")
+	return code.String()
 }
 
 // argNames returns method's argument names.
@@ -150,21 +152,21 @@ func (met *method) genArgTypes() string {
 //	error
 //	(int, error)
 func (met *method) genRets() string {
-	var code string
+	var code strings.Builder
 	rc := len(met.rets)
 	for i, ret := range met.rets {
 		if rc > 1 && i == 0 {
-			code += "("
+			code.WriteString("(")
 		}
 		if i > 0 {
-			code += ", "
+			code.WriteString(", ")
 		}
-		code += ret.getType()
+		code.WriteString(ret.getType())
 		if rc > 1 && i == rc-1 {
-			code += ")"
+			code.WriteString(")")
 		}
 	}
-	return code
+	return code.String()
 }
 
 // genSig generates code for a method signature. If recType is non-empty, the
@@ -248,10 +250,7 @@ func (met *method) genArgSlice() string {
 		}
 	}
 	if met.isVariadic() {
-		idx := len(met.args) - 1
-		if idx < 0 {
-			idx = 0
-		}
+		idx := max(len(met.args)-1, 0)
 		name := met.args[idx].genName(idx)
 		code += genAppendFromTo("_args", name)
 	}

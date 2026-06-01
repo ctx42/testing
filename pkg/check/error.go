@@ -13,7 +13,9 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Error checks "err" is not nil. Returns an error if it's nil.
+// Error checks that "err" is not nil.
+//
+// See [assert.Error] for the assertion wrapper.
 func Error(err error, opts ...any) error {
 	if err != nil {
 		return nil // nolint: nilerr
@@ -23,7 +25,9 @@ func Error(err error, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// NoError checks "err" is nil. Returns error it's not nil.
+// NoError checks that "err" is nil.
+//
+// See [assert.NoError] for the assertion wrapper.
 func NoError(err error, opts ...any) error {
 	if err == nil {
 		return nil
@@ -38,9 +42,10 @@ func NoError(err error, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// ErrorIs checks whether any error in the "err" tree matches the "want" target.
-// Returns nil if it's, otherwise returns an error with a message indicating
-// the expected and actual values.
+// ErrorIs checks that the error tree rooted at "err" contains an error
+// that matches "want" according to [errors.Is].
+//
+// See [assert.ErrorIs] for the assertion wrapper.
 func ErrorIs(want, err error, opts ...any) error {
 	if errors.Is(err, want) {
 		return nil
@@ -53,10 +58,25 @@ func ErrorIs(want, err error, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// ErrorAs checks there is an error in the "err" tree that matches the "want"
-// target, and if one is found, sets the target to that error. Returns nil if
-// the target is found, otherwise returns an error with a message indicating
-// the expected and actual values.
+// ErrorIsNot checks that no error in the tree rooted at "err" matches
+// "want" according to [errors.Is].
+//
+// See [assert.ErrorIsNot] for the assertion wrapper.
+func ErrorIsNot(want, err error, opts ...any) error {
+	if !errors.Is(err, want) {
+		return nil
+	}
+	ops := DefaultOptions(opts...)
+	const hHeader = "expected error to not have a target in its tree"
+	msg := notice.New(hHeader).
+		Want("(%T) %v", want, want).
+		Have("(%T) %v", err, err)
+	return AddRows(ops, msg)
+}
+
+// ErrorAs checks that an error in the tree rooted at "err" matches the
+// target "want" according to [errors.As], and if so, assigns it into the
+// pointer provided in "want".
 func ErrorAs(want any, err error, opts ...any) error {
 	if e := Error(err); e != nil {
 		return e
@@ -77,9 +97,10 @@ func ErrorAs(want any, err error, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// ErrorEqual checks "err" is not nil and its message equals to "want". Returns
-// nil if it's, otherwise it returns an error with a message indicating the
-// expected and actual values.
+// ErrorEqual checks that "err" is not nil and that err.Error() exactly
+// equals the string "want".
+//
+// See [assert.ErrorEqual] for the assertion wrapper.
 func ErrorEqual(want string, err error, opts ...any) error {
 	if err != nil && want == err.Error() {
 		return nil
@@ -97,9 +118,9 @@ func ErrorEqual(want string, err error, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// ErrorContain checks "err" is not nil and its message contains "want".
-// Returns nil if it's, otherwise it returns an error with a message indicating
-// the expected and actual values.
+// ErrorContain checks that "err" is not nil and its message contains "want".
+//
+// See [assert.ErrorContain] for the assertion wrapper.
 func ErrorContain(want string, err error, opts ...any) error {
 	if is := core.IsNil(err); is {
 		ops := DefaultOptions(opts...)
@@ -113,21 +134,17 @@ func ErrorContain(want string, err error, opts ...any) error {
 	}
 
 	ops := DefaultOptions(opts...)
-	var have any
-	have = err.Error()
+	have := err.Error()
 	msg := notice.New("expected the error message to contain").
 		Want("%q", want).
 		Have("%#v", have)
 	return AddRows(ops, msg)
 }
 
-// ErrorRegexp checks "err" is not nil and its message matches the "want" regex.
-// Returns nil if it is, otherwise it returns an error with a message
-// indicating the expected and actual values.
+// ErrorRegexp checks that "err" is not nil and its message matches the "want"
+// regexp (string or [*regexp.Regexp]). Uses [fmt.Sprint] for error text.
 //
-// The "want" can be either a regular expression string or instance of
-// [regexp.Regexp]. The [fmt.Sprint] is used to get string representation of
-// have argument.
+// See [assert.ErrorRegexp] for the assertion wrapper.
 func ErrorRegexp(want any, err error, opts ...any) error {
 	if is := core.IsNil(err); is {
 		ops := DefaultOptions(opts...)

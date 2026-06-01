@@ -3,21 +3,32 @@
 
 name: Go
 
-on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+on: [push, pull_request]
+
+# The workflow declares the minimum required permissions.
+# This follows the principle of least privilege.
+permissions:
+  contents: read
+
+# Cancel any in-progress runs for the same branch or PR.
+# This is useful since the workflow runs on all branches.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version-file: 'go.mod'
+        cache: true   # Enables module caching for faster runs.
 
     - name: Test
       run: go test -v -race ./...

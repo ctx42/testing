@@ -7,8 +7,10 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// True checks "have" is true. Returns nil if it's, otherwise it returns an
-// error with a message indicating the expected and actual values.
+// True checks that "have" is true.
+//
+// See [assert.True] for the assertion wrapper and the package documentation
+// for option handling and customization.
 func True(have bool, opts ...any) error {
 	if !have {
 		ops := DefaultOptions(opts...)
@@ -18,8 +20,10 @@ func True(have bool, opts ...any) error {
 	return nil
 }
 
-// False checks "have" is false. Returns nil if it's, otherwise it returns an
-// error with a message indicating the expected and actual values.
+// False checks that "have" is false.
+//
+// See [assert.False] for the assertion wrapper and the package documentation
+// for option handling and customization.
 func False(have bool, opts ...any) error {
 	if have {
 		ops := DefaultOptions(opts...)

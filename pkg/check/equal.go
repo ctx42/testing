@@ -15,9 +15,11 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Equal recursively checks both values are equal. Returns nil if they are,
-// otherwise it returns an error with a message indicating the expected and
-// actual values.
+// Equal recursively checks that want and have are equal.
+//
+// See the package documentation for the customization model
+// ([DefaultOptions], [WithTrail], [WithTypeChecker], etc.) and
+// [dump] options.
 func Equal(want, have any, opts ...any) error {
 	ops := DefaultOptions(opts...)
 	if _, ok := ops.Dumper.Dumpers[typByte]; !ok {
@@ -28,9 +30,9 @@ func Equal(want, have any, opts ...any) error {
 	return deepEqual(wVal, hVal, make(map[visit]bool), WithOptions(ops))
 }
 
-// NotEqual checks both values are not equal using. Returns nil if they are not,
-// otherwise it returns an error with a message indicating the expected and
-// actual values.
+// NotEqual checks that want and have are not equal.
+//
+// See the package documentation for the customization model.
 func NotEqual(want, have any, opts ...any) error {
 	if err := Equal(want, have, opts...); err == nil {
 		return equalError(want, have, opts...).
@@ -39,15 +41,18 @@ func NotEqual(want, have any, opts ...any) error {
 	return nil
 }
 
-// During deepEqual we must keep track of a set of pointers we compare to avoid
-// infinite nesting (stack overflow).
+// visit tracks pointers during [deepEqual] to detect cycles and prevent
+// infinite recursion.
 type visit struct {
 	want unsafe.Pointer
 	have unsafe.Pointer
 	typ  reflect.Type
 }
 
-// deepEqual is the internal comparison function which is called recursively.
+// deepEqual is the internal recursive comparison engine used by [Equal].
+// It handles all Go kinds, custom checkers (see [WithTypeChecker] /
+// [WithTrailChecker]), trail skipping ([WithSkipTrail]), unexported field
+// skipping ([WithSkipUnexported]), and cycle detection.
 //
 // nolint: gocognit, cyclop
 func deepEqual(
@@ -58,14 +63,15 @@ func deepEqual(
 
 	ops := DefaultOptions(opts...)
 
-	// Return when the trail should be skipped.
+	// Return when the trail should be skipped (see [WithSkipTrail]).
 	if i := slices.Index(ops.SkipTrails, ops.Trail); i >= 0 {
 		ops.Trail += " <skipped>"
 		ops.LogTrail()
 		return nil
 	}
 
-	// Skip unexported fields if the option is turned on.
+	// Skip unexported fields if the option is turned on
+	// (see [WithSkipUnexported]).
 	if wVal.IsValid() && !wVal.CanInterface() && ops.SkipUnexported {
 		trail := ops.Trail
 		ops.Trail += " <skipped>"
@@ -120,7 +126,7 @@ func deepEqual(
 		return AddRows(ops, msg)
 	}
 
-	// Detect already compared pointers.
+	// Detect already compared pointers (cycle protection via the visited map).
 	wPtr := core.Pointer(wVal)
 	hPtr := core.Pointer(hVal)
 	if wPtr != nil && hPtr != nil {
@@ -141,7 +147,10 @@ func deepEqual(
 		wItf, wOk := core.Value(wVal)
 		hItf, hOk := core.Value(hVal)
 		if !wOk || !hOk {
-			// TODO(rz): test this.
+			// core.Value could not extract the underlying value for a
+			// registered custom checker (can happen with unexported fields).
+			// Return a clear error instead of calling the checker with
+			// incomplete data.
 			msg := notice.New("not able to compare using a custom checker").
 				Append("want type", "%s", wTyp).
 				Append("have type", "%s", hTyp)
@@ -151,7 +160,8 @@ func deepEqual(
 	}
 
 	switch knd := wVal.Kind(); knd {
-	case reflect.Ptr:
+	case reflect.Pointer:
+		// Recurse into the pointed-to values (nil == nil is already handled above).
 		if wVal.IsNil() && hVal.IsNil() {
 			ops.LogTrail()
 			return nil
@@ -159,6 +169,7 @@ func deepEqual(
 		return deepEqual(wVal.Elem(), hVal.Elem(), visited, WithOptions(ops))
 
 	case reflect.Struct:
+		// Compare exported fields one by one, building per-field trails.
 		var err error
 		typeName := wVal.Type().Name()
 		sOps := ops.StructTrail(typeName, "")
@@ -177,6 +188,7 @@ func deepEqual(
 		return err
 
 	case reflect.Slice, reflect.Array:
+		// Lengths must match first. Then compare element-wise with index trails.
 		if wVal.Len() != hVal.Len() {
 			ops.LogTrail()
 			wStr, hStr, diff := ops.Dumper.DiffValue(wVal, hVal)
@@ -204,6 +216,8 @@ func deepEqual(
 		return err
 
 	case reflect.Map:
+		// Lengths must match. Compare only keys present in "want" (extra keys in
+		// "have" are allowed). Keys are sorted for deterministic ordering.
 		if wVal.Len() != hVal.Len() {
 			ops.LogTrail()
 			wStr, hStr, diff := ops.Dumper.DiffValue(wVal, hVal)
@@ -243,11 +257,14 @@ func deepEqual(
 		return err
 
 	case reflect.Interface:
+		// Compare the concrete values inside the interfaces.
 		wElem := wVal.Elem()
 		hElem := hVal.Elem()
 		return deepEqual(wElem, hElem, visited, WithOptions(ops))
 
 	case reflect.Bool:
+		// For all primitive kinds we simply compare the underlying values
+		// and use equalError for the failure message.
 		ops.LogTrail()
 		w, h := wVal.Bool(), hVal.Bool()
 		if w == h {
@@ -429,7 +446,7 @@ func deepEqual(
 	}
 }
 
-// equalError returns error for not equal values.
+// equalError builds the standard "expected values to be equal" notice.
 func equalError(want, have any, opts ...any) *notice.Notice {
 	wTyp, hTyp := fmt.Sprintf("%T", want), fmt.Sprintf("%T", have)
 	if wTyp == hTyp {

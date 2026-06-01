@@ -22,7 +22,7 @@ func ExampleNew() {
 	//   have: xyz
 }
 
-func ExampleNew_formatedHeader() {
+func ExampleNew_formattedHeader() {
 	msg := notice.New("expected %s to be equal", "values").
 		Want("%s", "abc").
 		Have("%s", "xyz")
@@ -35,8 +35,7 @@ func ExampleNew_formatedHeader() {
 }
 
 func ExampleFrom() {
-	var err error
-	err = notice.New("expected values to be equal").
+	err := notice.New("expected values to be equal").
 		Want("%s", "abc").
 		Have("%s", "xyz")
 

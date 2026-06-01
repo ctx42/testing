@@ -160,22 +160,30 @@ multiple `Expect*` methods.
 tspy := tester.New(t)
 
 tspy.ExpectCleanups(n)  // Expect HUT to call Cleanup exactly n times. 
-tspy.ExpectError()      // Expect HUT to call one of the Error* methods at least once. 
-tspy.ExpectFatal()      // Expect HUT to call one of the Fatal* methods at least once.
-tspy.ExpectFail()       // Expect HUT to call one of the Error* or Fatal* at least once.  
+tspy.ExpectError()      // Expect HUT to call one of the Error* methods
+                          // at least once. 
+tspy.ExpectFatal()      // Expect HUT to call one of the Fatal* methods
+                          // at least once.
+tspy.ExpectFail()       // Expect HUT to call one of the Error* or Fatal*
+                          // methods at least once.  
 tspy.ExpectHelpers(n)   // Expect HUT to call Helper method exactly n times. 
-tspy.ExpectSetenv(k, v) // Expect HUT to call Setenv method with the key, value pair.
+tspy.ExpectSetenv(k, v) // Expect HUT to call Setenv with key/value.
+                         // (See ExpectSetenv for the expectation side.)
 tspy.ExpectSkipped()    // Expect HUT to skip the test.
 tspy.ExpectTempDir(n)   // Expect HUT to call TempDir n times.
 tspy.ExpectFail()       // Expect HUT to call one of the Error* or Fatal* methods.
-tspy.ExpectedNames(n)   // Expect HUT to call Name exactly n times.
+tspy.ExpectNames(n)   // Expect HUT to call Name exactly n times.
 
 // Log message expectations: 
 
-tspy.ExpectLog(matcher, format, args...)  // Expect the logged message to match the formated string.
-tspy.ExpectLogEqual(format, args...)      // Expect the logged message to equal to the formated string. 
-tspy.ExpectLogContain(format, args...)    // Expect the logged message to contain the formated string.
-tspy.ExpectLogNotContain(format, args...) // Expect the logged message not to contain the formated string.
+tspy.ExpectLog(matcher, format, args...)  // Expect the logged message
+                                          // to match the formatted string.
+tspy.ExpectLogEqual(format, args...)      // Expect the logged message
+                                          // to equal the formatted string. 
+tspy.ExpectLogContain(format, args...)    // Expect the logged message
+                                          // to contain the formatted string.
+tspy.ExpectLogNotContain(format, args...) // Expect the logged message
+                                             // not to contain the formatted string.
 ```
 
 Since each of the methods has great documentation, we encourage you to explore
@@ -296,5 +304,6 @@ func Test_Spy_IgnoreLogExamination(t *testing.T) {
 
 ## Examples
 
-See [tester.go](../../examples/tester.go) and [tester.go](../../examples/tester_test.go)
-for more examples.
+See [tester.go](../../examples/tester.go) and
+[tester_test.go](../../examples/tester_test.go) in the [examples] package for
+complete, tested demonstrations of using [tester.Spy] to test custom helpers.

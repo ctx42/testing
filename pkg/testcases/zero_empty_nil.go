@@ -7,16 +7,18 @@ import (
 	"time"
 )
 
-// ZENValue represents a value and if it's considered zero, empty or nil value.
+// ZENValue represents one test case for zero / empty / nil behavior.
 type ZENValue struct {
-	Desc    string // The value description.
-	Val     any    // The value.
-	IsZero  bool   // Is Val considered zero value.
-	IsEmpty bool   // Is Val considered empty value.
-	IsNil   bool   // Is Val considered nil value.
+	Desc    string // Human-readable description.
+	Val     any    // The value under test.
+	IsZero  bool   // Whether Val is the zero value for its type.
+	IsEmpty bool   // Whether Val is considered empty.
+	IsNil   bool   // Whether Val is considered nil.
 }
 
-// ZENValues returns cases for zero, empty and nil values.
+// ZENValues returns cases covering zero, empty, and nil behavior for many
+// Go kinds. Use it when testing custom zero/empty/nil logic or custom
+// assertions that rely on these distinctions.
 func ZENValues() []ZENValue {
 	var nilPtr *TPtr
 	var nilItf TItf

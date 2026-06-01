@@ -9,9 +9,9 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Contain checks "want" is a substring of "have". Returns nil if it's,
-// otherwise returns an error with a message indicating the expected and actual
-// values.
+// Contain checks that the string "have" contains the substring "want".
+//
+// See [assert.Contain] for the assertion wrapper.
 func Contain(want, have string, opts ...any) error {
 	if strings.Contains(have, want) {
 		return nil
@@ -23,9 +23,10 @@ func Contain(want, have string, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// NotContain checks "want" is not a substring of "have". Returns nil if it's,
-// otherwise returns an error with a message indicating the expected and actual
-// values.
+// NotContain checks that the string "have" does **not** contain the
+// substring "want".
+//
+// See [assert.NotContain] for the assertion wrapper.
 func NotContain(want, have string, opts ...any) error {
 	if strings.Contains(have, want) {
 		ops := DefaultOptions(opts...)

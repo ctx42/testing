@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
+// SPDX-License-Identifier: MIT
+
+// This file demonstrates how to write custom assertion helpers using
+// [assert], [check], and [tester.Spy] for testing the helpers themselves.
 package examples_test
 
 import (

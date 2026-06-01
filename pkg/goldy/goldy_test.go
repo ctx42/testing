@@ -4,15 +4,14 @@
 package goldy
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
 	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/pkg/must"
+	"github.com/ctx42/testing/pkg/tester"
 )
 
 func Test_WithData(t *testing.T) {
@@ -30,7 +29,8 @@ func Test_WithData(t *testing.T) {
 func Test_Open(t *testing.T) {
 	t.Run("test runner set", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy()
+		tspy := tester.New(t)
+		tspy.Close()
 
 		// --- When ---
 		have := Open(tspy, "testdata/test_case1.gld")
@@ -43,7 +43,8 @@ func Test_Open(t *testing.T) {
 
 	t.Run("case 1 - content ends without a new line", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy()
+		tspy := tester.New(t)
+		tspy.Close()
 
 		// --- When ---
 		have := Open(tspy, "testdata/test_case1.gld")
@@ -58,7 +59,8 @@ func Test_Open(t *testing.T) {
 
 	t.Run("case 2 - content ends with a new line", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy()
+		tspy := tester.New(t)
+		tspy.Close()
 
 		// --- When ---
 		have := Open(tspy, "testdata/test_case2.gld")
@@ -73,7 +75,8 @@ func Test_Open(t *testing.T) {
 
 	t.Run("case 3 - content ends with multiple new lines", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy()
+		tspy := tester.New(t)
+		tspy.Close()
 
 		// --- When ---
 		have := Open(tspy, "testdata/test_case3.gld")
@@ -88,7 +91,8 @@ func Test_Open(t *testing.T) {
 
 	t.Run("case 4 - multiple comment lines", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy()
+		tspy := tester.New(t)
+		tspy.Close()
 
 		// --- When ---
 		have := Open(tspy, "testdata/test_case4.gld")
@@ -103,7 +107,9 @@ func Test_Open(t *testing.T) {
 
 	t.Run("open a golden file template", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy().Capture()
+		tspy := tester.New(t)
+		tspy.Close()
+
 		data := WithData(map[string]any{"first": 1})
 
 		// --- When ---
@@ -119,37 +125,41 @@ func Test_Open(t *testing.T) {
 
 	t.Run("error - no marker", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy().Capture()
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.ExpectLogEqual("the golden file is missing the \"---\" marker")
+		tspy.Close()
 
 		// --- When ---
 		have := Open(tspy, "testdata/test_no_marker.gld")
 
 		// --- Then ---
 		affirm.Nil(t, have)
-		affirm.Equal(t, true, tspy.Failed())
-		wMsg := "the golden file is missing the \"---\" marker"
-		affirm.Equal(t, true, strings.Contains(tspy.Log(), wMsg))
 	})
 
 	t.Run("error - not existing file", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy().Capture()
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		wMsg := "error opening file: open testdata/not-existing.txt: " +
+			"no such file or directory"
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
 
 		// --- When ---
 		have := Open(tspy, "testdata/not-existing.txt")
 
 		// --- Then ---
 		affirm.Nil(t, have)
-		affirm.Equal(t, true, tspy.Failed())
-		wMsg := "no such file or directory"
-		affirm.Equal(t, true, strings.Contains(tspy.Log(), wMsg))
-		wMsg = "testdata/not-existing.txt"
-		affirm.Equal(t, true, strings.Contains(tspy.Log(), wMsg))
 	})
 
 	t.Run("error - golden file invalid template", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy().Capture()
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.ExpectLogEqual("template: goldy:2: unexpected \"}\" in operand")
+		tspy.Close()
+
 		data := WithData(map[string]any{"second": 2})
 
 		// --- When ---
@@ -157,14 +167,17 @@ func Test_Open(t *testing.T) {
 
 		// --- Then ---
 		affirm.Nil(t, have)
-		affirm.Equal(t, true, tspy.Failed())
-		wMsg := "unexpected \"}\" in operand"
-		affirm.Equal(t, true, strings.Contains(tspy.Log(), wMsg))
 	})
 
 	t.Run("error - golden file template missing data", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy().Capture()
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		wMsg := "template: goldy:1:12: executing \"goldy\" at <.first>: " +
+			"map has no entry for key \"first\""
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
+
 		data := WithData(map[string]any{"other": 1})
 
 		// --- When ---
@@ -172,16 +185,31 @@ func Test_Open(t *testing.T) {
 
 		// --- Then ---
 		affirm.Nil(t, have)
-		affirm.Equal(t, true, tspy.Failed())
-		wMsg := "map has no entry for key \"first\""
-		affirm.Equal(t, true, strings.Contains(tspy.Log(), wMsg))
+	})
+
+	t.Run("error - golden file not found", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		wMsg := "error opening file: open testdata/does_not_exist.gld: " +
+			"no such file or directory"
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
+
+		// --- When ---
+		have := Open(tspy, "testdata/does_not_exist.gld")
+
+		// --- Then ---
+		affirm.Nil(t, have)
 	})
 }
 
 func Test_Create(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy().Capture()
+		tspy := tester.New(t)
+		tspy.Close()
+
 		pth := filepath.Join(t.TempDir(), "empty.gld")
 
 		// --- When ---
@@ -200,17 +228,19 @@ func Test_Create(t *testing.T) {
 
 	t.Run("error - cannot create the file", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy().Capture()
+		tspy := tester.New(t)
+		tspy.ExpectError()
 		pth := filepath.Join(t.TempDir(), "not-existing-dir", "empty.gld")
+		wMsg := "error creating file: open " + pth +
+			": no such file or directory"
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
 
 		// --- When ---
 		have := Create(tspy, pth)
 
 		// --- Then ---
 		affirm.Nil(t, have)
-		affirm.Equal(t, true, tspy.Failed())
-		wMsg := "error creating file: open %s: no such file or directory\n"
-		affirm.Equal(t, fmt.Sprintf(wMsg, pth), tspy.Log())
 	})
 }
 
@@ -240,7 +270,9 @@ func Test_Goldy_Bytes(t *testing.T) {
 func Test_Goldy_SetContent(t *testing.T) {
 	t.Run("regular golden file", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy().Capture()
+		tspy := tester.New(t)
+		tspy.Close()
+
 		gld := Open(tspy, "testdata/test_case1.gld")
 
 		// --- When ---
@@ -254,7 +286,9 @@ func Test_Goldy_SetContent(t *testing.T) {
 
 	t.Run("template golden file", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy().Capture()
+		tspy := tester.New(t)
+		tspy.Close()
+
 		data := WithData(map[string]any{"first": 1})
 		gld := Open(tspy, "testdata/test_tpl.gld", data)
 
@@ -270,7 +304,13 @@ func Test_Goldy_SetContent(t *testing.T) {
 
 	t.Run("error - rendering template", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy().Capture()
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		wMsg := "template: goldy:1:4: executing \"goldy\" at <.other>: " +
+			"map has no entry for key \"other\""
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
+
 		data := WithData(map[string]any{"first": 1})
 		gld := Open(tspy, "testdata/test_tpl.gld", data)
 
@@ -279,16 +319,15 @@ func Test_Goldy_SetContent(t *testing.T) {
 
 		// --- Then ---
 		affirm.Nil(t, have)
-		affirm.Equal(t, true, tspy.Failed())
-		wMsg := "map has no entry for key \"other\""
-		affirm.Equal(t, true, strings.Contains(tspy.Log(), wMsg))
 	})
 }
 
 func Test_Goldy_Save(t *testing.T) {
 	t.Run("when not a template", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy()
+		tspy := tester.New(t)
+		tspy.Close()
+
 		pth := filepath.Join(t.TempDir(), "/golden.gld")
 		gld := &Goldy{
 			pth:     pth,
@@ -309,7 +348,9 @@ func Test_Goldy_Save(t *testing.T) {
 
 	t.Run("when a template", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy()
+		tspy := tester.New(t)
+		tspy.Close()
+
 		pth := filepath.Join(t.TempDir(), "/golden.gld")
 		gld := &Goldy{
 			pth:     pth,
@@ -332,7 +373,9 @@ func Test_Goldy_Save(t *testing.T) {
 
 	t.Run("comment lines do not end with a new line", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy()
+		tspy := tester.New(t)
+		tspy.Close()
+
 		pth := filepath.Join(t.TempDir(), "/golden.gld")
 		gld := &Goldy{
 			pth:     pth,
@@ -353,8 +396,14 @@ func Test_Goldy_Save(t *testing.T) {
 
 	t.Run("error - when the file cannot be written", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy().Capture()
+		tspy := tester.New(t)
+		tspy.ExpectError()
 		pth := filepath.Join(t.TempDir(), "sub-dir", "/golden.gld")
+		wMsg := "error writing golden file (" + pth + "): open " + pth +
+			": no such file or directory"
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
+
 		gld := &Goldy{
 			pth:     pth,
 			comment: "Comment 1.\nComment 2.",
@@ -364,9 +413,61 @@ func Test_Goldy_Save(t *testing.T) {
 
 		// --- When ---
 		gld.Save()
-
-		// --- Then ---
-		affirm.Equal(t, true, tspy.Failed())
-		affirm.Equal(t, true, strings.Contains(tspy.Log(), pth))
 	})
+}
+
+// Benchmarks for goldy I/O and templating hot paths.
+
+func Benchmark_Goldy_Open_Small(b *testing.B) {
+	dir := b.TempDir()
+	pth := filepath.Join(dir, "small.gld")
+	content := "header comment\n---\nline1\nline2\n"
+	if err := os.WriteFile(pth, []byte(content), 0o644); err != nil {
+		b.Fatal(err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		g := Open(&testing.T{}, pth)
+		_ = g.Bytes()
+	}
+}
+
+func Benchmark_Goldy_Open_WithTemplate(b *testing.B) {
+	dir := b.TempDir()
+	pth := filepath.Join(dir, "tpl.gld")
+	content := "data for {{.Name}}\n---\nHello {{.Name}}!\n"
+	if err := os.WriteFile(pth, []byte(content), 0o644); err != nil {
+		b.Fatal(err)
+	}
+
+	data := map[string]any{"Name": "World"}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		g := Open(&testing.T{}, pth, WithData(data))
+		_ = g.Bytes()
+	}
+}
+
+func Benchmark_Goldy_Save(b *testing.B) {
+	dir := b.TempDir()
+	pth := filepath.Join(dir, "out.gld")
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		g := &Goldy{
+			pth:     pth,
+			comment: "Benchmark comment\n",
+			content: []byte("benchmark content line\n"),
+			t:       &testing.T{},
+		}
+		g.Save()
+	}
 }

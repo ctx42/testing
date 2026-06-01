@@ -1,7 +1,28 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// Package check provides equality toolkit used by assert package.
+// Package check provides composable checks that return errors rather than
+// calling methods on [testing.T].
+//
+// See the Design section in the root README for the overall layered
+// architecture (assert built on check built on notice).
+//
+// The customization model supports both global defaults and per-use
+// overrides:
+//   - Global type checkers via [RegisterTypeChecker] (affect all checks
+//     unless overridden).
+//   - Per-check overrides via [WithTypeChecker], [WithTrailChecker], etc.
+//   - Full option objects via [WithOptions] and [DefaultOptions].
+//
+// These checks form the foundation of the [assert] package. They are useful
+// when building custom assertion helpers or when performing multiple checks
+// before deciding how to report failure.
+//
+// On success, most functions return nil. On failure they return a
+// *[notice.Notice] containing a structured message.
+//
+// Checks accept variadic options (see [DefaultOptions]) that control how values
+// are rendered and how errors are formatted.
 package check
 
 import (
@@ -12,11 +33,9 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Count checks there are "count" occurrences of "what" in "where". Returns
-// nil if the count matches, otherwise it returns an error with a message
-// indicating the expected and actual values.
+// Count checks that there are "count" occurrences of "what" in "where".
 //
-// Currently, only strings are supported.
+// Currently only strings are supported for "where".
 func Count(count int, what, where any, opts ...any) error {
 	if src, ok := where.(string); ok {
 		var ok bool
@@ -48,16 +67,13 @@ func Count(count int, what, where any, opts ...any) error {
 
 // SameType checks that both arguments are of the same type.
 //
-// It returns the value cast to type T and a nil error if the types match.
-// Otherwise, it returns the zero value of T and an error describing the
-// expected type and the actual type received.
-//
-// Type comparison uses [reflect.TypeOf] equality.
+// On match, it returns the value cast to T. Type comparison uses
+// [reflect.TypeOf] equality.
 func SameType[T any](want T, have any, opts ...any) (T, error) {
 	wTyp := reflect.TypeOf(want)
 	hTyp := reflect.TypeOf(have)
 	if wTyp == hTyp {
-		return have.(T), nil
+		return have.(T), nil // nolint: forcetypeassert
 	}
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected same types").Want("%T", want).Have("%T", have)
@@ -65,11 +81,9 @@ func SameType[T any](want T, have any, opts ...any) (T, error) {
 	return zero, AddRows(ops, msg)
 }
 
-// NotSameType checks that the arguments are not of the same type. Returns nil
-// if they are not, otherwise it returns an error with a message indicating the
-// expected and actual values.
+// NotSameType checks that the arguments are not of the same type.
 //
-// Check uses [reflect.TypeOf] equality to determine the type.
+// Type comparison uses [reflect.TypeOf] equality.
 func NotSameType(want, have any, opts ...any) error {
 	wTyp := reflect.TypeOf(want)
 	hTyp := reflect.TypeOf(have)
@@ -82,16 +96,15 @@ func NotSameType(want, have any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// Type checks that the "src" can be type assigned to the pointer to the
-// "target" (same as target, ok := src.(target)). Returns nil if it can be done,
-// otherwise it returns an error. The "target" must be a pointer to a type.
+// Type checks that "src" is assignable to the pointer "target"
+// (equivalent to `ok := src.(target)`). "target" must be a non-nil pointer.
 func Type(target, src any, opts ...any) error {
 	if target == nil {
 		return notice.New("expected target to be a non-nil pointer")
 	}
 	tgtVal := reflect.ValueOf(target)
 	tgtTyp := tgtVal.Type()
-	if tgtTyp.Kind() != reflect.Ptr || tgtVal.IsNil() {
+	if tgtTyp.Kind() != reflect.Pointer || tgtVal.IsNil() {
 		return notice.New("expected target to be a non-nil pointer")
 	}
 	tgtType := tgtTyp.Elem()
@@ -112,9 +125,8 @@ func Type(target, src any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// Fields checks that a struct or pointer to a struct "s" has "want" number of
-// fields. Returns nil if it does, otherwise it returns an error with a message
-// indicating the expected and actual values.
+// Fields checks that a struct (or pointer to struct) "s" has exactly "want"
+// number of fields.
 func Fields(want int, s any, opts ...any) error {
 	sVal := reflect.Indirect(reflect.ValueOf(s))
 	ops := DefaultOptions(opts...)

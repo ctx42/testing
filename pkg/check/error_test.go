@@ -223,6 +223,78 @@ func Test_ErrorIs_error_tabular(t *testing.T) {
 	}
 }
 
+func Test_ErrorIsNot(t *testing.T) {
+	err0 := errors.New("err0")
+	err1 := errors.New("err1")
+
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		err := ErrorIsNot(err0, err1, opt) // not related → success for IsNot
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("failure", func(t *testing.T) {
+		// --- Given ---
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		err := ErrorIsNot(err0, err0, opt) // related → failure for IsNot
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+	})
+}
+
+func Test_ErrorIsNot_error_tabular(t *testing.T) {
+	err0 := errors.New("err0")
+	err1 := errors.New("err1")
+	err2 := fmt.Errorf("wrap: %w %w", err0, err1)
+
+	tt := []struct {
+		testN string
+
+		have     error
+		haveType string
+		haveStr  string
+		want     error
+		wantType string
+		wantStr  string
+	}{
+		{"same error", err0, "*errors.errorString", "err0", err0, "*errors.errorString", "err0"},
+		{"wrapped contains target", err2, "*fmt.wrapErrors", "wrap: err0 err1", err0, "*errors.errorString", "err0"},
+		{"wrapped contains target 1", err2, "*fmt.wrapErrors", "wrap: err0 err1", err1, "*errors.errorString", "err1"},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- Given ---
+			const format = "expected error to not have a target in its tree:\n" +
+				"  want: (%s) %s\n" +
+				"  have: (%s) %s"
+
+			wantLog := fmt.Sprintf(
+				format,
+				tc.wantType,
+				tc.wantStr,
+				tc.haveType,
+				tc.haveStr,
+			)
+
+			// --- When ---
+			err := ErrorIsNot(tc.want, tc.have)
+
+			// --- Then ---
+			affirm.NotNil(t, err)
+			affirm.Equal(t, wantLog, err.Error())
+		})
+	}
+}
+
 func Test_ErrorAs(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---

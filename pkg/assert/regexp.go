@@ -8,13 +8,12 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// Regexp asserts that "want" regexp matches a string representation of "have.
-// Returns true if it is, otherwise marks the test as failed, writes an error
-// message to the test log, and returns false.
+// Regexp asserts that "want" regexp matches a string representation of "have".
 //
-// The "want" can be either a regular expression string or instance of
-// [regexp.Regexp]. The [fmt.Sprint] s used to get string representation of
-// have argument.
+// "want" may be a regular expression string or a [*regexp.Regexp].
+// [fmt.Sprint] produces the string form of "have".
+//
+// See [check.Regexp] for the error-returning form.
 func Regexp(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Regexp(want, have, opts...); e != nil {

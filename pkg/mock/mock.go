@@ -1,7 +1,25 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// Package mock provides helpers for creating and testing with interface mocks.
+// Package mock provides primitives for writing interface mocks.
+//
+// It is the runtime foundation used by mocks generated with
+// [github.com/ctx42/testing/pkg/mocker] and by hand-written mocks. The
+// package integrates with [github.com/ctx42/testing/pkg/tester] for test
+// lifecycle management and [github.com/ctx42/testing/pkg/notice] for rich,
+// structured failure messages.
+//
+// See the package [README] for the full expectation DSL, advanced usage
+// (proxying, custom matchers, altering arguments, etc.), and go:generate
+// patterns. See [examples/mock_test.go] (in the module root) for a complete
+// working example.
+//
+// Key types and entry points:
+//   - [NewMock] and [Mock] — the core mock controller
+//   - [Mock.On], [Mock.OnAny], [Mock.Proxy] — define expectations
+//   - [Call] and its chain methods (Return, Times, Until, ...)
+//   - [Arguments] — typed getters for return values and call recording
+//   - Matchers: [Any], [AnyString], [MatchBy], [MatchOfType], [MatchError], ...
 package mock
 
 import (
@@ -19,29 +37,35 @@ import (
 
 // Mock requirements violations.
 var (
-	// ErrNeverCalled signals mocked non-optional method was never called.
+	// ErrNeverCalled is returned when a non-optional expected method was
+	// never called.
 	ErrNeverCalled = errors.New("method never called")
 
-	// ErrTooFewCalls signals mocked method was called too few times.
-	ErrTooFewCalls = errors.New("method called to few times")
+	// ErrTooFewCalls is returned when a method was called fewer times than
+	// required by [Call.Times] or [Call.Once].
+	ErrTooFewCalls = errors.New("method called too few times")
 
-	// ErrTooManyCalls signals mocked method was called too many times.
+	// ErrTooManyCalls is returned when a method was called more times than
+	// allowed by [Call.Times] or [Call.Once].
 	ErrTooManyCalls = errors.New("method called too many times")
 
-	// ErrRequirements signals mocked method requirements were not met.
+	// ErrRequirements is returned when a call's prerequisites (see
+	// [Call.Requires]) were not satisfied.
 	ErrRequirements = errors.New("method requirements not met")
 
-	// ErrNotFound signals mocked method has not been found.
+	// ErrNotFound is returned when no matching expectation was found for a
+	// call (see [Mock.Call] and [Mock.Called]).
 	ErrNotFound = errors.New("method not found")
 )
 
 const (
-	// Any is used in Diff and Assert when the argument being tested
-	// shouldn't be taken into consideration.
+	// Any is a sentinel used with [Arguments.Diff] and in expectation
+	// definitions to indicate that the argument value should not be
+	// considered during matching.
 	Any = "mock.Any"
 )
 
-// Mock fatal message headers.
+// Mock fatal message headers (internal).
 const (
 	hNeverCalled    = "[mock] method never called"
 	hTooFewCalls    = "[mock] too few method calls"
@@ -50,17 +74,22 @@ const (
 	hNotFoundCall   = "[mock] method call not found"
 )
 
-// dumper represents default value dumper.
+// dumper is the default value renderer used for diagnostic output.
 var dumper = dump.New()
 
-// Option represents a [NewMock] option.
+// Option configures a [Mock] created by [NewMock].
 type Option func(*Mock)
 
-// WithNoStack is option for [NewMock] turning off displaying stack traces in
-// error log messages.
+// WithNoStack disables stack traces in the diagnostic messages produced by
+// the mock when expectations are violated.
 func WithNoStack(mck *Mock) { mck.stack = false }
 
-// Mock tracks activity on a mocked interface.
+// Mock tracks expected and actual calls on a mocked interface.
+//
+// A [Mock] is typically embedded in a hand-written or generated *Mock struct
+// that implements the target interface. Use [NewMock] to create one; it
+// automatically registers a [testing.TB.Cleanup] handler that calls
+// [Mock.AssertExpectations] at the end of the test.
 type Mock struct {
 	// Calls expected on the mock.
 	expected []*Call
@@ -87,7 +116,11 @@ type Mock struct {
 	t tester.T
 }
 
-// NewMock returns new instance of Mock.
+// NewMock creates and returns a new [Mock] bound to the provided tester.
+//
+// The mock registers an automatic cleanup that invokes
+// [Mock.AssertExpectations] when the test completes. Use the [Option]
+// functions (currently only [WithNoStack]) to customize behavior.
 func NewMock(t tester.T, opts ...Option) *Mock {
 	t.Helper()
 	mck := &Mock{t: t, stack: true}
@@ -98,16 +131,16 @@ func NewMock(t tester.T, opts ...Option) *Mock {
 	return mck
 }
 
-// MetaSetAll sets data that might be useful for testing. The [Mock] ignores it.
-// To get it back, call [Mock.MetaAll] method.
+// MetaSetAll stores arbitrary data on the mock for later retrieval via
+// [Mock.MetaAll]. The data is never used by the mock itself.
 func (mck *Mock) MetaSetAll(data map[string]any) {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
 	mck.meta = data
 }
 
-// MetaAll returns data that might be useful for testing (see [Mock.MetaSetAll]
-// method).
+// MetaAll returns the data previously stored with [Mock.MetaSetAll], or an
+// empty map if nothing was set.
 func (mck *Mock) MetaAll() map[string]any {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
@@ -117,12 +150,9 @@ func (mck *Mock) MetaAll() map[string]any {
 	return mck.meta
 }
 
-// On adds method call expectation for the interface being mocked.
-//
-// Example usage:
-//
-//	Mock.On("Method", 1).Return(nil)
-//	Mock.On("MyOtherMethod", 'a', 'b', 'c').Return(errors.New("Some Error"))
+// On adds an expectation that the named method will be called with the
+// given arguments (or matchers). Returns a [Call] for further configuration
+// ([Return], [Times], [Until], etc.).
 func (mck *Mock) On(method string, args ...any) *Call {
 	mck.t.Helper()
 	for _, arg := range args {
@@ -138,14 +168,9 @@ func (mck *Mock) On(method string, args ...any) *Call {
 	return call
 }
 
-// OnAny adds a method call expectation for the mocked interface. Unlike
-// [Mock.On], where specific arguments are expected, this allows the method to
-// be called with any combination of arguments, regardless of their number or
-// type.
-//
-// Example usage:
-//
-//	Mock.OnAny("Method").Return(nil)
+// OnAny adds an expectation that the named method may be called with any
+// arguments (values and count are ignored). Returns a [Call] for further
+// configuration. Useful when you only care that the method was invoked.
 func (mck *Mock) OnAny(method string) *Call {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
@@ -157,14 +182,12 @@ func (mck *Mock) OnAny(method string) *Call {
 	return call
 }
 
-// Proxy uses passed method as a proxy for calls to its "name". If "name"
-// argument is not empty the first value from the slice will be used as the
-// proxied method name. It panics if "met" is not a method or function.
+// Proxy configures the mock to forward calls for the given method to the
+// provided real implementation (name can override the detected method name).
 //
-// Example:
+// It panics if met is not a valid non-nil method or function.
 //
-//	obj := &types.TPtr{}
-//	mck.Proxy(obj.Method)
+// See [Call.With] for argument validation on proxied calls.
 func (mck *Mock) Proxy(met any, name ...string) *Call {
 	mck.t.Helper()
 
@@ -179,13 +202,15 @@ func (mck *Mock) Proxy(met any, name ...string) *Call {
 	return call
 }
 
-// Called records that a method was invoked with the given arguments and
-// returns the configured return values as a [Arguments] slice. It panics if
-// the call is unexpected, meaning no matching [Mock.On] or [Mock.OnAny]
-// expectation was set.
+// Called records a method invocation and returns the configured return
+// values. It uses runtime caller information to determine the method name
+// and panics if no matching expectation was found.
 //
-// If the expectation uses [Call.Until] or [Call.After], this method blocks
-// until the specified condition is met.
+// This is the method normally called from inside generated or hand-written
+// mock implementations.
+//
+// If the matching expectation uses [Call.Until] or [Call.After], the call
+// blocks until the condition is met.
 func (mck *Mock) Called(args ...any) Arguments {
 	mck.t.Helper()
 
@@ -208,10 +233,15 @@ func (mck *Mock) called(skip int) string {
 	return parts[len(parts)-1]
 }
 
-// Call calls method on the mock with arguments and returns the mocked method
-// [Arguments]. Panics if the call is unexpected (i.e., not preceded by
-// appropriate [Mock.On] calls). Blocks before returning if [Call.Until] or
-// [Call.After] were used.
+// Call invokes the named method with the given arguments and returns the
+// configured [Arguments] return values. It panics (via t.Fatal) if no
+// matching expectation exists or if prerequisites are not met.
+//
+// Call records a method invocation by name and returns the configured
+// return values. Useful for advanced or dynamic scenarios (most users
+// go through generated wrappers that call [Mock.Called]).
+//
+// The call blocks if the matching expectation uses [Call.Until] or [Call.After].
 func (mck *Mock) Call(method string, args ...any) Arguments {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
@@ -237,13 +267,13 @@ func (mck *Mock) Call(method string, args ...any) Arguments {
 	return call.call(args...)
 }
 
-// Callable finds a callable method with given name and matching arguments.
-// When found it returns it, otherwise it returns an error describing the
-// reason. Note that there may be more methods in the expected slice matching
-// the criteria in which case the first one is returned.
+// Callable reports whether a method with the given name and arguments can be
+// called right now without violating expectations or prerequisites. It
+// returns nil when a matching callable [Call] is found, otherwise a
+// descriptive error (one of the Err* sentinels or a richer [notice.Notice]).
 //
-// A callable method is one that returns no error from [Call.CanCall] method,
-// and has matching arguments.
+// This is useful for introspection or custom test logic; normal usage goes
+// through [Mock.Called] / [Mock.Call].
 func (mck *Mock) Callable(method string, args ...any) error {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
@@ -348,7 +378,8 @@ func (mck *Mock) closest(method string, args ...any) (*Call, []string) {
 	return best.call, best.diff
 }
 
-// Failed returns true if [Mock] instance is in filed state, false otherwise.
+// Failed reports whether the mock has entered a failed state (unexpected
+// call, unsatisfied expectation, etc.).
 func (mck *Mock) Failed() bool {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
@@ -356,13 +387,8 @@ func (mck *Mock) Failed() bool {
 	return mck.failed
 }
 
-// Unset removes [Call] instance from expected [Mock] calls. If the instance
-// doesn't exist, it will trigger a test failure.
-//
-// Example usage:
-//
-//	call := Mock.On("Method", mock.Any)
-//	Mock.Unset(call).Unset()
+// Unset removes a previously registered [Call] expectation. If the call is
+// not found it records a test error.
 func (mck *Mock) Unset(remove *Call) *Mock {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
@@ -389,9 +415,13 @@ func (mck *Mock) Unset(remove *Call) *Mock {
 	return mck
 }
 
-// AssertExpectations asserts that everything specified with [Mock.On] and
-// [Call.Return] was in fact called as expected. Calls may have occurred in any
-// order.
+// AssertExpectations verifies that all non-optional expectations defined via
+// [Mock.On], [Mock.OnAny], etc. have been satisfied (correct call counts and
+// prerequisites). It may be called manually, but [NewMock] registers it as a
+// test cleanup so it runs automatically.
+//
+// Returns true when all expectations are met. On failure it records the
+// problem via t.Error (or t.Fatal for unexpected calls) and returns false.
 func (mck *Mock) AssertExpectations() bool {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
@@ -440,7 +470,9 @@ func (mck *Mock) AssertExpectations() bool {
 	return false
 }
 
-// AssertCallCount asserts the method was called "want" number of times.
+// AssertCallCount asserts that the named method was invoked exactly "want"
+// times. Useful when you only care about call count rather than full
+// expectation configuration.
 func (mck *Mock) AssertCallCount(method string, want int) bool {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()

@@ -67,13 +67,13 @@ func diffRunes(before, after []rune) []Edit {
 	return res
 }
 
-// runes is like []rune(string(bytes)) without the duplicate allocation.
-func runes(bytes []byte) []rune {
-	n := utf8.RuneCount(bytes)
+// runes is like []rune(string(b)) without the duplicate allocation.
+func runes(b []byte) []rune {
+	n := utf8.RuneCount(b)
 	runes := make([]rune, n)
 	for i := 0; i < n; i++ {
-		r, sz := utf8.DecodeRune(bytes)
-		bytes = bytes[sz:]
+		r, sz := utf8.DecodeRune(b)
+		b = b[sz:]
 		runes[i] = r
 	}
 	return runes

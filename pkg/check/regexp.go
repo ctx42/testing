@@ -10,13 +10,12 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Regexp checks that "want" regexp matches "have". Returns nil if it does,
-// otherwise, it returns an error with a message indicating the expected and
-// actual values.
+// Regexp checks that "want" regexp matches a string form of "have".
 //
-// The "want" can be either a regular expression string or instance of
-// [regexp.Regexp]. The [fmt.Sprint] is used to get string representation of
-// have argument.
+// "want" may be a regexp string or [*regexp.Regexp]. [fmt.Sprint] is used
+// on "have".
+//
+// See [assert.Regexp] for the assertion wrapper.
 func Regexp(want, have any, opts ...any) error {
 	match, err := matchRegexp(want, have)
 	if err != nil {

@@ -1,17 +1,17 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
+// Package examples contains demonstrations of advanced usage patterns.
 package examples
-
-// The file contains example usages of tester.T and tester.Spy.
 
 import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// IsOdd asserts "have" is odd number. Returns true if it is, otherwise marks
-// the test as failed, writes an error message to the test log, and returns
-// false.
+// IsOdd is an example test helper that demonstrates using [tester.T].
+// It asserts that "have" is an odd number.
+//
+// See [tester_test.go] for how to test this helper using [tester.Spy].
 func IsOdd(t tester.T, have int) bool {
 	t.Helper()
 	if have%2 == 0 {

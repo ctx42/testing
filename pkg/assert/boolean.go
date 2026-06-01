@@ -8,8 +8,9 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// True asserts "have" is true. Returns true if it's, otherwise marks the test
-// as failed, writes an error message to the test log, and returns false.
+// True asserts that "have" is true using [check.True].
+//
+// See the package documentation for the overall design and option handling.
 func True(t tester.T, have bool, opts ...any) bool {
 	t.Helper()
 	if e := check.True(have, opts...); e != nil {
@@ -19,8 +20,9 @@ func True(t tester.T, have bool, opts ...any) bool {
 	return true
 }
 
-// False asserts "have" is false. Returns true if it's, otherwise marks the
-// test as failed, writes an error message to the test log, and returns false.
+// False asserts that "have" is false using [check.False].
+//
+// See the package documentation for the overall design and option handling.
 func False(t tester.T, have bool, opts ...any) bool {
 	t.Helper()
 	if err := check.False(have, opts...); err != nil {

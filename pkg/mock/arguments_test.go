@@ -68,316 +68,316 @@ func Test_Arguments_Equal(t *testing.T) {
 func Test_Arguments_Diff(t *testing.T) {
 	t.Run("matches with no differences", func(t *testing.T) {
 		// --- Given ---
-		want := []any{"str", 42, true}
-		have := []any{"str", 42, true}
+		wantA := []any{"str", 42, true}
+		haveA := []any{"str", 42, true}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: PASS: (int=42) == (int=42)`,
 			`2: PASS: (bool=true) == (bool=true)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("not matching two out of three", func(t *testing.T) {
 		// --- Given ---
-		want := []any{"str", 42, true}
-		have := []any{"str", 44, "false"}
+		wantA := []any{"str", 42, true}
+		haveA := []any{"str", 44, "false"}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 2, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: FAIL: (int=42) != (int=44)`,
 			`2: FAIL: (bool=true) != (string="false")`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("more want arguments", func(t *testing.T) {
 		// --- Given ---
-		want := []any{"str", 42, true, "extra"}
-		have := []any{"str", 44, false}
+		wantA := []any{"str", 42, true, "extra"}
+		haveA := []any{"str", 44, false}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 3, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: FAIL: (int=42) != (int=44)`,
 			`2: FAIL: (bool=true) != (bool=false)`,
 			`3: FAIL: (string="extra") != (Missing)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("more wnt any arguments", func(t *testing.T) {
 		// --- Given ---
-		want := []any{Any, Any, Any, Any, Any}
-		have := []any{"A", "B", []any{"D", "E"}}
+		wantA := []any{Any, Any, Any, Any, Any}
+		haveA := []any{"A", "B", []any{"D", "E"}}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 2, cnt)
-		exp := []string{
+		want := []string{
 			"0: PASS: (any=mock.Any) == (string=\"A\")",
 			"1: PASS: (any=mock.Any) == (string=\"B\")",
 			"2: PASS: (any=mock.Any) == ([]interface {}=[]interface {}{\"D\", \"E\"})",
 			"3: FAIL: (any=mock.Any) != (Missing)",
 			"4: FAIL: (any=mock.Any) != (Missing)",
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("more have arguments", func(t *testing.T) {
 		// --- Given ---
-		want := []any{"str", 42, true}
-		have := []any{"str", 44, false, "extra"}
+		wantA := []any{"str", 42, true}
+		haveA := []any{"str", 44, false, "extra"}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 3, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: FAIL: (int=42) != (int=44)`,
 			`2: FAIL: (bool=true) != (bool=false)`,
 			`3: FAIL: (Missing) != (string="extra")`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("matching with one have argument set to Any", func(t *testing.T) {
 		// --- Given ---
-		want := []any{"str", Any, true}
-		have := []any{"str", 42, true}
+		wantA := []any{"str", Any, true}
+		haveA := []any{"str", 42, true}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: PASS: (any=mock.Any) == (int=42)`,
 			`2: PASS: (bool=true) == (bool=true)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("matching with all have arguments set to Any", func(t *testing.T) {
 		// --- Given ---
-		want := []any{Any, Any, Any}
-		have := []any{"str", 42, true}
+		wantA := []any{Any, Any, Any}
+		haveA := []any{"str", 42, true}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (any=mock.Any) == (string="str")`,
 			`1: PASS: (any=mock.Any) == (int=42)`,
 			`2: PASS: (any=mock.Any) == (bool=true)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("matching ArgumentMatcher", func(t *testing.T) {
 		// --- Given ---
 		mby := func(v int) bool { return v == 42 }
-		want := []any{"str", MatchBy(mby), true}
-		have := []any{"str", 42, true}
+		wantA := []any{"str", MatchBy(mby), true}
+		haveA := []any{"str", 42, true}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: PASS: [mock.MatchBy=func(int) bool] == (int=42)`,
 			`2: PASS: (bool=true) == (bool=true)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("not matching ArgumentMatcher - MatchBy", func(t *testing.T) {
 		// --- Given ---
 		mby := func(v int) bool { return v == 44 }
-		want := []any{"str", MatchBy(mby), true}
-		have := []any{"str", 42, true}
+		wantA := []any{"str", MatchBy(mby), true}
+		haveA := []any{"str", 42, true}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: FAIL: [mock.MatchBy=func(int) bool] != (int=42)`,
 			`2: PASS: (bool=true) == (bool=true)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("panicking ArgumentMatcher - MatchBy", func(t *testing.T) {
 		// --- Given ---
 		mby := func(v int) bool { panic("abc") }
-		want := []any{"str", MatchBy(mby), true}
-		have := []any{"str", 42, true}
+		wantA := []any{"str", MatchBy(mby), true}
+		haveA := []any{"str", 42, true}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: FAIL: [mock.MatchBy=func(int) bool] {panic: "abc"} != (int=42)`,
 			"2: PASS: (bool=true) == (bool=true)",
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("matching MatchOfType", func(t *testing.T) {
 		// --- Given ---
-		want := []any{"str", MatchOfType("int"), true}
-		have := []any{"str", 42, true}
+		wantA := []any{"str", MatchOfType("int"), true}
+		haveA := []any{"str", 42, true}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: PASS: [mock.MatchOfType=int] == (int=42)`,
 			`2: PASS: (bool=true) == (bool=true)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("matching MatchOfType not matching other", func(t *testing.T) {
 		// --- Given ---
-		want := []any{"str", MatchOfType("int"), true}
-		have := []any{"str", 42, false}
+		wantA := []any{"str", MatchOfType("int"), true}
+		haveA := []any{"str", 42, false}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: PASS: [mock.MatchOfType=int] == (int=42)`,
 			`2: FAIL: (bool=true) != (bool=false)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("not matching MatchOfType", func(t *testing.T) {
 		// --- Given ---
-		want := []any{"str", MatchOfType("string"), true}
-		have := []any{"str", 42, true}
+		wantA := []any{"str", MatchOfType("string"), true}
+		haveA := []any{"str", 42, true}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: FAIL: [mock.MatchOfType=string] != (int=42)`,
 			`2: PASS: (bool=true) == (bool=true)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("matching MatchType", func(t *testing.T) {
 		// --- Given ---
-		want := []any{"str", MatchType(0), true}
-		have := []any{"str", 42, true}
+		wantA := []any{"str", MatchType(0), true}
+		haveA := []any{"str", 42, true}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: PASS: [mock.MatchType=int] == (int=42)`,
 			`2: PASS: (bool=true) == (bool=true)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("not matching MatchType", func(t *testing.T) {
 		// --- Given ---
-		want := []any{"str", MatchType(""), true}
-		have := []any{"str", 42, true}
+		wantA := []any{"str", MatchType(""), true}
+		haveA := []any{"str", 42, true}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: FAIL: [mock.MatchType=string] != (int=42)`,
 			`2: PASS: (bool=true) == (bool=true)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("matching MatchType not matching other", func(t *testing.T) {
 		// --- Given ---
-		want := []any{"str", MatchType(0), true}
-		have := []any{"str", 42, false}
+		wantA := []any{"str", MatchType(0), true}
+		haveA := []any{"str", 42, false}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
-		exp := []string{
+		want := []string{
 			`0: PASS: (string="str") == (string="str")`,
 			`1: PASS: [mock.MatchType=int] == (int=42)`,
 			`2: FAIL: (bool=true) != (bool=false)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("context arguments", func(t *testing.T) {
 		// --- Given ---
-		want := []any{context.Background(), 42, true}
-		have := []any{context.Background(), 42, true}
+		wantA := []any{context.Background(), 42, true}
+		haveA := []any{context.Background(), 42, true}
 
 		// --- When ---
-		got, cnt := Arguments(want).Diff(have)
+		have, cnt := Arguments(wantA).Diff(haveA)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
-		exp := []string{
+		want := []string{
 			"0: PASS: (context.backgroundCtx=context.backgroundCtx) == " +
 				"(context.backgroundCtx=context.backgroundCtx)",
 			`1: PASS: (int=42) == (int=42)`,
 			`2: PASS: (bool=true) == (bool=true)`,
 		}
-		assert.Equal(t, exp, got)
+		assert.Equal(t, want, have)
 	})
 }
 
@@ -412,8 +412,8 @@ func Test_Arguments_String(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.String(100) })
 
 		// --- Then ---
-		exp := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, exp, *have)
+		want := "[mock] arguments: Get(100) out of range 2 max"
+		assert.Equal(t, want, *have)
 	})
 
 	t.Run("panics when argument cannot be cast to string", func(t *testing.T) {
@@ -424,8 +424,8 @@ func Test_Arguments_String(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.String(1) })
 
 		// --- Then ---
-		exp := "[mock] arguments: String(1) is of type \"int\" not string"
-		assert.Equal(t, exp, *have)
+		want := "[mock] arguments: String(1) is of type \"int\" not string"
+		assert.Equal(t, want, *have)
 	})
 }
 
@@ -449,8 +449,8 @@ func Test_Arguments_Int(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Int(100) })
 
 		// --- Then ---
-		exp := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, exp, *have)
+		want := "[mock] arguments: Get(100) out of range 2 max"
+		assert.Equal(t, want, *have)
 	})
 
 	t.Run("panics when argument cannot be cast to int", func(t *testing.T) {
@@ -461,8 +461,82 @@ func Test_Arguments_Int(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Int(2) })
 
 		// --- Then ---
-		exp := "[mock] arguments: Int(2) is of type \"bool\" not int"
-		assert.Equal(t, exp, *have)
+		want := "[mock] arguments: Int(2) is of type \"bool\" not int"
+		assert.Equal(t, want, *have)
+	})
+}
+
+func Test_Arguments_Float32(t *testing.T) {
+	t.Run("existing", func(t *testing.T) {
+		// --- Given ---
+		args := Arguments([]any{"str", float32(3.14), true})
+
+		// --- When ---
+		have := args.Float32(1)
+
+		// --- Then ---
+		assert.Equal(t, float32(3.14), have)
+	})
+
+	t.Run("panics for invalid index", func(t *testing.T) {
+		// --- Given ---
+		args := Arguments([]any{"str", float32(3.14), true})
+
+		// --- When ---
+		have := assert.PanicMsg(t, func() { args.Float32(100) })
+
+		// --- Then ---
+		want := "[mock] arguments: Get(100) out of range 2 max"
+		assert.Equal(t, want, *have)
+	})
+
+	t.Run("panics when argument cannot be cast to float32", func(t *testing.T) {
+		// --- Given ---
+		args := Arguments([]any{"str", float32(3.14), true})
+
+		// --- When ---
+		have := assert.PanicMsg(t, func() { args.Float32(2) })
+
+		// --- Then ---
+		want := "[mock] arguments: Float32(2) is of type \"bool\" not float32"
+		assert.Equal(t, want, *have)
+	})
+}
+
+func Test_Arguments_Float64(t *testing.T) {
+	t.Run("existing", func(t *testing.T) {
+		// --- Given ---
+		args := Arguments([]any{"str", 3.14159, true})
+
+		// --- When ---
+		have := args.Float64(1)
+
+		// --- Then ---
+		assert.Equal(t, 3.14159, have)
+	})
+
+	t.Run("panics for invalid index", func(t *testing.T) {
+		// --- Given ---
+		args := Arguments([]any{"str", 3.14159, true})
+
+		// --- When ---
+		have := assert.PanicMsg(t, func() { args.Float64(100) })
+
+		// --- Then ---
+		want := "[mock] arguments: Get(100) out of range 2 max"
+		assert.Equal(t, want, *have)
+	})
+
+	t.Run("panics when argument cannot be cast to float64", func(t *testing.T) {
+		// --- Given ---
+		args := Arguments([]any{"str", 3.14159, true})
+
+		// --- When ---
+		have := assert.PanicMsg(t, func() { args.Float64(2) })
+
+		// --- Then ---
+		want := "[mock] arguments: Float64(2) is of type \"bool\" not float64"
+		assert.Equal(t, want, *have)
 	})
 }
 
@@ -498,8 +572,8 @@ func Test_Arguments_Error(t *testing.T) {
 		have := assert.PanicMsg(t, func() { _ = args.Error(100) })
 
 		// --- Then ---
-		exp := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, exp, *have)
+		want := "[mock] arguments: Get(100) out of range 2 max"
+		assert.Equal(t, want, *have)
 	})
 
 	t.Run("panics when argument cannot be cast to error", func(t *testing.T) {
@@ -510,8 +584,8 @@ func Test_Arguments_Error(t *testing.T) {
 		msg := assert.PanicMsg(t, func() { _ = args.Error(2) })
 
 		// --- Then ---
-		exp := "[mock] arguments: Error(2) is of type \"bool\" not error"
-		assert.Equal(t, exp, *msg)
+		want := "[mock] arguments: Error(2) is of type \"bool\" not error"
+		assert.Equal(t, want, *msg)
 	})
 }
 
@@ -535,8 +609,8 @@ func Test_Arguments_Bool(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Bool(100) })
 
 		// --- Then ---
-		exp := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, exp, *have)
+		want := "[mock] arguments: Get(100) out of range 2 max"
+		assert.Equal(t, want, *have)
 	})
 
 	t.Run("panics when argument cannot be cast to bool", func(t *testing.T) {
@@ -547,7 +621,7 @@ func Test_Arguments_Bool(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Bool(1) })
 
 		// --- Then ---
-		exp := "[mock] arguments: Bool(1) is of type \"int\" not bool"
-		assert.Equal(t, exp, *have)
+		want := "[mock] arguments: Bool(1) is of type \"int\" not bool"
+		assert.Equal(t, want, *have)
 	})
 }

@@ -77,7 +77,7 @@ func Test_Indent(t *testing.T) {
 	})
 }
 
-func Test_TrialCmp_tabular(t *testing.T) {
+func Test_TrailCmp_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -100,7 +100,7 @@ func Test_TrialCmp_tabular(t *testing.T) {
 			b := New("header").SetTrail(tc.b)
 
 			// --- When ---
-			have := TrialCmp(a, b)
+			have := TrailCmp(a, b)
 
 			// --- Then ---
 			affirm.Equal(t, tc.want, have)
@@ -140,7 +140,7 @@ func Test_SortNotices(t *testing.T) {
 		var head *Notice
 
 		// --- When ---
-		have := SortNotices(head, TrialCmp)
+		have := SortNotices(head, TrailCmp)
 
 		// --- Then ---
 		affirm.Nil(t, have)
@@ -151,7 +151,7 @@ func Test_SortNotices(t *testing.T) {
 		msg := New("header").SetTrail("a")
 
 		// --- When ---
-		have := SortNotices(msg, TrialCmp)
+		have := SortNotices(msg, TrailCmp)
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
@@ -167,7 +167,7 @@ func Test_SortNotices(t *testing.T) {
 		_ = Join(msgA, msgB)
 
 		// --- When ---
-		have := SortNotices(msgA, TrialCmp)
+		have := SortNotices(msgA, TrailCmp)
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msgB, have))
@@ -182,7 +182,7 @@ func Test_SortNotices(t *testing.T) {
 		_ = Join(msgB, msgA)
 
 		// --- When ---
-		have := SortNotices(msgB, TrialCmp)
+		have := SortNotices(msgB, TrailCmp)
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msgB, have))
@@ -198,7 +198,7 @@ func Test_SortNotices(t *testing.T) {
 		_ = Join(msgA0, msgA1, msgA2)
 
 		// --- When ---
-		have := SortNotices(msgA0, TrialCmp)
+		have := SortNotices(msgA0, TrailCmp)
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msgA2, have))
@@ -214,7 +214,7 @@ func Test_SortNotices(t *testing.T) {
 		_ = Join(msgA0, msgA1, msgB)
 
 		// --- When ---
-		have := SortNotices(msgA0, TrialCmp)
+		have := SortNotices(msgA0, TrailCmp)
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msgB, have))
@@ -230,7 +230,7 @@ func Test_SortNotices(t *testing.T) {
 		_ = Join(msgC, msgA, msgB)
 
 		// --- When ---
-		have := SortNotices(msgC, TrialCmp)
+		have := SortNotices(msgC, TrailCmp)
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msgC, have))
@@ -247,7 +247,7 @@ func Test_SortNotices(t *testing.T) {
 		_ = Join(msgC, msgA, msgB0, msgB1)
 
 		// --- When ---
-		have := SortNotices(msgC, TrialCmp)
+		have := SortNotices(msgC, TrailCmp)
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msgC, have))
@@ -264,7 +264,7 @@ func Test_SortNotices(t *testing.T) {
 		_ = Join(msgB0, msgC, msgA, msgB1)
 
 		// --- When ---
-		have := SortNotices(msgB0, TrialCmp)
+		have := SortNotices(msgB0, TrailCmp)
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msgC, have))
@@ -280,7 +280,7 @@ func Test_SortNotices(t *testing.T) {
 		_ = Join(msg0, msgA, msg1)
 
 		// --- When ---
-		have := SortNotices(msg0, TrialCmp)
+		have := SortNotices(msg0, TrailCmp)
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msgA, have))

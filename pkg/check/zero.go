@@ -10,9 +10,12 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Zero checks "have" is the zero value for its type. Returns nil if it is,
-// otherwise, it returns an error with a message indicating the expected
-// and actual values.
+// Zero checks that "have" is the zero value for its type.
+//
+// This includes nil, false, 0, "", empty slices/maps/channels, and types
+// implementing `IsZero() bool`.
+//
+// See [assert.Zero] for the assertion wrapper.
 func Zero(have any, opts ...any) error {
 	if is := core.IsNil(have); is {
 		return zeroError(have, opts...)
@@ -40,9 +43,9 @@ func zeroError(have any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// NotZero checks "have" is not the zero value for its type. Returns nil if it
-// is, otherwise it returns an error with a message indicating the expected and
-// actual values.
+// NotZero checks that "have" is **not** the zero value for its type.
+//
+// See [assert.NotZero] for the assertion wrapper.
 func NotZero(have any, opts ...any) error {
 	if Zero(have) != nil {
 		return nil // nolint: nilerr

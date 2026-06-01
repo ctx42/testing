@@ -10,9 +10,10 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// ExitCode checks "err" is pointer to [exec.ExitError] with exit code equal to
-// "want". Returns nil if it's, otherwise it returns an error with a message
-// indicating the expected and actual values.
+// ExitCode checks that "err" is an [*exec.ExitError] (or wraps one) with the
+// given exit code.
+//
+// See [assert.ExitCode] for the assertion wrapper.
 func ExitCode(want int, err error, opts ...any) error {
 	if want == 0 && err == nil {
 		return nil

@@ -4,16 +4,16 @@
 package assert
 
 import (
-	"cmp"
-
 	"github.com/ctx42/testing/pkg/check"
 	"github.com/ctx42/testing/pkg/notice"
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// Len asserts "have" has "want" length. Returns true if it is, otherwise it
-// marks the test as failed, writes an error message to the test log, and
-// returns false.
+// Len asserts that "have" has "want" length using [check.Len].
+//
+// See the Design section in the root README for the layered assert/check/notice
+// architecture. Errors are built with [notice] and can be customized with
+// options from [check] and [dump].
 func Len(t tester.T, want int, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Len(want, have, opts...); e != nil {
@@ -31,9 +31,7 @@ func Len(t tester.T, want int, have any, opts ...any) bool {
 	return true
 }
 
-// Cap asserts "have" has "want" capacity. Returns true if it is, otherwise it
-// marks the test as failed, writes an error message to the test log, and
-// returns false.
+// Cap asserts that "have" has "want" capacity. See [check.Cap].
 func Cap(t tester.T, want int, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Cap(want, have, opts...); e != nil {
@@ -51,9 +49,8 @@ func Cap(t tester.T, want int, have any, opts ...any) bool {
 	return true
 }
 
-// Has asserts the slice has "want" value. Returns true if it does, otherwise
-// marks the test as failed, writes an error message to the test log, and
-// returns false.
+// Has asserts that the slice contains the "want" value.
+// See [check.Has] for the error-returning form and option details.
 func Has[T comparable](t tester.T, want T, bag []T, opts ...any) bool {
 	t.Helper()
 	if e := check.Has(want, bag, opts...); e != nil {
@@ -63,9 +60,8 @@ func Has[T comparable](t tester.T, want T, bag []T, opts ...any) bool {
 	return true
 }
 
-// HasNo asserts slice does not have a "want" value. Returns true if it does
-// not, otherwise marks the test as failed, writes an error message to the test
-// log, and returns false.
+// HasNo asserts that the slice does not contain the "want" value.
+// See [check.HasNo] for the error-returning form.
 func HasNo[T comparable](t tester.T, want T, bag []T, opts ...any) bool {
 	t.Helper()
 	if e := check.HasNo(want, bag, opts...); e != nil {
@@ -75,10 +71,15 @@ func HasNo[T comparable](t tester.T, want T, bag []T, opts ...any) bool {
 	return true
 }
 
-// HasKey asserts the map has a key. Returns true if it does, otherwise marks
-// the test as failed, writes an error message to the test log, and returns
-// false.
-func HasKey[K comparable, V any](t tester.T, key K, set map[K]V, opts ...any) (V, bool) {
+// HasKey asserts that the map contains the key. When the key exists, the
+// associated value is also returned. See [check.HasKey].
+func HasKey[K comparable, V any](
+	t tester.T,
+	key K,
+	set map[K]V,
+	opts ...any,
+) (V, bool) {
+
 	t.Helper()
 	val, e := check.HasKey(key, set, opts...)
 	if e != nil {
@@ -88,10 +89,15 @@ func HasKey[K comparable, V any](t tester.T, key K, set map[K]V, opts ...any) (V
 	return val, true
 }
 
-// HasNoKey asserts the map has no key. Returns true if it doesn't, otherwise
-// marks the test as failed, writes an error message to the test log, and
-// returns false.
-func HasNoKey[K comparable, V any](t tester.T, key K, set map[K]V, opts ...any) bool {
+// HasNoKey asserts that the map does not contain the key.
+// See [check.HasNoKey].
+func HasNoKey[K comparable, V any](
+	t tester.T,
+	key K,
+	set map[K]V,
+	opts ...any,
+) bool {
+
 	t.Helper()
 	if e := check.HasNoKey(key, set, opts...); e != nil {
 		t.Error(e)
@@ -100,9 +106,8 @@ func HasNoKey[K comparable, V any](t tester.T, key K, set map[K]V, opts ...any) 
 	return true
 }
 
-// HasKeyValue asserts the map has a key with the given value. Returns true if
-// it doesn't, otherwise marks the test as failed, writes an error message to
-// the test log, and returns false.
+// HasKeyValue asserts that the map contains the key with the given value.
+// See [check.HasKeyValue] for the error-returning form.
 func HasKeyValue[K, V comparable](
 	t tester.T,
 	key K,
@@ -119,10 +124,8 @@ func HasKeyValue[K, V comparable](
 	return true
 }
 
-// SliceSubset checks the "want" is a subset "have". In other words, all values
-// in the "want" slice must be in the "have" slice. Returns nil if they are,
-// otherwise returns an error with a message indicating the expected and actual
-// values.
+// SliceSubset asserts that "want" is a subset of "have". All values in "want"
+// must be present in "have". See [check.SliceSubset].
 func SliceSubset[T comparable](t tester.T, want, have []T, opts ...any) bool {
 	t.Helper()
 	if e := check.SliceSubset(want, have, opts...); e != nil {
@@ -132,12 +135,10 @@ func SliceSubset[T comparable](t tester.T, want, have []T, opts ...any) bool {
 	return true
 }
 
-// MapSubset asserts the "want" is a subset "have". In other words, all keys
-// and their corresponding values in the "want" map must be in the "have" map.
-// It is not an error when the "have" map has some other keys. Returns true if
-// "want is a subset of "have", otherwise marks the test as failed, writes an
-// error message to the test log, and returns false.
-func MapSubset[K cmp.Ordered, V any](
+// MapSubset asserts that "want" is a subset of "have". All keys and values in
+// "want" must be present in "have". It is not an error if "have" contains
+// additional keys. See [check.MapSubset].
+func MapSubset[K comparable, V any](
 	t tester.T,
 	want, have map[K]V,
 	opts ...any,
@@ -151,11 +152,9 @@ func MapSubset[K cmp.Ordered, V any](
 	return true
 }
 
-// MapsSubset asserts all the "want" maps are subsets of corresponding "have"
-// maps using [MapSubset]. Returns true if all "want" maps are subset of
-// corresponding "have" maps, otherwise marks the test as failed, writes an
-// error message to the test log, and returns false.
-func MapsSubset[K cmp.Ordered, V any](
+// MapsSubset asserts that every map in "want" is a subset of the corresponding
+// map in "have" (using [MapSubset]). See [check.MapsSubset].
+func MapsSubset[K comparable, V any](
 	t tester.T,
 	want, have []map[K]V,
 	opts ...any,

@@ -8,8 +8,9 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Nil checks "have" is nil. Returns nil if it's, otherwise returns an error
-// with a message indicating the expected and actual values.
+// Nil checks that "have" is nil (including typed nils such as (*T)(nil)).
+//
+// See [assert.Nil] for the assertion wrapper.
 func Nil(have any, opts ...any) error {
 	if is := core.IsNil(have); is {
 		return nil
@@ -20,10 +21,9 @@ func Nil(have any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// NotNil checks if "have" is not nil. Returns nil if it is not nil, otherwise
-// returns an error with a message indicating the expected and actual values.
+// NotNil checks that "have" is not nil.
 //
-// The returned error might be one or more errors joined with [errors.Join].
+// See [assert.NotNil] for the assertion wrapper.
 func NotNil(have any, opts ...any) error {
 	if is := core.IsNil(have); !is {
 		return nil

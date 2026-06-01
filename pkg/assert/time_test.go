@@ -19,15 +19,15 @@ func Test_Time(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.Close()
 
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
+		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		haveT := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
-		got := Time(tspy, want, have)
+		have := Time(tspy, wantT, haveT)
 
 		// --- Then ---
-		affirm.Equal(t, true, got)
-		affirm.Equal(t, true, want.Equal(have))
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, true, wantT.Equal(haveT))
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -37,15 +37,15 @@ func Test_Time(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
+		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		haveT := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
 
 		// --- When ---
-		got := Time(tspy, want, have)
+		have := Time(tspy, wantT, haveT)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
-		affirm.Equal(t, false, want.Equal(have))
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, wantT.Equal(haveT))
 	})
 
 	t.Run("additional message rows added", func(t *testing.T) {
@@ -55,16 +55,16 @@ func Test_Time(t *testing.T) {
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
+		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		haveT := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		got := Time(tspy, want, have, opt)
+		have := Time(tspy, wantT, haveT, opt)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
-		affirm.Equal(t, false, want.Equal(have))
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, wantT.Equal(haveT))
 	})
 }
 
@@ -74,13 +74,13 @@ func Test_Exact(t *testing.T) {
 		tspy := tester.New(t).Close()
 
 		// --- When ---
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		got := Exact(tspy, want, have)
+		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		haveT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		have := Exact(tspy, wantT, haveT)
 
 		// --- Then ---
-		affirm.Equal(t, true, got)
-		affirm.Equal(t, true, want.Equal(have))
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, true, wantT.Equal(haveT))
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -90,15 +90,15 @@ func Test_Exact(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW)
+		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		haveT := time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
-		got := Exact(tspy, want, have)
+		have := Exact(tspy, wantT, haveT)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
-		affirm.Equal(t, false, want.Equal(have))
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, wantT.Equal(haveT))
 	})
 
 	t.Run("additional message rows added", func(t *testing.T) {
@@ -108,16 +108,16 @@ func Test_Exact(t *testing.T) {
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
+		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		haveT := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		got := Exact(tspy, want, have, opt)
+		have := Exact(tspy, wantT, haveT, opt)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
-		affirm.Equal(t, false, want.Equal(have))
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, wantT.Equal(haveT))
 	})
 }
 
@@ -182,10 +182,10 @@ func Test_After(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := After(tspy, mark, date)
+		have := After(tspy, mark, date)
 
 		// --- Then ---
-		affirm.Equal(t, true, got)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("equal", func(t *testing.T) {
@@ -199,10 +199,10 @@ func Test_After(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := After(tspy, mark, date)
+		have := After(tspy, mark, date)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("additional message rows added", func(t *testing.T) {
@@ -217,10 +217,10 @@ func Test_After(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		got := After(tspy, mark, date, opt)
+		have := After(tspy, mark, date, opt)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -233,10 +233,10 @@ func Test_BeforeOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := BeforeOrEqual(tspy, mark, date)
+		have := BeforeOrEqual(tspy, mark, date)
 
 		// --- Then ---
-		affirm.Equal(t, true, got)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -250,10 +250,10 @@ func Test_BeforeOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := BeforeOrEqual(tspy, mark, date)
+		have := BeforeOrEqual(tspy, mark, date)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -268,10 +268,10 @@ func Test_BeforeOrEqual(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		got := BeforeOrEqual(tspy, mark, date, opt)
+		have := BeforeOrEqual(tspy, mark, date, opt)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -284,10 +284,10 @@ func Test_AfterOrEqual(t *testing.T) {
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := AfterOrEqual(tspy, mark, date)
+		have := AfterOrEqual(tspy, mark, date)
 
 		// --- Then ---
-		affirm.Equal(t, true, got)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -301,10 +301,10 @@ func Test_AfterOrEqual(t *testing.T) {
 		mark := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		got := AfterOrEqual(tspy, mark, date)
+		have := AfterOrEqual(tspy, mark, date)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("additional message rows added", func(t *testing.T) {
@@ -319,10 +319,10 @@ func Test_AfterOrEqual(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		got := AfterOrEqual(tspy, mark, date, opt)
+		have := AfterOrEqual(tspy, mark, date, opt)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -331,14 +331,14 @@ func Test_Within(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
+		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		haveT := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 
 		// --- When ---
-		got := Within(tspy, want, "1s", have)
+		have := Within(tspy, wantT, "1s", haveT)
 
 		// --- Then ---
-		affirm.Equal(t, true, got)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -348,14 +348,14 @@ func Test_Within(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 3, 4, 6, int(500*time.Millisecond), time.UTC)
+		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		haveT := time.Date(2000, 1, 2, 3, 4, 6, int(500*time.Millisecond), time.UTC)
 
 		// --- When ---
-		got := Within(tspy, want, "1s", have)
+		have := Within(tspy, wantT, "1s", haveT)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("additional message rows added", func(t *testing.T) {
@@ -365,15 +365,15 @@ func Test_Within(t *testing.T) {
 		tspy.ExpectLogContain("         trail: type.field\n")
 		tspy.Close()
 
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 3, 4, 6, int(500*time.Millisecond), time.UTC)
+		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		haveT := time.Date(2000, 1, 2, 3, 4, 6, int(500*time.Millisecond), time.UTC)
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		got := Within(tspy, want, "1s", have, opt)
+		have := Within(tspy, wantT, "1s", haveT, opt)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("want is not time.Time", func(t *testing.T) {
@@ -384,13 +384,13 @@ func Test_Within(t *testing.T) {
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
-		have := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
+		haveT := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
 
 		// --- When ---
-		got := Within(tspy, true, "1s", have)
+		have := Within(tspy, true, "1s", haveT)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("have is not time.Time", func(t *testing.T) {
@@ -401,13 +401,13 @@ func Test_Within(t *testing.T) {
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
-		want := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
+		wantT := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
 
 		// --- When ---
-		got := Within(tspy, want, "1s", true)
+		have := Within(tspy, wantT, "1s", true)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 }
 
@@ -416,13 +416,13 @@ func Test_Recent(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		have := time.Now().Add(-4 * time.Second)
+		haveT := time.Now().Add(-4 * time.Second)
 
 		// --- When ---
-		got := Recent(tspy, have)
+		have := Recent(tspy, haveT)
 
 		// --- Then ---
-		affirm.Equal(t, true, got)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -432,13 +432,13 @@ func Test_Recent(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		have := time.Now().Add(-10 * time.Second)
+		haveT := time.Now().Add(-10 * time.Second)
 
 		// --- When ---
-		got := Recent(tspy, have)
+		have := Recent(tspy, haveT)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("additional message rows added", func(t *testing.T) {
@@ -448,14 +448,14 @@ func Test_Recent(t *testing.T) {
 		tspy.ExpectLogContain("         trail: type.field\n")
 		tspy.Close()
 
-		have := time.Now().Add(-10 * time.Second)
+		haveT := time.Now().Add(-10 * time.Second)
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		got := Recent(tspy, have, opt)
+		have := Recent(tspy, haveT, opt)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 }
 

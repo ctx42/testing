@@ -8,7 +8,6 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/ctx42/testing/internal/tstmod"
@@ -420,7 +419,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			&gopkg{
 				pkgName: "a",
 				pkgPath: "github.com/ctx42/tst-a",
-				pkgDir:  modCache("github.com/ctx42/tst-a@v0.1.0"),
+				pkgDir:  mod1.ExternalDirs["github.com/ctx42/tst-a@v0.1.0"],
 				modName: "project",
 				modPath: "github.com/ctx42/tst-project",
 				modDir:  mod1.Dir,
@@ -429,7 +428,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 		},
 		{
 			"wd is the root of the v2 test module with " +
-				"an import path for the root of an external module (NO GHA)",
+				"an import path for the root of an external module",
 			&gopkg{
 				wd:      mod2.Dir,
 				pkgPath: "github.com/ctx42/tst-a",
@@ -437,7 +436,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			&gopkg{
 				pkgName: "a",
 				pkgPath: "github.com/ctx42/tst-a",
-				pkgDir:  modCache("github.com/ctx42/tst-a@v0.2.0"),
+				pkgDir:  mod2.ExternalDirs["github.com/ctx42/tst-a@v0.2.0"],
 				modName: "project",
 				modPath: "github.com/ctx42/tst-project",
 				modDir:  mod2.Dir,
@@ -454,7 +453,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			&gopkg{
 				pkgName: "first",
 				pkgPath: "github.com/ctx42/tst-b/pkg/mocker/first",
-				pkgDir:  modCache("github.com/ctx42/tst-b@v0.1.0/pkg/mocker/first"),
+				pkgDir:  mod1.ExternalDirs["github.com/ctx42/tst-b@v0.1.0"] + "/pkg/mocker/first",
 				modName: "project",
 				modPath: "github.com/ctx42/tst-project",
 				modDir:  mod1.Dir,
@@ -463,7 +462,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 		},
 		{
 			"wd is the root of the v2 test module with " +
-				"an import path for a package of an external module (NO GHA)",
+				"an import path for a package of an external module",
 			&gopkg{
 				wd:      mod2.Dir,
 				pkgPath: "github.com/ctx42/tst-b/pkg/mocker/first",
@@ -471,7 +470,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			&gopkg{
 				pkgName: "first",
 				pkgPath: "github.com/ctx42/tst-b/pkg/mocker/first",
-				pkgDir:  modCache("github.com/ctx42/tst-b@v0.2.0/pkg/mocker/first"),
+				pkgDir:  mod2.ExternalDirs["github.com/ctx42/tst-b@v0.2.0"] + "/pkg/mocker/first",
 				modName: "project",
 				modPath: "github.com/ctx42/tst-project",
 				modDir:  mod2.Dir,
@@ -482,13 +481,6 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
-			// --- Given ---
-			// TODO(rz): No idea why those pass everywhere but GitHub Actions.
-			if os.Getenv("GITHUB_ACTIONS") != "" &&
-				strings.Contains(tc.testN, "(NO GHA)") {
-				t.Skip("Skipping test on GitHub Actions")
-			}
-
 			// --- When ---
 			err := tc.pkg.getModInfo()
 

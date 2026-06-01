@@ -21,7 +21,7 @@ func ArrayDumper(dmp Dump, lvl int, val reflect.Value) string {
 	prn := NewPrinter(dmp)
 	prn.Tab(dmp.Indent + lvl)
 
-	if !(val.Kind() == reflect.Slice || val.Kind() == reflect.Array) {
+	if val.Kind() != reflect.Slice && val.Kind() != reflect.Array {
 		return prn.Write(ValErrUsage).String()
 	}
 
@@ -37,7 +37,7 @@ func ArrayDumper(dmp Dump, lvl int, val reflect.Value) string {
 	prn.Write("{").NLI(num)
 
 	dmp.PrintType = false // Don't print types for array elements.
-	for i := 0; i < num; i++ {
+	for i := range num {
 		last := i == num-1
 
 		sub, _ := dmp.value(lvl+1, val.Index(i))

@@ -8,10 +8,8 @@ import (
 	"time"
 )
 
-// ZoneDumper requires val to be dereferenced representation of [time.Location].
-// Returns [valErrUsage] ("<dump-usage-error>") string if the kind cannot be
-// matched. It returns string representation in the format defined by [Dump]
-// configuration.
+// ZoneDumper is the built-in dumper for *time.Location (and time.Location).
+// It renders the location name. Returns [ValErrUsage] for wrong types.
 func ZoneDumper(dmp Dump, lvl int, val reflect.Value) string {
 	loc, ok := val.Interface().(time.Location)
 	if !ok {

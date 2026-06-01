@@ -1,5 +1,5 @@
 <!-- TOC -->
-* [The `bump` Package](#the-bump-package)
+* [The `dump` Package](#the-dump-package)
   * [Basic Usage](#basic-usage)
   * [Configuration Options](#configuration-options)
     * [Flat Output](#flat-output)
@@ -11,7 +11,7 @@
 * [Conclusion](#conclusion)
 <!-- TOC -->
 
-# The `bump` Package
+# The `dump` Package
 
 The `dump` package is a utility that serializes any Go value into its string
 representation.
@@ -20,7 +20,8 @@ The `dump` package is part of the CTX42 Testing Module, an ongoing effort to
 build a new, flexible, and developer-friendly testing framework.
 
 The `dump` package provides a configurable way to render any Go value — whether 
-it’s a simple integer, a nested struct, or a recursive data structure — into a 
+it’s a simple integer, a nested struct, or a recursive data structure —
+into a 
 human-readable string. This is particularly useful in testing, where comparing 
 complex values often requires more than Go’s built-in `reflect.DeepEqual`. By 
 converting values to strings, the `dump` package lets you leverage string 
@@ -124,7 +125,8 @@ fmt.Println(have)
 ### Custom Dumpers
 
 For ultimate flexibility, you can define custom dumpers for specific types.
-Dumpers for types are regular functions matching `dump.Dumper` signature declared in 
+Dumpers for types are regular functions matching the `dump.Dumper` signature
+declared in the package.
 the package.
 
 ```go

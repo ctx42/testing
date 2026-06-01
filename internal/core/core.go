@@ -78,7 +78,7 @@ func Same(want, have any) bool {
 		return same(wVal, hVal)
 	}
 
-	if wVal.Kind() != reflect.Ptr || hVal.Kind() != reflect.Ptr {
+	if wVal.Kind() != reflect.Pointer || hVal.Kind() != reflect.Pointer {
 		return false
 	}
 
@@ -91,7 +91,7 @@ func Same(want, have any) bool {
 	return want == have
 }
 
-// The sameFunc returns true when arguments represent values for functions or
+// sameFunc returns true when arguments represent values for functions or
 // methods of the same type.
 func sameFunc(want, have reflect.Value) bool {
 	if want.Equal(nilVal) || have.Equal(nilVal) {
@@ -114,6 +114,8 @@ func sameFunc(want, have reflect.Value) bool {
 }
 
 // same returns true if values represent pointers to the same memory.
+//
+// nolint:gosec
 func same(want, have reflect.Value) bool {
 	if !want.Type().AssignableTo(have.Type()) {
 		return false
@@ -126,8 +128,10 @@ func same(want, have reflect.Value) bool {
 
 // Pointer checks if the argument represents a pointer type and returns its
 // memory address as an [unsafe.Pointer], otherwise returns nil.
+//
+// nolint:gosec
 func Pointer(val reflect.Value) unsafe.Pointer {
-	if !val.IsValid() || val.Kind() != reflect.Ptr {
+	if !val.IsValid() || val.Kind() != reflect.Pointer {
 		return nil
 	}
 	if val.IsNil() {
@@ -136,17 +140,15 @@ func Pointer(val reflect.Value) unsafe.Pointer {
 	if val.CanAddr() {
 		return unsafe.Pointer(val.UnsafeAddr())
 	}
-	if val.CanInterface() || !val.CanAddr() {
-		return val.UnsafePointer()
-	}
-	// TODO(rz): test this case.
-	return nil
+	// !CanAddr() is true here, so the next condition is always true.
+	return val.UnsafePointer()
 }
 
 // Value returns the underlying value represented by the [reflect.Value].
 // Returns nil, false if the underlying value cannot be returned.
+//
+// nolint:gosec
 func Value(val reflect.Value) (any, bool) {
-	// TODO(rz): improve coverage.
 	if nilVal.Equal(val) {
 		return nil, true
 	}
@@ -168,36 +170,33 @@ func Value(val reflect.Value) (any, bool) {
 	switch knd := val.Kind(); knd {
 	case reflect.Pointer:
 		if val.Elem().Kind() == reflect.Struct {
-			return value(val.Type(), val.Elem())
+			return unsafeCopyValue(val.Type(), val.Elem())
 		}
 		return nil, false
 
 	case reflect.Func, reflect.Chan:
-		return value(val.Type(), val)
+		return unsafeCopyValue(val.Type(), val)
 
 	case reflect.Struct, reflect.Slice, reflect.Array, reflect.Map:
-		return value(val.Type(), val)
+		return unsafeCopyValue(val.Type(), val)
 
 	default:
 		return nil, false
 	}
 }
 
-// Value extracts the underlying value from a [reflection.Value] representing an
-// unexported or unaddressable field, returning it as an "any" with a boolean
-// indicating success.
+// unsafeCopyValue extracts the concrete value from a [reflect.Value] that may
+// be unexported or unaddressable.
 //
-// The typ parameter specifies the expected type of the value, and val is the
-// [reflect.Value] to extract. For unexported fields, it uses unsafe to bypass
-// reflection restrictions. If val is unaddressable (e.g., from a struct passed
-// by value), it creates an addressable copy.
+// It is used internally by [Value] to access private struct fields. When the
+// value is addressable it uses pointer conversion; otherwise it performs a
+// byte-wise copy of the underlying memory using unsafe.
 //
-// The returned bool is true if the extraction succeeds, false otherwise (e.g.,
-// nil pointer or invalid value).
+// typ must match the expected type of the field. Returns false if extraction
+// is not possible (e.g. nil data pointer).
 //
-// The function is unsafe and assumes val is a valid field of the specified
-// type.
-func value(typ reflect.Type, val reflect.Value) (any, bool) {
+// nolint:gosec
+func unsafeCopyValue(typ reflect.Type, val reflect.Value) (any, bool) {
 	v := reflect.New(typ).Elem()
 
 	if val.CanAddr() {
@@ -222,7 +221,7 @@ func value(typ reflect.Type, val reflect.Value) (any, bool) {
 	// Copy the bytes from vHeader.data to v.
 	destPtr := unsafe.Pointer(v.UnsafeAddr())
 	srcPtr := vHeader.data
-	for i := 0; i < size; i++ {
+	for i := range size {
 		*(*byte)(unsafe.Pointer(uintptr(destPtr) + uintptr(i))) =
 			*(*byte)(unsafe.Pointer(uintptr(srcPtr) + uintptr(i)))
 	}

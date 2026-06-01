@@ -22,7 +22,12 @@ type cStack struct {
 	Stack []string
 }
 
-// Call represents a mocked method call, used for defining expectations.
+// Call represents a single expected method invocation and its configuration.
+//
+// Call instances are returned by [Mock.On], [Mock.OnAny] and [Mock.Proxy] and
+// form a fluent builder for expectations:
+//
+//	Mock.On("Method", 1, mock.Any).Return("x").Times(3).Requires(otherCall)
 type Call struct {
 	// Method name and call stack where the method call requirement was defined.
 	cStack
@@ -115,11 +120,8 @@ func (c *Call) withStack(stack []string) *Call {
 	return c
 }
 
-// With sets argument requirements for the proxied method call.
-//
-// Example usage:
-//
-//	Mock.Proxy(obj.Method).With(1, 2, 3)
+// With sets the expected arguments for a proxied call (see [Mock.Proxy]).
+// Without With, proxy calls accept any arguments.
 func (c *Call) With(args ...any) *Call {
 	if !c.proxy.IsValid() {
 		panic("cannot set arguments on proxy calls")
@@ -128,13 +130,9 @@ func (c *Call) With(args ...any) *Call {
 	return c
 }
 
-// Return specifies the expected return arguments when the mocked method is
-// invoked. If the [Call] instance represents a proxy call, this method will
-// panic, as proxy calls cannot have predefined return values.
-//
-// Example usage:
-//
-//	Mock.On("Method").Return(errors.New("operation failed"))
+// Return sets the values that will be returned when the mocked method is
+// later invoked. It panics if called on a proxy call (proxies forward real
+// return values).
 func (c *Call) Return(args ...any) *Call {
 	if c.proxy.IsValid() {
 		panic("proxy calls cannot have return values")
@@ -143,15 +141,9 @@ func (c *Call) Return(args ...any) *Call {
 	return c
 }
 
-// Panic sets the panic value for the mock call and ensures that the method
-// call will cause a panic during execution. This is useful for simulating
-// failure scenarios where a panic is expected during a method call. It will
-// panic if the [Call] instance represents a proxy call.
-//
-// Example usage:
-//
-//	Mock.On("MethodName").Panic("test panic")
-//	Mock.On("MethodName").Panic(errors.New("test panic"))
+// Panic arranges for the mocked method to panic with the given value when
+// invoked. Useful for testing error paths that expect panics. It panics if
+// called on a proxy call.
 func (c *Call) Panic(value any) *Call {
 	if c.proxy.IsValid() {
 		panic("cannot call panic on proxy calls")
@@ -160,18 +152,12 @@ func (c *Call) Panic(value any) *Call {
 	return c
 }
 
-// Once specifies that the mocked method should only be called once with this
-// set of arguments and return values. It is a helper calling [Call.Times].
-//
-// Example usage:
-//
-//	Mock.On("Method", arg1, arg2).Return(returnArg1, returnArg2).Once()
+// Once is a shorthand for [Call.Times](1): the expectation must be satisfied
+// exactly once. Mutually exclusive with [Call.Optional].
 func (c *Call) Once() *Call { return c.Times(1) }
 
-// Times specify that the mocked method should only be called i times with
-// this set of arguments and return values.
-//
-//	Mock.On("Method", arg1, arg2).Return(returnArg1, returnArg2).Times(5)
+// Times sets the exact number of times this expectation must be met.
+// Mutually exclusive with [Call.Optional].
 func (c *Call) Times(i int) *Call {
 	if c.optional {
 		panic("cannot use Optional and Times in the same time")
@@ -180,57 +166,31 @@ func (c *Call) Times(i int) *Call {
 	return c
 }
 
-// Until sets a channel that will block the return of the method call until the
-// channel is either closed or a message is received. This is useful for
-// scenarios where delaying the method's return until certain conditions are
-// met is required.
-//
-// Example usage:
-//
-//	Mock.On("Method", arg1, arg2).Until(time.After(time.Second))
+// Until makes the mocked method block until the channel is closed or
+// receives a value. Useful for testing timeouts, cancellation, or ordering.
 func (c *Call) Until(ch <-chan time.Time) *Call {
 	c.until = ch
 	return c
 }
 
-// After sets how long to block until the call returns.
-//
-//	Mock.On("Method", arg1, arg2).After(time.Second)
+// After makes the mocked method sleep for the given duration before
+// returning (simpler fixed-delay alternative to [Call.Until]).
 func (c *Call) After(d time.Duration) *Call {
 	c.after = d
 	return c
 }
 
-// Alter sets functions to be called on arguments received by the mocked method
-// before they are returned. It can be used when mocking a method (such as an
-// unmarshaler) that takes a pointer to a struct and sets properties in such
-// struct.
-//
-// Example usage:
-//
-//		Mock.On("Unmarshal", MatchOfType("map[string]any")).
-//	 	Return().
-//	 	Alter(func(args Arguments) {
-//		    arg := args.Get(0).(*map[string]any)
-//		    arg["foo"] = "bar"
-//		})
-//
-// If [Call.After] or [Call.Until] methods are used, the provided function is
-// run after the blocking is done.
+// Alter registers functions to be called with the received arguments
+// immediately before the mock returns (or after any delay). Commonly used
+// to mutate pointer arguments before the real implementation sees them.
 func (c *Call) Alter(fn ...func(Arguments)) *Call {
 	c.alter = append(c.alter, fn...)
 	return c
 }
 
-// Optional allows the method call to be optional, meaning that the method
-// may or may not be invoked without causing test failures. This can be
-// useful for scenarios where some method calls are not strictly required.
-// Invoking the method after [Call.Times] will cause a panic as the two are
-// mutually exclusive.
-//
-// Example usage:
-//
-//	Mock.On("MethodName").Optional()
+// Optional marks the expectation as optional: zero or more calls are
+// acceptable and will not cause AssertExpectations to fail. Mutually
+// exclusive with [Call.Times] / [Call.Once].
 func (c *Call) Optional() *Call {
 	if c.wantCalls > 0 {
 		panic("cannot use Optional and Times in the same time")
@@ -239,15 +199,8 @@ func (c *Call) Optional() *Call {
 	return c
 }
 
-// Requires specifies that the current call depends on other calls being
-// satisfied. It's used to define prerequisite calls that need to be executed
-// before this call. The referenced calls may be from the same mock instance
-// and/or other mock instances.
-//
-// Example usage:
-//
-//	other := Mock.On("Init").Return(nil)
-//	Mock.On("Do").Return(nil).Requires(other)
+// Requires declares that the listed calls must be satisfied before this
+// expectation can be met. Prerequisites can be on the same or different mocks.
 func (c *Call) Requires(calls ...*Call) *Call {
 	for _, call := range calls {
 		if call == nil {
@@ -258,8 +211,9 @@ func (c *Call) Requires(calls ...*Call) *Call {
 	return c
 }
 
-// CanCall provided the argument match returns nil if the method can be called
-// again, otherwise it returns error explaining why method cannot be called.
+// CanCall reports whether this expectation can be satisfied by one more call
+// right now. Returns nil if allowed, otherwise one of the Err* sentinels or
+// a richer [notice.Notice] explaining the violation.
 func (c *Call) CanCall() error {
 	err := c.satisfied(c.haveCalls + 1)
 	if err == nil ||
@@ -269,12 +223,8 @@ func (c *Call) CanCall() error {
 	return err
 }
 
-// Satisfied returns true if the method call requirements are met.
-//
-// A method call is considered satisfied if:
-//   - It has been called the exact number of requested times.
-//   - It has no maximum call limit and has been called at least once.
-//   - It has not been called, but is marked as optional.
+// Satisfied reports whether this expectation has been fully met (correct
+// call count + all prerequisites satisfied).
 func (c *Call) Satisfied() bool {
 	return c.satisfied(c.haveCalls) == nil
 }
@@ -414,5 +364,9 @@ func (c *Call) satisfy() *Call {
 	return c
 }
 
-// End ends a chain of calls on the [Call] instance and returns parent [Mock].
+// End terminates a fluent expectation chain and returns the parent [Mock].
+// Useful when you want to continue configuring the same mock after setting
+// up one call:
+//
+//	mck.On("A").Return(1).End().On("B").Return(2)
 func (c *Call) End() *Mock { return c.parent }

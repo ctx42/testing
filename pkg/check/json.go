@@ -15,9 +15,8 @@ type Text interface {
 	string | []byte
 }
 
-// JSON checks that two JSON strings are equivalent. Returns nil if they are,
-// otherwise it returns an error with a message indicating the expected and
-// actual values.
+// JSON checks that two JSON texts are equivalent (after unmarshalling).
+// See [assert.JSON].
 //
 // Example:
 //
@@ -55,5 +54,5 @@ func toBytes[T Text](v T) []byte {
 	if s, ok := any(v).(string); ok {
 		return []byte(s)
 	}
-	return any(v).([]byte)
+	return any(v).([]byte) // nolint: forcetypeassert
 }

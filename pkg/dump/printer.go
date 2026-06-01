@@ -40,7 +40,7 @@ func (prn Printer) NL() Printer {
 
 // Comma prints Comma when not flat and not last entry.
 func (prn Printer) Comma(last bool) Printer {
-	if !(prn.dmp.Flat && last) {
+	if !prn.dmp.Flat || !last {
 		prn.buf.WriteByte(',')
 	}
 	return prn

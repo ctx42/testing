@@ -12,8 +12,11 @@
   * [Updating Golden Files](#updating-golden-files)
 <!-- TOC -->
 
-The `goldy` is a Go package designed to simplify reading content from golden
-files in tests.
+The goldy package provides helpers for reading and writing golden files in tests.
+It integrates cleanly with the rest of the toolkit by accepting [tester.T]
+(and therefore works with both real tests and [tester.Spy] when testing
+your own test helpers). See the root README Design section for how goldy
+fits into the broader layered architecture.
 
 ## Features
 
@@ -30,10 +33,11 @@ The goldy package provides two main functions:
 ### Opening Golden Files
 
 ```go
-func Open(t core.T, pth string, opts ...func(*Goldy)) *Goldy
+func Open(t tester.T, pth string, opts ...func(*Goldy)) *Goldy
 ```
 
-- `t core.T`: A test context (typically a `*testing.T`).
+- `t tester.T`: A test context (typically a `*testing.T` or a `*tester.Spy`
+  when testing code that uses goldy).
 - `pth string`: The golden file path relative to the test file or absolute.
 
 ### Golden File Format
@@ -57,7 +61,7 @@ It's customary for golden files to have `.gld` extension.
 
 <!-- gmdoceg:ExampleCreate -->
 ```go
-tspy := core.NewSpy()
+tspy := tester.New(t)
 
 dir, err := os.MkdirTemp("", "example-create-*")
 if err != nil {

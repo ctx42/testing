@@ -8,9 +8,9 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// Contain asserts "want" is a substring of "have". Returns true if it's,
-// otherwise marks the test as failed, writes an error message to the test log
-// and returns false.
+// Contain asserts that "want" is a substring of "have" using [check.Contain].
+//
+// See the package documentation for the overall design and option handling.
 func Contain(t tester.T, want, have string, opts ...any) bool {
 	t.Helper()
 	if e := check.Contain(want, have, opts...); e != nil {
@@ -20,9 +20,10 @@ func Contain(t tester.T, want, have string, opts ...any) bool {
 	return true
 }
 
-// NotContain asserts "want" is not a substring of "have". Returns true if it's
-// not, otherwise marks the test as failed, writes an error message to the test
-// log, and returns false.
+// NotContain asserts that "want" is not a substring of "have" using
+// [check.NotContain].
+//
+// See the package documentation for the overall design and option handling.
 func NotContain(t tester.T, want, have string, opts ...any) bool {
 	t.Helper()
 	if e := check.NotContain(want, have, opts...); e != nil {

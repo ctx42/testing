@@ -428,7 +428,7 @@ func Test_Increasing(t *testing.T) {
 		seq := []float64{1, 2, 2, 4}
 
 		// --- When ---
-		have := Increasing(tspy, seq, check.WithIncreasingSoft)
+		have := Increasing(tspy, seq, check.WithIncreasingSoft())
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -491,7 +491,7 @@ func Test_NotIncreasing(t *testing.T) {
 		seq := []float64{4, 3, 2, 1}
 
 		// --- When ---
-		have := NotIncreasing(tspy, seq, check.WithIncreasingSoft)
+		have := NotIncreasing(tspy, seq, check.WithIncreasingSoft())
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -523,7 +523,7 @@ func Test_NotIncreasing(t *testing.T) {
 		seq := []float64{1, 2, 2, 4}
 
 		// --- When ---
-		have := NotIncreasing(tspy, seq, check.WithIncreasingSoft)
+		have := NotIncreasing(tspy, seq, check.WithIncreasingSoft())
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -553,7 +553,7 @@ func Test_Decreasing(t *testing.T) {
 		seq := []float64{4, 3, 3, 1}
 
 		// --- When ---
-		have := Decreasing(tspy, seq, check.WithDecreasingSoft)
+		have := Decreasing(tspy, seq, check.WithDecreasingSoft())
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -616,7 +616,7 @@ func Test_NotDecreasing(t *testing.T) {
 		seq := []float64{1, 2, 3, 4}
 
 		// --- When ---
-		have := NotDecreasing(tspy, seq, check.WithDecreasingSoft)
+		have := NotDecreasing(tspy, seq, check.WithDecreasingSoft())
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -648,7 +648,7 @@ func Test_NotDecreasing(t *testing.T) {
 		seq := []float64{4, 3, 3, 1}
 
 		// --- When ---
-		have := NotDecreasing(tspy, seq, check.WithDecreasingSoft)
+		have := NotDecreasing(tspy, seq, check.WithDecreasingSoft())
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

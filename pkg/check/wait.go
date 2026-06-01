@@ -10,9 +10,10 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Wait waits for "fn" to return true but no longer then given timeout. By
+// Wait waits for "fn" to return true but no longer than the given timeout. By
 // default, calls to "fn" are throttled with a default throttle set in
-// [Options.WaitThrottle] - use [WithWaitThrottle] option to change it.
+// [Options.WaitThrottle] — use [WithWaitThrottle] to change it.
+// See [assert.Wait].
 //
 // The "timeout" may represent duration in the form of a string, int, int64 or
 // [time.Duration].

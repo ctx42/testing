@@ -3,6 +3,8 @@
 
 package mocker
 
+import "strings"
+
 // Imports added to every generated mock.
 const (
 	selfImp   = "github.com/ctx42/testing/pkg/mock"
@@ -28,17 +30,17 @@ func (itf *goitf) find(name string) (*method, error) {
 // generate generates code for the interface mock. When onHelpers is true, the
 // OnXXX helper methods are also generated.
 func (itf *goitf) generate(recType string, onHelpers bool) string {
-	var code string
+	var code strings.Builder
 	for i, met := range itf.methods {
-		code += met.generate(recType)
+		code.WriteString(met.generate(recType))
 		if onHelpers {
-			code += "\n\n" + met.generateOn(recType)
+			code.WriteString("\n\n" + met.generateOn(recType))
 		}
 		if i < len(itf.methods)-1 {
-			code += "\n\n"
+			code.WriteString("\n\n")
 		}
 	}
-	return code
+	return code.String()
 }
 
 // imports returns unique imports used by all the interface methods in

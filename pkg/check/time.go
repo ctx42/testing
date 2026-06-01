@@ -14,25 +14,33 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Sentinel errors.
+// Sentinel errors for time, timezone, and duration handling.
+//
+// These errors are intended to be used with [errors.Is]. When functions such as
+// [Time], [Exact], [Zone], or [Duration] return an error due to unsupported
+// input types or parse failures, the returned error will match one of these
+// sentinels.
 var (
-	// ErrTimeType is returned when time representation is not supported.
-	ErrTimeType = fmt.Errorf("not supported time type")
+	// ErrTimeType indicates that the provided value is not a supported time
+	// representation (see package documentation for supported types).
+	ErrTimeType = errors.New("not supported time type")
 
-	// ErrTimeParse is used when date parsing fails for whatever reason.
-	ErrTimeParse = fmt.Errorf("time parsing")
+	// ErrTimeParse indicates that parsing a time value failed.
+	ErrTimeParse = errors.New("time parsing")
 
-	// ErrZoneType is returned when timezone representation is not supported.
-	ErrZoneType = fmt.Errorf("not supported timezone type")
+	// ErrZoneType indicates that the provided value is not a supported timezone
+	// representation.
+	ErrZoneType = errors.New("not supported timezone type")
 
-	// ErrZoneParse is used when timezone parsing fails for whatever reason.
-	ErrZoneParse = fmt.Errorf("timezone parsing")
+	// ErrZoneParse indicates that parsing a timezone value failed.
+	ErrZoneParse = errors.New("timezone parsing")
 
-	// ErrDurType is returned when duration representation is not supported.
-	ErrDurType = fmt.Errorf("not supported duration type")
+	// ErrDurType indicates that the provided value is not a supported duration
+	// representation.
+	ErrDurType = errors.New("not supported duration type")
 
-	// ErrDurParse is used when duration parsing fails for whatever reason.
-	ErrDurParse = fmt.Errorf("duration parsing")
+	// ErrDurParse indicates that parsing a duration value failed.
+	ErrDurParse = errors.New("duration parsing")
 )
 
 // timeRep is time representation.
@@ -66,15 +74,13 @@ const (
 	durTypeInt64 durRep = "dur-int64"
 )
 
-// Time checks "want" and "have" dates are equal. Returns nil if they are,
-// otherwise returns an error with a message indicating the expected and actual
-// values.
+// Time checks that "want" and "have" represent the same instant in time.
 //
-// The "want" and "have" may represent dates in the form of a string, int,
-// int64, or [time.Time]. For string representations the [Options.TimeFormat]
-// is used during parsing and the returned date is always in UTC. The int and
-// int64 types are interpreted as Unix Timestamp, and the date returned is also
-// in UTC.
+// See the package documentation and [Options] for supported representations
+// and formatting behavior.
+//
+// On error due to unsupported input or parse failure, the returned error will
+// satisfy `errors.Is(err, ErrTimeType)` or `errors.Is(err, ErrTimeParse)`.
 func Time(want, have any, opts ...any) error {
 	ops := DefaultOptions(opts...)
 
@@ -108,6 +114,9 @@ func Time(want, have any, opts ...any) error {
 // is used during parsing and the returned date is always in UTC. The int and
 // int64 types are interpreted as Unix Timestamp, and the date returned is also
 // in UTC.
+//
+// On error due to unsupported input or parse failure, the returned error will
+// satisfy `errors.Is(err, ErrTimeType)` or `errors.Is(err, ErrTimeParse)`.
 func Exact(want, have any, opts ...any) error {
 	wTim, wStr, _, err := getTime(want, opts...)
 	if err != nil {
@@ -132,14 +141,11 @@ func Exact(want, have any, opts ...any) error {
 	return Zone(wTim.Location(), hTim.Location(), opts...)
 }
 
-// Before checks "date" is before "mark". Returns nil if it is, otherwise it
-// returns an error with a message indicating the expected and actual values.
+// Before checks that "date" is before "mark".
 //
-// The "want" and "have" may represent dates in the form of a string, int,
-// int64, or [time.Time]. For string representations the [Options.TimeFormat]
-// is used during parsing and the returned date is always in UTC. The int and
-// int64 types are interpreted as Unix Timestamp, and the date returned is also
-// in UTC.
+// Both arguments may be strings, ints, int64s, or [time.Time]. See the
+// package documentation or [Exact] for supported representations and
+// formatting behavior.
 func Before(mark, date any, opts ...any) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
@@ -163,14 +169,11 @@ func Before(mark, date any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// After checks "date" is after "mark". Returns nil if it is, otherwise it
-// returns an error with a message indicating the expected and actual values.
+// After checks that "date" is after "mark".
 //
-// The "date" and "mark" may represent dates in the form of a string, int,
-// int64, or [time.Time]. For string representations the [Options.TimeFormat]
-// is used during parsing and the returned date is always in UTC. The int and
-// int64 types are interpreted as Unix Timestamp, and the date returned is also
-// in UTC.
+// Both arguments may be strings, ints, int64s, or [time.Time]. See the
+// package documentation or [Exact] for supported representations and
+// formatting behavior.
 func After(mark, date any, opts ...any) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
@@ -194,15 +197,9 @@ func After(mark, date any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// BeforeOrEqual checks "date" is equal or before "mark". Returns nil if it is,
-// otherwise it returns an error with a message indicating the expected and
-// actual values.
+// BeforeOrEqual checks that "date" is before or equal to "mark".
 //
-// The "date" and "mark" may represent dates in the form of a string, int,
-// int64, or [time.Time]. For string representations the [Options.TimeFormat]
-// is used during parsing and the returned date is always in UTC. The int and
-// int64 types are interpreted as Unix Timestamp, and the date returned is also
-// in UTC.
+// See the package documentation for supported time representations.
 func BeforeOrEqual(mark, date any, opts ...any) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
@@ -226,15 +223,9 @@ func BeforeOrEqual(mark, date any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// AfterOrEqual checks "date" is equal or after "mark". Returns nil if it is,
-// otherwise it returns an error with a message indicating the expected and
-// actual values.
+// AfterOrEqual checks that "date" is equal to or after "mark".
 //
-// The "date" and "mark" may represent dates in the form of a string, int,
-// int64, or [time.Time]. For string representations the [Options.TimeFormat]
-// is used during parsing and the returned date is always in UTC. The int and
-// int64 types are interpreted as Unix Timestamp, and the date returned is also
-// in UTC.
+// See the package documentation for supported time representations.
 func AfterOrEqual(mark, date any, opts ...any) error {
 	dTim, dStr, _, err := getTime(date, opts...)
 	if err != nil {
@@ -258,18 +249,12 @@ func AfterOrEqual(mark, date any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// Within checks "want" and "have" dates are equal "within" given duration.
-// Returns nil if they are, otherwise returns an error with a message
-// indicating the expected and actual values.
+// Within checks that the absolute difference between "want" and "have" is at
+// most the given "within" duration.
 //
-// The "want" and "have" may represent dates in the form of a string, int,
-// int64, or [time.Time]. For string representations the [Options.TimeFormat]
-// is used during parsing and the returned date is always in UTC. The int and
-// int64 types are interpreted as Unix Timestamp, and the date returned is also
-// in UTC.
-//
-// The "within" may represent duration in the form of a string, int, int64, or
-// [time.Duration].
+// Arguments may be strings, ints, int64s or [time.Time] (for instants);
+// "within" may also be a duration string/int64/[time.Duration]. See package
+// docs or [Exact] for details.
 func Within(want, within, have any, opts ...any) error {
 	wTim, wStr, _, err := getTime(want, opts...)
 	if err != nil {
@@ -299,35 +284,34 @@ func Within(want, within, have any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// WithinChecker is a partial application function for [Within].
+// WithinChecker returns a [Checker] that checks whether two times are within
+// the given duration (a partial application of [Within]).
+//
+// Useful for registering via [WithTypeChecker] or [RegisterTypeChecker] for
+// custom time tolerance behavior.
 func WithinChecker(within any) Checker {
 	return func(want, have any, opts ...any) error {
 		return Within(want, within, have, opts...)
 	}
 }
 
-// Recent checks "have" is within [Options.Recent] from [time.Now]. Returns nil
-// if it is, otherwise returns an error with a message indicating the expected
-// and actual values.
+// Recent checks that "have" is within the [Options.Recent] duration of
+// the current time (see [Options.now]).
 //
-// The "have" may represent date in the form of a string, int, int64 or
-// [time.Time]. For string representations the [Options.TimeFormat] is used
-// during parsing and the returned date is always in UTC. The int and int64
-// types are interpreted as Unix Timestamp, and the date returned is also in
-// UTC.
+// "have" may be a string, int, int64, or [time.Time]. See the package
+// documentation or [Exact] for representation rules.
 func Recent(have any, opts ...any) error {
 	ops := DefaultOptions(opts...)
 	return Within(ops.now(), ops.Recent, have, opts...)
 }
 
-// Zone checks "want" and "have" timezones are equal. Returns nil if they are,
-// otherwise returns an error with a message indicating the expected and actual
-// values.
+// Zone checks that "want" and "have" timezones are equal.
 //
-// Note nil [time.Location] is the same as [time.UTC].
+// nil [time.Location] is treated as [time.UTC]. Arguments may be strings or
+// [time.Location] values.
 //
-// The "want" and "have" may represent timezones in the form of a string,
-// nil (UTC), or [time.Location].
+// On error due to unsupported input or parse failure, the returned error will
+// satisfy `errors.Is(err, ErrZoneType)` or `errors.Is(err, ErrZoneParse)`.
 func Zone(want, have any, opts ...any) error {
 	wZone, wStr, _, err := getZone(want, opts...)
 	if err != nil {
@@ -348,12 +332,12 @@ func Zone(want, have any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// Duration checks "want" and "have" durations are equal. Returns nil if they
-// are, otherwise returns an error with a message indicating the expected and
-// actual values.
+// Duration checks that "want" and "have" durations are equal.
 //
-// The "want" and "have" may represent duration in the form of a string, int,
-// int64 or [time.Duration].
+// Arguments may be strings, ints, int64s or [time.Duration].
+//
+// On error due to unsupported input or parse failure, the returned error will
+// satisfy `errors.Is(err, ErrDurType)` or `errors.Is(err, ErrDurParse)`.
 func Duration(want, have any, opts ...any) error {
 	wDur, wStr, _, err := getDur(want, opts...)
 	if err != nil {
@@ -423,8 +407,8 @@ func formatDates(
 // in UTC. The int and int64 types are interpreted as Unix Timestamp, and the
 // date returned is also in UTC.
 //
-// When an error is returned, it will always have [ErrTimeParse], [ErrTimeType]
-// in its chain.
+// On error, the returned error will always satisfy
+// `errors.Is(err, ErrTimeParse)` or `errors.Is(err, ErrTimeType)`.
 func getTime(tim any, opts ...any) (time.Time, string, timeRep, error) {
 	ops := DefaultOptions(opts...)
 	switch val := tim.(type) {
@@ -491,8 +475,8 @@ func getTime(tim any, opts ...any) (time.Time, string, timeRep, error) {
 // and the type of the argument passed. The "zone" may represent a timezone in
 // the form of a string, nil (UTC) or instance of [time.Location].
 //
-// When an error is returned, it will always have [ErrDurParse], [ErrZoneType]
-// in its chain.
+// On error, the returned error will always satisfy
+// `errors.Is(err, ErrZoneParse)` or `errors.Is(err, ErrZoneType)`.
 func getZone(zone any, opts ...any) (*time.Location, string, zoneRep, error) {
 	switch val := zone.(type) {
 	case nil:
@@ -532,8 +516,8 @@ func getZone(zone any, opts ...any) (*time.Location, string, zoneRep, error) {
 // the type of the argument passed. The "dur" may represent duration in the
 // form of a string, int, int64, or [time.Duration].
 //
-// When an error is returned, it will always have [ErrDurParse], [ErrDurType]
-// in its chain.
+// On error, the returned error will always satisfy
+// `errors.Is(err, ErrDurParse)` or `errors.Is(err, ErrDurType)`.
 func getDur(dur any, opts ...any) (time.Duration, string, durRep, error) {
 	switch val := dur.(type) {
 	case time.Duration:

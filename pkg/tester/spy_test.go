@@ -8,9 +8,19 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
+)
+
+// Compile-time checks that the real testing types satisfy our subset.
+// These will fail to compile if the T interface drifts from what
+// *testing.T / *testing.B / *testing.F actually provide.
+var (
+	_ T = (*testing.T)(nil)
+	_ T = (*testing.B)(nil)
+	_ T = (*testing.F)(nil)
 )
 
 func Test_find_match(t *testing.T) {
@@ -2033,7 +2043,7 @@ func Test_Spy_ExamineLog(t *testing.T) {
 	})
 }
 
-func Test_Spy_ExpectedNames(t *testing.T) {
+func Test_Spy_ExpectNames(t *testing.T) {
 	t.Run("set", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
@@ -2041,7 +2051,7 @@ func Test_Spy_ExpectedNames(t *testing.T) {
 		spy := New(ti, 0)
 
 		// --- When ---
-		have := spy.ExpectedNames(2)
+		have := spy.ExpectNames(2)
 
 		// --- Then ---
 		affirm.Equal(t, 2, spy.wantNamesCnt)
@@ -2056,7 +2066,7 @@ func Test_Spy_ExpectedNames(t *testing.T) {
 		spy.Close()
 
 		// --- Then ---
-		msg := affirm.Panic(t, func() { spy.ExpectedNames(1) })
+		msg := affirm.Panic(t, func() { spy.ExpectNames(1) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnClosed, *msg)
 		affirm.Equal(t, true, spy.panicked)
@@ -2070,7 +2080,7 @@ func Test_Spy_ExpectedNames(t *testing.T) {
 		spy.Finish()
 
 		// --- Then ---
-		msg := affirm.Panic(t, func() { spy.ExpectedNames(1) })
+		msg := affirm.Panic(t, func() { spy.ExpectNames(1) })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectOnFinished, *msg)
 		affirm.Equal(t, true, spy.panicked)
@@ -2110,7 +2120,7 @@ func Test_Name(t *testing.T) {
 	t.Run("returns test name", func(t *testing.T) {
 		// --- Given ---
 		spy := New(t, 0)
-		spy.ExpectedNames(1)
+		spy.ExpectNames(1)
 		spy.Close()
 
 		// --- When ---
@@ -2769,7 +2779,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		ti := &testing.T{}
 
 		spy := New(ti, 0)
-		spy.ExpectedNames(2)
+		spy.ExpectNames(2)
 		spy.Close()
 		spy.Name()
 		spy.Name()
@@ -2790,7 +2800,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		ti := &testing.T{}
 
 		spy := New(ti, 0)
-		spy.ExpectedNames(2)
+		spy.ExpectNames(2)
 		spy.Close()
 		spy.Name()
 		spy.Finish()
@@ -3225,16 +3235,17 @@ func assertSpyHasMgs(t *testing.T, spy *Spy, want int) bool {
 	t.Helper()
 	have := len(spy.savedMgs)
 	if want != have {
-		format := "expected Spy to have saved messages:\n" +
+		var format strings.Builder
+		format.WriteString("expected Spy to have saved messages:\n" +
 			"\twant: %d\n" +
-			"\thave: %d"
+			"\thave: %d")
 		if have > 0 {
-			format += "\n\tmessages:\n"
+			format.WriteString("\n\tmessages:\n")
 			for idx, msg := range spy.savedMgs {
-				format += fmt.Sprintf("\t\t%d: %q\n", idx, msg)
+				_, _ = fmt.Fprintf(&format, "\t\t%d: %q\n", idx, msg)
 			}
 		}
-		t.Errorf(format, want, have)
+		t.Errorf(format.String(), want, have)
 		return false
 	}
 	return true

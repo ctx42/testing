@@ -1,20 +1,33 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// Package must provide a set of helper functions which panic on error.
+// Package must provides helpers that panic on error.
 //
-// Functions are designed to simplify error handling in test code by panicking
-// on errors, reducing boilerplate, and error checking in test cases.
+// These functions eliminate repetitive `if err != nil { panic(err) }`
+// boilerplate in test setup and assertions, making test code more
+// concise while keeping failures explicit.
+//
+// The helpers integrate naturally with [tester.T] and the assertion
+// packages when writing test fixtures or one-off checks that must
+// succeed.
+//
+// See the package [README] for motivation and patterns. See
+// [examples_test.go] for executable demonstrations.
+//
+// Key entry points:
+//   - [Value] / [Values] — return values or panic on error
+//   - [Nil] — assert no error (panic on any error)
+//   - [First] / [Single] — extract elements from slices with error handling
 package must
 
 import (
 	"errors"
 )
 
-// Value is a helper for functions returning (T, error) panicking if the
-// returned error is not nil. Example:
+// Value returns val if err is nil; otherwise it panics with err.
 //
-//	fil := Value(os.Open("file.txt"))
+// Generic equivalent of the common "must succeed" pattern for single-value
+// + error results.
 func Value[T any](val T, err error) T {
 	if err != nil {
 		panic(err)
@@ -22,12 +35,9 @@ func Value[T any](val T, err error) T {
 	return val
 }
 
-// Values is a helper for functions returning (T1, T2, error) panicking if the
-// returned error is not nil.
+// Values returns val0 and val1 if err is nil; otherwise it panics with err.
 //
-// Example:
-//
-//	t1, t2 := Values(DoSomething())
+// Useful for functions that return two values plus an error.
 func Values[T, TT any](val0 T, val1 TT, err error) (T, TT) {
 	if err != nil {
 		panic(err)
@@ -35,15 +45,18 @@ func Values[T, TT any](val0 T, val1 TT, err error) (T, TT) {
 	return val0, val1
 }
 
-// Nil is a helper function that panics if an error is not nil.
+// Nil panics with err if err is not nil. The simplest form for asserting
+// that an operation produced no error.
 func Nil(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
 
-// First returns the first element in the slice or T's zero value if the slice
-// is empty. It panics with the value of the "err" if it is not nil.
+// First returns the first element of s (or the zero value if empty).
+// Panics if err is not nil.
+//
+// See [Single] when you require exactly one element.
 func First[T any](s []T, err error) T {
 	v, err := single(s, err)
 	if errors.Is(err, errExpSingle) {
@@ -55,9 +68,11 @@ func First[T any](s []T, err error) T {
 	return v
 }
 
-// Single returns the first element in the slice or T's zero value if the slice
-// is empty. It panics with the value of "err" if it is not nil or with the
-// value of errExpSingle if slices have more than one element.
+// Single returns the single element of s (or the zero value if empty).
+// Panics if err is not nil, or with a specific error if s has more than
+// one element.
+//
+// See [First] when you only need the first element.
 func Single[T any](s []T, err error) T {
 	v, err := single(s, err)
 	if err != nil {

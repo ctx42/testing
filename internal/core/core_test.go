@@ -106,8 +106,8 @@ func Test_Same_tabular(t *testing.T) {
 	s1 := []int{1, 2, 3}
 	var sNil0 []int
 	var sNil1 []float64
-	type Ts []int
-	var sA, sB Ts
+	type TS []int
+	var sA, sB TS
 
 	// Arrays.
 	a0 := [2]int{1, 2}
@@ -257,6 +257,7 @@ func Test_Pointer_tabular(t *testing.T) {
 	}
 }
 
+// nolint:cyclop
 func Test_Value(t *testing.T) {
 	t.Run("struct by pointer - with exported fields", func(t *testing.T) {
 		// --- Given ---
@@ -481,8 +482,7 @@ func Test_Value(t *testing.T) {
 
 	t.Run("interface", func(t *testing.T) {
 		// --- Given ---
-		var itf testcases.TItf
-		itf = &testcases.TPtr{}
+		itf := &testcases.TPtr{}
 		val := reflect.ValueOf(itf)
 
 		// --- When ---
@@ -554,14 +554,14 @@ func Test_Value_tabular_success(t *testing.T) {
 	}
 }
 
-func Test_value(t *testing.T) {
+func Test_unsafeCopyValue(t *testing.T) {
 	t.Run("nil vHeader data pointer", func(t *testing.T) {
 		// --- Given ---
-		typ := reflect.TypeOf(123)
+		typ := reflect.TypeFor[int]()
 		val := reflect.ValueOf(nil)
 
 		// --- When ---
-		haveVal, haveOK := value(typ, val)
+		haveVal, haveOK := unsafeCopyValue(typ, val)
 
 		// --- Then ---
 		if haveOK {
@@ -571,6 +571,24 @@ func Test_value(t *testing.T) {
 			t.Errorf("expected nil")
 		}
 	})
+}
+
+func Test_Value_zeroReflectValue(t *testing.T) {
+	// --- Given ---
+	// Passing the zero reflect.Value{} directly exercises the special
+	// nilVal.Equal(val) path at the top of Value.
+	zero := reflect.Value{}
+
+	// --- When ---
+	haveVal, haveOK := Value(zero)
+
+	// --- Then ---
+	if haveVal != nil {
+		t.Error("expected nil value")
+	}
+	if !haveOK {
+		t.Error("expected true (zero reflect.Value is treated as nil)")
+	}
 }
 
 func Test_ValueSimple_tabular(t *testing.T) {

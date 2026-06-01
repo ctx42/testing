@@ -50,22 +50,33 @@ var (
 	DumpDepth = DefaultDumpDepth
 )
 
-// Checker is signature for generic check function comparing two arguments
-// returning an error if they are not. The returned error might be one or more
-// errors joined with [errors.Join].
+// Checker is the signature for a generic check function. It compares two
+// values and returns an error (typically a *[notice.Notice] or joined errors)
+// if they do not match.
 //
-// The options may be one of the [Option] instances or formatted string.
+// Custom checkers can be registered globally with [RegisterTypeChecker] or
+// per-call with [WithTypeChecker]. See the Design section in the root README.
+//
+// Options can be [Option] values, strings (for comments), or other supported
+// forms. See [DefaultOptions] and the With* functions.
 //
 // Example:
 //
 //	Checker("want", "have", "A%d", 42, WithTrail("type.field"))
 type Checker func(want, have any, opts ...any) error
 
-// typeCheckers is the global map of custom checkers for given types.
+// typeCheckers holds globally registered custom checkers (see
+// [RegisterTypeChecker]).
 var typeCheckers map[reflect.Type]Checker
 
-// RegisterTypeChecker globally registers a custom checker for a given type.
+// RegisterTypeChecker globally registers a custom [Checker] for values of the
+// given type. It will be used by default in all checks (via [DefaultOptions])
+// unless overridden per-call with [WithTypeChecker].
+//
 // It panics if a checker for the same type is already registered.
+//
+// See the Design section in the root README for the overall customization
+// model, and [WithTypeChecker] for per-check overrides.
 func RegisterTypeChecker(typ any, chk Checker) {
 	if chk == nil {
 		panic("cannot register a nil type checker")
@@ -82,10 +93,12 @@ func RegisterTypeChecker(typ any, chk Checker) {
 	typeCheckers[rt] = chk
 }
 
-// Option represents a [Checker] option.
+// Option configures a check (see [DefaultOptions]).
 type Option func(Options) Options
 
-// WithTrail is a [Checker] option setting initial field/element/key trail.
+// WithTrail sets the initial trail (path to the field/element/key being
+// checked). Trails are used in error messages and for trail-specific custom
+// checkers ([WithTrailChecker]).
 func WithTrail(pth string) Option {
 	return func(ops Options) Options {
 		ops.Trail = pth
@@ -147,7 +160,11 @@ func WithDumper(optsD ...dump.Option) Option {
 	}
 }
 
-// WithTypeChecker is a [Checker] option setting custom checker for a type.
+// WithTypeChecker registers a custom [Checker] for values of the given type
+// (used only for checks with these options). It overrides any globally
+// registered checker from [RegisterTypeChecker] for that type.
+//
+// See the Design section in the root README for the customization model.
 func WithTypeChecker(typ any, chk Checker) Option {
 	return func(ops Options) Options {
 		if ops.TypeCheckers == nil {
@@ -163,8 +180,8 @@ func WithTypeChecker(typ any, chk Checker) Option {
 	}
 }
 
-// WithTrailChecker is a [Checker] option setting a custom checker for a given
-// trail.
+// WithTrailChecker registers a custom [Checker] that will only be used when
+// the current trail exactly matches the given string.
 func WithTrailChecker(trail string, chk Checker) Option {
 	return func(ops Options) Options {
 		if ops.TrailCheckers == nil {
@@ -185,23 +202,29 @@ func WithSkipTrail(skip ...string) Option {
 
 // WithSkipUnexported is a [Checker] option instructing equality checks to skip
 // unexported fields.
-func WithSkipUnexported(ops Options) Options {
-	ops.SkipUnexported = true
-	return ops
+func WithSkipUnexported() Option {
+	return func(ops Options) Options {
+		ops.SkipUnexported = true
+		return ops
+	}
 }
 
 // WithIncreasingSoft is an option used by [Increasing] check allowing
 // consecutive values to be equal to each other.
-func WithIncreasingSoft(ops Options) Options {
-	ops.IncreaseSoft = true
-	return ops
+func WithIncreasingSoft() Option {
+	return func(ops Options) Options {
+		ops.IncreaseSoft = true
+		return ops
+	}
 }
 
 // WithDecreasingSoft is an option used by [Decreasing] check allowing
 // consecutive values to be equal to each other.
-func WithDecreasingSoft(ops Options) Options {
-	ops.DecreaseSoft = true
-	return ops
+func WithDecreasingSoft() Option {
+	return func(ops Options) Options {
+		ops.DecreaseSoft = true
+		return ops
+	}
 }
 
 // WithCmpBaseTypes is a [Checker] option turning on simple base type
@@ -239,13 +262,15 @@ func WithDecreasingSoft(ops Options) Options {
 //	m1 := map[string]any{"A": 42}
 //
 //	// --- When ---
-//	err := Equal(m0, m1, WithCmpBaseTypes)
+//	err := Equal(m0, m1, WithCmpBaseTypes())
 //
 //	// --- Then ---
 //	assert.NoError(t, err)
-func WithCmpBaseTypes(ops Options) Options {
-	ops.CmpSimpleType = true
-	return ops
+func WithCmpBaseTypes() Option {
+	return func(ops Options) Options {
+		ops.CmpSimpleType = true
+		return ops
+	}
 }
 
 // WithWaitThrottle is a [Checker] option setting how calls to the test
@@ -303,7 +328,7 @@ type Options struct {
 	// Duration when comparing recent dates.
 	Recent time.Duration
 
-	// Field/element/key breadcrumb trail being checked.
+	// Trail is the field/element/key breadcrumb trail being checked.
 	Trail string
 
 	// List of visited trails.
@@ -342,7 +367,13 @@ type Options struct {
 	now func() time.Time
 }
 
-// DefaultOptions returns default [Options].
+// DefaultOptions builds an [Options] struct from the provided arguments
+// (mix of [Option], strings for comments, etc.). It is the central entry
+// point for customizing checks (trail, custom checkers via global
+// [RegisterTypeChecker] or [WithTypeChecker], dumper behavior, etc.).
+//
+// See the With* functions and the root README Design section for the
+// overall architecture.
 func DefaultOptions(opts ...any) Options {
 	ops := Options{
 		Dumper: dump.New(
@@ -357,6 +388,37 @@ func DefaultOptions(opts ...any) Options {
 		now:          time.Now,
 	}
 
+	cmtFmt, cmtArgs, chkOpts := parseCheckArgs(opts...)
+	if cmtFmt != "" {
+		chkOpts = append(chkOpts, WithComment(cmtFmt, cmtArgs...))
+	}
+
+	ops = ops.set(chkOpts)
+	if ops.TypeCheckers == nil {
+		ops.TypeCheckers = make(map[reflect.Type]Checker)
+	}
+	if _, ok := ops.TypeCheckers[typTime]; !ok {
+		ops.TypeCheckers[typTime] = Time
+	}
+	if _, ok := ops.TypeCheckers[typZonePtr]; !ok {
+		ops.TypeCheckers[typZonePtr] = Zone
+	}
+	if _, ok := ops.TypeCheckers[typZone]; !ok {
+		ops.TypeCheckers[typZone] = Zone
+	}
+	return ops
+}
+
+// parseCheckArgs separates the variadic arguments for [DefaultOptions] into
+// a comment format plus its arguments, and a slice of [Option] values.
+//
+// The first string value is treated as the comment format. All subsequent
+// values (strings or otherwise) become format arguments. Any value whose
+// type is [Option] or func(Options) Options is collected as an option to
+// apply instead.
+//
+// It panics if a non-string appears before the first string is seen.
+func parseCheckArgs(opts ...any) (string, []any, []Option) {
 	var cmtFmt string
 	var cmtArgs []any
 	var chkOpts []Option
@@ -381,25 +443,7 @@ func DefaultOptions(opts ...any) Options {
 		}
 	}
 
-	if cmtFmt != "" {
-		chkOpts = append(chkOpts, WithComment(cmtFmt, cmtArgs...))
-	}
-
-	ops = ops.set(chkOpts)
-
-	if ops.TypeCheckers == nil {
-		ops.TypeCheckers = make(map[reflect.Type]Checker)
-	}
-	if _, ok := ops.TypeCheckers[typTime]; !ok {
-		ops.TypeCheckers[typTime] = Time
-	}
-	if _, ok := ops.TypeCheckers[typZonePtr]; !ok {
-		ops.TypeCheckers[typZonePtr] = Zone
-	}
-	if _, ok := ops.TypeCheckers[typZone]; !ok {
-		ops.TypeCheckers[typZone] = Zone
-	}
-	return ops
+	return cmtFmt, cmtArgs, chkOpts
 }
 
 // set sets [Options] from a slice of [Option] functions.

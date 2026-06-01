@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
+// This file demonstrates basic usage of the mock package to create
+// interface mocks for testing.
 package examples
 
 import (

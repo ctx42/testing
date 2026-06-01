@@ -9,12 +9,11 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// ChannelWillClose checks the channel will be closed "within" a given time
-// duration. Returns nil if it was, otherwise returns an error with a message
-// indicating the expected and actual values.
+// ChannelWillClose checks that the channel will be closed within the given
+// duration.
+// See [assert.ChannelWillClose].
 //
-// The "within" may represent duration in the form of a string, int, int64, or
-// [time.Duration].
+// "within" may be a string, int, int64, or [time.Duration].
 func ChannelWillClose[C any](within any, c <-chan C, opts ...any) error {
 	if c == nil {
 		return nil

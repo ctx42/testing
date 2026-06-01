@@ -1447,3 +1447,27 @@ func Test_getDur_success_tabular(t *testing.T) {
 		})
 	}
 }
+
+// Benchmarks for time-based checks (Recent, Within, Before/After hot paths).
+
+func Benchmark_Recent(b *testing.B) {
+	now := time.Now()
+	recent := 5 * time.Second
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Recent(now.Add(-time.Second), WithRecent(recent))
+	}
+}
+
+func Benchmark_Within_Time(b *testing.B) {
+	t1 := time.Now()
+	t2 := t1.Add(2 * time.Second)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Within(t1, "3s", t2)
+	}
+}

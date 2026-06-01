@@ -38,7 +38,7 @@ func Test_RegisterTypeChecker(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 1, len(typeCheckers))
-		wChk := core.Same(chk, typeCheckers[reflect.TypeOf(custom{})])
+		wChk := core.Same(chk, typeCheckers[reflect.TypeFor[custom]()])
 		affirm.Equal(t, true, wChk)
 		wMsg := "Registering type checker for: check.custom\n"
 		affirm.Equal(t, wMsg, buf.String())
@@ -48,7 +48,7 @@ func Test_RegisterTypeChecker(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
 		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
-		typeCheckers = map[reflect.Type]Checker{reflect.TypeOf(custom{}): chk}
+		typeCheckers = map[reflect.Type]Checker{reflect.TypeFor[custom](): chk}
 
 		// --- When ---
 		fn := func() { RegisterTypeChecker(custom{}, chk) }
@@ -163,7 +163,7 @@ func Test_WithTypeChecker(t *testing.T) {
 		have := WithTypeChecker(123, cChk)(ops)
 
 		// --- Then ---
-		wChk := core.Same(cChk, have.TypeCheckers[reflect.TypeOf(123)])
+		wChk := core.Same(cChk, have.TypeCheckers[reflect.TypeFor[int]()])
 		affirm.Equal(t, true, wChk)
 		affirm.Equal(t, "", buf.String())
 	})
@@ -182,7 +182,7 @@ func Test_WithTypeChecker(t *testing.T) {
 		have := WithTypeChecker(custom{}, cChk)(ops)
 
 		// --- Then ---
-		wChk := core.Same(cChk, have.TypeCheckers[reflect.TypeOf(custom{})])
+		wChk := core.Same(cChk, have.TypeCheckers[reflect.TypeFor[custom]()])
 		affirm.Equal(t, true, wChk)
 		wMsg := "Overwriting the global type checker for: check.custom\n"
 		affirm.Equal(t, wMsg, buf.String())
@@ -198,7 +198,7 @@ func Test_WithTrailChecker(t *testing.T) {
 	have := WithTrailChecker("type.field", chk)(ops)
 
 	// --- Then ---
-	haveChk, _ := have.TrailCheckers["type.field"]
+	haveChk := have.TrailCheckers["type.field"]
 	affirm.Equal(t, true, core.Same(chk, haveChk))
 }
 
@@ -219,7 +219,7 @@ func Test_WithSkipUnexported(t *testing.T) {
 	ops := Options{}
 
 	// --- When ---
-	have := WithSkipUnexported(ops)
+	have := WithSkipUnexported()(ops)
 
 	// --- Then ---
 	affirm.Equal(t, false, ops.SkipUnexported)
@@ -231,7 +231,7 @@ func Test_WithIncreasingSoft(t *testing.T) {
 	ops := Options{}
 
 	// --- When ---
-	have := WithIncreasingSoft(ops)
+	have := WithIncreasingSoft()(ops)
 
 	// --- Then ---
 	affirm.Equal(t, true, have.IncreaseSoft)
@@ -242,7 +242,7 @@ func Test_WithDecreasingSoft(t *testing.T) {
 	ops := Options{}
 
 	// --- When ---
-	have := WithDecreasingSoft(ops)
+	have := WithDecreasingSoft()(ops)
 
 	// --- Then ---
 	affirm.Equal(t, true, have.DecreaseSoft)
@@ -253,7 +253,7 @@ func Test_WithCmpBaseTypes(t *testing.T) {
 	ops := Options{}
 
 	// --- When ---
-	have := WithCmpBaseTypes(ops)
+	have := WithCmpBaseTypes()(ops)
 
 	// --- Then ---
 	affirm.Equal(t, true, have.CmpSimpleType)
@@ -298,7 +298,7 @@ func Test_WithOptions(t *testing.T) {
 			PrintPrivate:    true,
 			UseAny:          true,
 			Dumpers: map[reflect.Type]dump.Dumper{
-				reflect.TypeOf(123): dump.Dumper(nil),
+				reflect.TypeFor[int](): dump.Dumper(nil),
 			},
 			MaxDepth: 6,
 			Indent:   2,
@@ -407,7 +407,7 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Nil(t, typeCheckers)
 		chk := func(_, _ any, _ ...any) error { return errors.New("123456") }
 		t.Cleanup(func() { typeCheckers = nil })
-		typeCheckers = map[reflect.Type]Checker{reflect.TypeOf(123): chk}
+		typeCheckers = map[reflect.Type]Checker{reflect.TypeFor[int](): chk}
 
 		// --- When ---
 		have := DefaultOptions()
@@ -452,7 +452,7 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, true, core.Same(chk, have.TypeCheckers[typZonePtr]))
 	})
 
-	t.Run("with formated comment", func(t *testing.T) {
+	t.Run("with formatted comment", func(t *testing.T) {
 		// --- When ---
 		ops := DefaultOptions("A%d", 42)
 
@@ -473,7 +473,7 @@ func Test_DefaultOptions(t *testing.T) {
 
 	t.Run("with Option type", func(t *testing.T) {
 		// --- Given ---
-		opt := WithCmpBaseTypes
+		opt := WithCmpBaseTypes()
 
 		// --- When ---
 		have := DefaultOptions(opt)
@@ -482,7 +482,7 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, true, have.CmpSimpleType)
 	})
 
-	t.Run("with option and formated comment", func(t *testing.T) {
+	t.Run("with option and formatted comment", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -493,14 +493,75 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, "ABC", have.Comment)
 		affirm.Equal(t, "type.field", have.Trail)
 	})
+}
 
+func Test_parseCheckArgs(t *testing.T) {
 	t.Run("error - cannot use a non-string comment format", func(t *testing.T) {
 		// --- When ---
-		msg := affirm.Panic(t, func() { DefaultOptions(42, "A%d") })
+		msg := affirm.Panic(t, func() { parseCheckArgs(42, "A%d") })
 
 		// --- Then ---
 		affirm.Equal(t, "cannot use a non-string comment format", *msg)
 	})
+}
+
+func Test_parseCheckArgs_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		opts []any
+
+		wantFmt  string
+		wantArgs []any
+		wantCnt  int // number of Option funcs returned
+	}{
+		{"empty", nil, "", nil, 0},
+		{"only format", []any{"hello %s"}, "hello %s", nil, 0},
+		{"format+args", []any{"A%d %s", 42, "x"}, "A%d %s", []any{42, "x"}, 0},
+		{
+			"format + non-string arg",
+			[]any{"v=%v", struct{}{}},
+			"v=%v",
+			[]any{struct{}{}},
+			0,
+		},
+		{"single With* option", []any{WithTrail("f")}, "", nil, 1},
+		{"single Option value", []any{WithCmpBaseTypes()}, "", nil, 1},
+		{
+			"raw func(Options)Options",
+			[]any{func(o Options) Options { o.Trail = "raw"; return o }},
+			"",
+			nil,
+			1,
+		},
+		{
+			"option then comment",
+			[]any{WithTrail("t"), "C%d", 9},
+			"C%d",
+			[]any{9},
+			1,
+		},
+		{"comment then option", []any{"X", WithSkipUnexported()}, "X", nil, 1},
+		{
+			"multiple options + comment",
+			[]any{WithTrail("a"), WithRecent(time.Second), "M", 1, true},
+			"M",
+			[]any{1, true},
+			2,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			fmt, args, opts := parseCheckArgs(tc.opts...)
+
+			// --- Then ---
+			affirm.Equal(t, tc.wantFmt, fmt)
+			affirm.DeepEqual(t, tc.wantArgs, args)
+			affirm.Equal(t, tc.wantCnt, len(opts))
+		})
+	}
 }
 
 func Test_Options_LogTrail(t *testing.T) {

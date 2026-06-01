@@ -8,24 +8,25 @@ import (
 	"io"
 )
 
-// ErrRead is the default read error.
+// ErrRead is the default error returned by error readers when no custom error
+// is provided via [WithReadErr].
 var ErrRead = errors.New("read error")
 
-// ErrorReader implements [io.Reader] that reads up to n bytes from an
-// underlying reader then returns an error. If n is negative, it behaves as a
-// standard reader without returning an error. See [ErrReader] constructor
-// function for details.
+// ErrorReader implements [io.Reader] that reads up to a configured number of
+// bytes from an underlying reader, then returns the configured error.
+//
+// See [ErrReader] for the constructor and the With*Err options for customization.
 type ErrorReader struct {
-	*Options           // Reader options.
-	r        io.Reader // Underlying error.
-	n        int       // At most bytes to read without error.
-	off      int       // Number of bytes read.
+	*Options
+	r   io.Reader
+	n   int
+	off int
 }
 
-// ErrReader wraps the "src" [io.Reader] and controls how many bytes can be
-// read from it (n) before it returns an error. If the "n" is negative, it
-// behaves like a regular reader. With [WithReadErr] option, you can customize
-// the returned error.
+// ErrReader wraps "src" and allows up to n bytes to be read before returning
+// an error. If n < 0 it behaves like a normal reader (no error injection).
+//
+// Use the With*Err options to customize the error returned.
 func ErrReader(src io.Reader, n int, opts ...Option) *ErrorReader {
 	r := &ErrorReader{
 		Options: defaultOptions(),
@@ -41,6 +42,9 @@ func ErrReader(src io.Reader, n int, opts ...Option) *ErrorReader {
 	return r
 }
 
+// Read implements [io.Reader]. It reads from the underlying reader up to the
+// configured limit, then returns the configured error (or the underlying
+// reader's error).
 func (r *ErrorReader) Read(p []byte) (int, error) {
 	// Read up to the limit - no more.
 	if r.n >= 0 && r.off+len(p) > r.n {

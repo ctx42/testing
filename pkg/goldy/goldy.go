@@ -1,7 +1,18 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// Package goldy is designed to simplify reading content from golden files.
+// Package goldy simplifies golden file testing.
+//
+// It loads files that contain an optional comment section followed by
+// the [Marker] separator and the expected content. The loaded content
+// can be used directly with [assert.Equal] or [check.Equal] (often via
+// [Goldy.Content] or after template expansion with [WithData]).
+//
+// Golden files are typically stored under testdata/ and committed.
+// The package integrates with [tester.T] for failure reporting.
+//
+// See the package [README] and examples for typical usage with
+// [github.com/ctx42/testing/pkg/assert] and [github.com/ctx42/testing/pkg/check].
 package goldy
 
 import (
@@ -14,7 +25,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/ctx42/testing/internal/core"
+	"github.com/ctx42/testing/pkg/tester"
 )
 
 // Marker is a separator between a golden file comment and the content.
@@ -41,20 +52,22 @@ type Goldy struct {
 	content []byte         // Golden file content.
 	data    map[string]any // Template data.
 	tpl     []byte         // Raw text template.
-	t       core.T         // Test manager.
+	t       tester.T       // Test manager.
 }
 
-// Open creates a new [Goldy] instance based on the provided path to the golden
-// file and options. The golden file content starts after the mandatory [Marker]
-// line, anything before it is ignored. It's customary to have short golden
-// file documentation before the marker.
-func Open(t core.T, pth string, opts ...func(*Goldy)) *Goldy {
+// Open creates a [Goldy] from the file at pth.
+//
+// Content begins after the mandatory [Marker] line; anything before it is
+// treated as a comment. Use options such as [WithData] for templated golden
+// files.
+func Open(t tester.T, pth string, opts ...func(*Goldy)) *Goldy {
 	t.Helper()
 
-	fil, err := os.Open(pth)
+	// G304: path comes from test code calling golden file helpers.
+	fil, err := os.Open(pth) // nolint:gosec
 	if err != nil {
-		t.Fatalf("error opening file: %v", err)
-		return nil // TODO(rz): test this.
+		t.Errorf("error opening file: %v", err)
+		return nil
 	}
 	defer func() { _ = fil.Close() }()
 
@@ -74,7 +87,7 @@ func Open(t core.T, pth string, opts ...func(*Goldy)) *Goldy {
 		line, err := rdr.ReadBytes('\n')
 		eof := errors.Is(err, io.EOF)
 		if err != nil && !eof {
-			t.Fatalf("error reading file: %v", err)
+			t.Errorf("error reading file: %v", err)
 			return nil
 		}
 		if !started {
@@ -82,7 +95,7 @@ func Open(t core.T, pth string, opts ...func(*Goldy)) *Goldy {
 			if !started {
 				if eof {
 					m := strings.TrimSpace(Marker)
-					t.Fatalf("the golden file is missing the %q marker", m)
+					t.Errorf("the golden file is missing the %q marker", m)
 					return nil
 				}
 				gld.comment += string(line)
@@ -103,12 +116,15 @@ func Open(t core.T, pth string, opts ...func(*Goldy)) *Goldy {
 }
 
 // Create creates a new [Goldy] instance representing an empty golden file.
-func Create(t core.T, pth string) *Goldy {
+//
+// The file is created (or truncated) at the given path.
+func Create(t tester.T, pth string) *Goldy {
 	t.Helper()
 
-	fil, err := os.Create(pth)
+	// G304: path comes from test code calling golden file helpers.
+	fil, err := os.Create(pth) // nolint:gosec
 	if err != nil {
-		t.Fatalf("error creating file: %v", err)
+		t.Errorf("error creating file: %v", err)
 		return nil
 	}
 	defer func() { _ = fil.Close() }()
@@ -120,20 +136,23 @@ func Create(t core.T, pth string) *Goldy {
 	}
 }
 
-// String implements [fmt.Stringer] and returns golden file content.
+// String implements [fmt.Stringer] and returns the golden file content.
 func (gld *Goldy) String() string { return string(gld.content) }
 
-// Bytes return clone of the golden file content.
+// Bytes returns a clone of the golden file content.
 func (gld *Goldy) Bytes() []byte { return slices.Clone(gld.content) }
 
-// SetComment sets a comment for the golden file. Implements fluent interface.
+// SetComment sets the comment section for the golden file.
+// Implements fluent interface.
 func (gld *Goldy) SetComment(comment string) *Goldy {
 	gld.comment = comment
 	return gld
 }
 
-// SetContent sets golden file content. If the golden file was a template, it
-// expects a template string. Implements fluent interface.
+// SetContent sets the golden file content. When data was provided via
+// [WithData], the content is treated as a text template.
+//
+// Implements fluent interface.
 func (gld *Goldy) SetContent(content string) *Goldy {
 	gld.content = []byte(content)
 	if gld.data != nil {
@@ -143,7 +162,8 @@ func (gld *Goldy) SetContent(content string) *Goldy {
 	return gld
 }
 
-// Save saves the golden file to the original path.
+// Save writes the golden file (comment + [Marker] + content) back to its
+// original path. It reports errors via the test's t.Error.
 func (gld *Goldy) Save() {
 	gld.t.Helper()
 
@@ -160,7 +180,7 @@ func (gld *Goldy) Save() {
 		buf.Write(gld.content)
 	}
 	if err := os.WriteFile(gld.pth, buf.Bytes(), 0600); err != nil {
-		gld.t.Fatalf("error writing golden file (%s): %v", gld.pth, err)
+		gld.t.Errorf("error writing golden file (%s): %v", gld.pth, err)
 	}
 }
 
@@ -173,13 +193,13 @@ func (gld *Goldy) renderTemplate() *Goldy {
 	tpl := template.New("goldy")
 	tpl.Option("missingkey=error")
 	if tpl, err = tpl.Parse(string(gld.content)); err != nil {
-		gld.t.Fatal(err)
+		gld.t.Error(err)
 		return nil
 	}
 
 	buf := &bytes.Buffer{}
 	if err = tpl.Execute(buf, gld.data); err != nil {
-		gld.t.Fatal(err)
+		gld.t.Error(err)
 		return nil
 	}
 	gld.content = buf.Bytes()

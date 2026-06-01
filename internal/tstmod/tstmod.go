@@ -1,3 +1,6 @@
+// Package tstmod provides helpers for creating temporary Go modules
+// with controlled external dependencies. It is used internally to test
+// the mocker package's module and package discovery logic.
 package tstmod
 
 import (
@@ -18,6 +21,10 @@ type Module struct {
 	Version string   // Module version.
 	Dir     string   // Absolute path to the module root directory.
 	t       tester.T // Test manager.
+
+	// ExternalDirs maps module path@version to the absolute directory
+	// containing that module's source (created via replace directives).
+	ExternalDirs map[string]string
 }
 
 // New creates a new module in a temporary directory.
@@ -29,15 +36,23 @@ type Module struct {
 func New(t tester.T, version string) *Module {
 	t.Helper()
 
+	base := t.TempDir()
 	mod := &Module{
-		Version: version,
-		Dir:     filepath.Join(t.TempDir(), "project"),
-		t:       t,
+		Version:      version,
+		Dir:          filepath.Join(base, "project"),
+		t:            t,
+		ExternalDirs: make(map[string]string),
 	}
 
 	mod.CreateDir(mod.Dir)
 	mod.CreateDir("pkg/empty")
 	mod.CreateDir("pkg/mercury")
+
+	// Create external test modules (tst-a, tst-b) so that getModInfo
+	// tests do not depend on the global module cache. This makes the
+	// tests hermetic and pass both locally and on GitHub Actions.
+	mod.createExternalModules(base)
+
 	mod.WriteFile("go.mod", mod.goMod())
 	mod.WriteFile("go.sum", mod.goSum())
 	mod.WriteFile("project.go", mod.projectGo())
@@ -58,10 +73,13 @@ func (mod *Module) WriteFile(pth, content string) string {
 }
 
 // CreateDir creates a new directory rooted at the project root directory.
+// If pth is absolute, it is used as-is.
 func (mod *Module) CreateDir(pth string) string {
 	mod.t.Helper()
-	pth = filepath.Join(mod.Dir, pth)
-	if err := os.MkdirAll(pth, 0777); err != nil {
+	if !filepath.IsAbs(pth) {
+		pth = filepath.Join(mod.Dir, pth)
+	}
+	if err := os.MkdirAll(pth, 0700); err != nil {
 		mod.t.Fatal(err)
 	}
 	return pth
@@ -85,14 +103,18 @@ func (mod *Module) goMod() string {
 			"module github.com/ctx42/tst-project\n\n" +
 			"go 1.24.0\n\n" +
 			"require github.com/ctx42/tst-b v0.1.0\n\n" +
-			"require github.com/ctx42/tst-a v0.1.0 // indirect\n"
+			"require github.com/ctx42/tst-a v0.1.0 // indirect\n\n" +
+			"replace github.com/ctx42/tst-a v0.1.0 => ../tst-a\n" +
+			"replace github.com/ctx42/tst-b v0.1.0 => ../tst-b\n"
 
 	case "v2":
 		code = "" +
 			"module github.com/ctx42/tst-project\n\n" +
 			"go 1.24.0\n\n" +
 			"require github.com/ctx42/tst-b v0.2.0\n\n" +
-			"require github.com/ctx42/tst-a v0.2.0 // indirect\n"
+			"require github.com/ctx42/tst-a v0.2.0 // indirect\n\n" +
+			"replace github.com/ctx42/tst-a v0.2.0 => ../tst-a\n" +
+			"replace github.com/ctx42/tst-b v0.2.0 => ../tst-b\n"
 
 	default:
 		mod.t.Fatalf("unknown test project version: %s", mod.Version)
@@ -159,4 +181,53 @@ func (mod *Module) projectGo() string {
 	}
 
 	return code
+}
+
+// createExternalModules creates minimal source trees for tst-a and tst-b
+// inside the same temporary directory as the main module and records their
+// locations so that getModInfo tests do not depend on the global module cache.
+func (mod *Module) createExternalModules(baseDir string) {
+	var versions []struct {
+		path    string
+		version string
+	}
+
+	switch mod.Version {
+	case "v1":
+		versions = []struct {
+			path    string
+			version string
+		}{
+			{"github.com/ctx42/tst-a", "v0.1.0"},
+			{"github.com/ctx42/tst-b", "v0.1.0"},
+		}
+	case "v2":
+		versions = []struct {
+			path    string
+			version string
+		}{
+			{"github.com/ctx42/tst-a", "v0.2.0"},
+			{"github.com/ctx42/tst-b", "v0.2.0"},
+		}
+	default:
+		return
+	}
+
+	for _, v := range versions {
+		dir := filepath.Join(baseDir, filepath.Base(v.path))
+		mod.CreateDir(dir)
+		mod.writeExternalGoMod(dir, v.path)
+
+		key := v.path + "@" + v.version
+		mod.ExternalDirs[key] = dir
+	}
+}
+
+// writeExternalGoMod writes a minimal go.mod for an external test module.
+func (mod *Module) writeExternalGoMod(dir, modulePath string) {
+	content := "module " + modulePath + "\n\ngo 1.24.0\n"
+	pth := filepath.Join(dir, "go.mod")
+	if err := os.WriteFile(pth, []byte(content), 0600); err != nil {
+		mod.t.Fatal(err)
+	}
 }

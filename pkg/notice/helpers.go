@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// Indent indents lines with n number of runes. Lines are indented only if
-// there are more than one line.
+// Indent prepends n copies of rune r to each line in lns.
+// Single-line input is returned unchanged.
 func Indent(n int, r rune, lns string) string {
 	if lns == "" {
 		return ""
@@ -27,7 +27,7 @@ func Indent(n int, r rune, lns string) string {
 	return strings.Join(rows, "\n")
 }
 
-// Pad left pads the string with spaces to the given length.
+// Pad left-pads str with spaces until it reaches at least the given length.
 func Pad(str string, length int) string {
 	l := len(str)
 	if length > l {
@@ -36,13 +36,10 @@ func Pad(str string, length int) string {
 	return str
 }
 
-// TrialCmp is a comparison function for sorting Notice instances by their
-// Trail values. It returns:
-//
-//	-1 if x is less than y,
-//	 0 if x equals y,
-//	+1 if x is greater than y.
-func TrialCmp(x, y *Notice) int {
+// TrailCmp compares two notices by their Trail strings.
+// Returns -1 if x < y, 0 if equal, +1 if x > y.
+// Suitable for use with [SortNotices] or slices.SortFunc.
+func TrailCmp(x, y *Notice) int {
 	if x.Trail < y.Trail {
 		return -1
 	}
@@ -52,13 +49,13 @@ func TrialCmp(x, y *Notice) int {
 	return 0
 }
 
-// SortNotices sorts a doubly linked list of Notice instances starting at head,
-// ordering nodes by their values in ascending order. It modifies the list
-// in-place by updating prev and next pointers. The "cmp" function takes two
-// [Notice] instances and returns -1 if "a" should come before "b", 0 if equal,
-// or 1 if "a" should come after "b". If the head is nil or the list has one
-// node, it returns the unchanged head. Returns the tail of the sorted list so
-// it can be used directly with [Join] or [Node.Chain] to add more nodes.
+// SortNotices sorts the chain starting at head in-place using cmp.
+// The cmp function must return -1 if a should precede b, 0 if equal,
+// or +1 if a should follow b.
+//
+// It mutates prev/next pointers. If head is nil or has one node it is
+// returned unchanged. The returned value is the tail of the sorted chain
+// (useful for further [Join] or [Notice.Chain] calls).
 func SortNotices(head *Notice, cmp func(a, b *Notice) int) *Notice {
 	if head == nil || head.next == nil {
 		return head
@@ -95,8 +92,8 @@ func SortNotices(head *Notice, cmp func(a, b *Notice) int) *Notice {
 			current.next.prev = current.prev
 		}
 
-		switch {
-		case found == nil:
+		switch found {
+		case nil:
 			// Insert at the beginning.
 			current.prev = nil
 			current.next = sorted

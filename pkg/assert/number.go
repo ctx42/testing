@@ -9,9 +9,9 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// Greater checks the "have" value is greater than the "want" value. Returns
-// true if it is, otherwise marks the test as failed, writes an error message
-// to the test log, and returns false.
+// Greater asserts that "have" is greater than "want".
+//
+// See [check.Greater] for the error-returning form.
 func Greater[T constraints.Ordered](
 	t tester.T,
 	want, have T,
@@ -26,9 +26,9 @@ func Greater[T constraints.Ordered](
 	return true
 }
 
-// GreaterOrEqual checks the "have" value is greater or equal than the "want"
-// value. Returns true if it is, otherwise marks the test as failed, writes an
-// error message to the test log, and returns false.
+// GreaterOrEqual asserts that "have" is greater than or equal to "want".
+//
+// See [check.GreaterOrEqual] for the error-returning form.
 func GreaterOrEqual[T constraints.Ordered](
 	t tester.T,
 	want, have T,
@@ -43,9 +43,9 @@ func GreaterOrEqual[T constraints.Ordered](
 	return true
 }
 
-// Smaller checks the "have" value is smaller than the "want" value. Returns
-// true if it is, otherwise marks the test as failed, writes an error message
-// to the test log, and returns false.
+// Smaller asserts that "have" is smaller than "want".
+//
+// See [check.Smaller] for the error-returning form.
 func Smaller[T constraints.Ordered](
 	t tester.T,
 	want, have T,
@@ -60,9 +60,9 @@ func Smaller[T constraints.Ordered](
 	return true
 }
 
-// SmallerOrEqual checks the "have" value is smaller or equal than the "want"
-// value. Returns true if it is, otherwise marks the test as failed, writes an
-// error message to the test log, and returns false.
+// SmallerOrEqual asserts that "have" is smaller than or equal to "want".
+//
+// See [check.SmallerOrEqual] for the error-returning form.
 func SmallerOrEqual[T constraints.Ordered](
 	t tester.T,
 	want, have T,
@@ -77,14 +77,17 @@ func SmallerOrEqual[T constraints.Ordered](
 	return true
 }
 
-// Delta asserts both values are within the given delta. Returns true if they
-// are, otherwise marks the test as failed, writes an error message to the test
-// log, and returns false.
+// Delta asserts that the absolute relative difference between "want" and
+// "have" is at most "delta":
 //
 //	|w-h|/|w| <= delta
+//
+// See [check.Delta] for the error-returning form and options.
 func Delta[T, E constraints.Number](
 	t tester.T,
-	want T, delta E, have T,
+	want T,
+	delta E,
+	have T,
 	opts ...any,
 ) bool {
 
@@ -96,15 +99,17 @@ func Delta[T, E constraints.Number](
 	return true
 }
 
-// DeltaSlice asserts values are within the given delta for all respective
-// slice indexes. It returns true if all differences are within the delta;
-// otherwise, marks the test as failed, writes an error message to the test log
-// and returns false.
+// DeltaSlice asserts that the absolute difference between corresponding
+// elements of "want" and "have" is at most "delta":
 //
 //	|w[i]-h[i]| <= delta
+//
+// See [check.DeltaSlice].
 func DeltaSlice[T, E constraints.Number](
 	t tester.T,
-	want []T, delta E, have []T,
+	want []T,
+	delta E,
+	have []T,
 	opts ...any,
 ) bool {
 
@@ -116,14 +121,17 @@ func DeltaSlice[T, E constraints.Number](
 	return true
 }
 
-// Epsilon asserts the relative error is less than epsilon. Returns true if it
-// is, otherwise marks the test as failed, writes an error message to the test
-// log, and returns false.
+// Epsilon asserts that the relative error between "want" and "have" is less
+// than "epsilon":
 //
 //	|w-h|/|w| <= epsilon
+//
+// See [check.Epsilon] for the error-returning form and options.
 func Epsilon[T, E constraints.Number](
 	t tester.T,
-	want T, epsilon E, have T,
+	want T,
+	epsilon E,
+	have T,
 	opts ...any,
 ) bool {
 
@@ -135,15 +143,17 @@ func Epsilon[T, E constraints.Number](
 	return true
 }
 
-// EpsilonSlice asserts the relative error is less than epsilon for all
-// respective values in the provided slices. It returns true if all differences
-// are within the delta; otherwise, marks the test as failed, writes an error
-// message to the test log, and returns false.
+// EpsilonSlice asserts that the relative error between corresponding elements
+// of "want" and "have" is less than "epsilon":
 //
 //	|w[i]-h[i]|/|w[i]| <= epsilon
+//
+// See [check.EpsilonSlice].
 func EpsilonSlice[T, E constraints.Number](
 	t tester.T,
-	want []T, epsilon E, have []T,
+	want []T,
+	epsilon E,
+	have []T,
 	opts ...any,
 ) bool {
 
@@ -155,11 +165,9 @@ func EpsilonSlice[T, E constraints.Number](
 	return true
 }
 
-// Increasing checks if the given sequence has values in the increasing order.
-// You may use the [check.WithIncreasingSoft] option to allow consecutive
-// values to be equal. It returns true if the sequence is increasing otherwise,
-// marks the test as failed, writes an error message to the test log, and
-// returns false.
+// Increasing asserts that the given sequence is in strictly increasing order.
+// Use [check.WithIncreasingSoft] to allow equal consecutive values.
+// See [check.Increasing].
 func Increasing[T constraints.Ordered](
 	t tester.T,
 	seq []T,
@@ -174,7 +182,8 @@ func Increasing[T constraints.Ordered](
 	return true
 }
 
-// NotIncreasing is inverse of [Increasing].
+// NotIncreasing is the inverse of [Increasing].
+// See [check.NotIncreasing].
 func NotIncreasing[T constraints.Ordered](
 	t tester.T,
 	seq []T,
@@ -189,11 +198,9 @@ func NotIncreasing[T constraints.Ordered](
 	return true
 }
 
-// Decreasing checks if the given sequence has values in the decreasing order.
-// You may use the [check.WithDecreasingSoft] option to allow consecutive
-// values to be equal. It returns true if the sequence is decreasing otherwise,
-// marks the test as failed, writes an error message to the test log, and
-// returns false.
+// Decreasing asserts that the given sequence is in strictly decreasing order.
+// Use [check.WithDecreasingSoft] to allow equal consecutive values.
+// See [check.Decreasing].
 func Decreasing[T constraints.Ordered](
 	t tester.T,
 	seq []T,
@@ -208,7 +215,8 @@ func Decreasing[T constraints.Ordered](
 	return true
 }
 
-// NotDecreasing is inverse of [Decreasing].
+// NotDecreasing is the inverse of [Decreasing].
+// See [check.NotDecreasing].
 func NotDecreasing[T constraints.Ordered](
 	t tester.T,
 	seq []T,

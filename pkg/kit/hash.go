@@ -21,7 +21,8 @@ func SHA1Reader(r io.Reader) string {
 
 // SHA1File returns SHA1 hash of the file. Panics on error.
 func SHA1File(pth string) string {
-	fil, err := os.Open(pth)
+	// G304: path comes from trusted test data in hash helpers
+	fil, err := os.Open(pth) // nolint:gosec
 	if err != nil {
 		panic(err)
 	}

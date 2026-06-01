@@ -8,10 +8,10 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// Empty asserts "have" is empty. Returns true if it's, otherwise marks the
-// test as failed, writes an error message to the test log, and returns false.
+// Empty asserts that "have" is empty.
 //
-// See [check.Empty] for the list of values which are considered empty.
+// See [check.Empty] for the error-returning form and the package
+// documentation for option handling.
 func Empty(t tester.T, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Empty(have, opts...); e != nil {
@@ -21,11 +21,9 @@ func Empty(t tester.T, have any, opts ...any) bool {
 	return true
 }
 
-// NotEmpty asserts "have" is not empty. Returns true if it is not, otherwise
-// marks the test as failed, writes an error message to the test log, and
-// returns false.
+// NotEmpty asserts that "have" is not empty.
 //
-// See [check.Empty] for the list of values which are considered empty.
+// See [check.NotEmpty] and [check.Empty] for the error-returning forms.
 func NotEmpty(t tester.T, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.NotEmpty(have, opts...); e != nil {

@@ -1,7 +1,31 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// Package notice simplifies building structured assertion messages.
+// Package notice provides the builder for rich, structured assertion messages
+// used throughout the module.
+//
+// It is the formatting layer in the layered architecture: `assert` (user-facing)
+// is built on `check` (composable, returns error) which produces `*Notice`
+// values for detailed, trail-aware diagnostics.
+//
+// Notices implement [error]. They wrap a base error (default [ErrNotice])
+// and support [errors.Is] / [errors.As] via the wrapped error. Use
+// [Notice.Wrap] to change the base.
+//
+// Notices can be chained with [Join] (or [Notice.Chain]) into a linked list.
+// Walk the chain with [Notice.Head], [Notice.Next], [Notice.Prev], or collect
+// all with [Notice.All]. Chains are mutable.
+//
+// See the package [README] for usage and [examples_test.go] for executable
+// examples.
+//
+// Key types and entry points:
+//   - [Notice] — core structured message (header + trail + rows + metadata)
+//   - [New] / [From] — create notices
+//   - [Join] — chain multiple notices or errors
+//   - [Notice.Head] / [Notice.Next] / [Notice.Prev] / [Notice.All] —
+//     walk chains
+//   - [Row] / [NewRow] — context lines
 package notice
 
 import (
@@ -19,12 +43,22 @@ const (
 	multiHeader = "multiple expectations violated"
 )
 
-// ErrNotice is a sentinel error automatically wrapped by all instances of
-// [Notice] unless changed with the [Notice.Wrap] method.
+// ErrNotice is the default base error wrapped by every [Notice].
+// It can be changed per instance with [Notice.Wrap].
+//
+// All notices implement [error] and delegate [errors.Is] / [errors.As] to
+// their base error (see [Notice.Is] and [Notice.Unwrap]).
 var ErrNotice = errors.New("notice error")
 
-// Notice represents a structured expectation violation message consisting of a
-// header, trail and multiple named rows with context.
+// Notice represents a structured expectation violation message.
+//
+// It holds a header, optional trail (e.g. "User[0].Name"), context rows,
+// and metadata. Notices implement [error] and form mutable chains via
+// [Join] / [Notice.Chain]. Walk with [Notice.Head], [Notice.Next],
+// [Notice.Prev] or collect with [Notice.All].
+//
+// The default base error is [ErrNotice]; change it with [Notice.Wrap]
+// to control what [errors.Is] and [errors.As] see (see [Notice.Is]).
 //
 // nolint: errname
 type Notice struct {
@@ -40,24 +74,24 @@ type Notice struct {
 	next *Notice        // Previous message in the chain.
 }
 
-// New creates a new [Notice] with a header formatted using [fmt.Sprintf] from
-// the provided format string and optional arguments. The resulting [Notice]
-// has its base error set to [ErrNotice]. The header is set by calling. If no
-// arguments are provided, the format string is used as-is.
+// New creates a [Notice] with the given header (formatted with [fmt.Sprintf]
+// if args are provided). The notice starts with base error [ErrNotice].
 //
 // Example:
 //
-//	n := New("header: %s", "name") // Header: "header: name"
-//	n := New("generic error")      // Header: "generic error"
+//	n := New("expected %s to be equal", "values")
+//	n := New("generic error")
 func New(header string, args ...any) *Notice {
 	msg := &Notice{err: ErrNotice}
 	return msg.SetHeader(header, args...)
 }
 
-// From returns instance of [Notice] if it is in err's tree. If the prefix is
-// not empty, the header will be prefixed with the first element in the slice.
-// If "err" is not an instance of [Notice], it will create a new one and wrap
-// the "err".
+// From extracts a [Notice] from err's error tree (or creates one wrapping err).
+// If a prefix is provided, it is prepended to the header in "[prefix] ..." form.
+//
+// If err is already a *Notice, it is returned (after optional prefixing).
+// Otherwise a new notice with header "assertion error" (or prefixed) is
+// created and the original err is wrapped via [Notice.Wrap].
 func From(err error, prefix ...string) *Notice {
 	if err == nil {
 		return nil
@@ -85,8 +119,8 @@ func (msg *Notice) SetHeader(header string, args ...any) *Notice {
 	return msg
 }
 
-// Append appends a new row with the specified name and value build using
-// [fmt.Sprintf] from format and args. Implements fluent interface.
+// Append adds a row (name + formatted value). Replaces any existing row with
+// the same name. Implements fluent interface.
 func (msg *Notice) Append(name, format string, args ...any) *Notice {
 	return msg.appendRow(NewRow(name, format, args...))
 }
@@ -142,40 +176,43 @@ func (msg *Notice) SetTrail(trail string) *Notice {
 	return msg
 }
 
-// Want uses the Append method to append a row with the "want" name. If the
-// "want" row already exists, it will just replace its value.
+// Want is a convenience for Append("want", ...). Replaces any prior "want" row.
 func (msg *Notice) Want(format string, args ...any) *Notice {
 	return msg.Append("want", format, args...)
 }
 
-// Have uses the Append method to append a row with the "have" name. If the
-// "have" row already exists, it will just replace its value.
+// Have is a convenience for Append("have", ...). Replaces any prior "have" row.
 func (msg *Notice) Have(format string, args ...any) *Notice {
 	return msg.Append("have", format, args...)
 }
 
-// Wrap sets base error with provided one.
+// Wrap sets the base error returned by [Notice.Unwrap] and used by
+// [Notice.Is] for [errors.Is] / [errors.As] delegation.
+// Defaults to [ErrNotice] if never called.
 func (msg *Notice) Wrap(err error) *Notice {
 	msg.err = err
 	return msg
 }
 
-// Unwrap returns wrapped error. By default, it returns [ErrNotice] unless a
-// different error was specified using [Notice.Wrap].
+// Unwrap returns the base error (for [errors.Is] / [errors.As] support).
+// Defaults to [ErrNotice] unless changed with [Notice.Wrap].
 func (msg *Notice) Unwrap() error {
 	return msg.err
 }
 
-// Remove removes named row.
+// Remove removes the row with the given name, if present.
+// Implements fluent interface.
 func (msg *Notice) Remove(name string) *Notice {
 	fn := func(row Row) bool { return row.Name == name }
 	msg.Rows = slices.DeleteFunc(msg.Rows, fn)
 	return msg
 }
 
+// Is reports whether the base error matches target via [errors.Is].
+// This makes every *Notice satisfy errors.Is(msg, ErrNotice) by default.
 func (msg *Notice) Is(target error) bool { return errors.Is(msg.err, target) }
 
-// Notice returns a formatted string representation of the Notice.
+// Error returns a formatted string representation of the Notice.
 //
 // nolint: gocognit, cyclop
 func (msg *Notice) Error() string {
@@ -257,7 +294,8 @@ func (msg *Notice) Error() string {
 	return buf.String()
 }
 
-// MetaSet sets data. To get it back, use the [Notice.MetaLookup] method.
+// MetaSet stores arbitrary data under key for later retrieval.
+// To retrieve, use [Notice.MetaLookup]. Implements fluent interface.
 func (msg *Notice) MetaSet(key string, val any) *Notice {
 	if msg.Meta == nil {
 		msg.Meta = make(map[string]any)
@@ -266,8 +304,8 @@ func (msg *Notice) MetaSet(key string, val any) *Notice {
 	return msg
 }
 
-// MetaLookup returns the data set by [Notice.MetaSet]. Returns nil and false
-// if the key was never set.
+// MetaLookup returns the value stored by [Notice.MetaSet] for key, or
+// nil and false if the key was never set or Meta was nil.
 func (msg *Notice) MetaLookup(key string) (any, bool) {
 	if msg.Meta == nil {
 		return nil, false
@@ -276,7 +314,7 @@ func (msg *Notice) MetaLookup(key string) (any, bool) {
 	return val, ok
 }
 
-// The longest returns the length of the longest row name among all [Notice.Rows]
+// longest returns the length of the longest row name among all [Notice.Rows]
 // and the [Notice.Trail] string. If there are no rows and the trail is empty,
 // it returns 0.
 func (msg *Notice) longest() int {
@@ -292,16 +330,19 @@ func (msg *Notice) longest() int {
 	return maxLen
 }
 
-// Chain adds the current [Notice] as next in the chain after "prev" and
-// returns the current instance.
+// Chain links msg after prev in the chain (mutates both) and returns msg.
+//
+// After the call: prev.Next() == msg and msg.Prev() == prev.
+// Use [Join] for a safer way to build chains from multiple values.
 func (msg *Notice) Chain(prev *Notice) *Notice {
 	msg.prev = prev
 	prev.next = msg
 	return msg
 }
 
-// Head returns the head of the notice chain, if the current notice instance is
-// the head, it returns self.
+// Head returns the first notice in the chain (or self if it is the head).
+//
+// Follows the prev pointers to the start of the linked list.
 func (msg *Notice) Head() *Notice {
 	if msg.prev == nil {
 		return msg
@@ -309,14 +350,21 @@ func (msg *Notice) Head() *Notice {
 	return msg.prev.Head()
 }
 
-// Next returns the next [Notice] in the chain or nil.
+// Next returns the following notice in the chain (nil if this is the last).
+//
+// The link is set by [Chain] or [Join].
 func (msg *Notice) Next() *Notice { return msg.next }
 
-// Prev returns the previous [Notice] in the chain or nil.
+// Prev returns the preceding notice in the chain (nil if this is the first).
+//
+// The link is set by [Chain] or [Join].
 func (msg *Notice) Prev() *Notice { return msg.prev }
 
-// collect collects all the notices in the chain starting with the Head notice.
-func (msg *Notice) collect() []*Notice {
+// All returns every notice in the chain, starting from the head.
+// The slice is newly allocated on each call.
+//
+// See [Join] for building chains and [Notice.Head] for finding the start.
+func (msg *Notice) All() []*Notice {
 	head := msg.Head()
 	var mgs []*Notice
 	for {
@@ -329,7 +377,18 @@ func (msg *Notice) collect() []*Notice {
 	return mgs
 }
 
-// Join joins multiple notices into one. Returns the last not nil joined notice.
+// collect collects all the notices in the chain starting with the Head notice.
+func (msg *Notice) collect() []*Notice { return msg.All() }
+
+// Join chains multiple notices or errors into a linked list.
+//
+// Each non-nil argument is converted via [From] and linked using
+// [Notice.Chain]. The result can be walked with [Notice.Head],
+// [Notice.Next], [Notice.Prev] or collected with [Notice.All].
+//
+// Returns the last non-nil notice in the chain (or nil). The returned
+// value implements [error] and supports [errors.Is]/[errors.As] through
+// the notices' wrapped errors.
 func Join(ers ...error) error {
 	if len(ers) == 0 {
 		return nil

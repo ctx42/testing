@@ -8,31 +8,38 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/ctx42/testing/pkg/notice"
 )
 
-// TODO(rz): use notice package for messages.
-
-// Arguments hold an array of method arguments or return values.
+// Arguments holds a slice of method arguments or return values.
+//
+// It provides typed accessors (Get, String, Int, ...) that panic with rich
+// [notice.Notice] diagnostics on misuse, and Diff for detailed mismatch
+// reporting used by the expectation engine.
 type Arguments []any
 
-// Get returns the argument at the specified index. Panics when the index is
-// out of bounds.
+// Get returns the value at the given index. It panics with a descriptive
+// [notice.Notice] when the index is out of range.
 func (args Arguments) Get(idx int) any {
 	if idx+1 > len(args) {
-		format := "[mock] arguments: Get(%d) out of range %d max"
-		panic(fmt.Sprintf(format, idx, len(args)-1))
+		mHeader := "[mock] arguments: Get(%d) out of range %d max"
+		msg := notice.New(mHeader, idx, len(args)-1)
+		panic(msg)
 	}
 	return args[idx]
 }
 
-// Equal gets whether the objects match the specified arguments. Panics on
-// error.
+// Equal reports whether the provided values match the arguments using
+// reflect.DeepEqual. It panics (with a [notice.Notice]) when the lengths
+// differ.
 func (args Arguments) Equal(haves ...any) bool {
 	al := len(args)
 	hl := len(haves)
 	if al != hl {
-		format := "[must] arguments: argument lengths do not match %d != %d"
-		panic(fmt.Sprintf(format, al, hl))
+		mHeader := "[must] arguments: argument lengths do not match %d != %d"
+		msg := notice.New(mHeader, al, hl)
+		panic(msg)
 	}
 	for i, arg := range args {
 		if !reflect.DeepEqual(arg, haves[i]) {
@@ -42,9 +49,9 @@ func (args Arguments) Equal(haves ...any) bool {
 	return true
 }
 
-// Diff gets a string describing the differences between the expected arguments
-// and the specified values. Returns a diff string and the number of
-// differences found.
+// Diff produces a human-readable comparison between the expected arguments
+// and the supplied values. It returns the lines of the diff and the count of
+// mismatches. Used internally by the expectation matching logic.
 //
 // nolint: cyclop
 func (args Arguments) Diff(vs []any) ([]string, int) {
@@ -52,10 +59,7 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 	var diffCnt int
 
 	// Pick the longer slice.
-	cnt := len(args)
-	if len(vs) > cnt {
-		cnt = len(vs)
-	}
+	cnt := max(len(vs), len(args))
 
 	for i := 0; i < cnt; i++ {
 		var want, have any = "(Missing)", "(Missing)"
@@ -102,10 +106,7 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 			}
 
 			diffCnt++
-			// TODO(rz): For really long strings we should display values one below
-			//  the other for easier comparison.
-			msg := "%d: FAIL: %s%s != %s"
-			msg = fmt.Sprintf(msg, i, am.Desc(), panicMsg, haveFmt)
+			msg := formatFail(i, am.Desc()+panicMsg, haveFmt)
 			out = append(out, msg)
 			continue
 		}
@@ -113,7 +114,6 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 		// Normal checking.
 		if haveFmt != "(Missing)" &&
 			(reflect.DeepEqual(want, Any) || reflect.DeepEqual(want, have)) {
-
 			msg := fmt.Sprintf("%d: PASS: %s == %s", i, wantFmt, haveFmt)
 			out = append(out, msg)
 			continue
@@ -121,18 +121,15 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 
 		// Not match
 		diffCnt++
-		// TODO(rz): For really long strings we should display values one below
-		//  the other for easier comparison.
-		msg := fmt.Sprintf("%d: FAIL: %s != %s", i, wantFmt, haveFmt)
+		msg := formatFail(i, wantFmt, haveFmt)
 		out = append(out, msg)
 	}
 	return out, diffCnt
 }
 
-// String gets the argument at the specified index cast to string. Panics for
-// invalid index or when an argument cannot be cast to a string. If the index
-// is set to -1, the method returns a complete string representation of the
-// argument types.
+// String returns the argument at idx as a string. When idx == -1 it returns
+// a comma-separated list of the argument types instead. Panics with a
+// [notice.Notice] on out-of-range access or wrong type.
 func (args Arguments) String(idx int) string {
 	if idx == -1 {
 		// Return a string representation of the arg types.
@@ -147,26 +144,49 @@ func (args Arguments) String(idx int) string {
 	if got, ok := val.(string); ok {
 		return got
 	}
-	format := "[mock] arguments: String(%d) is of type \"%T\" not string"
-	panic(fmt.Sprintf(format, idx, val))
+	mHeader := "[mock] arguments: String(%d) is of type \"%T\" not string"
+	msg := notice.New(mHeader, idx, val)
+	panic(msg)
 }
 
-// Int gets the argument at the specified index cast to int. Panics for invalid
-// index or when an argument cannot be cast to an int.
+// Int returns the argument at idx as int. Panics with a [notice.Notice] on
+// out-of-range access or wrong type.
 func (args Arguments) Int(idx int) int {
 	val := args.Get(idx)
 	if got, ok := val.(int); ok {
 		return got
 	}
-	format := "[mock] arguments: Int(%d) is of type \"%T\" not int"
-	panic(fmt.Sprintf(format, idx, val))
+	mHeader := "[mock] arguments: Int(%d) is of type \"%T\" not int"
+	msg := notice.New(mHeader, idx, val)
+	panic(msg)
 }
 
-// TODO(rz): Add Float32
-// TODO(rz): Add Float64
+// Float32 returns the argument at idx as float32. Panics with a
+// [notice.Notice] on out-of-range access or wrong type.
+func (args Arguments) Float32(idx int) float32 {
+	val := args.Get(idx)
+	if got, ok := val.(float32); ok {
+		return got
+	}
+	mHeader := "[mock] arguments: Float32(%d) is of type \"%T\" not float32"
+	msg := notice.New(mHeader, idx, val)
+	panic(msg)
+}
 
-// Error gets the argument at the specified index. Panics if there is no
-// argument, or if the argument is of the wrong type.
+// Float64 returns the argument at idx as float64. Panics with a
+// [notice.Notice] on out-of-range access or wrong type.
+func (args Arguments) Float64(idx int) float64 {
+	val := args.Get(idx)
+	if got, ok := val.(float64); ok {
+		return got
+	}
+	mHeader := "[mock] arguments: Float64(%d) is of type \"%T\" not float64"
+	msg := notice.New(mHeader, idx, val)
+	panic(msg)
+}
+
+// Error returns the argument at idx as error (nil is allowed). Panics with a
+// [notice.Notice] on out-of-range access or wrong type.
 func (args Arguments) Error(idx int) error {
 	val := args.Get(idx)
 	if val == nil {
@@ -175,17 +195,30 @@ func (args Arguments) Error(idx int) error {
 	if got, ok := val.(error); ok {
 		return got
 	}
-	format := "[mock] arguments: Error(%d) is of type \"%T\" not error"
-	panic(fmt.Sprintf(format, idx, val))
+	mHeader := "[mock] arguments: Error(%d) is of type \"%T\" not error"
+	msg := notice.New(mHeader, idx, val)
+	panic(msg)
 }
 
-// Bool gets the argument at the specified index. Panics if there is no
-// argument, or if the argument is of the wrong type.
+// Bool returns the argument at idx as bool. Panics with a [notice.Notice] on
+// out-of-range access or wrong type.
 func (args Arguments) Bool(idx int) bool {
 	val := args.Get(idx)
 	if got, ok := val.(bool); ok {
 		return got
 	}
-	format := "[mock] arguments: Bool(%d) is of type \"%T\" not bool"
-	panic(fmt.Sprintf(format, idx, val))
+	mHeader := "[mock] arguments: Bool(%d) is of type \"%T\" not bool"
+	msg := notice.New(mHeader, idx, val)
+	panic(msg)
+}
+
+// formatFail returns a single- or multi-line failure description.
+// When either side is long, it uses a vertical layout for readability.
+func formatFail(i int, left, right string) string {
+	const maxLen = 80
+	if len(left) > maxLen || len(right) > maxLen {
+		format := "%d: FAIL:\n    want: %s\n    have: %s"
+		return fmt.Sprintf(format, i, left, right)
+	}
+	return fmt.Sprintf("%d: FAIL: %s != %s", i, left, right)
 }

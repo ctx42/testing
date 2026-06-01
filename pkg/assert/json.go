@@ -8,13 +8,10 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// JSON asserts that two JSON strings are equivalent. Returns true if they are,
-// otherwise marks the test as failed, writes an error message to the test log,
-// and returns false.
+// JSON asserts that two JSON strings are equivalent.
 //
-// Example:
-//
-//	assert.JSON(t, `{"hello": "world"}`, `{"foo": "bar"}`)
+// See [check.JSON] for the error-returning form and supported types
+// (via the [check.Text] constraint).
 func JSON[W, H check.Text](t tester.T, want W, have H, opts ...any) bool {
 	t.Helper()
 	if e := check.JSON(want, have, opts...); e != nil {

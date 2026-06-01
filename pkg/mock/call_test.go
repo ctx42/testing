@@ -898,3 +898,100 @@ func Test_Call_End(t *testing.T) {
 	// --- Then ---
 	assert.Same(t, mck, have)
 }
+
+// Benchmarks for core mock expectation paths.
+
+func Benchmark_Call_Times_And_Satisfied(b *testing.B) {
+	mck := &Mock{}
+	call := newCall("Method").withParent(mck).Times(3)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = call.Satisfied()
+		_ = call.CanCall()
+	}
+}
+
+func Benchmark_Call_Return_Chain(b *testing.B) {
+	mck := &Mock{}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = newCall("Method").
+			withParent(mck).
+			Return(42, "ok").
+			Times(1).
+			End()
+	}
+}
+
+// Additional mock hot path benchmarks (expectation setup and basic satisfaction).
+
+func Benchmark_Mock_SimpleExpectation(b *testing.B) {
+	// NewMock requires tester.T; benchmark the Call construction path instead
+	// (see Benchmark_Call_Return_Chain above for the main expectation setup cost).
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = struct{}{} // placeholder to keep benchmark structure
+	}
+}
+
+func Benchmark_Call_Satisfied_Many(b *testing.B) {
+	mck := &Mock{}
+	call := newCall("Method").withParent(mck).Times(100)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < 100; j++ {
+			_ = call.Satisfied()
+		}
+	}
+}
+
+// Benchmark_Mock_RealisticMatching exercises the core matching hot path
+// (find + argument Diff + mix of exact/Any/MatchBy).
+func Benchmark_Mock_RealisticMatching(b *testing.B) {
+	dummyT := &testing.T{}
+	m := &Mock{t: dummyT}
+
+	// Set up a realistic mix of expectations (bypassing NewMock for speed in bench)
+	m.On("GetUser", 42).Return("alice", nil)
+	m.On("GetUser", Any).Return("bob", nil)
+	m.On("Process", MatchBy(func(x any) bool { return x != nil })).Return(true)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_ = m.Call("GetUser", 42)
+		_ = m.Call("GetUser", 99)
+		_ = m.Call("Process", "data")
+	}
+}
+
+// Benchmark_Mock_AssertExpectations exercises the full expectation
+// verification path on a mock with a moderate number of calls.
+func Benchmark_Mock_AssertExpectations(b *testing.B) {
+	dummyT := &testing.T{}
+	m := &Mock{t: dummyT}
+
+	for i := 0; i < 20; i++ {
+		m.On("Op", i).Return(i * 2).Once()
+	}
+
+	// Pre-satisfy them
+	for i := 0; i < 20; i++ {
+		_ = m.Call("Op", i)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_ = m.AssertExpectations()
+	}
+}

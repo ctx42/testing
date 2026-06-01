@@ -1,7 +1,36 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// Package dump can render a string representation of any value.
+// Package dump provides a configurable renderer that turns any Go value
+// into a human-readable string representation.
+//
+// It is the foundation for high-quality diagnostic output across the
+// module: used by [github.com/ctx42/testing/pkg/mock] for expectation
+// diffs, [github.com/ctx42/testing/pkg/notice] for structured messages,
+// [github.com/ctx42/testing/pkg/assert] failures, and golden-file
+// comparisons in [github.com/ctx42/testing/pkg/goldy].
+//
+// The package supports deep recursion with cycle detection, custom type
+// dumpers, fine-grained formatting options (flat, compact, indentation,
+// time/duration formats, etc.), and both simple one-shot use via [Any]
+// and reusable configured instances via [New].
+//
+// See the package [README] for usage patterns, configuration examples,
+// and extensibility. See [examples_test.go] for executable demonstrations
+// (many of which are also wired into the README via gmdoceg markers).
+//
+// Key types and entry points:
+//   - [New] + [Dump] — the core configurable dumper
+//   - [Any] — one-shot convenience using defaults
+//   - [Option] functions (WithFlat, WithTimeFormat, WithDumper, ...)
+//   - [RegisterTypeDumper] — optional global custom type handlers (see
+//     package documentation for the full customization model)
+//   - Time/duration sentinels: [TimeAsUnix], [DurAsString], ...
+//   - [Diff] / [DiffValue] — for rich want/have comparisons
+//
+// The customization model supports both global defaults (via
+// [RegisterTypeDumper] and package-level variables) and per-instance
+// configuration via options passed to [New].
 package dump
 
 import (
@@ -20,75 +49,103 @@ import (
 // globLog is a global logger used package-wide.
 var globLog = log.New(os.Stderr, "*** DUMP ", log.Llongfile)
 
-// Strings used by dump package to indicate special values.
+// Special sentinel strings that appear in rendered output for values that
+// cannot be printed in the normal way or that carry semantic meaning.
 const (
-	ValNotNil     = "<not-nil>" // Represents any not-nil value.
-	ValNil        = "nil"       // The [reflect.Value] is nil.
-	ValAddr       = "<addr>"    // The [reflect.Value] is an address.
-	ValFunc       = "<func>"    // The [reflect.Value] is a function.
-	ValChan       = "<chan>"    // The [reflect.Value] is a channel.
-	ValInvalid    = "<invalid>" // The [reflect.Value] is invalid.
-	ValMaxNesting = "<...>"     // The maximum nesting reached.
-	ValEmpty      = "<empty>"   // Empty value.
+	// ValNotNil is shown for any non-nil value when only nil-ness matters.
+	ValNotNil = "<not-nil>"
 
-	// ValErrUsage the [reflect.Value] is unexpected in the given context.
+	// ValNil is the representation of a nil value.
+	ValNil = "nil"
+
+	// ValAddr appears when pointer addresses are requested ([WithPtrAddr]).
+	ValAddr = "<addr>"
+
+	// ValFunc is shown for function values (which have no printable content).
+	ValFunc = "<func>"
+
+	// ValChan is shown for channel values.
+	ValChan = "<chan>"
+
+	// ValInvalid is the representation of an invalid reflect.Value.
+	ValInvalid = "<invalid>"
+
+	// ValMaxNesting is emitted when recursion exceeds [Dump.MaxDepth].
+	ValMaxNesting = "<...>"
+
+	// ValEmpty is used for empty collections or zero-length strings in some
+	// contexts.
+	ValEmpty = "<empty>"
+
+	// ValErrUsage is emitted when a dumper is invoked on a value of the
+	// wrong type (internal contract violation).
 	ValErrUsage = "<dump-usage-error>"
 
-	// ValCannotPrint Represents value that cannot be printed.
-	//
-	// Due to:
-	//  - value not being exported
+	// ValCannotPrint is shown for values that cannot be printed, typically
+	// because they are unexported and [Dump.PrintPrivate] is false.
 	ValCannotPrint = "<dump-cannot-print>"
 )
 
-// Package wide default configuration.
+// Default values used by [New] when no options override them.
 const (
-	// DefaultTimeFormat is default format for parsing time strings.
+	// DefaultTimeFormat is the default [time.Time] layout.
 	DefaultTimeFormat = time.RFC3339Nano
 
-	// DefaultDepth is the default depth when dumping values recursively.
+	// DefaultDepth is the default maximum recursion depth.
 	DefaultDepth = 6
 
-	// DefaultIndent is default additional indent when dumping values.
+	// DefaultIndent is the default extra indentation per level.
 	DefaultIndent = 0
 
-	// DefaultTabWith is the default tab width in spaces.
+	// DefaultTabWith is the default number of spaces per indentation level.
 	DefaultTabWith = 2
 )
 
-// Package-wide configuration.
+// Package-level defaults. These are read by [New] at construction time and
+// can be changed to affect all subsequent default-configured dumpers.
+// For per-instance configuration prefer the [Option] functions.
 var (
-	// TimeFormat is configurable format for dumping [time.Time] values.
+	// TimeFormat is the package default for [time.Time] formatting.
 	TimeFormat = DefaultTimeFormat
 
-	// Depth is configurable depth when dumping values recursively.
+	// Depth is the package default maximum recursion depth.
 	Depth = DefaultDepth
 
-	// Indent is a configurable additional indent when dumping values.
+	// Indent is the package default extra indentation.
 	Indent = DefaultIndent
 
-	// TabWidth is a configurable tab width in spaces.
+	// TabWidth is the package default spaces per indentation level.
 	TabWidth = DefaultTabWith
 )
 
 // Types for built-in dumpers.
 var (
-	typDur      = reflect.TypeOf(time.Duration(0))
-	typLocation = reflect.TypeOf(time.Location{})
-	typTime     = reflect.TypeOf(time.Time{})
-	typError    = reflect.TypeOf((*error)(nil)).Elem()
+	typDur      = reflect.TypeFor[time.Duration]()
+	typLocation = reflect.TypeFor[time.Location]()
+	typTime     = reflect.TypeFor[time.Time]()
+	typError    = reflect.TypeFor[error]()
 )
 
 var nilVal = reflect.ValueOf(nil)
 
-// Dumper represents function signature for value dumpers.
+// Dumper is the signature for custom value renderers.
+//
+// Receives the active [Dump] (for recursive calls), current nesting
+// level, and the [reflect.Value] to render. Must return the string
+// representation. Used with [RegisterTypeDumper] and [WithDumper].
 type Dumper func(dmp Dump, level int, val reflect.Value) string
 
-// typeDumpers is the global map of custom dumpers for given types.
+// typeDumpers holds globally registered custom dumpers (see
+// [RegisterTypeDumper]).
 var typeDumpers map[reflect.Type]Dumper
 
-// RegisterTypeDumper globally registers a custom dumper for a given type.
+// RegisterTypeDumper registers a custom [Dumper] that will be used for
+// all values of the given type by default (across all [New] calls that
+// do not override it with [WithDumper]).
+//
 // It panics if a dumper for the same type is already registered.
+// The registration is logged at debug level for visibility into
+// overrides.
 func RegisterTypeDumper(typ any, dmp Dumper) {
 	if dmp == nil {
 		panic("cannot register a nil type dumper")
@@ -105,46 +162,42 @@ func RegisterTypeDumper(typ any, dmp Dumper) {
 	typeDumpers[rt] = dmp
 }
 
-// Option represents a [NewConfig] option.
+// Option configures a [Dump] created by [New].
 type Option func(*Dump)
 
-// WithFlat is an option for [New] which makes [Dump] display values in one
-// line.
+// WithFlat makes the dumper render values on a single line (no newlines).
 func WithFlat(dmp *Dump) { dmp.Flat = true }
 
-// WithFlatStrings configures the maximum length of strings to be represented
-// as flat in the output. Strings longer than the specified length may be
-// formatted differently, depending on the configuration. This option is
-// similar to [WithFlat] but applies specifically to strings based on their
-// length. Set to zero to turn this feature off.
+// WithFlatStrings sets the threshold (number of newlines) above which
+// strings are forced to multiline rendering even under [WithFlat].
+// Zero disables the feature.
 func WithFlatStrings(n int) Option {
 	return func(dmp *Dump) { dmp.FlatStrings = n }
 }
 
-// WithCompact is an option for [New] which makes [Dump] display values without
-// unnecessary whitespaces.
+// WithCompact removes most whitespace separators for the most compact output.
 func WithCompact(dmp *Dump) { dmp.Compact = true }
 
-// WithAlwaysMultiline is an option for [New] which makes [Dump] treat all
-// strings as multiline strings, even if they are not.
+// WithAlwaysMultiline forces all strings (even single-line ones) to be
+// rendered as multiline blocks.
 func WithAlwaysMultiline(dmp *Dump) { dmp.AlwaysMultiline = true }
 
-// WithPtrAddr is an option for [New] which makes [Dump] display pointer
-// addresses.
+// WithPtrAddr includes pointer addresses in the output (normally hidden).
 func WithPtrAddr(dmp *Dump) { dmp.PtrAddr = true }
 
-// WithNoPrivate is an option for [New] which makes [Dump] skip displaying
-// values for not exported fields.
+// WithNoPrivate suppresses printing of unexported struct fields.
 func WithNoPrivate(dmp *Dump) { dmp.PrintPrivate = false }
 
-// WithTimeFormat is an option for [New] which makes [Dump] display [time.Time]
-// using a given format. The format might be a standard Go time formating
-// layout or one of the custom values - see [Dump.TimeFormat] for more details.
+// WithTimeFormat sets the format used for [time.Time] values. In addition
+// to standard Go layouts, the special values [TimeAsUnix] and [TimeAsGoString]
+// are supported. See [Dump.TimeFormat].
 func WithTimeFormat(format string) Option {
 	return func(dmp *Dump) { dmp.TimeFormat = format }
 }
 
-// WithDumper adds custom [Dumper] to the config.
+// WithDumper registers a per-instance custom [Dumper] for the given type.
+// It overrides any globally registered dumper for that type (see
+// [RegisterTypeDumper]).
 func WithDumper(typ any, dumper Dumper) Option {
 	return func(dmp *Dump) {
 		rt := reflect.TypeOf(typ)
@@ -156,94 +209,85 @@ func WithDumper(typ any, dumper Dumper) Option {
 	}
 }
 
-// WithMaxDepth is an option for [New] which controls maximum nesting when
-// bumping recursive types.
+// WithMaxDepth limits recursion depth when dumping nested or recursive
+// structures (default is [DefaultDepth]).
 func WithMaxDepth(maximum int) Option {
 	return func(dmp *Dump) { dmp.MaxDepth = maximum }
 }
 
-// WithIndent is an option for [New] which sets additional indentation to apply
-// to dumped values.
+// WithIndent sets additional indentation (in spaces) applied to each level.
 func WithIndent(n int) Option {
 	return func(dmp *Dump) { dmp.Indent = n }
 }
 
-// WithTabWidth is an option for [New] setting tab width in spaces.
+// WithTabWidth sets the number of spaces used for one level of indentation.
 func WithTabWidth(n int) Option {
 	return func(dmp *Dump) { dmp.TabWidth = n }
 }
 
-// Dump implements logic for dumping values and types.
+// Dump holds configuration and state for rendering values. Obtain an
+// instance via [New] (or use the package-level [Any] for defaults).
+//
+// Most fields are exported for advanced use or inspection; the preferred
+// way to configure is through the [Option] functions.
 type Dump struct {
-	// Display values on one line.
+	// Flat renders everything on a single line (no newlines or indentation).
 	Flat bool
 
-	// Display strings shorter that given value as with Flat.
+	// FlatStrings treats strings longer than this as multiline (0 disables).
 	FlatStrings int
 
-	// Do not use any indents or whitespace separators.
+	// Compact removes almost all whitespace for the densest output.
 	Compact bool
 
-	// Always treat strings as if they were multiline.
+	// AlwaysMultiline forces strings to be rendered as multiline blocks.
 	AlwaysMultiline bool
 
-	// Controls how [time.Time] is formated.
-	//
-	// Aside from Go time formating layouts, the following custom formats are
-	// available:
-	//
-	//  - [TimeAsUnix] - Unix timestamp,
-	//
-	// By default (empty value) [time.RFC3339Nano] is used.
+	// TimeFormat controls formatting of [time.Time]. In addition to standard
+	// Go layouts, the special values [TimeAsUnix], [TimeAsGoString], and
+	// [TimeAsRFC3339] are recognized. Default: [time.RFC3339Nano].
 	TimeFormat string
 
-	// Controls how [time.Duration] is formated.
-	//
-	// Supports formats:
-	//
-	//  - [DurAsString]
-	//  - [DurAsSeconds]
+	// DurationFormat controls formatting of [time.Duration]. Special values:
+	// [DurAsString] (default) and [DurAsSeconds].
 	DurationFormat string
 
-	// Show pointer addresses.
+	// PtrAddr shows pointer addresses (normally hidden for readability).
 	PtrAddr bool
 
-	// Print types.
+	// PrintType includes type information in the output.
 	PrintType bool
 
-	// Controls if the not exported field values should be printed.
+	// PrintPrivate includes unexported struct field values.
 	PrintPrivate bool
 
-	// Use "any" instead of "interface{}".
+	// UseAny uses the "any" alias instead of "interface{}" in type names.
 	UseAny bool
 
-	// Custom type dumpers.
-	//
-	// By default, dumpers for types:
-	//   - [time.Time]
-	//   - [time.Duration]
-	//   - [time.Location]
-	//
-	// are automatically registered.
+	// Dumpers holds per-instance custom type renderers. These take
+	// precedence over the global registrations from [RegisterTypeDumper].
+	// Default built-in dumpers for time.Time, time.Duration and
+	// time.Location are added automatically by [New] unless overridden.
 	Dumpers map[reflect.Type]Dumper
 
-	// Controls maximum nesting when dumping recursive types.
-	// The depth is also used to properly indent values being dumped.
+	// MaxDepth limits recursion depth for nested/recursive data (default
+	// [DefaultDepth]). Deeper values render as [ValMaxNesting].
 	MaxDepth int
 
-	// How much additional indentation to apply to values being dumped.
+	// Indent is additional spaces of indentation per nesting level.
 	Indent int
 
-	// Default tab with in spaces.
+	// TabWidth is the number of spaces that represent one indentation level.
 	TabWidth int
 
-	// In cases of nested structures like structs, we want to force string
-	// fields to be dumped in flat representation. This value has the same
-	// meaning as the Flat option.
+	// internal: mirrors FlatStrings for nested string fields inside structs
+	// when we want them forced flat.
 	flatStrings bool
 }
 
-// New returns new instance of [Dump].
+// New creates a new [Dump] with sensible defaults, applies the provided
+// options, and ensures built-in dumpers for time.Time, time.Duration and
+// time.Location are present (unless overridden via options).
 func New(opts ...Option) Dump {
 	dmp := Dump{
 		FlatStrings:  200,
@@ -277,27 +321,25 @@ func New(opts ...Option) Dump {
 	return dmp
 }
 
-// Any dumps any value to its string representation using the default [Dump]
-// configuration.
+// Any returns a string representation of val using default configuration.
+// It is the simplest entry point for one-off diagnostics.
 func Any(val any) string { return New().Any(val) }
 
-// Any dumps any value to its string representation.
+// Any renders val using this Dump's configuration.
 func (dmp Dump) Any(val any) string {
 	str, _ := dmp.value(0, reflect.ValueOf(val))
 	return str
 }
 
-// Diff compares two values and returns their formatted representations and
-// diff. The first result is the formatted "want" value, the second is the
-// formatted "have" value, and the third is the unified diff if they differ. If
-// the values are identical, the diff result will be an empty string.
+// Diff renders want and have, then returns their string forms plus a unified
+// diff (empty when identical). Useful for rich assertion failure messages.
 func (dmp Dump) Diff(want, have any) (string, string, string) {
 	wVal := reflect.ValueOf(want)
 	hVal := reflect.ValueOf(have)
 	return dmp.DiffValue(wVal, hVal)
 }
 
-// DiffValue works like [Diff] but uses [reflect.Value] instances.
+// DiffValue is like [Diff] but accepts reflect.Value directly.
 func (dmp Dump) DiffValue(wVal, hVal reflect.Value) (string, string, string) {
 	// Format values for display.
 	wStr, _ := dmp.value(0, wVal)
@@ -355,7 +397,7 @@ func (dmp Dump) forDiff(val reflect.Value) (string, reflect.Kind) {
 	return str, knd
 }
 
-// Value dumps a [reflect.Value] representation of a value as a string.
+// Value renders a reflect.Value using this configuration.
 func (dmp Dump) Value(val reflect.Value) string {
 	str, _ := dmp.value(0, val)
 	return str

@@ -14,10 +14,11 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/ctx42/testing/pkg/testcases"
+
 	"github.com/ctx42/testing/internal/affirm"
 	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/pkg/goldy"
-	"github.com/ctx42/testing/pkg/testcases"
 )
 
 func Test_RegisterTypeDumper(t *testing.T) {
@@ -39,7 +40,7 @@ func Test_RegisterTypeDumper(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 1, len(typeDumpers))
-		wChk := core.Same(dmp, typeDumpers[reflect.TypeOf(custom{})])
+		wChk := core.Same(dmp, typeDumpers[reflect.TypeFor[custom]()])
 		affirm.Equal(t, true, wChk)
 		wMsg := "Registering type dumper for: dump.custom\n"
 		affirm.Equal(t, wMsg, buf.String())
@@ -49,7 +50,7 @@ func Test_RegisterTypeDumper(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
 		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
-		typeDumpers = map[reflect.Type]Dumper{reflect.TypeOf(custom{}): dmp}
+		typeDumpers = map[reflect.Type]Dumper{reflect.TypeFor[custom](): dmp}
 
 		// --- When ---
 		fn := func() { RegisterTypeDumper(custom{}, dmp) }
@@ -208,7 +209,7 @@ func Test_WithDumper(t *testing.T) {
 		WithDumper(123, cDpr)(dmp)
 
 		// --- Then ---
-		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeOf(123)])
+		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[int]()])
 		affirm.Equal(t, true, wChk)
 		affirm.Equal(t, "", buf.String())
 	})
@@ -226,7 +227,7 @@ func Test_WithDumper(t *testing.T) {
 		WithDumper(custom{}, cDpr)(dmp)
 
 		// --- Then ---
-		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeOf(custom{})])
+		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[custom]()])
 		affirm.Equal(t, true, wChk)
 		wMsg := "Overwriting the global type dumper for: dump.custom\n"
 		affirm.Equal(t, wMsg, buf.String())
@@ -278,7 +279,15 @@ func Test_Any(t *testing.T) {
 	affirm.Equal(t, want, have)
 }
 
-func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
+// dumpValueTestCases returns the test cases shared between
+// Test_Dump_Any_tabular and Test_Dump_Value_tabular.
+func dumpValueTestCases() []struct {
+	testN string
+	dmp   Dump
+	v     any
+	want  string
+} {
+
 	var itfNil testcases.TItf
 	var itfVal, itfPtr testcases.TItf
 	var sNil *testcases.TA
@@ -292,12 +301,11 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 	type notExported struct{ err error }
 	notExp := notExported{err: errors.New("not-exported")}
 
-	tt := []struct {
+	return []struct {
 		testN string
-
-		dmp  Dump
-		v    any
-		want string
+		dmp   Dump
+		v     any
+		want  string
 	}{
 		// Simple.
 		{"bool true", New(WithFlat, WithCompact), true, "true"},
@@ -378,16 +386,32 @@ func Test_Dump_Any_Value_smoke_tabular(t *testing.T) {
 			"{err:<dump-cannot-print>}",
 		},
 	}
+}
+
+func Test_Dump_Any_tabular(t *testing.T) {
+	tt := dumpValueTestCases()
 
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			haveAny := tc.dmp.Any(tc.v)
-			haveVal := tc.dmp.Value(reflect.ValueOf(tc.v))
+			have := tc.dmp.Any(tc.v)
 
 			// --- Then ---
-			affirm.Equal(t, tc.want, haveAny)
-			affirm.Equal(t, tc.want, haveVal)
+			affirm.Equal(t, tc.want, have)
+		})
+	}
+}
+
+func Test_Dump_Value_tabular(t *testing.T) {
+	tt := dumpValueTestCases()
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := tc.dmp.Value(reflect.ValueOf(tc.v))
+
+			// --- Then ---
+			affirm.Equal(t, tc.want, have)
 		})
 	}
 }
@@ -692,4 +716,133 @@ func Test_Dump_forDiff(t *testing.T) {
 		affirm.Equal(t, 10, dmp.FlatStrings)
 		affirm.Equal(t, true, dmp.Compact)
 	})
+}
+
+// -----------------------------------------------------------------------------
+// Benchmarks
+// -----------------------------------------------------------------------------
+
+type benchUser struct {
+	ID        int
+	Name      string
+	Email     string
+	Active    bool
+	CreatedAt time.Time
+	Tags      []string
+	Metadata  map[string]any
+}
+
+type benchOrder struct {
+	ID       int
+	User     benchUser
+	Items    []benchOrderItem
+	Total    float64
+	Status   string
+	Shipped  bool
+	Metadata map[string]any
+}
+
+type benchOrderItem struct {
+	SKU      string
+	Quantity int
+	Price    float64
+}
+
+func makeBenchUser() benchUser {
+	return benchUser{
+		ID:        42,
+		Name:      "Alice Example",
+		Email:     "alice@example.com",
+		Active:    true,
+		CreatedAt: time.Date(2024, 5, 10, 12, 0, 0, 0, time.UTC),
+		Tags:      []string{"premium", "beta", "europe"},
+		Metadata: map[string]any{
+			"plan":   "pro",
+			"region": "eu-west-1",
+			"score":  87.5,
+		},
+	}
+}
+
+func makeBenchOrder() benchOrder {
+	return benchOrder{
+		ID:   1001,
+		User: makeBenchUser(),
+		Items: []benchOrderItem{
+			{SKU: "WIDGET-42", Quantity: 3, Price: 19.99},
+			{SKU: "GADGET-X", Quantity: 1, Price: 49.5},
+		},
+		Total:   109.47,
+		Status:  "shipped",
+		Shipped: true,
+		Metadata: map[string]any{
+			"channel": "web",
+			"promo":   "SPRING25",
+		},
+	}
+}
+
+func Benchmark_Dump_Any_SimpleStruct(b *testing.B) {
+	u := makeBenchUser()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Any(u)
+	}
+}
+
+func Benchmark_Dump_Any_NestedStruct(b *testing.B) {
+	o := makeBenchOrder()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Any(o)
+	}
+}
+
+func Benchmark_Dump_Any_SliceOfStructs(b *testing.B) {
+	orders := make([]benchOrder, 0, 50)
+	for i := 0; i < 50; i++ {
+		o := makeBenchOrder()
+		o.ID = i
+		orders = append(orders, o)
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Any(orders)
+	}
+}
+
+func Benchmark_Dump_Any_DeeplyNested(b *testing.B) {
+	// Build a moderately deep nested structure
+	type node struct {
+		Val  int
+		Next *node
+	}
+	head := &node{Val: 0}
+	cur := head
+	for i := 1; i < 20; i++ {
+		cur.Next = &node{Val: i}
+		cur = cur.Next
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Any(head)
+	}
+}
+
+func Benchmark_Dump_Any_Cyclic(b *testing.B) {
+	type node struct {
+		Val  int
+		Next *node
+	}
+	head := &node{Val: 1}
+	head.Next = head // cycle
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Any(head)
+	}
 }

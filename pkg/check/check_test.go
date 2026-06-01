@@ -137,8 +137,7 @@ func Test_SameType(t *testing.T) {
 
 func Test_SameType_success_tabular(t *testing.T) {
 	var ptr *testcases.TPtr
-	var itf testcases.TItf
-	itf = &testcases.TPtr{}
+	itf := &testcases.TPtr{}
 
 	tt := []struct {
 		testN string
@@ -248,8 +247,7 @@ func Test_NotSameType_success_tabular(t *testing.T) {
 
 func Test_NotSameType_error_tabular(t *testing.T) {
 	var ptr *testcases.TPtr
-	var itf testcases.TItf
-	itf = &testcases.TPtr{}
+	itf := &testcases.TPtr{}
 
 	tt := []struct {
 		testN string

@@ -12,44 +12,47 @@ import (
 	"strings"
 )
 
-// Option represents a mocker option.
+// Option represents a configuration option for [Mocker] or the package-level
+// [Generate] function.
 type Option func(*Config)
 
-// WithSrc sets the source directory or import path (package) where the
-// interface to mock is defined.
+// WithSrc sets the source directory or import path where the interface to
+// mock is defined. Required when the interface is not in the current package.
 func WithSrc(dirOrImp string) Option {
 	return func(cfg *Config) { cfg.srcDirOrImp = dirOrImp }
 }
 
-// WithTgt sets the target directory or import path (package) where the
-// interface to mock should be created.
+// WithTgt sets the target directory or import path for the generated mock
+// file. Defaults to the current package.
 func WithTgt(dirOrImp string) Option {
 	return func(cfg *Config) { cfg.tgtDirOrImp = dirOrImp }
 }
 
-// WithTgtName sets the interface mock type name.
+// WithTgtName sets a custom name for the generated mock type.
+// Defaults to "<Interface>Mock".
 func WithTgtName(name string) Option {
 	return func(cfg *Config) { cfg.tgtName = name }
 }
 
-// WithTgtFilename sets the filename to write the generated interface mock to.
+// WithTgtFilename sets a custom filename for the generated mock.
+// Ignored if [WithTgtOutput] is used.
 func WithTgtFilename(filename string) Option {
 	return func(cfg *Config) { cfg.tgtFilename = filename }
 }
 
-// WithTgtOnHelpers turns on "OnXXX" helper methods generation.
+// WithTgtOnHelpers enables generation of "OnXXX" helper methods on the mock
+// (in addition to the standard recorder methods).
 func WithTgtOnHelpers(cfg *Config) { cfg.onHelpers = true }
 
-// WithTgtOutput configures the writer for the generated interface output. It
-// takes precedence over the [WithTgtFilename] option. If the provided writer
-// implements [io.Closer], its Close method will be called after writing.
+// WithTgtOutput configures a custom writer for the generated mock output.
+// Takes precedence over [WithTgtFilename]. If the writer implements
+// [io.Closer], it will be closed after writing.
 func WithTgtOutput(w io.Writer) Option {
 	return func(cfg *Config) { cfg.tgtOut = w }
 }
 
-// WithTesterAlias sets the alias for the "github.com/ctx42/testing/pkg/tester"
-// package. When the alias is set to empty string, it will use "_tester" as the
-// alias.
+// WithTesterAlias sets a custom alias for the testing/tester import in the
+// generated file. Defaults to "_tester".
 func WithTesterAlias(alias string) Option {
 	if alias == "" {
 		alias = "_tester"
@@ -57,7 +60,8 @@ func WithTesterAlias(alias string) Option {
 	return func(cfg *Config) { cfg.testerAlias = alias }
 }
 
-// Config represents the configuration for the mocker.
+// Config holds the configuration for generating a mock.
+// It is usually created internally via options rather than directly by users.
 type Config struct {
 	srcName     string // Name of the interface to mock.
 	srcDirOrImp string // Directory or import path the interface is defined in.
@@ -76,14 +80,12 @@ type Config struct {
 	testerAlias string // Alias for the CTX42 tester package.
 }
 
-// newConfig creates a new configuration for the interface with the provided
-// name to be mocked. By default, the interface is expected to be in the
-// current working directory, and the mock with name based on the source
-// interface name is written to the file in the current working directory. Use
-// options to change the default behavior.
+// newConfig creates a validated configuration for mocking the given
+// interface. Use the Option functions to customize source/target locations,
+// output destination, mock name, etc.
 //
-// The function validates and sets fields and does not create the output file.
-// Use the create method to create the output file.
+// This is an internal helper; users normally use [Generate] or
+// [Mocker.Generate] with options.
 func newConfig(name string, opts ...Option) (Config, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -144,7 +146,8 @@ func (cfg Config) create() (Config, bool, error) {
 	if cfg.tgtOut == nil && filepath.IsAbs(cfg.tgtFilename) {
 		fName := cfg.tgtFilename
 		fMode := os.O_RDWR | os.O_CREATE | os.O_TRUNC
-		file, err := os.OpenFile(fName, fMode, 0664)
+		// G304: output path comes from trusted mocker configuration.
+		file, err := os.OpenFile(fName, fMode, 0644) // nolint:gosec
 		if err != nil {
 			return cfg, false, err
 		}

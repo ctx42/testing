@@ -152,6 +152,22 @@ func Test_ErrorIs(t *testing.T) {
 	})
 }
 
+func Test_ErrorIsNot(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+
+		err0 := errors.New("err0")
+		err1 := errors.New("err1")
+
+		// --- When ---
+		have := ErrorIsNot(tspy, err0, err1) // unrelated → success for IsNot
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+}
+
 func Test_ErrorAs(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---

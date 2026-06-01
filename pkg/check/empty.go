@@ -11,8 +11,7 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Empty checks if "have" is empty. Returns nil if it's, otherwise it returns
-// an error with a message indicating the expected and actual values.
+// Empty checks that "have" is empty.
 //
 // Empty values are:
 //   - nil
@@ -25,6 +24,8 @@ import (
 //   - len(map) == 0
 //   - len(chan) == 0
 //   - time.Time{}
+//
+// See [assert.Empty] for the assertion form.
 func Empty(have any, opts ...any) error {
 	if isEmpty(have) {
 		return nil
@@ -49,7 +50,7 @@ func isEmpty(have any) bool {
 			return true
 		}
 
-	case reflect.Ptr:
+	case reflect.Pointer:
 		return isEmpty(val.Elem().Interface())
 
 	default:
@@ -62,10 +63,9 @@ func isEmpty(have any) bool {
 	return false
 }
 
-// NotEmpty checks "have" is not empty. Returns nil if it's otherwise, it
-// returns an error with a message indicating the expected and actual values.
+// NotEmpty checks that "have" is not empty.
 //
-// See [check.Empty] for the list of values which are considered empty.
+// See [Empty] and [assert.NotEmpty] for related functions.
 func NotEmpty(have any, opts ...any) error {
 	if !isEmpty(have) {
 		return nil

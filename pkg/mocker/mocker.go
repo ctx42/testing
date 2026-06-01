@@ -2,6 +2,19 @@
 // SPDX-License-Identifier: MIT
 
 // Package mocker provides a tool for generating interface mocks.
+//
+// It automates the creation of mock structs that integrate with
+// [github.com/ctx42/testing/pkg/mock] (the runtime mock primitives) and
+// [github.com/ctx42/testing/pkg/tester] for test helpers.
+//
+// See the package [README] for detailed usage, advanced configuration, and
+// `go:generate` examples. See [examples_test.go] for executable examples.
+//
+// Key entry points:
+//   - [Generate] (convenience wrapper)
+//   - [New] + [Mocker.Generate] (full control)
+//   - Option functions: [WithSrc], [WithTgt], [WithTgtName],
+//     [WithTgtOutput], etc.
 package mocker
 
 import (
@@ -15,6 +28,11 @@ import (
 
 // Generate creates a mock implementation for the specified interface name and
 // writes it to the configured output.
+//
+// This is the most common entry point. For more control use [New] +
+// [Mocker.Generate].
+//
+// See the package [README] and [examples_test.go] for usage and options.
 func Generate(name string, opts ...Option) error {
 	return New().Generate(name, opts...)
 }
@@ -45,7 +63,12 @@ var (
 	ErrNoMethods = errors.New("interface has no methods")
 )
 
-// Mocker represents the main structure for creating interface mocks.
+// Mocker is the main type for generating interface mocks.
+//
+// Use [New] to create an instance, then call [Generate] (or configure via
+// options) to produce mock code for one or more interfaces.
+//
+// Most users can use the package-level [Generate] convenience function.
 type Mocker struct {
 	res *resolver // Package cache.
 }
@@ -55,6 +78,9 @@ func New() *Mocker { return &Mocker{res: &resolver{}} }
 
 // Generate creates a mock implementation for the specified interface name and
 // writes it to the configured output.
+//
+// See the package [README] and [examples_test.go] for detailed usage and
+// configuration options.
 func (mck *Mocker) Generate(name string, opts ...Option) error {
 	cfg, err := newConfig(name, opts...)
 	if err != nil {
@@ -150,7 +176,6 @@ func (mck *Mocker) methods(cfg Config) ([]*method, error) {
 // parseItf parses code for an interface field, either a method or embedding.
 func (mck *Mocker) parseItf(cfg Config, fld *ast.Field) ([]*method, error) {
 	switch v := fld.Type.(type) {
-
 	// Interface method.
 	case *ast.FuncType:
 		met, err := mck.parseFunc(cfg, v)
@@ -217,7 +242,11 @@ func (mck *Mocker) parseFunc(cfg Config, fn *ast.FuncType) (*method, error) {
 }
 
 // parseArgs parses method arguments or return values.
-func (mck *Mocker) parseArgs(cfg Config, fields []*ast.Field) ([]argument, error) {
+func (mck *Mocker) parseArgs(
+	cfg Config,
+	fields []*ast.Field,
+) ([]argument, error) {
+
 	var args []argument
 	for _, fld := range fields {
 		idents := fld.Names
@@ -245,7 +274,6 @@ func (mck *Mocker) parseArgs(cfg Config, fields []*ast.Field) ([]argument, error
 // nolint: gocognit, cyclop
 func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 	switch v := e.(type) {
-
 	// Local type (the same package) from a potentially different file.
 	case *ast.Ident:
 		if _, _, err := cfg.srcPkg.findType(v.Name); err == nil {

@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -21,7 +22,8 @@ import (
 // element of the path that does not look like a major version and then picks
 // the valid identifier at the start of that element.
 //
-// Copied from: https://github.com/golang/tools/blob/a318c19ff2fd8d6aae74e36fe7e1a8b8afef3bf7/internal/imports/fix.go#L1233
+// Copied from golang.org/x/tools/internal/imports:
+// https://github.com/golang/tools/blob/a318c19ff2fd8d6aae74e36fe7e1a8b8afef3bf7/internal/imports/fix.go#L1233
 //
 // Example:
 //
@@ -29,7 +31,7 @@ import (
 //	github.com/user/project/pkg/go_package -> go_package
 //	github.com/user/project/pkg/go-package-abc -> abc
 //
-// nolint: cyclop
+// nolint: cyclop, staticcheck
 func assumedPackageName(pth string) string {
 	notIdentifier := func(ch rune) bool {
 		return !('a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' ||
@@ -105,7 +107,7 @@ func sortImports(ips []*gopkg) []*gopkg {
 	var std, reg []*gopkg
 	for _, imp := range ips {
 		switch {
-		case strings.Index(imp.pkgPath, ".") == -1:
+		case !strings.Contains(imp.pkgPath, "."):
 			std = append(std, imp)
 		default:
 			reg = append(reg, imp)
@@ -180,7 +182,8 @@ func toLowerSnakeCase(camel string) string {
 // files) in the specified directory. It does not recurse into subdirectories.
 // The returned paths are absolute.
 func findSources(dir string) ([]string, error) {
-	f, err := os.Open(dir)
+	// G304: directory comes from controlled module discovery in mocker.
+	f, err := os.Open(dir) // nolint:gosec
 	if err != nil {
 		return nil, err
 	}
@@ -234,12 +237,7 @@ var builtin = []string{
 
 // isBuiltin returns true if the provided type name is a Go builtin type.
 func isBuiltin(typ string) bool {
-	for _, bit := range builtin {
-		if bit == typ {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(builtin, typ)
 }
 
 // detectDirOrImp detects if the provided string is a directory or an import

@@ -18,6 +18,9 @@
 
 # The `assert` package
 
+See the Design section in the root README for the overall layered architecture
+(assert built on check built on notice) and the customization model.
+
 The `assert` package is a toolkit for Go testing that offers common assertions,
 integrating well with the standard library. When writing tests, developers often
 face a choice between using Go's standard `testing` package or packages like
@@ -42,23 +45,29 @@ will highlight only the ones that we feel are interesting.
 
 ### Asserting Structures
 
+<!-- gmdoceg:ExampleEqual_structs -->
 ```go
 type T struct {
-    Int int
-    Str string
+	Int int
+	Str string
 }
 
 have := T{Int: 1, Str: "abc"}
 want := T{Int: 2, Str: "xyz"}
 
-assert.Equal(want, have)
-// Test Log:
-//
-// expected values to be equal:
+// assert.Equal logs the error via t.Error; the message is identical to
+// what check.Equal returns.
+err := check.Equal(want, have)
+fmt.Println(err)
+
+// Output:
+// multiple expectations violated:
+//   error: expected values to be equal
 //   trail: T.Int
 //    want: 2
 //    have: 1
-//  ---
+//       ---
+//   error: expected values to be equal
 //   trail: T.Str
 //    want: "xyz"
 //    have: "abc"
@@ -66,19 +75,20 @@ assert.Equal(want, have)
 
 ### Asserting Recursive Structures
 
+<!-- gmdoceg:ExampleEqual_recursiveStructs -->
 ```go
 type T struct {
-    Int  int
-    Next *T
+	Int  int
+	Next *T
 }
 
 have := T{1, &T{2, &T{3, &T{42, nil}}}}
 want := T{1, &T{2, &T{3, &T{4, nil}}}}
 
-assert.Equal(want, have)
+err := check.Equal(want, have)
 
-// Test Log:
-//
+fmt.Println(err)
+// Output:
 // expected values to be equal:
 //   trail: T.Next.Next.Next.Int
 //    want: 4
@@ -119,14 +129,15 @@ assert.Equal(want, have)
 
 Slices and arrays
 
+<!-- gmdoceg:ExampleEqual_slices -->
 ```go
 want := []int{1, 2, 3}
 have := []int{1, 2, 3, 4}
 
-assert.Equal(want, have)
+err := check.Equal(want, have)
 
-// Test Log:
-//
+fmt.Println(err)
+// Output:
 // expected values to be equal:
 //   want len: 3
 //   have len: 4
@@ -143,18 +154,27 @@ assert.Equal(want, have)
 //               3,
 //               4,
 //             }
+//       diff:
+//             @@ -2,5 +2,4 @@
+//                1,
+//                2,
+//             -  3,
+//             -  4,
+//             +  3,
+//              }
 ```
 
 #### Asserting Time
 
+<!-- gmdoceg:ExampleTime -->
 ```go
 want := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 have := time.Date(2025, 1, 1, 0, 1, 1, 0, time.UTC)
 
-assert.Time(want, have)
+err := check.Time(want, have)
 
-// Test Log:
-//
+fmt.Println(err)
+// Output:
 //  expected equal dates:
 //   want: 2025-01-01T00:00:00Z
 //   have: 2025-01-01T00:01:01Z
@@ -163,14 +183,15 @@ assert.Time(want, have)
 
 #### Asserting JSON Strings
 
+<!-- gmdoceg:ExampleJSON -->
 ```go
 want := `{"A": 1, "B": 2}`
 have := `{"A": 1, "B": 3}`
 
-assert.JSON(want, have)
+err := check.JSON(want, have)
 
-// Test Log:
-//
+fmt.Println(err)
+// Output:
 // expected JSON strings to be equal:
 //   want: {"A":1,"B":2}
 //   have: {"A":1,"B":3}
@@ -181,7 +202,8 @@ assert.JSON(want, have)
 - `Epsilon` - assert floating point numbers within given ε.
 - `ChannelWillClose` - assert channel will be closed within given time.
 - `MapSubset` - checks the "want" is a subset "have".
-- `Wait` - Wait waits for "fn" to return true but no longer then given timeout.
+- `Wait` - Wait waits for "fn" to return true but no longer than
+  the given timeout.
 
 See the [documentation](https://pkg.go.dev/github.com/ctx42/testing) for the
 full list.
@@ -195,26 +217,27 @@ or field trail in your Go tests. A custom checker is a function that matches
 the `check.Check` signature, enabling fine-grained control over assertions.
 Below is an example demonstrating how to create and use a custom checker.
 
+<!-- gmdoceg:ExampleEqual_customTrailChecker -->
 ```go
 type T struct {
-    Str string
-    Any []any
+	Str string
+	Any []any
 }
 
 chk := func(want, have any, opts ...any) error {
-    wVal := want.(float64)
-    hVal := want.(float64)
-    return check.Epsilon(wVal, 0.01, hVal, opts...)
+	wVal := want.(float64)
+	hVal := have.(float64)
+	return check.Epsilon(wVal, 0.01, hVal, opts...)
 }
 opt := check.WithTrailChecker("T.Any[1]", chk)
 
 want := T{Str: "abc", Any: []any{1, 2.123, "abc"}}
 have := T{Str: "abc", Any: []any{1, 2.124, "abc"}}
 
-assert.Equal(want, have, opt)
+err := check.Equal(want, have, opt)
 
-// Test Log:
-//
+fmt.Println(err)
+// Output:
 //  <nil>
 ```
 
@@ -222,7 +245,8 @@ In this example, the custom checker `chk` compares float64 values at the trail
 `T.Any[1]` with a tolerance of 0.01. The assertion passes because 2.123 and
 2.124 are within the specified epsilon.
 
-Also, see the example in [custom_assertion_test.go](../../examples/custom_assertions_test.go).
+Also see the complete custom helper example in the [examples] package:
+[custom_assertions_test.go](../../examples/custom_assertions_test.go).
 
 ### Understanding Trails
 
@@ -231,20 +255,23 @@ visited during an assertion. The `assert` package automatically tracks trails
 for composite types, enabling precise targeting for custom checkers. To inspect
 all visited trails, use the check.WithTrailLog option, as shown below:
 
+<!-- gmdoceg:ExampleEqual_listVisitedTrails -->
 ```go
 type T struct {
-    Int  int
-    Next *T
+	Int  int
+	Next *T
 }
 
 have := T{1, &T{2, &T{3, &T{42, nil}}}}
 want := T{1, &T{2, &T{3, &T{42, nil}}}}
 trails := make([]string, 0)
 
-assert.Equal(want, have, check.WithTrailLog(&trails))
+err := check.Equal(want, have, check.WithTrailLog(&trails))
 
+fmt.Println(err)
 fmt.Println(strings.Join(trails, "\n"))
 // Output:
+// <nil>
 // T.Int
 // T.Next.Int
 // T.Next.Next.Int
@@ -271,13 +298,14 @@ them. By defining a custom type checker, you can implement comparison logic
 that accesses these private fields within the same package, ensuring accurate
 assertions for such types.
 
+<!-- gmdoceg:ExampleEqual_customTypeChecker -->
 ```go
 type T struct{ value float64 }
 
 chk := func(want, have any, opts ...any) error {
-    w := want.(T)
-    h := have.(T)
-    return check.Epsilon(w.value, h.value, 0.001, opts...)
+	w := want.(T)
+	h := have.(T)
+	return check.Epsilon(w.value, h.value, 0.001, opts...)
 }
 
 opt := check.WithTypeChecker(T{}, chk)
@@ -296,83 +324,98 @@ fmt.Println(err)
 Global checkers provide a convenient way to apply custom comparison logic
 across all assertions for a specific type, without needing to specify the
 checker in each `assert.Equal` call. This is particularly useful for complex
-types with non-exported fields or custom comparison requirements. Use the
-`check.RegisterTypeChecker` function to register a global checker.
+types with non-exported fields or custom comparison requirements.
 
-Key Points for Global Checkers:
+Use [`check.RegisterTypeChecker`] to register a global checker for a type.
+Once registered, the checker is used automatically by `assert.Equal` (and
+`check.Equal`) for all values of that type.
 
-- **Registration**: call `check.RegisterTypeChecker` once, typically during
-  package initialization or in a `TestMain` function, to ensure the checker is
-  available for all tests.
-- **Scope**: the checker applies to all assertions involving the registered
-  type, streamlining test code.
-- **Non-Exported Fields**: global checkers are ideal for types with
-  non-exported fields, as they allow you to define comparison logic that
-  accesses private data.
-- **Thread Safety**: ensure the checker function is thread-safe, as it may be
-  called concurrently in tests.
+#### Key Points
 
-There are two suggested ways to register a global type checker. Either using
-`TestMain` function or init function in one of your `_test.go` files.
+- **Registration**: Call `RegisterTypeChecker` once, typically from `TestMain`
+  or an `init` function in a `_test.go` file.
+- **Panic on duplicate**: `RegisterTypeChecker` panics if a checker for the
+  same type is already registered. This prevents accidental conflicting
+  registrations.
+- **Overwriting via options**: Using the `check.WithTypeChecker` option for a
+  type that already has a global checker will log a warning (it does **not**
+  replace the global checker).
+- **Non-exported fields**: Global checkers are the recommended way to provide
+  comparison logic for types with unexported fields.
+- **Thread safety**: The registered checker may be called from multiple
+  goroutines during parallel tests, so it must be safe for concurrent use.
 
-To register a global type checker, you can use either the `TestMain` function
-or an `init` function in a `_test.go` file. The `TestMain` approach is
-preferred for centralized test setup, ensuring the checker is registered before
-any tests run. An `init` function in a test file is suitable for
-package-specific checkers, automatically executed when the test package is
-loaded.
+#### Recommended Registration Pattern
+
+The `TestMain` approach is preferred for centralized setup. It guarantees the
+checker is registered before any tests run in the package.
 
 ```go
 func TestMain(m *testing.M) {
-    check.RegisterTypeChecker(LocalType{}, checker)
-    os.Exit(m.Run())
+	check.RegisterTypeChecker(MyType{}, myChecker)
+	os.Exit(m.Run())
 }
+```
 
-// or
+An `init` function works but is less explicit about test setup ordering:
 
+```go
 func init() {
-    check.RegisterTypeChecker(LocalType{}, checker)
+	check.RegisterTypeChecker(MyType{}, myChecker)
 }
 ```
 
-Every time the new global type checker is registered, you will also see the
-below line in the test log:
+#### Log Messages
+
+When a global checker is successfully registered you will see a line like this
+in the test output (the exact path and line will vary):
 
 ```log
-*** CHECK /path/to/registration/call/all_test.go:20: Registering type checker for: mocker.goimp
+*** CHECK /path/to/your/package/all_test.go:42: Registering type checker for: pkg.MyType
 ```
 
-Every time a check overrides the global type checker with
-`checker.WithTypeChecker` option the log is written:
+When `check.WithTypeChecker` is used for a type that already has a global
+checker, the following warning is logged (the global checker is **not**
+replaced):
 
 ```log
-*** CHECK /path/to/option/call/file_test.go:20: Overwriting the global type checker for: mocker.goimp
+*** CHECK /path/to/your/test/file_test.go:17: Overwriting the global type checker for: pkg.MyType
+```
+
+These log messages are emitted via an internal package logger and are useful
+for debugging unexpected checker behavior during test runs.
+
+> **Note**: This section documents setup patterns and side-effect logging
+> rather than pure assertion usage. The examples are therefore shown as
+> illustrative code rather than executable `Example*` functions.
 ```
 
 ### Skipping Fields, Elements, or Indexes
 
-You can ask for certain trials to be skipped when asserting.
+You can ask for certain trails to be skipped when asserting.
 
+<!-- gmdoceg:ExampleEqual_skipTrails -->
 ```go
 type T struct {
-    Int  int
-    Next *T
+	Int  int
+	Next *T
 }
 
 have := T{1, &T{2, &T{3, &T{42, nil}}}}
 want := T{1, &T{2, &T{8, &T{42, nil}}}}
 trails := make([]string, 0)
 
-assert.Equal(
-    want,
-    have,
-    check.WithTrailLog(&trails),
-    check.WithSkipTrail("T.Next.Next.Int"),
+err := check.Equal(
+	want,
+	have,
+	check.WithTrailLog(&trails),
+	check.WithSkipTrail("T.Next.Next.Int"),
 )
 
+fmt.Println(err)
 fmt.Println(strings.Join(trails, "\n"))
-// Test Log:
-//
+// Output:
+// <nil>
 // T.Int
 // T.Next.Int
 // T.Next.Next.Int <skipped>
@@ -393,11 +436,12 @@ module requires from a developer either to explicitly specify fields to skip
 during comparison or enable a mode that ignores all unexported fields, as
 supported by the testing framework.
 
+<!-- gmdoceg:ExampleEqual_skipAllUnexportedFields -->
 ```go
 type T struct {
-    Int  int
-    prv  int
-    Next *T
+	Int  int
+	prv  int
+	Next *T
 }
 
 have := T{1, -1, &T{2, -2, &T{3, -3, &T{42, -4, nil}}}}
@@ -405,10 +449,10 @@ want := T{1, -7, &T{2, -7, &T{3, -7, &T{42, -7, nil}}}}
 trails := make([]string, 0)
 
 err := check.Equal(
-    want,
-    have,
-    check.WithTrailLog(&trails),
-    check.WithSkipUnexported,
+	want,
+	have,
+	check.WithTrailLog(&trails),
+	check.WithSkipUnexported,
 )
 
 fmt.Println(err)

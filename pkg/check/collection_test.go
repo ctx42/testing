@@ -844,3 +844,77 @@ func Test_MapsSubset(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 }
+
+// Benchmarks for collection checks (hot paths for Len, Has, subsets).
+
+func Benchmark_Len_Slice(b *testing.B) {
+	data := make([]int, 1000)
+	for i := range data {
+		data[i] = i
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Len(1000, data)
+	}
+}
+
+func Benchmark_Has_Slice(b *testing.B) {
+	data := make([]string, 500)
+	for i := range data {
+		data[i] = "item-" + string(rune('a'+i%26))
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Has("item-z", data)
+	}
+}
+
+func Benchmark_SliceSubset(b *testing.B) {
+	want := []int{1, 3, 5, 7, 9}
+	have := make([]int, 200)
+	for i := range have {
+		have[i] = i
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = SliceSubset(want, have)
+	}
+}
+
+// Additional collection benchmarks for deeper cases.
+
+func Benchmark_MapSubset(b *testing.B) {
+	want := map[string]int{"a": 1, "b": 2, "c": 3}
+	have := make(map[string]int, 200)
+	for i := 0; i < 200; i++ {
+		have["k"+string(rune('a'+i%26))] = i
+	}
+	have["a"] = 1
+	have["b"] = 2
+	have["c"] = 3
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = MapSubset(want, have)
+	}
+}
+
+func Benchmark_HasKey(b *testing.B) {
+	m := make(map[int]string, 1000)
+	for i := 0; i < 1000; i++ {
+		m[i] = "v"
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = HasKey(999, m)
+	}
+}

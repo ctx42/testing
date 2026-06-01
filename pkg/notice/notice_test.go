@@ -909,13 +909,13 @@ func Test_Notice_Prev(t *testing.T) {
 	})
 }
 
-func Test_Notice_collect(t *testing.T) {
+func Test_Notice_All(t *testing.T) {
 	t.Run("without parent", func(t *testing.T) {
 		// --- Given ---
 		msg := &Notice{}
 
 		// --- When ---
-		have := msg.collect()
+		have := msg.All()
 
 		// --- Then ---
 		affirm.DeepEqual(t, []*Notice{msg}, have)
@@ -929,7 +929,7 @@ func Test_Notice_collect(t *testing.T) {
 		_ = Join(msg0, msg1, msg2)
 
 		// --- When ---
-		have := msg2.collect()
+		have := msg2.All()
 
 		// --- Then ---
 		affirm.DeepEqual(t, []*Notice{msg0, msg1, msg2}, have)
@@ -989,4 +989,45 @@ func Test_Join(t *testing.T) {
 		affirm.Equal(t, true, core.Same(msg0.next, msg1))
 		affirm.Equal(t, true, core.Same(msg1.prev, msg0))
 	})
+}
+
+// Benchmarks for the notice error model and hot formatting paths.
+
+func Benchmark_Notice_Error_Simple(b *testing.B) {
+	msg := New("expected values to be equal").
+		Want("%s", "abc").
+		Have("%s", "xyz")
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = msg.Error()
+	}
+}
+
+func Benchmark_Notice_Join_And_All(b *testing.B) {
+	msg0 := New("first")
+	msg1 := New("second")
+	msg2 := New("third")
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		joined := Join(msg0, msg1, msg2)
+		if n, ok := errors.AsType[*Notice](joined); ok {
+			_ = n.All()
+		}
+	}
+}
+
+func Benchmark_Notice_Is_And_Unwrap(b *testing.B) {
+	myErr := errors.New("root")
+	msg := New("failed").Wrap(myErr)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = errors.Is(msg, myErr)
+		_ = msg.Unwrap()
+	}
 }

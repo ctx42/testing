@@ -7,24 +7,18 @@ import (
 	"io"
 )
 
-// ErrorReadSeeker implements [io.ReadSeeker] by embedding [ErrorReader]
-// instance and adding Seek method which behavior may be controlled with
-// options. See [ErrReadSeeker] constructor function for details.
+// ErrorReadSeeker implements [io.ReadSeeker] by embedding an [ErrorReader]
+// and adding controllable Seek behavior.
 type ErrorReadSeeker struct {
 	*ErrorReader
 	seek io.Seeker
 }
 
-// ErrReadSeeker wraps the "src" [io.ReadSeeker] and controls how many bytes
-// can be read from it (n) before it returns an error. If "n" is negative,
-// it behaves like a regular reader. With [WithReadErr] option, you can
-// customize the returned error.
+// ErrReadSeeker wraps "src" and allows up to n bytes to be read before
+// returning an error. If n < 0 it behaves normally.
 //
-// By default, the [ErrorReadSeeker.Seek] method calls the original Seek method
-// and returns whatever it returned. You may customize the returned error
-// from [ErrorReadSeeker.Seek] with a [WithSeekErr] option. When a [WithSeekErr]
-// option is used, the original Seek method is also called, but its return
-// value is ignored and the one provided with the [WithSeekErr] option is used.
+// Use With*Err options to customize read and seek errors (original Seek
+// is still called).
 func ErrReadSeeker(src io.ReadSeeker, n int, opts ...Option) *ErrorReadSeeker {
 	return &ErrorReadSeeker{
 		ErrorReader: ErrReader(src, n, opts...),
