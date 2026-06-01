@@ -1,3 +1,7 @@
+## v0.49.0 (Mon, 01 Jun 2026 20:20:52 UTC)
+- docs: add AGENTS.md and enforce 80-column markdown.
+- docs: large documentation overhaul with widespread internal cleanup.
+
 ## v0.48.0 (Fri, 08 May 2026 09:27:31 UTC)
 - feat(check)!: accept string or []byte in JSON.
 
