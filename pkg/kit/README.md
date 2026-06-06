@@ -38,6 +38,9 @@ standalone helpers at the package level:
 - [randkit](randkit/random.go) — Cryptographically random test helpers
   for generating strings, file names, integers, and passwords via
   `crypto/rand`.
+- [selfkit](selfkit/README.md) — Subprocess test helpers that re-invoke
+  the test binary itself to assert exit codes, stdout, and stderr
+  without building a separate binary.
 
 See the individual sub-package READMEs and godoc for detailed usage,
 examples, and cross-references.
