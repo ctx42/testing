@@ -1,3 +1,7 @@
+## v0.50.0 (Sun, 07 Jun 2026 10:11:10 UTC)
+- feat(randkit): add cryptographically random test helpers.
+- feat(selfkit): add subprocess test helper.
+
 ## v0.49.0 (Mon, 01 Jun 2026 20:20:52 UTC)
 - docs: add AGENTS.md and enforce 80-column markdown.
 - docs: large documentation overhaul with widespread internal cleanup.
