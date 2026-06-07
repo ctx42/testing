@@ -1,6 +1,6 @@
 # Project Rules for testing
 
-This file provides guidance to Claude Code (claude.ai/code) when
+This file provides guidance to AI agents (and human contributors) when
 working with code in this repository.
 
 ## Project Overview
