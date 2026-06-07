@@ -1,3 +1,6 @@
+## v0.51.0 (Sun, 07 Jun 2026 17:28:56 UTC)
+- feat!: Remove `pkg/kit` packages and move them to separate repository github.com/ctx42/testkit.
+
 ## v0.50.0 (Sun, 07 Jun 2026 10:11:10 UTC)
 - feat(randkit): add cryptographically random test helpers.
 - feat(selfkit): add subprocess test helper.
