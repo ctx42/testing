@@ -78,8 +78,6 @@ Certain packages expose intentionally public surface for advanced or
 cross-project use:
 - `pkg/testcases` — battle-tested test values for writing and testing
   custom assertions/helpers (see its package documentation).
-- `pkg/kit` top-level helpers such as `AddGlobalCleanup`/`RunGlobalCleanups`
-  — for `TestMain`-style post-test coordination (see godoc for warnings).
 
 ## Main Packages
 
@@ -91,9 +89,6 @@ Packages used directly in test files.
   (or `*notice.Notice`), designed for both direct use and custom helpers.
 - [goldy](pkg/goldy/README.md) — golden file testing with testable
   public surface via `tester.T`.
-- [kit](pkg/kit/README.md) — curated collection of focused test helpers
-  (I/O buffers, deterministic clocks, reflection utilities, plus a few
-  top-level helpers).
 - [mock](pkg/mock/README.md) — primitives for writing interface mocks
   (expectations, matchers, call recording).
 - [mocker](pkg/mocker/README.md) — code generator for interface mocks

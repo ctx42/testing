@@ -56,23 +56,16 @@ one below:
 
 **Other packages:**
 
-- `pkg/mock` — primitives for writing interface mocks (matchers,
-  candidates)
+- `pkg/mock` — primitives for writing interface mocks (matchers, candidates)
 - `pkg/mocker` — interface mock code generator
 - `pkg/goldy` — golden file test support
 - `pkg/dump` — configurable any-type-to-string renderer
-- `pkg/kit` — assorted test helpers (sub-packages: `iokit`, `timekit`)
 - `pkg/must` — helpers that panic on error
 - `pkg/testcases` — intentionally public collection of test values and
   cases for people writing custom assertions or testing their own test
   helpers with [tester.Spy]. See its package documentation for the
   intended usage patterns.
-- `pkg/kit` (specifically `AddGlobalCleanup` / `RunGlobalCleanups`) —
-  intentionally public global cleanup coordination helpers. These are used
-  extensively by external libraries for `TestMain`-style post-test cleanup.
-  The feature uses package-level state by design. See the godoc for usage.
-- `internal/diff` — text diffing (Myers algorithm via
-  `internal/diff/lcs`)
+- `internal/diff` — text diffing (Myers algorithm via `internal/diff/lcs`)
 
 ## Source Code Conventions
 
@@ -228,8 +221,8 @@ rationale and recommended character set.
 ### Tests That Mutate Package Globals
 
 Some tests in this module need to directly read or write package-level global
-variables (for example the global cleanup registry in `pkg/kit` or the global
-type registries in `pkg/dump` and `pkg/check`).
+variables (for example, the global type registries in `pkg/dump` and
+`pkg/check`).
 
 All such tests **must** start with:
 
@@ -239,14 +232,8 @@ t.Setenv("___", "___")
 
 This forces Go's test framework to serialize the test with any other test that
 also calls `Setenv` on the same key. Because we use the same dummy key in every
-test that touches shared global state, these tests are effectively prevented
-from running in parallel with each other.
-
-When a test needs to reset global state, prefer a small helper such as
-`resetCleanupsForTest()` (see `pkg/kit/cleanup_test.go`) rather than scattering
-direct assignments to globals throughout the test. The helper should acquire
-any necessary locks and the calling test must still start with the
-`t.Setenv("___", "___")` marker.
+test that touches the shared global state, these tests are effectively
+prevented from running in parallel with each other.
 
 ## License
 
