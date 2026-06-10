@@ -15,7 +15,7 @@ import (
 // [Options.WaitThrottle] — use [WithWaitThrottle] to change it.
 // See [assert.Wait].
 //
-// The "timeout" may represent duration in the form of a string, int, int64 or
+// The "timeout" may represent duration in the form of a string, int, int64, or
 // [time.Duration].
 func Wait(within any, fn func() bool, opts ...any) error {
 	ops := DefaultOptions(opts...)
