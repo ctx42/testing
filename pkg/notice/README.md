@@ -12,7 +12,7 @@
 
 The `notice` package offers a suite of utilities for crafting clear, structured
 assertion messages. It simplifies the creation of readable error messages,
-featuring a header and contextual rows. With a fluent interface, it enables
+featuring a Header and contextual rows. With a fluent interface, it enables
 seamless message construction and includes helper functions for formatting and
 unwrapping errors.
 

@@ -22,7 +22,7 @@ func FWD(node *Notice) string {
 		have.WriteString("| ")
 	}
 	for node != nil {
-		_, _ = fmt.Fprintf(&have, "%s (%s)", node.Header, node.Trail)
+		_, _ = fmt.Fprintf(&have, "%s (%s)", node.HeaderText, node.Trail)
 		node = node.next
 		if node != nil {
 			have.WriteString(" -> ")
@@ -45,7 +45,7 @@ func REV(node *Notice) string {
 		have.WriteString("| ")
 	}
 	for node != nil {
-		_, _ = fmt.Fprintf(&have, "%s (%s)", node.Header, node.Trail)
+		_, _ = fmt.Fprintf(&have, "%s (%s)", node.HeaderText, node.Trail)
 		node = node.prev
 		if node != nil {
 			have.WriteString(" -> ")

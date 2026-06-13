@@ -18,7 +18,8 @@ func Test_New(t *testing.T) {
 			msg := New("header %s", "row")
 
 			// --- Then ---
-			affirm.Equal(t, "header row", msg.Header)
+			affirm.Equal(t, "header row", msg.HeaderText)
+			affirm.Equal(t, "", msg.HeaderPrefix)
 			affirm.Equal(t, "", msg.Trail)
 			affirm.Nil(t, msg.Rows)
 			affirm.Nil(t, msg.Meta)
@@ -34,7 +35,8 @@ func Test_New(t *testing.T) {
 		msg := New("header %s")
 
 		// --- Then ---
-		affirm.Equal(t, "header %s", msg.Header)
+		affirm.Equal(t, "header %s", msg.HeaderText)
+		affirm.Equal(t, "", msg.HeaderPrefix)
 		affirm.Equal(t, "", msg.Trail)
 		affirm.Nil(t, msg.Rows)
 		affirm.Nil(t, msg.Meta)
@@ -54,7 +56,8 @@ func Test_From(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		affirm.Equal(t, "header row", have.Header)
+		affirm.Equal(t, "header row", have.HeaderText)
+		affirm.Equal(t, "", have.HeaderPrefix)
 		affirm.Equal(t, "", have.Trail)
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
@@ -73,7 +76,29 @@ func Test_From(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		affirm.Equal(t, "[prefix] header row", have.Header)
+		affirm.Equal(t, "header row", have.HeaderText)
+		affirm.Equal(t, "prefix", have.HeaderPrefix)
+		affirm.Equal(t, "", have.Trail)
+		wRows := []Row{
+			{Name: "first", Format: "%d", Args: []any{1}},
+			{Name: "second", Format: "%d", Args: []any{2}},
+		}
+		affirm.DeepEqual(t, wRows, have.Rows)
+		affirm.Equal(t, true, errors.Is(have, ErrNotice))
+	})
+
+	t.Run("override prefix", func(t *testing.T) {
+		// --- Given ---
+		msg := New("header %s", "row").Append("first", "%d", 1)
+		msg = From(msg, "prefix 0")
+
+		// --- When ---
+		have := From(msg, "prefix 1").Append("second", "%d", 2)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg, have))
+		affirm.Equal(t, "header row", have.HeaderText)
+		affirm.Equal(t, "prefix 1", have.HeaderPrefix)
 		affirm.Equal(t, "", have.Trail)
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
@@ -92,7 +117,8 @@ func Test_From(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, core.Same(orig, have))
-		affirm.Equal(t, "assertion error", have.Header)
+		affirm.Equal(t, "assertion error", have.HeaderText)
+		affirm.Equal(t, "", have.HeaderPrefix)
 		affirm.Equal(t, "", have.Trail)
 		wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
 		affirm.DeepEqual(t, wRows, have.Rows)
@@ -109,7 +135,8 @@ func Test_From(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, core.Same(orig, have))
-		affirm.Equal(t, "[prefix] assertion error", have.Header)
+		affirm.Equal(t, "assertion error", have.HeaderText)
+		affirm.Equal(t, "prefix", have.HeaderPrefix)
 		affirm.Equal(t, "", have.Trail)
 		wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
 		affirm.DeepEqual(t, wRows, have.Rows)
@@ -136,7 +163,8 @@ func Test_Notice_SetHeader(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		affirm.Equal(t, "new header", have.Header)
+		affirm.Equal(t, "new header", have.HeaderText)
+		affirm.Equal(t, "", have.HeaderPrefix)
 	})
 
 	t.Run("with args", func(t *testing.T) {
@@ -148,7 +176,82 @@ func Test_Notice_SetHeader(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		affirm.Equal(t, "new header row", have.Header)
+		affirm.Equal(t, "new header row", have.HeaderText)
+		affirm.Equal(t, "", have.HeaderPrefix)
+	})
+}
+
+func Test_Notice_SetPrefix(t *testing.T) {
+	t.Run("without args", func(t *testing.T) {
+		// --- Given ---
+		msg := New("header")
+
+		// --- When ---
+		have := msg.SetPrefix("my prefix")
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg, have))
+		affirm.Equal(t, "my prefix", have.HeaderPrefix)
+		affirm.Equal(t, "header", have.HeaderText)
+	})
+
+	t.Run("with args", func(t *testing.T) {
+		// --- Given ---
+		msg := New("header")
+
+		// --- When ---
+		have := msg.SetPrefix("my %s", "prefix")
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg, have))
+		affirm.Equal(t, "my prefix", have.HeaderPrefix)
+		affirm.Equal(t, "header", have.HeaderText)
+	})
+}
+
+func Test_Notice_Header(t *testing.T) {
+	t.Run("no prefix", func(t *testing.T) {
+		// --- Given ---
+		msg := &Notice{HeaderText: "expected values to be equal"}
+
+		// --- When ---
+		have := msg.Header()
+
+		// --- Then ---
+		affirm.Equal(t, "expected values to be equal", have)
+	})
+
+	t.Run("with prefix", func(t *testing.T) {
+		// --- Given ---
+		msg := &Notice{HeaderText: "expected values to be equal", HeaderPrefix: "my prefix"}
+
+		// --- When ---
+		have := msg.Header()
+
+		// --- Then ---
+		affirm.Equal(t, "[my prefix] expected values to be equal", have)
+	})
+
+	t.Run("empty header with prefix", func(t *testing.T) {
+		// --- Given ---
+		msg := &Notice{HeaderPrefix: "my prefix"}
+
+		// --- When ---
+		have := msg.Header()
+
+		// --- Then ---
+		affirm.Equal(t, "[my prefix] ", have)
+	})
+
+	t.Run("empty header no prefix", func(t *testing.T) {
+		// --- Given ---
+		msg := &Notice{}
+
+		// --- When ---
+		have := msg.Header()
+
+		// --- Then ---
+		affirm.Equal(t, "", have)
 	})
 }
 
@@ -305,9 +408,9 @@ func Test_Notice_SetTrail(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
 		want := &Notice{
-			Header: "header",
-			Trail:  "type.field",
-			err:    ErrNotice,
+			HeaderText: "header",
+			Trail:      "type.field",
+			err:        ErrNotice,
 		}
 		affirm.DeepEqual(t, want, have)
 	})
@@ -335,7 +438,8 @@ func Test_Notice_Want(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		affirm.Equal(t, "header", msg.Header)
+		affirm.Equal(t, "header", msg.HeaderText)
+		affirm.Equal(t, "", msg.HeaderPrefix)
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 			{Name: "want", Format: "%s", Args: []any{"row"}},
@@ -355,7 +459,8 @@ func Test_Notice_Want(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		affirm.Equal(t, "header", msg.Header)
+		affirm.Equal(t, "header", msg.HeaderText)
+		affirm.Equal(t, "", msg.HeaderPrefix)
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 			{Name: "want", Format: "%s", Args: []any{"row"}},
@@ -375,7 +480,8 @@ func Test_Notice_Have(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		affirm.Equal(t, "header", msg.Header)
+		affirm.Equal(t, "header", msg.HeaderText)
+		affirm.Equal(t, "", msg.HeaderPrefix)
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 			{Name: "have", Format: "%s", Args: []any{"row"}},
@@ -395,7 +501,8 @@ func Test_Notice_Have(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		affirm.Equal(t, "header", msg.Header)
+		affirm.Equal(t, "header", msg.HeaderText)
+		affirm.Equal(t, "", msg.HeaderPrefix)
 		wRows := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 			{Name: "have", Format: "%s", Args: []any{"row"}},
@@ -509,6 +616,18 @@ func Test_Notice_Error(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "expected values to be equal", have)
+	})
+
+	t.Run("with prefix", func(t *testing.T) {
+		// --- Given ---
+		msg := New("expected values to be equal")
+		msg.HeaderPrefix = "prefix"
+
+		// --- When ---
+		have := msg.Error()
+
+		// --- Then ---
+		affirm.Equal(t, "[prefix] expected values to be equal", have)
 	})
 
 	t.Run("simple message", func(t *testing.T) {

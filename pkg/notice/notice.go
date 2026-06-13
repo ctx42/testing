@@ -62,9 +62,10 @@ var ErrNotice = errors.New("notice error")
 //
 // nolint: errname
 type Notice struct {
-	Header string // Header message.
+	HeaderText   string // HeaderText message.
+	HeaderPrefix string // HeaderText prefix message.
 
-	// Is a trail to the field, element or key the notice message is about.
+	// Is a trail to the field, element, or key the notice message is about.
 	Trail string
 
 	Rows []Row          // Context rows.
@@ -97,17 +98,20 @@ func From(err error, prefix ...string) *Notice {
 		return nil
 	}
 	if e, ok := err.(*Notice); ok { // nolint: errorlint
-		if len(prefix) > 0 {
-			e.Header = fmt.Sprintf("[%s] %s", prefix[0], e.Header)
+		if len(prefix) > 0 && prefix[0] != "" {
+			e.HeaderPrefix = prefix[0]
 		}
 		return e
 	}
 
 	header := "assertion error"
-	if len(prefix) > 0 {
-		header = fmt.Sprintf("[%s] %s", prefix[0], header)
+	pref := ""
+	if len(prefix) > 0 && prefix[0] != "" {
+		pref = prefix[0]
 	}
-	return New(header).Wrap(err)
+	msg := New(header).Wrap(err)
+	msg.HeaderPrefix = pref
+	return msg
 }
 
 // SetHeader sets the header message. Implements fluent interface.
@@ -115,8 +119,26 @@ func (msg *Notice) SetHeader(header string, args ...any) *Notice {
 	if len(args) > 0 {
 		header = fmt.Sprintf(header, args...)
 	}
-	msg.Header = header
+	msg.HeaderText = header
 	return msg
+}
+
+// SetPrefix sets the header prefix. Implements fluent interface.
+func (msg *Notice) SetPrefix(prefix string, args ...any) *Notice {
+	if len(args) > 0 {
+		prefix = fmt.Sprintf(prefix, args...)
+	}
+	msg.HeaderPrefix = prefix
+	return msg
+}
+
+// Header returns the formatted Header string. When HeaderPrefix is set, it
+// returns "[Prefix] HeaderText"; otherwise it returns HeaderText unchanged.
+func (msg *Notice) Header() string {
+	if msg.HeaderPrefix != "" {
+		return fmt.Sprintf("[%s] %s", msg.HeaderPrefix, msg.HeaderText)
+	}
+	return msg.HeaderText
 }
 
 // Append adds a row (name + formatted value). Replaces any existing row with
@@ -244,16 +266,17 @@ func (msg *Notice) Error() string {
 			rows = append([]Row{NewRow(trail, "%s", m.Trail)}, m.Rows...)
 		}
 
-		if multiMsg && m.Header != "" {
+		header := m.Header()
+		if multiMsg && header != "" {
 			buf.WriteString("  ")
 			buf.WriteString(Pad("error", longest))
 			buf.WriteString(": ")
-			buf.WriteString(m.Header)
+			buf.WriteString(header)
 		} else {
-			buf.WriteString(m.Header)
+			buf.WriteString(header)
 		}
 
-		if len(rows) > 0 && m.Header != "" {
+		if len(rows) > 0 && header != "" {
 			if !multiMsg {
 				buf.WriteString(":")
 			}
