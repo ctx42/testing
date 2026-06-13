@@ -1,3 +1,11 @@
+## v0.52.0 (Sat, 13 Jun 2026 13:55:17 UTC)
+- docs: update AGENTS.md.
+- docs: fix typo in `Wait` documentation.
+- feat(notice)!: rename Header field to HeaderText, export Header().
+- docs: update README.md to replace gopher.png with logo.png.
+- docs: add editable logo source file `logo.xcf` alongside updated `logo.png`.
+- docs: update logo assets (`logo.png` and `logo.xcf`).
+
 ## v0.51.0 (Sun, 07 Jun 2026 17:28:56 UTC)
 - feat!: Remove `pkg/kit` packages and move them to separate repository github.com/ctx42/testkit.
 
