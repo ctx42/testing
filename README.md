@@ -1,4 +1,4 @@
-![gopher.png](doc/gopher.png)
+![gopher.png](doc/logo.png)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/ctx42/testing)](https://goreportcard.com/report/github.com/ctx42/testing)
 [![GoDoc](https://img.shields.io/badge/api-Godoc-blue.svg)](https://pkg.go.dev/github.com/ctx42/testing)
