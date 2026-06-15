@@ -1,3 +1,6 @@
+## v0.52.1 (Mon, 15 Jun 2026 20:19:55 UTC)
+- fix(notice): propagate prefix to all chain members in From.
+
 ## v0.52.0 (Sat, 13 Jun 2026 13:55:17 UTC)
 - docs: update AGENTS.md.
 - docs: fix typo in `Wait` documentation.
