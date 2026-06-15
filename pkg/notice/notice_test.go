@@ -108,6 +108,38 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, true, errors.Is(have, ErrNotice))
 	})
 
+	t.Run("chain of two: prefix propagates to prev", func(t *testing.T) {
+		// --- Given ---
+		msg0 := New("header0")
+		msg1 := New("header1")
+		_ = Join(msg0, msg1)
+
+		// --- When ---
+		have := From(msg1, "prefix")
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg1, have))
+		affirm.Equal(t, "prefix", msg1.HeaderPrefix)
+		affirm.Equal(t, "prefix", msg0.HeaderPrefix)
+	})
+
+	t.Run("chain of three: prefix propagates through all", func(t *testing.T) {
+		// --- Given ---
+		msg0 := New("header0")
+		msg1 := New("header1")
+		msg2 := New("header2")
+		_ = Join(msg0, msg1, msg2)
+
+		// --- When ---
+		have := From(msg2, "prefix")
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg2, have))
+		affirm.Equal(t, "prefix", msg2.HeaderPrefix)
+		affirm.Equal(t, "prefix", msg1.HeaderPrefix)
+		affirm.Equal(t, "prefix", msg0.HeaderPrefix)
+	})
+
 	t.Run("not an instance of Notice without a prefix", func(t *testing.T) {
 		// --- Given ---
 		orig := errors.New("test")

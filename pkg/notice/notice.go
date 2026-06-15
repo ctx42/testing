@@ -76,7 +76,7 @@ type Notice struct {
 }
 
 // New creates a [Notice] with the given header (formatted with [fmt.Sprintf]
-// if args are provided). The notice starts with base error [ErrNotice].
+// if args are provided). The notice starts with a base error [ErrNotice].
 //
 // Example:
 //
@@ -88,7 +88,8 @@ func New(header string, args ...any) *Notice {
 }
 
 // From extracts a [Notice] from err's error tree (or creates one wrapping err).
-// If a prefix is provided, it is prepended to the header in "[prefix] ..." form.
+// If a prefix is provided, it is prepended to the header in "[prefix] ..."
+// form.
 //
 // If err is already a *Notice, it is returned (after optional prefixing).
 // Otherwise a new notice with header "assertion error" (or prefixed) is
@@ -97,9 +98,13 @@ func From(err error, prefix ...string) *Notice {
 	if err == nil {
 		return nil
 	}
+	//goland:noinspection GoTypeAssertionOnErrors
 	if e, ok := err.(*Notice); ok { // nolint: errorlint
 		if len(prefix) > 0 && prefix[0] != "" {
 			e.HeaderPrefix = prefix[0]
+			if e.prev != nil {
+				_ = From(e.prev, prefix[0])
+			}
 		}
 		return e
 	}
