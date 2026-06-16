@@ -144,3 +144,72 @@ func Test_NotContain_error_tabular(t *testing.T) {
 		})
 	}
 }
+
+func Test_EqualFold(t *testing.T) {
+	t.Run("additional message rows added", func(t *testing.T) {
+		// --- Given ---
+		opt := WithTrail("type.field")
+
+		// --- When ---
+		err := EqualFold("ABC", "xyz", opt)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "expected strings to be equal ignoring case:\n" +
+			"  trail: type.field\n" +
+			"   want: \"ABC\"\n" +
+			"   have: \"xyz\""
+		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
+func Test_EqualFold_success_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		want string
+		have string
+	}{
+		{"1", "abc", "abc"},
+		{"2", "ABC", "abc"},
+		{"3", "abc", "ABC"},
+		{"4", "AbC", "aBc"},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			err := EqualFold(tc.want, tc.have)
+
+			// --- Then ---
+			affirm.Nil(t, err)
+		})
+	}
+}
+
+func Test_EqualFold_error_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		want string
+		have string
+	}{
+		{"1", "abc", "xyz"},
+		{"2", "ABC", "xyz"},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			err := EqualFold(tc.want, tc.have)
+
+			// --- Then ---
+			affirm.NotNil(t, err)
+			wMsg := "expected strings to be equal ignoring case:\n" +
+				"  want: %q\n" +
+				"  have: %q"
+			wMsg = fmt.Sprintf(wMsg, tc.want, tc.have)
+			affirm.Equal(t, wMsg, err.Error())
+		})
+	}
+}

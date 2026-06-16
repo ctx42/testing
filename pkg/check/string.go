@@ -37,3 +37,17 @@ func NotContain(want, have string, opts ...any) error {
 	}
 	return nil
 }
+
+// EqualFold checks that "want" and "have" are equal, ignoring case.
+//
+// See [assert.EqualFold] for the assertion wrapper.
+func EqualFold(want, have string, opts ...any) error {
+	if strings.EqualFold(want, have) {
+		return nil
+	}
+	ops := DefaultOptions(opts...)
+	msg := notice.New("expected strings to be equal ignoring case").
+		Append("want", "%q", want).
+		Append("have", "%q", have)
+	return AddRows(ops, msg)
+}
