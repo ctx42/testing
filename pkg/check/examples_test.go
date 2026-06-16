@@ -343,3 +343,17 @@ func ExampleTime() {
 	//   have: 2025-01-01T00:01:01Z
 	//   diff: -1m1s
 }
+
+func ExampleEqualFold() {
+	err := check.EqualFold("ABC", "abc") // Case-insensitive check.
+
+	fmt.Println(err)
+	// Output: <nil>
+}
+
+func ExampleContainFold() {
+	err := check.ContainFold("DEF", "abc def ghi") // Case-insensitive check.
+
+	fmt.Println(err)
+	// Output: <nil>
+}

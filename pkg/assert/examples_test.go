@@ -244,3 +244,17 @@ func ExampleEqual_skipAllUnexportedFields() {
 	// T.Next.Next.Next.prv <skipped>
 	// T.Next.Next.Next.Next
 }
+
+func ExampleEqualFold() {
+	err := check.EqualFold("ABC", "abc") // Case-insensitive.
+
+	fmt.Println(err)
+	// Output: <nil>
+}
+
+func ExampleContainFold() {
+	err := check.ContainFold("DEF", "abc def ghi") // Case-insensitive.
+
+	fmt.Println(err)
+	// Output: <nil>
+}
