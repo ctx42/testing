@@ -35,7 +35,7 @@ import (
 // Count asserts that there are exactly "count" occurrences of "what" in
 // "where".
 //
-// Currently only strings are supported for "where".
+// Currently, only strings are supported for "where".
 func Count(t tester.T, count int, what, where any, opts ...any) bool {
 	t.Helper()
 	if e := check.Count(count, what, where, opts...); e != nil {

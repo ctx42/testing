@@ -22,8 +22,6 @@ func Equal(t tester.T, want, have any, opts ...any) bool {
 }
 
 // NotEqual asserts that want and have are not equal using [check.NotEqual].
-//
-// See the package documentation for customization options.
 func NotEqual(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if err := check.NotEqual(want, have, opts...); err != nil {

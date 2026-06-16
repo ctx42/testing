@@ -9,8 +9,6 @@ import (
 )
 
 // Zero asserts that "have" is the zero value for its type using [check.Zero].
-//
-// See the package documentation for the overall design and option handling.
 func Zero(t tester.T, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Zero(have, opts...); e != nil {
@@ -22,8 +20,6 @@ func Zero(t tester.T, have any, opts ...any) bool {
 
 // NotZero asserts that "have" is not the zero value for its type using
 // [check.NotZero].
-//
-// See the package documentation for the overall design and option handling.
 func NotZero(t tester.T, have any, opts ...any) bool {
 	t.Helper()
 	if err := check.NotZero(have, opts...); err != nil {

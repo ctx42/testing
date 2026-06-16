@@ -9,8 +9,6 @@ import (
 )
 
 // True asserts that "have" is true using [check.True].
-//
-// See the package documentation for the overall design and option handling.
 func True(t tester.T, have bool, opts ...any) bool {
 	t.Helper()
 	if e := check.True(have, opts...); e != nil {
@@ -21,8 +19,6 @@ func True(t tester.T, have bool, opts ...any) bool {
 }
 
 // False asserts that "have" is false using [check.False].
-//
-// See the package documentation for the overall design and option handling.
 func False(t tester.T, have bool, opts ...any) bool {
 	t.Helper()
 	if err := check.False(have, opts...); err != nil {
