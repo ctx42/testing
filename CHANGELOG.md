@@ -1,3 +1,9 @@
+## v0.54.0 (Tue, 16 Jun 2026 18:50:59 UTC)
+- feat(check,assert): add EqualFold for case-insensitive string equality.
+- feat(check,assert): add ContainFold for case-insensitive substring check.
+- docs(assert): remove redundant comments in assertions.
+- docs(assert,check): add examples for EqualFold and ContainFold.
+
 ## v0.53.0 (Tue, 16 Jun 2026 13:33:39 UTC)
 - feat(tester): add case-insensitive log matching strategies to Spy.
 
