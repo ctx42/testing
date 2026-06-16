@@ -133,6 +133,72 @@ func Test_find_match(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, false, have)
 	})
+
+	t.Run("equal fold success", func(t *testing.T) {
+		// --- Given ---
+		ent := &find{strategy: EqualFold, want: "ABC DEF GHI"}
+
+		// --- When ---
+		have := ent.match("abc def ghi")
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("error - equal fold", func(t *testing.T) {
+		// --- Given ---
+		ent := &find{strategy: EqualFold, want: "ABC DEF GHI"}
+
+		// --- When ---
+		have := ent.match("abc xyz ghi")
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+
+	t.Run("contains fold success", func(t *testing.T) {
+		// --- Given ---
+		ent := &find{strategy: ContainsFold, want: "DEF"}
+
+		// --- When ---
+		have := ent.match("abc def ghi")
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("error - contains fold", func(t *testing.T) {
+		// --- Given ---
+		ent := &find{strategy: ContainsFold, want: "DEF"}
+
+		// --- When ---
+		have := ent.match("abc xyz ghi")
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+
+	t.Run("not contains fold success", func(t *testing.T) {
+		// --- Given ---
+		ent := &find{strategy: NotContainsFold, want: "JKL"}
+
+		// --- When ---
+		have := ent.match("abc def ghi")
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("error - not contains fold", func(t *testing.T) {
+		// --- Given ---
+		ent := &find{strategy: NotContainsFold, want: "DEF"}
+
+		// --- When ---
+		have := ent.match("abc def ghi")
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
 }
 
 func Test_New(t *testing.T) {
@@ -1887,6 +1953,186 @@ func Test_Spy_ExpectLogNotContain(t *testing.T) {
 
 		// --- Then ---
 		msg := affirm.Panic(t, func() { spy.ExpectLogNotContain("msg") })
+		affirm.NotNil(t, msg)
+		affirm.Equal(t, errExpectLogAfterIgnoreLogs, *msg)
+		affirm.Equal(t, true, spy.panicked)
+	})
+}
+
+func Test_Spy_ExpectLogEqualFold(t *testing.T) {
+	t.Run("set", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+
+		// --- When ---
+		have := spy.ExpectLogEqualFold("MSG %d", 0)
+
+		// --- Then ---
+		affirm.Equal(t, 1, len(spy.wantLogMgs))
+		ent := spy.wantLogMgs[0]
+		affirm.Equal(t, EqualFold, ent.strategy)
+		affirm.Equal(t, "MSG 0", ent.want)
+		affirm.Equal(t, true, spy == have)
+	})
+
+	t.Run("panics when called on closed Spy", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti)
+		spy.Close()
+
+		// --- Then ---
+		msg := affirm.Panic(t, func() { spy.ExpectLogEqualFold("msg") })
+		affirm.NotNil(t, msg)
+		affirm.Equal(t, errExpectOnClosed, *msg)
+		affirm.Equal(t, true, spy.panicked)
+	})
+
+	t.Run("panics when called on finished Spy", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti)
+		spy.Finish()
+
+		// --- Then ---
+		msg := affirm.Panic(t, func() { spy.ExpectLogEqualFold("msg") })
+		affirm.NotNil(t, msg)
+		affirm.Equal(t, errExpectOnFinished, *msg)
+	})
+
+	t.Run("panics when called after IgnoreLogs", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.IgnoreLogs()
+
+		// --- Then ---
+		msg := affirm.Panic(t, func() { spy.ExpectLogEqualFold("msg") })
+		affirm.NotNil(t, msg)
+		affirm.Equal(t, errExpectLogAfterIgnoreLogs, *msg)
+		affirm.Equal(t, true, spy.panicked)
+	})
+}
+
+func Test_Spy_ExpectLogContainFold(t *testing.T) {
+	t.Run("set", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+
+		// --- When ---
+		have := spy.ExpectLogContainFold("MSG %d", 0)
+
+		// --- Then ---
+		affirm.Equal(t, 1, len(spy.wantLogMgs))
+		ent := spy.wantLogMgs[0]
+		affirm.Equal(t, ContainsFold, ent.strategy)
+		affirm.Equal(t, "MSG 0", ent.want)
+		affirm.Equal(t, true, spy == have)
+	})
+
+	t.Run("panics when called on closed Spy", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti)
+		spy.Close()
+
+		// --- Then ---
+		msg := affirm.Panic(t, func() { spy.ExpectLogContainFold("msg") })
+		affirm.NotNil(t, msg)
+		affirm.Equal(t, errExpectOnClosed, *msg)
+		affirm.Equal(t, true, spy.panicked)
+	})
+
+	t.Run("panics when called on finished Spy", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti)
+		spy.Finish()
+
+		// --- Then ---
+		msg := affirm.Panic(t, func() { spy.ExpectLogContainFold("msg") })
+		affirm.NotNil(t, msg)
+		affirm.Equal(t, errExpectOnFinished, *msg)
+	})
+
+	t.Run("panics when called after IgnoreLogs", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.IgnoreLogs()
+
+		// --- Then ---
+		msg := affirm.Panic(t, func() { spy.ExpectLogContainFold("msg") })
+		affirm.NotNil(t, msg)
+		affirm.Equal(t, errExpectLogAfterIgnoreLogs, *msg)
+		affirm.Equal(t, true, spy.panicked)
+	})
+}
+
+func Test_Spy_ExpectLogNotContainFold(t *testing.T) {
+	t.Run("set", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+
+		// --- When ---
+		have := spy.ExpectLogNotContainFold("MSG %d", 0)
+
+		// --- Then ---
+		affirm.Equal(t, 1, len(spy.wantLogMgs))
+		ent := spy.wantLogMgs[0]
+		affirm.Equal(t, NotContainsFold, ent.strategy)
+		affirm.Equal(t, "MSG 0", ent.want)
+		affirm.Equal(t, true, spy == have)
+	})
+
+	t.Run("panics when called on closed Spy", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti)
+		spy.Close()
+
+		// --- Then ---
+		msg := affirm.Panic(t, func() { spy.ExpectLogNotContainFold("msg") })
+		affirm.NotNil(t, msg)
+		affirm.Equal(t, errExpectOnClosed, *msg)
+		affirm.Equal(t, true, spy.panicked)
+	})
+
+	t.Run("panics when called on finished Spy", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti)
+		spy.Finish()
+
+		// --- Then ---
+		msg := affirm.Panic(t, func() { spy.ExpectLogNotContainFold("msg") })
+		affirm.NotNil(t, msg)
+		affirm.Equal(t, errExpectOnFinished, *msg)
+	})
+
+	t.Run("panics when called after IgnoreLogs", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.IgnoreLogs()
+
+		// --- Then ---
+		msg := affirm.Panic(t, func() { spy.ExpectLogNotContainFold("msg") })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errExpectLogAfterIgnoreLogs, *msg)
 		affirm.Equal(t, true, spy.panicked)

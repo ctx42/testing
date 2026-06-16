@@ -51,6 +51,18 @@ const (
 	// Regexp requires the produced log message to match the expected
 	// regular expression.
 	Regexp Strategy = "regexp"
+
+	// EqualFold requires the produced log message to be identical to the
+	// expected string (after formatting), ignoring the case.
+	EqualFold Strategy = "equal-fold"
+
+	// ContainsFold requires the produced log message to contain the expected
+	// substring, ignoring the case.
+	ContainsFold Strategy = "contains-fold"
+
+	// NotContainsFold requires the produced log message to NOT contain the
+	// expected substring, ignoring the case.
+	NotContainsFold Strategy = "not-contains-fold"
 )
 
 // find implements log matching strategies.
@@ -70,6 +82,14 @@ func (ent find) match(have string) bool {
 		return strings.Contains(have, ent.want)
 	case NotContains:
 		return !strings.Contains(have, ent.want)
+	case EqualFold:
+		return strings.EqualFold(ent.want, have)
+	case ContainsFold:
+		lHave := strings.ToLower(have)
+		return strings.Contains(lHave, strings.ToLower(ent.want))
+	case NotContainsFold:
+		lHave := strings.ToLower(have)
+		return !strings.Contains(lHave, strings.ToLower(ent.want))
 	default:
 		return ent.want == have
 	}
@@ -563,6 +583,24 @@ func (spy *Spy) ExpectLogContain(format string, args ...any) *Spy {
 // ExpectLogNotContain is a convenience for ExpectLog([NotContains], ...).
 func (spy *Spy) ExpectLogNotContain(format string, args ...any) *Spy {
 	return spy.ExpectLog(NotContains, format, args...)
+}
+
+// ExpectLogEqualFold is a convenience for ExpectLog([EqualFold], ...). The
+// message must match exactly after formatting, ignoring the case.
+func (spy *Spy) ExpectLogEqualFold(format string, args ...any) *Spy {
+	return spy.ExpectLog(EqualFold, format, args...)
+}
+
+// ExpectLogContainFold is a convenience for ExpectLog([ContainsFold], ...),
+// matching case-insensitively.
+func (spy *Spy) ExpectLogContainFold(format string, args ...any) *Spy {
+	return spy.ExpectLog(ContainsFold, format, args...)
+}
+
+// ExpectLogNotContainFold is a convenience for
+// ExpectLog([NotContainsFold], ...), matching case-insensitively.
+func (spy *Spy) ExpectLogNotContainFold(format string, args ...any) *Spy {
+	return spy.ExpectLog(NotContainsFold, format, args...)
 }
 
 func (spy *Spy) Log(args ...any) {
