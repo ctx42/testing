@@ -1,3 +1,6 @@
+## v0.53.0 (Tue, 16 Jun 2026 13:33:39 UTC)
+- feat(tester): add case-insensitive log matching strategies to Spy.
+
 ## v0.52.1 (Mon, 15 Jun 2026 20:19:55 UTC)
 - fix(notice): propagate prefix to all chain members in From.
 
