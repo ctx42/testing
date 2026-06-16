@@ -8,10 +8,32 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
+// EqualFold asserts that "want" and "have" are equal using a case-insensitive
+// comparison, via [check.EqualFold].
+func EqualFold(t tester.T, want, have string, opts ...any) bool {
+	t.Helper()
+	if e := check.EqualFold(want, have, opts...); e != nil {
+		t.Error(e)
+		return false
+	}
+	return true
+}
+
 // Contain asserts that "want" is a substring of "have" using [check.Contain].
 func Contain(t tester.T, want, have string, opts ...any) bool {
 	t.Helper()
 	if e := check.Contain(want, have, opts...); e != nil {
+		t.Error(e)
+		return false
+	}
+	return true
+}
+
+// ContainFold asserts that "have" contains the substring "want" using a
+// case-insensitive comparison, via [check.ContainFold].
+func ContainFold(t tester.T, want, have string, opts ...any) bool {
+	t.Helper()
+	if e := check.ContainFold(want, have, opts...); e != nil {
 		t.Error(e)
 		return false
 	}
@@ -23,17 +45,6 @@ func Contain(t tester.T, want, have string, opts ...any) bool {
 func NotContain(t tester.T, want, have string, opts ...any) bool {
 	t.Helper()
 	if e := check.NotContain(want, have, opts...); e != nil {
-		t.Error(e)
-		return false
-	}
-	return true
-}
-
-// EqualFold asserts that "want" and "have" are equal, ignoring the case, using
-// [check.EqualFold].
-func EqualFold(t tester.T, want, have string, opts ...any) bool {
-	t.Helper()
-	if e := check.EqualFold(want, have, opts...); e != nil {
 		t.Error(e)
 		return false
 	}

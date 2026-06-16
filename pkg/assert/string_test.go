@@ -11,6 +11,49 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
+func Test_EqualFold(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+
+		// --- When ---
+		have := EqualFold(tspy, "ABC", "abc")
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		// --- When ---
+		have := EqualFold(tspy, "ABC", "xyz")
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+
+	t.Run("additional message rows added", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.ExpectLogContain("  trail: type.field\n")
+		tspy.Close()
+
+		opt := check.WithTrail("type.field")
+
+		// --- When ---
+		have := EqualFold(tspy, "ABC", "xyz", opt)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+}
+
 func Test_Contain(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
@@ -54,6 +97,49 @@ func Test_Contain(t *testing.T) {
 	})
 }
 
+func Test_ContainFold(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+
+		// --- When ---
+		have := ContainFold(tspy, "DEF", "abc def ghi")
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		// --- When ---
+		have := ContainFold(tspy, "XYZ", "abc def ghi")
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+
+	t.Run("additional message rows added", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.ExpectLogContain("      trail: type.field\n")
+		tspy.Close()
+
+		opt := check.WithTrail("type.field")
+
+		// --- When ---
+		have := ContainFold(tspy, "XYZ", "abc def ghi", opt)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+}
+
 func Test_NotContain(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
@@ -91,49 +177,6 @@ func Test_NotContain(t *testing.T) {
 
 		// --- When ---
 		have := NotContain(tspy, "def", "abc def ghi", opt)
-
-		// --- Then ---
-		affirm.Equal(t, false, have)
-	})
-}
-
-func Test_EqualFold(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
-		// --- Given ---
-		tspy := tester.New(t).Close()
-
-		// --- When ---
-		have := EqualFold(tspy, "ABC", "abc")
-
-		// --- Then ---
-		affirm.Equal(t, true, have)
-	})
-
-	t.Run("error", func(t *testing.T) {
-		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectError()
-		tspy.IgnoreLogs()
-		tspy.Close()
-
-		// --- When ---
-		have := EqualFold(tspy, "ABC", "xyz")
-
-		// --- Then ---
-		affirm.Equal(t, false, have)
-	})
-
-	t.Run("additional message rows added", func(t *testing.T) {
-		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectError()
-		tspy.ExpectLogContain("  trail: type.field\n")
-		tspy.Close()
-
-		opt := check.WithTrail("type.field")
-
-		// --- When ---
-		have := EqualFold(tspy, "ABC", "xyz", opt)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

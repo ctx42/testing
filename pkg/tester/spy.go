@@ -53,15 +53,15 @@ const (
 	Regexp Strategy = "regexp"
 
 	// EqualFold requires the produced log message to be identical to the
-	// expected string (after formatting), ignoring the case.
+	// expected string (after formatting), using a case-insensitive comparison.
 	EqualFold Strategy = "equal-fold"
 
 	// ContainsFold requires the produced log message to contain the expected
-	// substring, ignoring the case.
+	// substring, using a case-insensitive comparison.
 	ContainsFold Strategy = "contains-fold"
 
 	// NotContainsFold requires the produced log message to NOT contain the
-	// expected substring, ignoring the case.
+	// expected substring, using a case-insensitive comparison.
 	NotContainsFold Strategy = "not-contains-fold"
 )
 
@@ -586,19 +586,20 @@ func (spy *Spy) ExpectLogNotContain(format string, args ...any) *Spy {
 }
 
 // ExpectLogEqualFold is a convenience for ExpectLog([EqualFold], ...). The
-// message must match exactly after formatting, ignoring the case.
+// message must match exactly after formatting, using a case-insensitive
+// comparison.
 func (spy *Spy) ExpectLogEqualFold(format string, args ...any) *Spy {
 	return spy.ExpectLog(EqualFold, format, args...)
 }
 
 // ExpectLogContainFold is a convenience for ExpectLog([ContainsFold], ...),
-// matching case-insensitively.
+// using a case-insensitive comparison.
 func (spy *Spy) ExpectLogContainFold(format string, args ...any) *Spy {
 	return spy.ExpectLog(ContainsFold, format, args...)
 }
 
-// ExpectLogNotContainFold is a convenience for
-// ExpectLog([NotContainsFold], ...), matching case-insensitively.
+// ExpectLogNotContainFold is a convenience for ExpectLog([NotContainsFold], ...),
+// using a case-insensitive comparison.
 func (spy *Spy) ExpectLogNotContainFold(format string, args ...any) *Spy {
 	return spy.ExpectLog(NotContainsFold, format, args...)
 }
