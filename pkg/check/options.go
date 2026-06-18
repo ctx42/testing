@@ -21,19 +21,25 @@ var globLog = log.New(os.Stderr, "*** CHECK ", log.Llongfile)
 
 // Package wide default configuration.
 const (
-	// DefaultParseTimeFormat is default format for dumping [time.Time] values.
+	// DefaultParseTimeFormat is the default format for dumping [time.Time]
+	// values.
 	DefaultParseTimeFormat = time.RFC3339Nano
 
-	// DefaultRecentDuration is default duration when comparing recent dates.
+	// DefaultRecentDuration is the default duration when comparing recent
+	// dates.
 	DefaultRecentDuration = 10 * time.Second
 
-	// DefaultDumpTimeFormat is default format for parsing time strings.
+	// DefaultDumpTimeFormat is the default format for parsing time strings.
 	DefaultDumpTimeFormat = time.RFC3339Nano
 
-	// DefaultDumpDepth is default depth when dumping values recursively in log
-	// messages.
+	// DefaultDumpDepth is the default depth when dumping values recursively in
+	// log messages.
 	DefaultDumpDepth = 6
 )
+
+// TimeFormatUnixStr is a special [WithTimeFormat] sentinel indicating that a
+// string time value represents a UNIX timestamp (seconds since epoch).
+const TimeFormatUnixStr = "str-ts"
 
 // Package-wide configuration.
 var (

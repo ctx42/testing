@@ -419,6 +419,24 @@ func getTime(tim any, opts ...any) (time.Time, string, timeRep, error) {
 		return val, val.Format(time.RFC3339Nano), timeTypeTim, nil
 
 	case string:
+		if ops.TimeFormat == TimeFormatUnixStr {
+			n, err := strconv.ParseInt(val, 10, 64)
+			if err != nil {
+				msg := notice.New("failed to parse time").
+					Append("format", "%s", ops.TimeFormat).
+					Append("value", "%s", val).
+					Wrap(ErrTimeParse)
+				return time.Time{}, val, timeTypeStr, AddRows(ops, msg)
+			}
+			ts := time.Unix(n, 0)
+			if ops.Zone != nil {
+				ts = ts.In(ops.Zone)
+			} else {
+				ts = ts.UTC()
+			}
+			return ts, val, timeTypeStr, nil
+		}
+
 		have, err := time.Parse(ops.TimeFormat, val)
 		if err == nil {
 			if ops.Zone != nil {
@@ -429,8 +447,7 @@ func getTime(tim any, opts ...any) (time.Time, string, timeRep, error) {
 			return have, val, timeTypeStr, nil
 		}
 
-		var pe *time.ParseError
-		if errors.As(err, &pe) {
+		if pe, ok := errors.AsType[*time.ParseError](err); ok {
 			msg := notice.New("failed to parse time").
 				Append("format", "%s", ops.TimeFormat).
 				Append("value", "%s", pe.Value).

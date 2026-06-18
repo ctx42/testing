@@ -1171,6 +1171,25 @@ func Test_getTime(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
+	t.Run("str-ts format with non-numeric value", func(t *testing.T) {
+		// --- Given ---
+		opt := WithTimeFormat(TimeFormatUnixStr)
+
+		// --- When ---
+		haveTim, haveStr, haveRep, err := getTime("not-a-number", opt)
+
+		// --- Then ---
+		affirm.Equal(t, true, haveTim.IsZero())
+		affirm.Equal(t, "not-a-number", haveStr)
+		affirm.Equal(t, timeTypeStr, haveRep)
+		wMsg := "" +
+			"failed to parse time:\n" +
+			"  format: str-ts\n" +
+			"   value: not-a-number"
+		affirm.Equal(t, wMsg, err.Error())
+		affirm.Equal(t, true, errors.Is(err, ErrTimeParse))
+	})
+
 	t.Run("unsupported type", func(t *testing.T) {
 		// --- When ---
 		have, haveStr, haveRep, err := getTime(true)
@@ -1275,6 +1294,24 @@ func Test_getTime_success_tabular(t *testing.T) {
 			int64(946778645),
 			"946778645",
 			timeTypeInt64,
+			time.Date(2000, 1, 2, 2, 4, 5, 0, time.UTC),
+			testcases.WAW,
+		},
+		{
+			"Unix timestamp string",
+			[]any{WithTimeFormat(TimeFormatUnixStr)},
+			"946778645",
+			"946778645",
+			timeTypeStr,
+			time.Date(2000, 1, 2, 2, 4, 5, 0, time.UTC),
+			time.UTC,
+		},
+		{
+			"Unix timestamp string - apply timezone",
+			[]any{WithTimeFormat(TimeFormatUnixStr), WithZone(testcases.WAW)},
+			"946778645",
+			"946778645",
+			timeTypeStr,
 			time.Date(2000, 1, 2, 2, 4, 5, 0, time.UTC),
 			testcases.WAW,
 		},
