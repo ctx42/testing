@@ -369,27 +369,24 @@ func (msg *Notice) longest() int {
 
 // Chain links msg after prev in the chain (mutates both) and returns msg.
 //
-// After the call: prev.Next() == msg and msg.Prev() == prev. Both nodes are
-// detached from any previous chain links first so re-joining cannot leave
-// stale prev/next pointers. Self-links are ignored.
+// After the call: prev.Next() == msg and msg.Prev() == prev. The msg node is
+// detached from any previous predecessor first so re-joining cannot leave
+// stale prev/next pointers; msg and its successors (the msg…tail sublist)
+// move together. Self-links are ignored.
 // Use [Join] for a safer way to build chains from multiple values.
 func (msg *Notice) Chain(prev *Notice) *Notice {
 	if msg == nil || prev == nil || msg == prev {
 		return msg
 	}
-	// Detach msg from its current neighbors.
+	// Detach msg…tail from any predecessor (keep successors).
 	if msg.prev != nil {
-		msg.prev.next = msg.next
+		msg.prev.next = nil
 	}
-	if msg.next != nil {
-		msg.next.prev = msg.prev
-	}
-	// Detach prev's former successor.
+	// Detach prev's former successor as its own chain head.
 	if prev.next != nil && prev.next != msg {
 		prev.next.prev = nil
 	}
 	msg.prev = prev
-	msg.next = nil
 	prev.next = msg
 	return msg
 }
@@ -437,12 +434,14 @@ func (msg *Notice) collect() []*Notice { return msg.All() }
 // Join chains multiple notices or errors into a linked list.
 //
 // Each non-nil argument is converted via [From] and linked using
-// [Notice.Chain]. The result can be walked with [Notice.Head],
-// [Notice.Next], [Notice.Prev] or collected with [Notice.All].
+// [Notice.Chain]. Multi-notice operands keep all their nodes: each argument
+// is appended after the current tail. The result can be walked with
+// [Notice.Head], [Notice.Next], [Notice.Prev] or collected with [Notice.All].
 //
 // Returns the last non-nil notice in the chain (or nil). The returned
-// value implements [error] and supports [errors.Is]/[errors.As] through
-// the notices' wrapped errors.
+// value implements [error] and supports [errors.Is] against any base error
+// on the chain (via [Notice.Is]). [errors.As] matches only the tail node's
+// wrapped error unless callers walk the chain.
 func Join(ers ...error) error {
 	if len(ers) == 0 {
 		return nil
@@ -453,15 +452,27 @@ func Join(ers ...error) error {
 		if next == nil {
 			continue
 		}
-		ne := From(next)
+		// Head so a multi-notice operand keeps every node when appended.
+		ne := From(next).Head()
 		if err == nil {
 			err = ne
+			for err.next != nil {
+				err = err.next
+			}
 			continue
 		}
-		err = ne.Chain(err)
+		for err.next != nil {
+			err = err.next
+		}
+		_ = ne.Chain(err)
+		err = ne
+		for err.next != nil {
+			err = err.next
+		}
 	}
 	if err == nil {
 		return nil
 	}
 	return err
 }
+

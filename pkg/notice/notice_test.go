@@ -999,10 +999,12 @@ func Test_Notice_Chain(t *testing.T) {
 		a := New("a")
 		b := New("b")
 		c := New("c")
-		_ = Join(a, b)
+		_ = b.Chain(a)
 
 		// --- When ---
-		_ = Join(a, c)
+		// Chain onto a replaces a's successor; Join would append after the
+		// tail so multi-notice operands stay intact.
+		_ = c.Chain(a)
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(a.next, c))
@@ -1024,6 +1026,27 @@ func Test_Notice_Chain(t *testing.T) {
 		affirm.Equal(t, true, core.Same(a, have))
 		affirm.Nil(t, a.prev)
 		affirm.Nil(t, a.next)
+	})
+
+	t.Run("moves msg with successors", func(t *testing.T) {
+		// --- Given ---
+		a := New("a")
+		b := New("b")
+		c := New("c")
+		x := New("x")
+		_ = Join(a, b, c)
+
+		// --- When ---
+		have := b.Chain(x)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(b, have))
+		affirm.Nil(t, a.next)
+		affirm.Equal(t, true, core.Same(x.next, b))
+		affirm.Equal(t, true, core.Same(b.prev, x))
+		affirm.Equal(t, true, core.Same(b.next, c))
+		affirm.Equal(t, true, core.Same(c.prev, b))
+		affirm.DeepEqual(t, []*Notice{x, b, c}, x.All())
 	})
 }
 
@@ -1171,6 +1194,23 @@ func Test_Join(t *testing.T) {
 		affirm.Equal(t, true, core.Same(msg1, have))
 		affirm.Equal(t, true, core.Same(msg0.next, msg1))
 		affirm.Equal(t, true, core.Same(msg1.prev, msg0))
+	})
+
+	t.Run("joins multi-notice operands", func(t *testing.T) {
+		// --- Given ---
+		a0 := New("a0")
+		a1 := New("a1")
+		b0 := New("b0")
+		b1 := New("b1")
+		left := Join(a0, a1)
+		right := Join(b0, b1)
+
+		// --- When ---
+		have := Join(left, right)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(b1, have))
+		affirm.DeepEqual(t, []*Notice{a0, a1, b0, b1}, have.(*Notice).All())
 	})
 
 	t.Run("skip nil errors errors", func(t *testing.T) {
