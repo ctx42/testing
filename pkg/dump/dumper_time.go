@@ -43,6 +43,10 @@ func GetTimeDumper(format string) Dumper {
 // the value is not a time.Time.
 func TimeDumperFmt(format string) Dumper {
 	return func(dmp Dump, lvl int, val reflect.Value) string {
+		if !val.CanInterface() {
+			prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
+			return prn.Write(ValCannotPrint).String()
+		}
 		tim, ok := val.Interface().(time.Time)
 		if !ok {
 			prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
@@ -57,6 +61,10 @@ func TimeDumperFmt(format string) Dumper {
 // returns its string representation as a Unix timestamp. Returns [valErrUsage]
 // ("<dump-usage-error>") string if the type cannot be matched.
 func TimeDumperUnix(dmp Dump, lvl int, val reflect.Value) string {
+	if !val.CanInterface() {
+		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
+		return prn.Write(ValCannotPrint).String()
+	}
 	ts, ok := val.Interface().(time.Time)
 	if !ok {
 		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
@@ -70,6 +78,10 @@ func TimeDumperUnix(dmp Dump, lvl int, val reflect.Value) string {
 // returns its representation using [time.Time.GoString] method. Returns
 // [valErrUsage] ("<dump-usage-error>") string if the type cannot be matched.
 func TimeDumperDate(dmp Dump, lvl int, val reflect.Value) string {
+	if !val.CanInterface() {
+		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
+		return prn.Write(ValCannotPrint).String()
+	}
 	ts, ok := val.Interface().(time.Time)
 	if !ok {
 		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)

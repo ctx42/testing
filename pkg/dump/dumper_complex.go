@@ -20,8 +20,11 @@ import (
 func ComplexDumper(dmp Dump, lvl int, val reflect.Value) string {
 	var str string
 	switch val.Kind() {
-	case reflect.Complex64, reflect.Complex128:
-		str = fmt.Sprintf("%v", val.Interface())
+	case reflect.Complex64:
+		// Use Complex(), not Interface(), so unexported fields still dump.
+		str = fmt.Sprintf("%v", complex64(val.Complex()))
+	case reflect.Complex128:
+		str = fmt.Sprintf("%v", val.Complex())
 	default:
 		str = ValErrUsage
 	}

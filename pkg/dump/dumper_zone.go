@@ -11,6 +11,10 @@ import (
 // ZoneDumper is the built-in dumper for *time.Location (and time.Location).
 // It renders the location name. Returns [ValErrUsage] for wrong types.
 func ZoneDumper(dmp Dump, lvl int, val reflect.Value) string {
+	if !val.CanInterface() {
+		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
+		return prn.Write(ValCannotPrint).String()
+	}
 	loc, ok := val.Interface().(time.Location)
 	if !ok {
 		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)

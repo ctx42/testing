@@ -35,6 +35,10 @@ func GetDurDumper(format string) Dumper {
 // DurDumperString is the built-in dumper for [time.Duration] using the
 // String() representation. Returns [ValErrUsage] for wrong types.
 func DurDumperString(dmp Dump, lvl int, val reflect.Value) string {
+	if !val.CanInterface() {
+		prn := NewPrinter(dmp)
+		return prn.Write(ValCannotPrint).String()
+	}
 	tim, ok := val.Interface().(time.Duration)
 	if !ok {
 		prn := NewPrinter(dmp)
@@ -49,6 +53,10 @@ func DurDumperString(dmp Dump, lvl int, val reflect.Value) string {
 // type cannot be matched. It returns string representation in the format
 // // defined by [Dump] configuration.
 func DurDumperSeconds(dmp Dump, lvl int, val reflect.Value) string {
+	if !val.CanInterface() {
+		prn := NewPrinter(dmp)
+		return prn.Write(ValCannotPrint).String()
+	}
 	tim, ok := val.Interface().(time.Duration)
 	if !ok {
 		prn := NewPrinter(dmp)

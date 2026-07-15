@@ -123,6 +123,21 @@ func Test_TimeDumperFmt(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
+
+	t.Run("unexported field cannot interface", func(t *testing.T) {
+		// --- Given ---
+		type hold struct{ when time.Time }
+		val := reflect.ValueOf(hold{
+			when: time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW),
+		}).Field(0)
+		dumper := TimeDumperFmt(time.DateOnly)
+
+		// --- When ---
+		have := dumper(New(), 0, val)
+
+		// --- Then ---
+		affirm.Equal(t, ValCannotPrint, have)
+	})
 }
 
 func Test_TimeDumperUnix(t *testing.T) {
