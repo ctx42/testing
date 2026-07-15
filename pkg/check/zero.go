@@ -12,10 +12,10 @@ import (
 
 // Zero checks that "have" is the zero value for its type.
 //
-// Zero values include false, 0, "", nil slices/maps/chans (via
-// [reflect.Value.IsZero]), and types implementing `IsZero() bool`.
-// Untyped nil and non-nil empty collections are not zero; use [Nil] or
-// [Empty] for those. See [testcases.ZENValues] for the full matrix.
+// Zero values include false, 0, "", non-nil values that [reflect.Value.IsZero]
+// reports as zero, and types implementing `IsZero() bool`. Untyped nil, nil
+// pointers, and nil or empty collections are not zero; use [Nil] or [Empty]
+// for those. See [testcases.ZENValues] for the full matrix.
 //
 // See [assert.Zero] for the assertion wrapper.
 func Zero(have any, opts ...any) error {
