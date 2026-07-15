@@ -22,7 +22,7 @@
 //
 //	func AssertMyType(t tester.T, want, have MyType) bool {
 //	    t.Helper()
-//	    return assert.Equal(t, want, have, testcases.WithTrail("MyType"))
+//	    return assert.Equal(t, want, have, check.WithTrail("MyType"))
 //	}
 //
 // See the [examples] package for complete, tested patterns of using

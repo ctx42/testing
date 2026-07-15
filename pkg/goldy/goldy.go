@@ -6,7 +6,7 @@
 // It loads files that contain an optional comment section followed by
 // the [Marker] separator and the expected content. The loaded content
 // can be used directly with [assert.Equal] or [check.Equal] (often via
-// [Goldy.Content] or after template expansion with [WithData]).
+// [Goldy.String] / [Goldy.Bytes] or after template expansion with [WithData]).
 //
 // Golden files are typically stored under testdata/ and committed.
 // The package integrates with [tester.T] for failure reporting.
@@ -185,7 +185,7 @@ func (gld *Goldy) Save() {
 }
 
 // renderTemplate renders golden file content as a text template using data
-// from [Goldy.data].
+// supplied via [WithData].
 func (gld *Goldy) renderTemplate() *Goldy {
 	gld.t.Helper()
 
