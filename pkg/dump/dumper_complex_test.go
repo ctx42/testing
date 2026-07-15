@@ -43,6 +43,18 @@ func Test_ComplexDumper(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
+
+	t.Run("unexported field", func(t *testing.T) {
+		// --- Given ---
+		type hold struct{ z complex128 }
+		val := reflect.ValueOf(hold{z: 1 + 2i}).Field(0)
+
+		// --- When ---
+		have := ComplexDumper(New(), 0, val)
+
+		// --- Then ---
+		affirm.Equal(t, "(1+2i)", have)
+	})
 }
 
 func Test_ComplexDumper_tabular(t *testing.T) {
