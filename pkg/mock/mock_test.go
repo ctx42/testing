@@ -968,6 +968,25 @@ func Test_Mock_Callable(t *testing.T) {
 		// --- Then ---
 		assert.ErrorIs(t, ErrTooManyCalls, err)
 	})
+
+	t.Run("error - when prerequisites not satisfied", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.ExpectFail()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		pre := mck.On("Init").Return()
+		mck.On("Do").Return().Requires(pre)
+
+		// --- When ---
+		err := mck.Callable("Do")
+
+		// --- Then ---
+		assert.ErrorIs(t, ErrRequirements, err)
+	})
 }
 
 func Test_Mock_find(t *testing.T) {
