@@ -280,7 +280,7 @@ func Test_Call_Times(t *testing.T) {
 
 		// --- Then ---
 		assert.NotNil(t, msg)
-		wMsg := "cannot use Optional and Times in the same time"
+		wMsg := "cannot use Optional and Times at the same time"
 		assert.Equal(t, wMsg, *msg)
 	})
 }
@@ -350,7 +350,7 @@ func Test_Call_Optional(t *testing.T) {
 
 		// --- Then ---
 		assert.NotNil(t, msg)
-		wMsg := "cannot use Optional and Times in the same time"
+		wMsg := "cannot use Optional and Times at the same time"
 		assert.Equal(t, wMsg, *msg)
 	})
 }

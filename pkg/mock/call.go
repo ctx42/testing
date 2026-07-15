@@ -160,7 +160,7 @@ func (c *Call) Once() *Call { return c.Times(1) }
 // Mutually exclusive with [Call.Optional].
 func (c *Call) Times(i int) *Call {
 	if c.optional {
-		panic("cannot use Optional and Times in the same time")
+		panic("cannot use Optional and Times at the same time")
 	}
 	c.wantCalls = i
 	return c
@@ -193,7 +193,7 @@ func (c *Call) Alter(fn ...func(Arguments)) *Call {
 // exclusive with [Call.Times] / [Call.Once].
 func (c *Call) Optional() *Call {
 	if c.wantCalls > 0 {
-		panic("cannot use Optional and Times in the same time")
+		panic("cannot use Optional and Times at the same time")
 	}
 	c.optional = true
 	return c
