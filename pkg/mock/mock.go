@@ -242,9 +242,11 @@ func (mck *Mock) called(skip int) string {
 // go through generated wrappers that call [Mock.Called]).
 //
 // The call blocks if the matching expectation uses [Call.Until] or [Call.After].
+// The mock mutex is held only for matching and recording; wait/sleep/proxy run
+// unlocked so another Call on the same mock can still progress (e.g. close an
+// Until channel).
 func (mck *Mock) Call(method string, args ...any) Arguments {
 	mck.mx.Lock()
-	defer mck.mx.Unlock()
 	mck.t.Helper()
 
 	var cs []string
@@ -255,15 +257,18 @@ func (mck *Mock) Call(method string, args ...any) Arguments {
 	call, err := mck.find(method, args, cs)
 	if err != nil {
 		mck.failed = true
+		mck.mx.Unlock()
 		mck.t.Fatal(err)
 	}
 
 	if err = call.checkReq(cs); err != nil {
 		mck.failed = true
+		mck.mx.Unlock()
 		mck.t.Fatal(err)
 	}
 
 	mck.calls = append(mck.calls, cStack{Method: method, Stack: cs})
+	mck.mx.Unlock()
 	return call.call(args...)
 }
 

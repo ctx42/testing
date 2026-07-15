@@ -747,6 +747,36 @@ func Test_Mock_Call(t *testing.T) {
 		assert.False(t, mck.failed)
 	})
 
+	t.Run("until released by concurrent Call", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		ch := make(chan time.Time)
+		mck := NewMock(tspy)
+		mck.On("Wait").Return().Until(ch)
+		mck.On("Done").Return().Alter(func(Arguments) { close(ch) })
+
+		// --- When ---
+		done := make(chan struct{})
+		go func() {
+			mck.Call("Wait")
+			close(done)
+		}()
+		// Give Wait a chance to block before Done runs.
+		time.Sleep(20 * time.Millisecond)
+		mck.Call("Done")
+
+		// --- Then ---
+		select {
+		case <-done:
+		case <-time.After(time.Second):
+			t.Error("Wait deadlocked holding mock mutex")
+		}
+		assert.False(t, mck.failed)
+	})
+
 	t.Run("mocked method should panic", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
