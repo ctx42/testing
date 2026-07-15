@@ -35,7 +35,7 @@ func GreaterOrEqual[T constraints.Ordered](want, have T, opts ...any) error {
 	}
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected value to be greater or equal").
-		Append("greater or equal than", "%v", want).
+		Append("greater or equal to", "%v", want).
 		Have("%v", have)
 	return AddRows(ops, msg)
 }
@@ -63,7 +63,7 @@ func SmallerOrEqual[T constraints.Ordered](want, have T, opts ...any) error {
 	}
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected value to be smaller or equal").
-		Append("smaller or equal than", "%v", want).
+		Append("smaller or equal to", "%v", want).
 		Have("%v", have)
 	return AddRows(ops, msg)
 }

@@ -87,7 +87,7 @@ func Test_GreaterOrEqual(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be greater or equal:\n" +
-			"  greater or equal than: 4\n" +
+			"  greater or equal to: 4\n" +
 			"                   have: 2"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -104,7 +104,7 @@ func Test_GreaterOrEqual(t *testing.T) {
 		wMsg := "" +
 			"expected value to be greater or equal:\n" +
 			"                  trail: type.field\n" +
-			"  greater or equal than: 4\n" +
+			"  greater or equal to: 4\n" +
 			"                   have: 2"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -188,7 +188,7 @@ func Test_SmallerOrEqual(t *testing.T) {
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected value to be smaller or equal:\n" +
-			"  smaller or equal than: 2\n" +
+			"  smaller or equal to: 2\n" +
 			"                   have: 4"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -205,7 +205,7 @@ func Test_SmallerOrEqual(t *testing.T) {
 		wMsg := "" +
 			"expected value to be smaller or equal:\n" +
 			"                  trail: type.field\n" +
-			"  smaller or equal than: 2\n" +
+			"  smaller or equal to: 2\n" +
 			"                   have: 4"
 		affirm.Equal(t, wMsg, err.Error())
 	})
