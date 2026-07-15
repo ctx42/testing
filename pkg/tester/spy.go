@@ -1025,8 +1025,13 @@ func (spy *Spy) assertEnv(wants, haves map[string]string) bool {
 func (spy *Spy) runCleanups() int {
 	cnt := 0
 
-	if spy.cancelCtx != nil {
-		spy.cancelCtx()
+	// Snapshot cancel under lock so concurrent Context() cannot race.
+	spy.mx.Lock()
+	cancel := spy.cancelCtx
+	spy.cancelCtx = nil
+	spy.mx.Unlock()
+	if cancel != nil {
+		cancel()
 	}
 
 	for {
