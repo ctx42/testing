@@ -41,6 +41,30 @@ func Test_argument_genName_tabular(t *testing.T) {
 			"_",
 			"_a3",
 		},
+		{
+			"reserved local _args",
+			0,
+			"_args",
+			"_a0",
+		},
+		{
+			"reserved local _mck",
+			1,
+			"_mck",
+			"_a1",
+		},
+		{
+			"reserved return temp _r0",
+			2,
+			"_r0",
+			"_a2",
+		},
+		{
+			"reserved synthetic arg name _a0",
+			3,
+			"_a0",
+			"_a3",
+		},
 	}
 
 	for _, tc := range tt {

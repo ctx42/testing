@@ -21,8 +21,9 @@ type argument struct {
 	pks  []*gopkg // Packages needed by the types used by the argument type.
 }
 
-// genName returns the argument's name. If the argument is unnamed, it
-// generates a name based on its index in the method's argument list.
+// genName returns the argument's name. If the argument is unnamed, blank, or
+// collides with a local the generator emits, it returns a synthetic `_aN`
+// name based on the argument index.
 //
 // Examples:
 //
@@ -30,10 +31,33 @@ type argument struct {
 //	_a0
 //	_a123
 func (arg argument) genName(idx int) string {
-	if arg.name != "" && arg.name != "_" {
+	if arg.name != "" && arg.name != "_" && !isGenLocal(arg.name) {
 		return arg.name
 	}
 	return fmt.Sprintf("_a%d", idx)
+}
+
+// isGenLocal reports whether name is reserved for mock method body locals
+// (_mck, _args, _rets, _rN, …). User parameters with those names would
+// produce invalid Go if kept as-is.
+func isGenLocal(name string) bool {
+	switch name {
+	case "_mck", "_args", "_arg", "_rets", "_r", "_rFn", "_elem":
+		return true
+	}
+	if len(name) < 3 || name[0] != '_' {
+		return false
+	}
+	// Synthetic argument names (_a0) and return temps (_r0).
+	if name[1] != 'a' && name[1] != 'r' {
+		return false
+	}
+	for _, c := range name[2:] {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // genArg generates code for the argument. If the argument is unnamed, it
