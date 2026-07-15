@@ -1163,13 +1163,9 @@ func Test_Equal_kind_Map(t *testing.T) {
 		wMsg := "" +
 			"expected values to be equal:\n" +
 			"      trail: map[2]\n" +
-			"  want type: map[int]int\n" +
+			"  want type: int\n" +
 			"  have type: <nil>\n" +
-			"       want:\n" +
-			"             map[int]int{\n" +
-			"               1: 42,\n" +
-			"               3: 44,\n" +
-			"             }\n" +
+			"       want: 43\n" +
 			"       have: nil"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.DeepEqual(t, []string{"map[1]"}, trail)

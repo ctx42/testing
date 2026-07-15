@@ -129,16 +129,11 @@ func ExampleEqual_maps() {
 	// Output:
 	// expected values to be equal:
 	//       trail: map[2]
-	//   want type: map[int]check_test.T
+	//   want type: check_test.T
 	//   have type: <nil>
 	//        want:
-	//              map[int]check_test.T{
-	//                1: {
-	//                  Str: "abc",
-	//                },
-	//                3: {
-	//                  Str: "xyz",
-	//                },
+	//              {
+	//                Str: "xyz",
 	//              }
 	//        have: nil
 }

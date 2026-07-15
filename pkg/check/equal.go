@@ -214,8 +214,8 @@ func deepEqual(
 		return err
 
 	case reflect.Map:
-		// Lengths must match. Compare only keys present in "want" (extra keys in
-		// "have" are allowed). Keys are sorted for deterministic ordering.
+		// Lengths must match; then every want key must exist in have with an
+		// equal value. Keys are sorted for deterministic ordering.
 		if wVal.Len() != hVal.Len() {
 			ops.LogTrail()
 			wStr, hStr, diff := ops.Dumper.DiffValue(wVal, hVal)
@@ -243,8 +243,7 @@ func deepEqual(
 			hkVal := hVal.MapIndex(key)
 			kOps := ops.MapTrail(valToString(key))
 			if !hkVal.IsValid() {
-				hItf := hVal.Interface()
-				e := equalError(hItf, nil, WithOptions(kOps))
+				e := equalError(wkVal.Interface(), nil, WithOptions(kOps))
 				err = notice.Join(err, e)
 				continue
 			}
