@@ -339,6 +339,29 @@ func Test_Epsilon(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
+	t.Run("success - want and have are zero", func(t *testing.T) {
+		// --- When ---
+		err := Epsilon(0.0, 0.1, 0.0)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - want is zero have is not", func(t *testing.T) {
+		// --- When ---
+		err := Epsilon(0.0, 0.1, 1.0)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected numbers to be within the given epsilon:\n" +
+			"          want: 0\n" +
+			"          have: 1\n" +
+			"  want epsilon: 0.1\n" +
+			"  have epsilon: +Inf"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("error", func(t *testing.T) {
 		// --- When ---
 		err := Epsilon(uint(42), 0.10, uint(47))

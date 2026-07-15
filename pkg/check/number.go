@@ -152,7 +152,16 @@ func Epsilon[T, E constraints.Number](
 	fWant := float64(want)
 	fHave := float64(have)
 	fwEpsilon := float64(epsilon)
-	fhEpsilon := math.Abs(fWant-fHave) / math.Abs(fWant)
+	var fhEpsilon float64
+	if fWant == 0 {
+		// Relative error is undefined at zero; both zero is a match.
+		if fHave == 0 {
+			return nil
+		}
+		fhEpsilon = math.Inf(1)
+	} else {
+		fhEpsilon = math.Abs(fWant-fHave) / math.Abs(fWant)
+	}
 	if fwEpsilon >= fhEpsilon {
 		return nil
 	}
