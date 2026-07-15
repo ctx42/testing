@@ -703,6 +703,22 @@ func Test_Call_proxyCall(t *testing.T) {
 		assert.Equal(t, "a|b", have[0])
 	})
 
+	t.Run("nil interface arguments", func(t *testing.T) {
+		// --- Given ---
+		fn := func(err error, p *string) (error, *string) {
+			return err, p
+		}
+		call := newProxy(reflect.ValueOf(fn))
+
+		// --- When ---
+		have := call.callProxy(nil, nil)
+
+		// --- Then ---
+		assert.Len(t, 2, have)
+		assert.Nil(t, have[0])
+		assert.Nil(t, have[1])
+	})
+
 	t.Run("variadic proxy without variadic arguments", func(t *testing.T) {
 		// --- Given ---
 		ptr := &testcases.TPtr{Val: "v"}

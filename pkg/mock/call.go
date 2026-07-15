@@ -334,14 +334,30 @@ func (c *Call) call(args ...any) Arguments {
 
 // callProxy calls proxy method with given arguments. Panics if the proxy
 // method has not been defined.
+//
+// A nil interface argument is converted with [reflect.Zero] of the
+// corresponding parameter type so nil error, pointer, and similar args work.
 func (c *Call) callProxy(args ...any) Arguments {
 	if !c.proxy.IsValid() {
 		panic("proxy method not found")
 	}
 
+	typ := c.proxy.Type()
+	numIn := typ.NumIn()
+	variadic := typ.IsVariadic()
 	argVals := make([]reflect.Value, 0, len(args))
-	for _, arg := range args {
-		argVals = append(argVals, reflect.ValueOf(arg))
+	for i, arg := range args {
+		if arg != nil {
+			argVals = append(argVals, reflect.ValueOf(arg))
+			continue
+		}
+		var inTyp reflect.Type
+		if variadic && i >= numIn-1 {
+			inTyp = typ.In(numIn - 1).Elem()
+		} else {
+			inTyp = typ.In(i)
+		}
+		argVals = append(argVals, reflect.Zero(inTyp))
 	}
 
 	retArgs := c.proxy.Call(argVals)
