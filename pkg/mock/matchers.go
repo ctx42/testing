@@ -65,8 +65,10 @@ func MatchBy(fn any) *Matcher {
 func MatchOfType(typ string) *Matcher {
 	fn := func(have any) bool {
 		haveTyp := reflect.TypeOf(have)
-		haveStr := haveTyp.String()
-		return typ == haveStr
+		if haveTyp == nil {
+			return false
+		}
+		return typ == haveTyp.String()
 	}
 	desc := fmt.Sprintf("[mock.MatchOfType=%s]", typ)
 	return NewMatcher(fn, desc)
@@ -83,12 +85,17 @@ func MatchOfType(typ string) *Matcher {
 //	MatchType(mock.ExampleType{})
 func MatchType(typ any) *Matcher {
 	typTyp := reflect.TypeOf(typ)
+	if typTyp == nil {
+		panic("mock: MatchType: typ must not be nil")
+	}
 	typStr := typTyp.String()
 
 	fn := func(have any) bool {
 		haveTyp := reflect.TypeOf(have)
-		haveStr := haveTyp.String()
-		return typStr == haveStr
+		if haveTyp == nil {
+			return false
+		}
+		return typStr == haveTyp.String()
 	}
 	desc := fmt.Sprintf("[mock.MatchType=%s]", typStr)
 	return NewMatcher(fn, desc)
@@ -98,7 +105,7 @@ func MatchType(typ any) *Matcher {
 // Error() string contains the substring want.
 func MatchErrorContain(want string) *Matcher {
 	return MatchBy(func(err error) bool {
-		return strings.Contains(err.Error(), want)
+		return err != nil && strings.Contains(err.Error(), want)
 	})
 }
 
@@ -109,9 +116,13 @@ func MatchError(want any) *Matcher {
 	var mby *Matcher
 	switch w := want.(type) {
 	case string:
-		mby = MatchBy(func(have error) bool { return w == have.Error() })
+		mby = MatchBy(func(have error) bool {
+			return have != nil && w == have.Error()
+		})
 	case error:
-		mby = MatchBy(func(have error) bool { return errors.Is(have, w) })
+		mby = MatchBy(func(have error) bool {
+			return have != nil && errors.Is(have, w)
+		})
 	default:
 		panic("mock: MatchError: invalid type")
 	}
