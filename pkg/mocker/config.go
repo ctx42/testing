@@ -141,23 +141,20 @@ func newConfig(name string, opts ...Option) (Config, error) {
 	return cfg, nil
 }
 
-// create creates the target file if needed.
-func (cfg Config) create() (Config, bool, error) {
-	if cfg.tgtOut == nil && filepath.IsAbs(cfg.tgtFilename) {
-		fName := cfg.tgtFilename
-		fMode := os.O_RDWR | os.O_CREATE | os.O_TRUNC
-		// G304: output path comes from trusted mocker configuration.
-		file, err := os.OpenFile(fName, fMode, 0644) // nolint:gosec
-		if err != nil {
-			return cfg, false, err
-		}
-		cfg.tgtOut = file
-		_, err = file.WriteString("package " + cfg.tgtPkg.pkgName)
-		if err != nil {
-			_ = os.Remove(fName)
-			return cfg, false, err
-		}
-		return cfg, true, nil
+// create opens the target file for writing when no output writer is set.
+// Call only after the mock source is fully generated so a prior failure cannot
+// wipe an existing file.
+func (cfg Config) create() (Config, error) {
+	if cfg.tgtOut != nil || !filepath.IsAbs(cfg.tgtFilename) {
+		return cfg, nil
 	}
-	return cfg, false, nil
+	fName := cfg.tgtFilename
+	fMode := os.O_RDWR | os.O_CREATE | os.O_TRUNC
+	// G304: output path comes from trusted mocker configuration.
+	file, err := os.OpenFile(fName, fMode, 0644) // nolint:gosec
+	if err != nil {
+		return cfg, err
+	}
+	cfg.tgtOut = file
+	return cfg, nil
 }

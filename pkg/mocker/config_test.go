@@ -279,13 +279,12 @@ func Test_Config_create(t *testing.T) {
 		}
 
 		// --- When ---
-		hCfg, hCreated, err := cfg.create()
+		hCfg, err := cfg.create()
 
 		// --- Then ---
 		assert.NoError(t, err)
 		assert.NoFileExist(t, pth)
 		assert.Same(t, buf, hCfg.tgtOut)
-		assert.False(t, hCreated)
 	})
 
 	t.Run("path is not absolute", func(t *testing.T) {
@@ -297,13 +296,12 @@ func Test_Config_create(t *testing.T) {
 		}
 
 		// --- When ---
-		fCfg, hCreated, err := cfg.create()
+		fCfg, err := cfg.create()
 
 		// --- Then ---
 		assert.NoError(t, err)
 		assert.NoFileExist(t, "_target_.go")
 		assert.Same(t, buf, fCfg.tgtOut)
-		assert.False(t, hCreated)
 	})
 
 	t.Run("file created", func(t *testing.T) {
@@ -318,15 +316,16 @@ func Test_Config_create(t *testing.T) {
 		}
 
 		// --- When ---
-		hCfg, hCreated, err := cfg.create()
+		hCfg, err := cfg.create()
 
 		// --- Then ---
 		assert.NoError(t, err)
 		assert.FileExist(t, pth)
 		assert.NotNil(t, hCfg.tgtOut)
 		assert.SameType(t, &os.File{}, hCfg.tgtOut)
-		assert.FileContain(t, "package name", pth)
-		assert.True(t, hCreated)
+		// File is opened empty; Generate writes the full body after create.
+		assert.FileContain(t, "", pth)
+		_ = hCfg.tgtOut.(*os.File).Close()
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -335,11 +334,10 @@ func Test_Config_create(t *testing.T) {
 		cfg := &Config{tgtFilename: pth}
 
 		// --- When ---
-		hCfg, hCreated, err := cfg.create()
+		hCfg, err := cfg.create()
 
 		// --- Then ---
 		assert.ErrorContain(t, "no such file or directory", err)
 		assert.Nil(t, hCfg.tgtOut)
-		assert.False(t, hCreated)
 	})
 }
