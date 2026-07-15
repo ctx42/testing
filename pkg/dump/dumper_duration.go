@@ -33,35 +33,27 @@ func GetDurDumper(format string) Dumper {
 }
 
 // DurDumperString is the built-in dumper for [time.Duration] using the
-// String() representation. Returns [ValErrUsage] for wrong types.
+// String() representation. Returns [ValErrUsage] for wrong kinds. Uses
+// [reflect.Value.Int] so unexported duration fields still dump.
 func DurDumperString(dmp Dump, lvl int, val reflect.Value) string {
-	if !val.CanInterface() {
-		prn := NewPrinter(dmp)
-		return prn.Write(ValCannotPrint).String()
-	}
-	tim, ok := val.Interface().(time.Duration)
-	if !ok {
-		prn := NewPrinter(dmp)
+	if val.Kind() != reflect.Int64 {
+		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
 		return prn.Write(ValErrUsage).String()
 	}
+	tim := time.Duration(val.Int())
 	val = reflect.ValueOf(tim.String())
 	return SimpleDumper(dmp, lvl, val)
 }
 
-// DurDumperSeconds requires val to be dereferenced representation of
-// [time.Duration]. Returns [valErrUsage] ("<dump-usage-error>") string if the
-// type cannot be matched. It returns string representation in the format
-// // defined by [Dump] configuration.
+// DurDumperSeconds requires val to be a [time.Duration] (int64 kind) and
+// returns seconds as configured by [Dump]. Returns [ValErrUsage] for wrong
+// kinds. Uses [reflect.Value.Int] so unexported duration fields still dump.
 func DurDumperSeconds(dmp Dump, lvl int, val reflect.Value) string {
-	if !val.CanInterface() {
-		prn := NewPrinter(dmp)
-		return prn.Write(ValCannotPrint).String()
-	}
-	tim, ok := val.Interface().(time.Duration)
-	if !ok {
-		prn := NewPrinter(dmp)
+	if val.Kind() != reflect.Int64 {
+		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
 		return prn.Write(ValErrUsage).String()
 	}
+	tim := time.Duration(val.Int())
 	val = reflect.ValueOf(tim.Seconds())
 	return SimpleDumper(dmp, lvl, val)
 }

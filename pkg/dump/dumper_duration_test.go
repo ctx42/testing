@@ -101,7 +101,19 @@ func Test_DurDumperString(t *testing.T) {
 		have := DurDumperString(dmp, 2, reflect.ValueOf(123))
 
 		// --- Then ---
-		affirm.Equal(t, ValErrUsage, have)
+		affirm.Equal(t, "      "+ValErrUsage, have)
+	})
+
+	t.Run("unexported field", func(t *testing.T) {
+		// --- Given ---
+		type hold struct{ howLong time.Duration }
+		val := reflect.ValueOf(hold{howLong: 1500 * time.Millisecond}).Field(0)
+
+		// --- When ---
+		have := DurDumperString(New(), 0, val)
+
+		// --- Then ---
+		affirm.Equal(t, `"1.5s"`, have)
 	})
 }
 
@@ -166,6 +178,18 @@ func Test_DurDumperSeconds(t *testing.T) {
 		have := DurDumperSeconds(dmp, 2, reflect.ValueOf(123))
 
 		// --- Then ---
-		affirm.Equal(t, ValErrUsage, have)
+		affirm.Equal(t, "      "+ValErrUsage, have)
+	})
+
+	t.Run("unexported field", func(t *testing.T) {
+		// --- Given ---
+		type hold struct{ howLong time.Duration }
+		val := reflect.ValueOf(hold{howLong: 1500 * time.Millisecond}).Field(0)
+
+		// --- When ---
+		have := DurDumperSeconds(New(), 0, val)
+
+		// --- Then ---
+		affirm.Equal(t, "1.5", have)
 	})
 }
