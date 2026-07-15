@@ -134,6 +134,10 @@ func Test_NotNil(t *testing.T) {
 		if !tspy.TriggeredFailure {
 			t.Error("expected test failure")
 		}
+		want := "expected non-nil value:\n  have: nil\n"
+		if tspy.Messages.String() != want {
+			t.Errorf("want log %q, have %q", want, tspy.Messages.String())
+		}
 	})
 }
 

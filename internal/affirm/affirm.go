@@ -68,10 +68,9 @@ func NotNil(t core.T, have any) bool {
 	if strings.Contains(typ, "<nil>") {
 		typ = ""
 	}
-	const format = "expected values to be equal:\n" +
+	const format = "expected non-nil value:\n" +
 		"%s" +
-		"  want: nil\n" +
-		"  have: <not-nil>"
+		"  have: nil"
 	t.Fatalf(format, typ)
 	return false
 }
