@@ -6,6 +6,7 @@ package dump
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/ctx42/testing/internal/affirm"
 	"github.com/ctx42/testing/pkg/testcases"
