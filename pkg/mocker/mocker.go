@@ -105,7 +105,9 @@ func (mck *Mocker) Generate(name string, opts ...Option) error {
 	mckImp := &gopkg{pkgName: assumedPackageName(selfImp), pkgPath: selfImp}
 	tstImp := &gopkg{pkgName: assumedPackageName(testerImp), pkgPath: testerImp}
 	tstImp.setAlias(cfg.testerAlias)
-	imps := append(itf.imports(), mckImp, tstImp)
+	// Runtime mock/tester imports first so clash resolution renames user
+	// imports instead of the hardcoded mock.* / tester refs in the template.
+	imps := append([]*gopkg{mckImp, tstImp}, itf.imports()...)
 	resolveImportNameClashes(imps, itf.methods)
 
 	buf.WriteString(genImports(imps))

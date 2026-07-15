@@ -155,17 +155,18 @@ func genImports(imps []*gopkg) string {
 	return buf.String()
 }
 
-// resolveImportNameClashes assigns stable aliases when two imports share a
-// package name, and rewrites method type strings that used the old name.
+// resolveImportNameClashes assigns stable aliases when two imports share an
+// import identity (alias if set, otherwise package name), and rewrites method
+// type strings that used the old identity.
 func resolveImportNameClashes(imps []*gopkg, methods []*method) {
 	used := make(map[string]*gopkg, len(imps))
 	for _, imp := range imps {
 		if imp == nil || imp.pkgPath == "" {
 			continue
 		}
-		name := imp.pkgName
+		name := importIdent(imp)
 		if existing, ok := used[name]; ok && existing.pkgPath != imp.pkgPath {
-			old := imp.pkgName
+			old := name
 			alias := nextImportAlias(old, used)
 			imp.setAlias(alias)
 			rewriteTypePkgPrefix(methods, imp, old, alias)
@@ -176,6 +177,15 @@ func resolveImportNameClashes(imps []*gopkg, methods []*method) {
 			used[name] = imp
 		}
 	}
+}
+
+// importIdent is the name used in generated import lines and type prefixes:
+// a non-dot alias if set, otherwise the package name.
+func importIdent(imp *gopkg) string {
+	if imp.alias != "" && imp.alias != "." {
+		return imp.alias
+	}
+	return imp.pkgName
 }
 
 // nextImportAlias returns base2, base3, … not present in used.
@@ -189,23 +199,60 @@ func nextImportAlias(base string, used map[string]*gopkg) string {
 }
 
 // rewriteTypePkgPrefix renames old. to neu. in types that reference pkg.
+// Only whole identifiers are replaced (not suffixes of longer names).
 func rewriteTypePkgPrefix(methods []*method, pkg *gopkg, old, neu string) {
-	from, to := old+".", neu+"."
 	for _, met := range methods {
 		if met == nil {
 			continue
 		}
 		for i := range met.args {
 			if argUsesPkg(&met.args[i], pkg) {
-				met.args[i].typ = strings.ReplaceAll(met.args[i].typ, from, to)
+				met.args[i].typ = replacePkgPrefix(met.args[i].typ, old, neu)
 			}
 		}
 		for i := range met.rets {
 			if argUsesPkg(&met.rets[i], pkg) {
-				met.rets[i].typ = strings.ReplaceAll(met.rets[i].typ, from, to)
+				met.rets[i].typ = replacePkgPrefix(met.rets[i].typ, old, neu)
 			}
 		}
 	}
+}
+
+// replacePkgPrefix renames old. to neu. at identifier boundaries only.
+func replacePkgPrefix(typ, old, neu string) string {
+	from, to := old+".", neu+"."
+	if !strings.Contains(typ, from) {
+		return typ
+	}
+	var b strings.Builder
+	b.Grow(len(typ) + len(to) - len(from))
+	i := 0
+	for i < len(typ) {
+		j := strings.Index(typ[i:], from)
+		if j < 0 {
+			b.WriteString(typ[i:])
+			break
+		}
+		j += i
+		if j > 0 && isIdentByte(typ[j-1]) {
+			// old is a suffix of a longer identifier (e.g. afoo vs foo).
+			b.WriteString(typ[i : j+len(from)])
+			i = j + len(from)
+			continue
+		}
+		b.WriteString(typ[i:j])
+		b.WriteString(to)
+		i = j + len(from)
+	}
+	return b.String()
+}
+
+// isIdentByte reports whether c can appear in a Go identifier.
+func isIdentByte(c byte) bool {
+	return c == '_' ||
+		(c >= 'a' && c <= 'z') ||
+		(c >= 'A' && c <= 'Z') ||
+		(c >= '0' && c <= '9')
 }
 
 // argUsesPkg reports whether arg's package list includes pkg.

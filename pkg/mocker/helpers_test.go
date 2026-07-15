@@ -232,45 +232,6 @@ func Test_sortImports(t *testing.T) {
 	})
 }
 
-func Test_resolveImportNameClashes(t *testing.T) {
-	t.Run("renames second package with same name", func(t *testing.T) {
-		// --- Given ---
-		a := &gopkg{pkgName: "foo", pkgPath: "example.com/a/foo"}
-		b := &gopkg{pkgName: "foo", pkgPath: "example.com/b/foo"}
-		met := &method{
-			args: []argument{{
-				typ: "foo.T",
-				pks: []*gopkg{b},
-			}},
-		}
-		imps := []*gopkg{a, b}
-
-		// --- When ---
-		resolveImportNameClashes(imps, []*method{met})
-
-		// --- Then ---
-		assert.Equal(t, "foo", a.pkgName)
-		assert.Equal(t, "foo2", b.pkgName)
-		assert.Equal(t, "foo2", b.alias)
-		assert.Equal(t, "foo2.T", met.args[0].typ)
-	})
-
-	t.Run("no clash leaves names", func(t *testing.T) {
-		// --- Given ---
-		a := &gopkg{pkgName: "a", pkgPath: "example.com/a"}
-		b := &gopkg{pkgName: "b", pkgPath: "example.com/b"}
-
-		// --- When ---
-		resolveImportNameClashes([]*gopkg{a, b}, nil)
-
-		// --- Then ---
-		assert.Equal(t, "a", a.pkgName)
-		assert.Equal(t, "b", b.pkgName)
-		assert.Equal(t, "", a.alias)
-		assert.Equal(t, "", b.alias)
-	})
-}
-
 func Test_genImports(t *testing.T) {
 	t.Run("no imports", func(t *testing.T) {
 		// --- When ---
@@ -322,6 +283,120 @@ func Test_genImports(t *testing.T) {
 		want := goldy.Open(t, "testdata/imports.gld").String()
 		assert.Equal(t, want, have)
 	})
+}
+
+func Test_resolveImportNameClashes(t *testing.T) {
+	t.Run("renames second package with same name", func(t *testing.T) {
+		// --- Given ---
+		a := &gopkg{pkgName: "foo", pkgPath: "example.com/a/foo"}
+		b := &gopkg{pkgName: "foo", pkgPath: "example.com/b/foo"}
+		met := &method{
+			args: []argument{{
+				typ: "foo.T",
+				pks: []*gopkg{b},
+			}},
+			rets: []argument{{
+				typ: "map[afoo.U]foo.V",
+				pks: []*gopkg{b},
+			}},
+		}
+		imps := []*gopkg{a, b}
+
+		// --- When ---
+		resolveImportNameClashes(imps, []*method{met})
+
+		// --- Then ---
+		assert.Equal(t, "foo", a.pkgName)
+		assert.Equal(t, "foo2", b.pkgName)
+		assert.Equal(t, "foo2", b.alias)
+		assert.Equal(t, "foo2.T", met.args[0].typ)
+		assert.Equal(t, "map[afoo.U]foo2.V", met.rets[0].typ)
+	})
+
+	t.Run("clash uses alias not package name", func(t *testing.T) {
+		// --- Given ---
+		a := &gopkg{alias: "mt", pkgName: "time", pkgPath: "time"}
+		b := &gopkg{pkgName: "mt", pkgPath: "example.com/mt"}
+		met := &method{
+			args: []argument{{
+				typ: "mt.Thing",
+				pks: []*gopkg{b},
+			}},
+		}
+
+		// --- When ---
+		resolveImportNameClashes([]*gopkg{a, b}, []*method{met})
+
+		// --- Then ---
+		assert.Equal(t, "mt", importIdent(a))
+		assert.Equal(t, "mt2", b.pkgName)
+		assert.Equal(t, "mt2", b.alias)
+		assert.Equal(t, "mt2.Thing", met.args[0].typ)
+	})
+
+	t.Run("reserved mock first keeps mock name", func(t *testing.T) {
+		// --- Given ---
+		mck := &gopkg{
+			pkgName: "mock",
+			pkgPath: "github.com/ctx42/testing/pkg/mock",
+		}
+		user := &gopkg{pkgName: "mock", pkgPath: "example.com/other/mock"}
+		met := &method{
+			args: []argument{{
+				typ: "mock.Type",
+				pks: []*gopkg{user},
+			}},
+		}
+
+		// --- When ---
+		resolveImportNameClashes([]*gopkg{mck, user}, []*method{met})
+
+		// --- Then ---
+		assert.Equal(t, "mock", mck.pkgName)
+		assert.Equal(t, "", mck.alias)
+		assert.Equal(t, "mock2", user.pkgName)
+		assert.Equal(t, "mock2.Type", met.args[0].typ)
+	})
+
+	t.Run("no clash leaves names", func(t *testing.T) {
+		// --- Given ---
+		a := &gopkg{pkgName: "a", pkgPath: "example.com/a"}
+		b := &gopkg{pkgName: "b", pkgPath: "example.com/b"}
+
+		// --- When ---
+		resolveImportNameClashes([]*gopkg{a, b}, nil)
+
+		// --- Then ---
+		assert.Equal(t, "a", a.pkgName)
+		assert.Equal(t, "b", b.pkgName)
+		assert.Equal(t, "", a.alias)
+		assert.Equal(t, "", b.alias)
+	})
+}
+
+func Test_replacePkgPrefix_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+		typ   string
+		old   string
+		neu   string
+		want  string
+	}{
+		{"simple", "foo.T", "foo", "foo2", "foo2.T"},
+		{"suffix name preserved", "map[afoo.T]foo.U", "foo", "foo2", "map[afoo.T]foo2.U"},
+		{"no match", "bar.T", "foo", "foo2", "bar.T"},
+		{"start of string", "foo.T", "foo", "x", "x.T"},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := replacePkgPrefix(tc.typ, tc.old, tc.neu)
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
 }
 
 func Test_toLowerSnakeCase_tabular(t *testing.T) {
