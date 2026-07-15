@@ -25,11 +25,19 @@ func AssertTA(t tester.T, want, have *testcases.TA, opts ...any) bool {
 	if !assert.NotNil(t, want, fName("")) {
 		return false
 	}
-	assert.Equal(t, want.Int, have.Int, fName("Int"))
-	assert.Equal(t, want.Str, have.Str, fName("Str"))
-	assert.Equal(t, want.TAp, have.TAp, fName("TAp"))
-
-	return t.Failed()
+	if !assert.NotNil(t, have, fName("")) {
+		return false
+	}
+	if !assert.Equal(t, want.Int, have.Int, fName("Int")) {
+		return false
+	}
+	if !assert.Equal(t, want.Str, have.Str, fName("Str")) {
+		return false
+	}
+	if !assert.Equal(t, want.TAp, have.TAp, fName("TAp")) {
+		return false
+	}
+	return true
 }
 
 func Test_AssertTA(t *testing.T) {
@@ -42,7 +50,10 @@ func Test_AssertTA(t *testing.T) {
 		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2, Str: "b"}}
 
 		// --- When ---
-		AssertTA(tspy, w, h)
+		have := AssertTA(tspy, w, h)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("not equal field", func(t *testing.T) {
@@ -61,7 +72,10 @@ func Test_AssertTA(t *testing.T) {
 		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 3, Str: "b"}}
 
 		// --- When ---
-		AssertTA(tspy, w, h)
+		have := AssertTA(tspy, w, h)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("both want and have are nil", func(t *testing.T) {
@@ -74,5 +88,19 @@ func Test_AssertTA(t *testing.T) {
 
 		// --- When ---
 		affirm.Panic(t, func() { AssertTA(tspy, nil, nil) })
+	})
+
+	t.Run("error - have is nil", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectFatal()
+		wMsg := "expected non-nil value:\n  trail: TA"
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
+
+		w := &testcases.TA{Int: 1, Str: "a"}
+
+		// --- When ---
+		affirm.Panic(t, func() { AssertTA(tspy, w, nil) })
 	})
 }
