@@ -159,7 +159,7 @@ func deepEqual(
 
 	switch knd := wVal.Kind(); knd {
 	case reflect.Pointer:
-		// Recurse into the pointed-to values (nil == nil is already handled above).
+		// Both-nil is equal; otherwise recurse into the pointed-to values.
 		if wVal.IsNil() && hVal.IsNil() {
 			ops.LogTrail()
 			return nil

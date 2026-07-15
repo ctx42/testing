@@ -951,6 +951,20 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		// --- Then ---
 		affirm.Nil(t, err)
 	})
+
+	t.Run("recursive slices", func(t *testing.T) {
+		// --- Given ---
+		s0 := []any{nil}
+		s0[0] = s0
+		s1 := []any{nil}
+		s1[0] = s1
+
+		// --- When ---
+		err := Equal(s0, s1)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
 }
 
 func Test_Equal_kind_Slice_and_Array(t *testing.T) {
