@@ -636,6 +636,18 @@ func Test_Notice_Is(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, false, have)
 	})
+
+	t.Run("matches wrapped error on earlier chain notice", func(t *testing.T) {
+		// --- Given ---
+		errA := errors.New("err-a")
+		errB := errors.New("err-b")
+		joined := Join(New("one").Wrap(errA), New("two").Wrap(errB))
+
+		// --- When ---
+		// --- Then ---
+		affirm.Equal(t, true, errors.Is(joined, errA))
+		affirm.Equal(t, true, errors.Is(joined, errB))
+	})
 }
 
 func Test_Notice_Error(t *testing.T) {
