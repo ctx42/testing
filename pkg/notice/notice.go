@@ -59,7 +59,7 @@ var ErrNotice = errors.New("notice error")
 // [Notice.Prev] or collect with [Notice.All].
 //
 // The default base error is [ErrNotice]; change it with [Notice.Wrap]
-// to control what [errors.Is] and [errors.As] see (see [Notice.Is]).
+// to control what [errors.Is] sees on that node (see [Notice.Is]).
 //
 // nolint: errname
 type Notice struct {
@@ -214,16 +214,17 @@ func (msg *Notice) Have(format string, args ...any) *Notice {
 	return msg.Append("have", format, args...)
 }
 
-// Wrap sets the base error returned by [Notice.Unwrap] and used by
-// [Notice.Is] for [errors.Is] / [errors.As] delegation.
+// Wrap sets the base error returned by [Notice.Unwrap] and matched by
+// [Notice.Is] for [errors.Is]. [errors.As] uses Unwrap on this node only.
 // Defaults to [ErrNotice] if never called.
 func (msg *Notice) Wrap(err error) *Notice {
 	msg.err = err
 	return msg
 }
 
-// Unwrap returns the base error (for [errors.Is] / [errors.As] support).
-// Defaults to [ErrNotice] unless changed with [Notice.Wrap].
+// Unwrap returns the base error for [errors.As] and as a fallback for
+// [errors.Is] on this node. Defaults to [ErrNotice] unless changed with
+// [Notice.Wrap].
 func (msg *Notice) Unwrap() error {
 	return msg.err
 }
@@ -241,7 +242,7 @@ func (msg *Notice) Remove(name string) *Notice {
 // errors.Is(msg, ErrNotice) by default, and lets [Join] chains match any
 // wrapped cause on the chain.
 func (msg *Notice) Is(target error) bool {
-	for _, m := range msg.All() {
+	for m := msg.Head(); m != nil; m = m.next {
 		if m.err != nil && errors.Is(m.err, target) {
 			return true
 		}
