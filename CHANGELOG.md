@@ -1,3 +1,49 @@
+## v0.56.0 (Wed, 15 Jul 2026 19:43:33 UTC)
+- ci(workflows): rename go.yml to test.yml.
+- fix(mocker): open target only after mock is generated.
+- fix(mock): release mutex before Until and After waits.
+- fix(check): do not panic when Type gets untyped nil src.
+- fix(mock): correct AssertCallCount too-few vs too-many labels.
+- fix(mock): pass nil proxy args as typed zero values.
+- fix(mocker): rename params that clash with generated locals.
+- fix(dump): guard type dumpers against unexported Interface.
+- fix(check): handle zero want in Epsilon relative error.
+- fix(affirm): correct NotNil failure message.
+- fix(examples): fix AssertTA return polarity and nil have.
+- fix(mock): return false from matchers on nil arguments.
+- fix(mock): lock Proxy when appending expectations.
+- fix(mock): honor Requires in Callable.
+- fix(tester): make Skip abort like testing.TB SkipNow.
+- fix(tester): match multi ExpectLogEqual per log message.
+- fix(notice): detach existing links when Chain rewires.
+- fix(notice): match errors.Is against all Join chain bases.
+- docs(check): align Zero godoc with nil and empty semantics.
+- fix(check): detect map and slice cycles in Equal.
+- fix(mocker): alias imports that share a package name.
+- fix(assert): accept any time forms in After and BeforeOrEqual.
+- docs(assert): correct Delta formula to absolute difference.
+- fix(core): panic from Spy Fatal like testing.TB.
+- fix(tester): snapshot cancelCtx under lock in runCleanups.
+- docs: fix dead godoc links in testcases and goldy.
+- fix(mock): count haveCalls under mock lock.
+- fix(tester): reject surplus multi ExpectLogEqual lines.
+- fix(mocker): resolve import clashes by import identity.
+- fix(notice): keep multi-node chains when joining.
+- docs(check): align Zero godoc with nil and empty semantics.
+- docs(check): document Epsilon zero-want and <= bound.
+- docs(assert): align Epsilon godoc with check.Epsilon.
+- docs(notice): clarify Is vs As on Join chains.
+- fix(dump): dump unexported Duration via Int.
+- test(dump): cover unexported fields on type dumpers.
+- fix(dump): import time in ZoneDumper unexported test.
+- fix(check): report missing map key as want value vs nil.
+- fix(mock): polish Call docs, With panic, and matcher tests.
+- style(mock): say at the same time in Optional/Times panic.
+- style(check): use greater or equal to in number messages.
+- docs(core): clarify FailNowMsg vs testing.TB Goexit.
+- test(check): cover recursive slice cycles in Equal.
+- refactor(notice): walk Is without All allocation.
+
 ## v0.55.0 (Thu, 18 Jun 2026 10:17:02 UTC)
 - feat(check): add TimeFormatUnixStr sentinel for string UNIX timestamps.
 
