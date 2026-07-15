@@ -116,6 +116,11 @@ const (
 // FailNow paths can match against this constant.
 const FailNowMsg = "FailNow was called directly"
 
+// SkipNowMsg is the exact panic message produced when [Spy.Skip] is called
+// on the spy. It mirrors [FailNowMsg] so helpers that call Skip stop like a
+// real testing.TB (Skip + SkipNow).
+const SkipNowMsg = "SkipNow was called directly"
+
 // Spy is a test double implementing [T] (and therefore a subset of
 // [testing.TB]) that records calls and lets you set precise expectations.
 //
@@ -468,8 +473,11 @@ func (spy *Spy) ExpectSkipped() *Spy {
 func (spy *Spy) Skip(args ...any) {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
+	spy.tt.Helper()
+	spy.checkState(mockedCall)
 	spy.log(args...)
 	spy.haveSkipped = true
+	panic(SkipNowMsg)
 }
 
 // ExpectTempDir declares how many times TempDir must be called. -1 means

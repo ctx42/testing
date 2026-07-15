@@ -1214,9 +1214,11 @@ func Test_Spy_Skip(t *testing.T) {
 		spy.Close()
 
 		// --- When ---
-		spy.Skip("msg", 0)
+		msg := affirm.Panic(t, func() { spy.Skip("msg", 0) })
 
 		// --- Then ---
+		affirm.NotNil(t, msg)
+		affirm.Equal(t, SkipNowMsg, *msg)
 		affirm.Equal(t, 1, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
 		affirm.Equal(t, true, spy.haveSkipped)
@@ -1230,10 +1232,14 @@ func Test_Spy_Skip(t *testing.T) {
 		spy.Close()
 
 		// --- When ---
-		spy.Skip("msg", 0)
-		spy.Skip("msg", 1)
+		msg0 := affirm.Panic(t, func() { spy.Skip("msg", 0) })
+		msg1 := affirm.Panic(t, func() { spy.Skip("msg", 1) })
 
 		// --- Then ---
+		affirm.NotNil(t, msg0)
+		affirm.Equal(t, SkipNowMsg, *msg0)
+		affirm.NotNil(t, msg1)
+		affirm.Equal(t, SkipNowMsg, *msg1)
 		affirm.Equal(t, 2, len(spy.haveLogMgs))
 		affirm.Equal(t, "msg 0", spy.haveLogMgs[0])
 		affirm.Equal(t, "msg 1", spy.haveLogMgs[1])
@@ -2814,7 +2820,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		spy.ExpectSkipped()
 		spy.ExpectLogEqual("msg 0")
 		spy.Close()
-		spy.Skip("msg", 0)
+		_ = affirm.Panic(t, func() { spy.Skip("msg", 0) })
 		spy.Finish()
 
 		// --- When ---
@@ -2834,7 +2840,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		spy := New(ti, 0)
 		spy.ExpectLogEqual("msg 0")
 		spy.Close()
-		spy.Skip("msg", 0)
+		_ = affirm.Panic(t, func() { spy.Skip("msg", 0) })
 		spy.Finish()
 
 		// --- When ---
