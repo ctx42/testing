@@ -189,6 +189,8 @@ func (mck *Mock) OnAny(method string) *Call {
 //
 // See [Call.With] for argument validation on proxied calls.
 func (mck *Mock) Proxy(met any, name ...string) *Call {
+	mck.mx.Lock()
+	defer mck.mx.Unlock()
 	mck.t.Helper()
 
 	typ := reflect.TypeOf(met)
@@ -283,8 +285,11 @@ func (mck *Mock) Callable(method string, args ...any) error {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
 	mck.t.Helper()
-	_, err := mck.find(method, args, nil)
-	return err
+	call, err := mck.find(method, args, nil)
+	if err != nil {
+		return err
+	}
+	return call.checkReq(nil)
 }
 
 // find finds a callable method with given name and matching arguments. When
