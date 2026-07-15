@@ -71,8 +71,8 @@ type Notice struct {
 	Rows []Row          // Context rows.
 	Meta map[string]any // Useful metadata.
 	err  error          // Base error (default: [ErrNotice]).
-	prev *Notice        // Next message in the chain.
-	next *Notice        // Previous message in the chain.
+	prev *Notice        // Previous message in the chain.
+	next *Notice        // Next message in the chain.
 }
 
 // New creates a [Notice] with the given header (formatted with [fmt.Sprintf]
@@ -360,10 +360,27 @@ func (msg *Notice) longest() int {
 
 // Chain links msg after prev in the chain (mutates both) and returns msg.
 //
-// After the call: prev.Next() == msg and msg.Prev() == prev.
+// After the call: prev.Next() == msg and msg.Prev() == prev. Both nodes are
+// detached from any previous chain links first so re-joining cannot leave
+// stale prev/next pointers. Self-links are ignored.
 // Use [Join] for a safer way to build chains from multiple values.
 func (msg *Notice) Chain(prev *Notice) *Notice {
+	if msg == nil || prev == nil || msg == prev {
+		return msg
+	}
+	// Detach msg from its current neighbors.
+	if msg.prev != nil {
+		msg.prev.next = msg.next
+	}
+	if msg.next != nil {
+		msg.next.prev = msg.prev
+	}
+	// Detach prev's former successor.
+	if prev.next != nil && prev.next != msg {
+		prev.next.prev = nil
+	}
 	msg.prev = prev
+	msg.next = nil
 	prev.next = msg
 	return msg
 }

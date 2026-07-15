@@ -966,19 +966,53 @@ func Test_Notice_longest(t *testing.T) {
 }
 
 func Test_Notice_Chain(t *testing.T) {
-	// --- Given ---
-	msg0 := New("header0").Want("%d", 42).Have("%d", 44)
-	msg1 := New("header1").Want("%d", 11).Have("%d", 7)
+	t.Run("links two notices", func(t *testing.T) {
+		// --- Given ---
+		msg0 := New("header0").Want("%d", 42).Have("%d", 44)
+		msg1 := New("header1").Want("%d", 11).Have("%d", 7)
 
-	// --- When ---
-	have := msg1.Chain(msg0)
+		// --- When ---
+		have := msg1.Chain(msg0)
 
-	// --- Then ---
-	affirm.Equal(t, true, core.Same(msg1, have))
-	affirm.Nil(t, msg0.prev)
-	affirm.Equal(t, true, core.Same(msg0.next, msg1))
-	affirm.Equal(t, true, core.Same(msg1.prev, msg0))
-	affirm.Nil(t, msg1.next)
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg1, have))
+		affirm.Nil(t, msg0.prev)
+		affirm.Equal(t, true, core.Same(msg0.next, msg1))
+		affirm.Equal(t, true, core.Same(msg1.prev, msg0))
+		affirm.Nil(t, msg1.next)
+	})
+
+	t.Run("rejoin detaches previous successor", func(t *testing.T) {
+		// --- Given ---
+		a := New("a")
+		b := New("b")
+		c := New("c")
+		_ = Join(a, b)
+
+		// --- When ---
+		_ = Join(a, c)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(a.next, c))
+		affirm.Equal(t, true, core.Same(c.prev, a))
+		affirm.Nil(t, b.prev)
+		affirm.Nil(t, b.next)
+		affirm.Equal(t, true, core.Same(b.Head(), b))
+		affirm.Equal(t, 1, len(b.All()))
+	})
+
+	t.Run("self chain is ignored", func(t *testing.T) {
+		// --- Given ---
+		a := New("a")
+
+		// --- When ---
+		have := a.Chain(a)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(a, have))
+		affirm.Nil(t, a.prev)
+		affirm.Nil(t, a.next)
+	})
 }
 
 func Test_Notice_Head(t *testing.T) {
