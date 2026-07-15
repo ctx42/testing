@@ -126,10 +126,8 @@ func deepEqual(
 		return AddRows(ops, msg)
 	}
 
-	// Detect already compared pointers (cycle protection via the visited map).
-	wPtr := core.Pointer(wVal)
-	hPtr := core.Pointer(hVal)
-	if wPtr != nil && hPtr != nil {
+	// Detect already compared reference values (cycle protection).
+	if wPtr, hPtr, ok := refPtrs(wVal, hVal); ok {
 		v := visit{wPtr, hPtr, wTyp}
 		if visited[v] {
 			return nil
@@ -443,6 +441,33 @@ func deepEqual(
 			Append("hint", "%s", "use WithSkipTrail or WithSkipUnexported "+
 				"option to skip this field")
 		return AddRows(ops, msg)
+	}
+}
+
+// refPtrs returns identity pointers for kinds that can form comparison
+// cycles (pointers, maps, slices). Nil references are not tracked.
+func refPtrs(w, h reflect.Value) (unsafe.Pointer, unsafe.Pointer, bool) {
+	if w.Kind() != h.Kind() {
+		return nil, nil, false
+	}
+	switch w.Kind() {
+	case reflect.Pointer:
+		wp, hp := core.Pointer(w), core.Pointer(h)
+		if wp == nil || hp == nil {
+			return nil, nil, false
+		}
+		return wp, hp, true
+
+	case reflect.Map, reflect.Slice:
+		if w.IsNil() || h.IsNil() {
+			return nil, nil, false
+		}
+		return unsafe.Pointer(w.Pointer()), // nolint:gosec
+			unsafe.Pointer(h.Pointer()), // nolint:gosec
+			true
+
+	default:
+		return nil, nil, false
 	}
 }
 

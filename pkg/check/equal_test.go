@@ -937,6 +937,20 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		// --- Then ---
 		affirm.Nil(t, err)
 	})
+
+	t.Run("recursive maps", func(t *testing.T) {
+		// --- Given ---
+		m0 := map[string]any{}
+		m0["self"] = m0
+		m1 := map[string]any{}
+		m1["self"] = m1
+
+		// --- When ---
+		err := Equal(m0, m1)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
 }
 
 func Test_Equal_kind_Slice_and_Array(t *testing.T) {
