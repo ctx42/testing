@@ -3218,6 +3218,28 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		assertSpyHasMgs(t, spy, 0)
 	})
 
+	t.Run("ExpectLogEqual - multi message success", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.ExpectLogEqual("msg 0")
+		spy.ExpectLogEqual("msg 1")
+		spy.Close()
+		spy.Log("msg 0")
+		spy.Log("msg 1")
+		spy.Finish()
+
+		// --- When ---
+		have := spy.AssertExpectations()
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, false, ti.Failed())
+		assertSpyHasMgs(t, spy, 0)
+	})
+
 	t.Run("ExpectLog - fail", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}

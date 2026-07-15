@@ -915,6 +915,12 @@ func (spy *Spy) assertHelperCalls(want, have int) bool {
 
 // assertLogMgs asserts HUT reacted according to expectation set by
 // [Spy.ExpectLog], [Spy.ExpectLogContain], [Spy.ExpectLogEqual] methods.
+//
+// Equal and EqualFold matchers are applied in order against individual log
+// messages when more than one such expectation is set, so multi
+// ExpectLogEqual works. A single Equal/EqualFold expectation still matches
+// the full joined log stream (multi-line single Error, or all logs). Other
+// strategies always match against the joined stream.
 func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 	spy.tt.Helper()
 	haveStr := strings.Join(haves, "\n")
@@ -927,14 +933,35 @@ func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 		spy.tErrorf(format, haveStr)
 		return false
 	}
+	eqCount := 0
+	for _, want := range wants {
+		if want.strategy == Equal || want.strategy == EqualFold {
+			eqCount++
+		}
+	}
 	ok := true
+	eqIdx := 0
 	for idx, want := range wants {
-		if !want.match(haveStr) {
+		have := haveStr
+		matched := false
+		switch want.strategy {
+		case Equal, EqualFold:
+			if eqCount == 1 {
+				matched = want.match(haveStr)
+			} else if eqIdx < len(haves) {
+				have = haves[eqIdx]
+				eqIdx++
+				matched = want.match(have)
+			}
+		default:
+			matched = want.match(haveStr)
+		}
+		if !matched {
 			format := "expected HUT to log message %d:\n" +
 				"\tmatcher: %s\n" +
 				"\t   want: %q\n" +
 				"\t   have: %q"
-			spy.tErrorf(format, idx, want.strategy, want.want, haveStr)
+			spy.tErrorf(format, idx, want.strategy, want.want, have)
 			ok = false
 		}
 	}
