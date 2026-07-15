@@ -77,12 +77,13 @@ func SmallerOrEqual[T constraints.Ordered](
 	return true
 }
 
-// Delta asserts that the absolute relative difference between "want" and
-// "have" is at most "delta":
+// Delta asserts that the absolute difference between "want" and "have" is
+// at most "delta":
 //
-//	|w-h|/|w| <= delta
+//	|w-h| <= delta
 //
-// See [check.Delta] for the error-returning form and options.
+// See [check.Delta] for the error-returning form and options. For relative
+// error use [Epsilon].
 func Delta[T, E constraints.Number](
 	t tester.T,
 	want T,
