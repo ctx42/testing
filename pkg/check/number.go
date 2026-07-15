@@ -137,9 +137,12 @@ func DeltaSlice[T, E constraints.Number](
 }
 
 // Epsilon checks that the relative error between "want" and "have"
-// is less than "epsilon".
+// is at most "epsilon":
 //
 //	|w-h|/|w| <= epsilon
+//
+// When want is zero, relative error is undefined: both want and have zero
+// succeeds, otherwise the check fails.
 //
 // See [assert.Epsilon] for the assertion form and options.
 func Epsilon[T, E constraints.Number](
