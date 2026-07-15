@@ -8,9 +8,10 @@
 // is built on `check` (composable, returns error) which produces `*Notice`
 // values for detailed, trail-aware diagnostics.
 //
-// Notices implement [error]. They wrap a base error (default [ErrNotice])
-// and support [errors.Is] / [errors.As] via the wrapped error. Use
-// [Notice.Wrap] to change the base.
+// Notices implement [error]. They wrap a base error (default [ErrNotice]).
+// [Notice.Is] makes [errors.Is] match any base on a [Join] chain; [errors.As]
+// uses [Notice.Unwrap] on the node you pass (typically the chain tail). Use
+// [Notice.Wrap] to change a node's base.
 //
 // Notices can be chained with [Join] (or [Notice.Chain]) into a linked list.
 // Walk the chain with [Notice.Head], [Notice.Next], [Notice.Prev], or collect
@@ -46,8 +47,8 @@ const (
 // ErrNotice is the default base error wrapped by every [Notice].
 // It can be changed per instance with [Notice.Wrap].
 //
-// All notices implement [error] and delegate [errors.Is] / [errors.As] to
-// their base error (see [Notice.Is] and [Notice.Unwrap]).
+// All notices implement [error]. Prefer [errors.Is] (via [Notice.Is]) for
+// chain-wide matching; [errors.As] uses [Notice.Unwrap] on the given node.
 var ErrNotice = errors.New("notice error")
 
 // Notice represents a structured expectation violation message.
