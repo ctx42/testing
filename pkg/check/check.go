@@ -108,7 +108,8 @@ func Type(target, src any, opts ...any) error {
 		return notice.New("expected target to be a non-nil pointer")
 	}
 	tgtType := tgtTyp.Elem()
-	if reflect.TypeOf(src).AssignableTo(tgtType) {
+	srcTyp := reflect.TypeOf(src)
+	if srcTyp != nil && srcTyp.AssignableTo(tgtType) {
 		tgtVal.Elem().Set(reflect.ValueOf(src))
 		return nil
 	}

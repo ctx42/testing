@@ -378,6 +378,22 @@ func Test_Type(t *testing.T) {
 			"     src: *testcases.TIntStr"
 		affirm.Equal(t, wMsg, err.Error())
 	})
+
+	t.Run("error - untyped nil src", func(t *testing.T) {
+		// --- Given ---
+		var target int
+
+		// --- When ---
+		err := Type(&target, nil)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected type to be assignable to the target:\n" +
+			"  target: int\n" +
+			"     src: <nil>"
+		affirm.Equal(t, wMsg, err.Error())
+	})
 }
 
 func Test_Fields(t *testing.T) {
