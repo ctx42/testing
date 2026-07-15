@@ -55,7 +55,7 @@ func Before(t tester.T, mark, date any, opts ...any) bool {
 //
 // The arguments may be strings, integers, int64, or [time.Time]. See [Exact]
 // for representation and parsing details.
-func After(t tester.T, mark, date time.Time, opts ...any) bool {
+func After(t tester.T, mark, date any, opts ...any) bool {
 	t.Helper()
 	if e := check.After(mark, date, opts...); e != nil {
 		t.Error(e)
@@ -68,7 +68,7 @@ func After(t tester.T, mark, date time.Time, opts ...any) bool {
 //
 // The arguments may be strings, integers, int64, or [time.Time]. See [Exact]
 // for representation and parsing details.
-func BeforeOrEqual(t tester.T, mark, date time.Time, opts ...any) bool {
+func BeforeOrEqual(t tester.T, mark, date any, opts ...any) bool {
 	t.Helper()
 	if e := check.BeforeOrEqual(mark, date, opts...); e != nil {
 		t.Error(e)
