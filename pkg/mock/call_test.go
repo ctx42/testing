@@ -151,7 +151,7 @@ func Test_Call_With(t *testing.T) {
 		msg := assert.PanicMsg(t, func() { call.With("a", "b") })
 
 		// --- Then ---
-		assert.Contain(t, "cannot set arguments on proxy calls", *msg)
+		assert.Contain(t, "cannot set arguments on non-proxy calls", *msg)
 	})
 }
 
@@ -403,7 +403,7 @@ func Test_Call_CanCall_tabular(t *testing.T) {
 		{"called requested number of times not optional", 1, 1, false, ErrTooManyCalls},
 		{"called requested number of times optional", 1, 1, true, ErrTooManyCalls},
 		{"called more than requested number of times not optional", 1, 2, false, ErrTooManyCalls},
-		{"called more than requested number of times optional", 1, 2, false, ErrTooManyCalls},
+		{"called more than requested number of times optional", 1, 2, true, ErrTooManyCalls},
 	}
 
 	for _, tc := range tt {

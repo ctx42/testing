@@ -237,16 +237,13 @@ func (mck *Mock) called(skip int) string {
 
 // Call invokes the named method with the given arguments and returns the
 // configured [Arguments] return values. It panics (via t.Fatal) if no
-// matching expectation exists or if prerequisites are not met.
+// matching expectation exists or if prerequisites are not met. Most users go
+// through generated wrappers that call [Mock.Called].
 //
-// Call records a method invocation by name and returns the configured
-// return values. Useful for advanced or dynamic scenarios (most users
-// go through generated wrappers that call [Mock.Called]).
-//
-// The call blocks if the matching expectation uses [Call.Until] or [Call.After].
-// The mock mutex is held only for matching and recording; wait/sleep/proxy run
-// unlocked so another Call on the same mock can still progress (e.g. close an
-// Until channel).
+// The call blocks if the matching expectation uses [Call.Until] or
+// [Call.After]. The mock mutex is held only for matching and recording;
+// wait/sleep/proxy run unlocked so another Call on the same mock can still
+// progress (e.g. close an Until channel).
 func (mck *Mock) Call(method string, args ...any) Arguments {
 	mck.mx.Lock()
 	mck.t.Helper()
@@ -261,12 +258,14 @@ func (mck *Mock) Call(method string, args ...any) Arguments {
 		mck.failed = true
 		mck.mx.Unlock()
 		mck.t.Fatal(err)
+		return nil
 	}
 
 	if err = call.checkReq(cs); err != nil {
 		mck.failed = true
 		mck.mx.Unlock()
 		mck.t.Fatal(err)
+		return nil
 	}
 
 	// Record the call under the mock lock so concurrent Call/CanCall see a

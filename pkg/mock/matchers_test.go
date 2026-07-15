@@ -206,6 +206,7 @@ func Test_MatchOfType_match_tabular(t *testing.T) {
 		{"8", "*mock.ExampleType", ExampleType{}, false},
 		{"9", "mock.ExampleType", &ExampleType{}, false},
 		{"10", "mock.ExampleItf", ExampleItf(&ExampleType{}), false},
+		{"nil have", "int", nil, false},
 	}
 
 	for _, tc := range tt {
@@ -263,6 +264,7 @@ func Test_MatchType_match_tabular(t *testing.T) {
 		{"10", &ExampleType{}, ExampleType{}, false},
 		{"11", &ExampleType{}, ExampleItf(&ExampleType{}), true},
 		{"12", ExampleItf(&ExampleType{}), &ExampleType{}, true},
+		{"nil have", 42, nil, false},
 	}
 
 	for _, tc := range tt {

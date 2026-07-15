@@ -124,7 +124,7 @@ func (c *Call) withStack(stack []string) *Call {
 // Without With, proxy calls accept any arguments.
 func (c *Call) With(args ...any) *Call {
 	if !c.proxy.IsValid() {
-		panic("cannot set arguments on proxy calls")
+		panic("cannot set arguments on non-proxy calls")
 	}
 	c.args = args
 	return c
