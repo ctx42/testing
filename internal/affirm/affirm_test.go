@@ -125,9 +125,17 @@ func Test_NotNil(t *testing.T) {
 		var err error
 
 		// --- When ---
-		have := NotNil(tspy, err)
+		var pan any
+		var have bool
+		func() {
+			defer func() { pan = recover() }()
+			have = NotNil(tspy, err)
+		}()
 
 		// --- Then ---
+		if pan != core.FailNowMsg {
+			t.Errorf("want panic %q, have %#v", core.FailNowMsg, pan)
+		}
 		if have || !tspy.Failed() {
 			t.Error("expected failed test")
 		}

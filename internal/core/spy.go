@@ -33,6 +33,10 @@ type Spy struct {
 	Messages         *bytes.Buffer // Log messages if set.
 }
 
+// FailNowMsg is the panic message used by [Spy.Fatal] and [Spy.Fatalf] so
+// helpers stop after a fatal path, matching [testing.TB] and tester.Spy.
+const FailNowMsg = "FailNow was called directly"
+
 // NewSpy returns new instance of [Spy].
 func NewSpy() *Spy { return &Spy{} }
 
@@ -70,23 +74,25 @@ func (spy *Spy) Errorf(format string, args ...any) {
 
 // Fatal records a fatal error with the provided arguments, appending them as a
 // space-separated message to Messages, followed by a newline. It sets
-// [Spy.TriggeredFailure] to true.
+// [Spy.TriggeredFailure] to true and panics with [FailNowMsg].
 func (spy *Spy) Fatal(args ...any) {
 	spy.TriggeredFailure = true
 	if spy.Messages != nil {
 		_, _ = fmt.Fprintln(spy.Messages, args...)
 	}
+	panic(FailNowMsg)
 }
 
 // Fatalf records a fatal error using the provided format string and arguments,
 // appending the formatted message to Messages with a newline. It sets
-// [Spy.TriggeredFailure] to true.
+// [Spy.TriggeredFailure] to true and panics with [FailNowMsg].
 func (spy *Spy) Fatalf(format string, args ...any) {
 	spy.TriggeredFailure = true
 	if spy.Messages != nil {
 		_, _ = fmt.Fprintf(spy.Messages, format, args...)
 		_ = spy.Messages.WriteByte('\n')
 	}
+	panic(FailNowMsg)
 }
 
 // Failed reports whether an error or failure has been recorded, returning true

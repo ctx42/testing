@@ -129,9 +129,16 @@ func Test_Spy_Fatal(t *testing.T) {
 		tspy := NewSpy()
 
 		// --- When ---
-		tspy.Fatal("a", 1, 1.1)
+		var pan any
+		func() {
+			defer func() { pan = recover() }()
+			tspy.Fatal("a", 1, 1.1)
+		}()
 
 		// --- Then ---
+		if pan != FailNowMsg {
+			t.Errorf("want panic %q, have %#v", FailNowMsg, pan)
+		}
 		if tspy.ReportedError {
 			t.Errorf("expected Spy.ReportedError to be false")
 		}
@@ -145,8 +152,14 @@ func Test_Spy_Fatal(t *testing.T) {
 		tspy := NewSpy().Capture()
 
 		// --- When ---
-		tspy.Fatal("a", 1, 1.1)
-		tspy.Fatal("b", 2, 2.2)
+		func() {
+			defer func() { _ = recover() }()
+			tspy.Fatal("a", 1, 1.1)
+		}()
+		func() {
+			defer func() { _ = recover() }()
+			tspy.Fatal("b", 2, 2.2)
+		}()
 
 		// --- Then ---
 		have := tspy.Messages.String()
@@ -163,9 +176,16 @@ func Test_Spy_Fatalf(t *testing.T) {
 		tspy := NewSpy()
 
 		// --- When ---
-		tspy.Fatalf("a%s", "bc")
+		var pan any
+		func() {
+			defer func() { pan = recover() }()
+			tspy.Fatalf("a%s", "bc")
+		}()
 
 		// --- Then ---
+		if pan != FailNowMsg {
+			t.Errorf("want panic %q, have %#v", FailNowMsg, pan)
+		}
 		if tspy.ReportedError {
 			t.Errorf("expected Spy.ReportedError to be false")
 		}
@@ -179,8 +199,14 @@ func Test_Spy_Fatalf(t *testing.T) {
 		tspy := NewSpy().Capture()
 
 		// --- When ---
-		tspy.Fatalf("a%s", "bc")
-		tspy.Fatalf("x%s", "yz")
+		func() {
+			defer func() { _ = recover() }()
+			tspy.Fatalf("a%s", "bc")
+		}()
+		func() {
+			defer func() { _ = recover() }()
+			tspy.Fatalf("x%s", "yz")
+		}()
 
 		// --- Then ---
 		have := tspy.Messages.String()
@@ -230,7 +256,10 @@ func Test_Spy_Log(t *testing.T) {
 		// --- Given ---
 		tspy := NewSpy().Capture()
 		tspy.Errorf("a%s", "bc")
-		tspy.Fatalf("x%s", "yz")
+		func() {
+			defer func() { _ = recover() }()
+			tspy.Fatalf("x%s", "yz")
+		}()
 
 		// --- When ---
 		have := tspy.Log()
