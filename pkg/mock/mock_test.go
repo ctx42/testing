@@ -1606,9 +1606,7 @@ func Test_Mock_AssertCallCount(t *testing.T) {
 		tspy.Close()
 
 		mck := NewExampleImpl(NewMock(tspy))
-		mck.On("MethodBool", true)
-		mck.MethodBool(true)
-		mck.MethodBool(true)
+		mck.On("MethodBool", 42).Return(nil)
 
 		// --- When ---
 		have := mck.AssertCallCount("MethodBool", 1)
@@ -1628,7 +1626,9 @@ func Test_Mock_AssertCallCount(t *testing.T) {
 		tspy.Close()
 
 		mck := NewExampleImpl(NewMock(tspy))
-		mck.On("MethodBool", 42).Return(nil)
+		mck.On("MethodBool", true)
+		mck.MethodBool(true)
+		mck.MethodBool(true)
 
 		// --- When ---
 		have := mck.AssertCallCount("MethodBool", 1)

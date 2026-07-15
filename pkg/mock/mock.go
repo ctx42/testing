@@ -493,7 +493,7 @@ func (mck *Mock) AssertCallCount(method string, want int) bool {
 	}
 
 	var msg *notice.Notice
-	if want < have {
+	if have < want {
 		msg = notice.New(hTooFewCalls).Wrap(ErrTooFewCalls)
 	} else {
 		msg = notice.New(hTooManyCalls).Wrap(ErrTooManyCalls)

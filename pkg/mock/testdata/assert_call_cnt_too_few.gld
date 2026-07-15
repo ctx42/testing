@@ -4,4 +4,4 @@ too few calls.
 [mock] too few method calls:
       method: MethodBool
   want calls: 1
-  have calls: 2
+  have calls: 0
