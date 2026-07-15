@@ -34,7 +34,8 @@ type Spy struct {
 }
 
 // FailNowMsg is the panic message used by [Spy.Fatal] and [Spy.Fatalf] so
-// helpers stop after a fatal path, matching [testing.TB] and tester.Spy.
+// helpers stop after a fatal path, matching [tester.Spy]. Real [testing.TB]
+// uses runtime.Goexit rather than this string.
 const FailNowMsg = "FailNow was called directly"
 
 // NewSpy returns new instance of [Spy].
