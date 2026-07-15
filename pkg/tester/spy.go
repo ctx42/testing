@@ -916,11 +916,15 @@ func (spy *Spy) assertHelperCalls(want, have int) bool {
 // assertLogMgs asserts HUT reacted according to expectation set by
 // [Spy.ExpectLog], [Spy.ExpectLogContain], [Spy.ExpectLogEqual] methods.
 //
-// Equal and EqualFold matchers are applied in order against individual log
-// messages when more than one such expectation is set, so multi
+// [Equal] and [EqualFold] matchers are applied in order against individual
+// log messages when more than one such expectation is set, so multi
 // ExpectLogEqual works. A single Equal/EqualFold expectation still matches
 // the full joined log stream (multi-line single Error, or all logs). Other
 // strategies always match against the joined stream.
+//
+// When every expectation is Equal or EqualFold and there is more than one,
+// the have log count must match the expectation count exactly; surplus lines
+// fail like unexamined logs.
 func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 	spy.tt.Helper()
 	haveStr := strings.Join(haves, "\n")
@@ -939,6 +943,7 @@ func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 			eqCount++
 		}
 	}
+	pureMultiEq := eqCount > 1 && eqCount == len(wants)
 	ok := true
 	eqIdx := 0
 	for idx, want := range wants {
@@ -953,6 +958,7 @@ func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 				eqIdx++
 				matched = want.match(have)
 			}
+
 		default:
 			matched = want.match(haveStr)
 		}
@@ -964,6 +970,15 @@ func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 			spy.tErrorf(format, idx, want.strategy, want.want, have)
 			ok = false
 		}
+	}
+	if pureMultiEq && len(haves) > eqCount {
+		extra := strings.Join(haves[eqCount:], "\n")
+		format := "expected HUT to log %d messages:\n" +
+			"\t want: %d\n" +
+			"\t have: %d\n" +
+			"\textra: %q"
+		spy.tErrorf(format, eqCount, eqCount, len(haves), extra)
+		ok = false
 	}
 	return ok
 }

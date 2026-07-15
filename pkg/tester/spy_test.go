@@ -3240,6 +3240,82 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		assertSpyHasMgs(t, spy, 0)
 	})
 
+	t.Run("ExpectLogEqual - multi message surplus fails", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.ExpectLogEqual("msg 0")
+		spy.ExpectLogEqual("msg 1")
+		spy.Close()
+		spy.Log("msg 0")
+		spy.Log("msg 1")
+		spy.Log("msg 2")
+		spy.Finish()
+
+		// --- When ---
+		have := spy.AssertExpectations()
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, false, spy.Failed())
+		affirm.Equal(t, true, ti.Failed())
+		wMsg := "expected HUT to log 2 messages:\n" +
+			"\t want: 2\n" +
+			"\t have: 3\n" +
+			"\textra: \"msg 2\""
+		assertSpyHasMsg(t, spy, 0, wMsg)
+	})
+
+	t.Run("ExpectLogEqual - multi message second mismatch", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.ExpectLogEqual("msg 0")
+		spy.ExpectLogEqual("msg 1")
+		spy.Close()
+		spy.Log("msg 0")
+		spy.Log("msg X")
+		spy.Finish()
+
+		// --- When ---
+		have := spy.AssertExpectations()
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, true, ti.Failed())
+		wMsg := "expected HUT to log message 1:\n" +
+			"\tmatcher: equal\n" +
+			"\t   want: \"msg 1\"\n" +
+			"\t   have: \"msg X\""
+		assertSpyHasMsg(t, spy, 0, wMsg)
+	})
+
+	t.Run("ExpectLogEqual - multi message too few", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.ExpectLogEqual("msg 0")
+		spy.ExpectLogEqual("msg 1")
+		spy.Close()
+		spy.Log("msg 0")
+		spy.Finish()
+
+		// --- When ---
+		have := spy.AssertExpectations()
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, true, ti.Failed())
+		wMsg := "expected HUT to log message 1:\n" +
+			"\tmatcher: equal\n" +
+			"\t   want: \"msg 1\"\n" +
+			"\t   have: \"msg 0\""
+		assertSpyHasMsg(t, spy, 0, wMsg)
+	})
+
 	t.Run("ExpectLog - fail", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
