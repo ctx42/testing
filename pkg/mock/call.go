@@ -311,9 +311,9 @@ func (c *Call) checkReq(cs []string) (err error) {
 }
 
 // call represents a call to the mocked method with arguments. Returns
-// configured return values.
+// configured return values. [Mock.Call] increments haveCalls under its mutex
+// before invoking this so concurrent callers do not race on the counter.
 func (c *Call) call(args ...any) Arguments {
-	c.haveCalls++
 	if c.until != nil {
 		<-c.until
 	} else {

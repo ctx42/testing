@@ -563,7 +563,6 @@ func Test_Call_call(t *testing.T) {
 
 		// --- Then ---
 		assert.Nil(t, have)
-		assert.Equal(t, 1, call.haveCalls)
 	})
 
 	t.Run("with until", func(t *testing.T) {
@@ -578,7 +577,6 @@ func Test_Call_call(t *testing.T) {
 		// --- Then ---
 		assert.True(t, time.Since(now) > 50*time.Millisecond)
 		assert.Nil(t, have)
-		assert.Equal(t, 1, call.haveCalls)
 	})
 
 	t.Run("with sleep", func(t *testing.T) {
@@ -592,7 +590,6 @@ func Test_Call_call(t *testing.T) {
 		// --- Then ---
 		assert.True(t, time.Since(now) > 50*time.Millisecond)
 		assert.Nil(t, have)
-		assert.Equal(t, 1, call.haveCalls)
 	})
 
 	t.Run("with panic", func(t *testing.T) {
@@ -604,7 +601,6 @@ func Test_Call_call(t *testing.T) {
 
 		// --- Then ---
 		assert.Equal(t, "test panic", *have)
-		assert.Equal(t, 1, call.haveCalls)
 	})
 
 	t.Run("with panic after given time", func(t *testing.T) {
@@ -620,7 +616,6 @@ func Test_Call_call(t *testing.T) {
 		// --- Then ---
 		assert.True(t, time.Since(now) > 50*time.Millisecond)
 		assert.Equal(t, "test panic", *have)
-		assert.Equal(t, 1, call.haveCalls)
 	})
 
 	t.Run("alter arguments", func(t *testing.T) {
@@ -636,7 +631,6 @@ func Test_Call_call(t *testing.T) {
 
 		// --- Then ---
 		assert.Nil(t, have)
-		assert.Equal(t, 1, call.haveCalls)
 		assert.Equal(t, 1, arg0)
 		assert.Equal(t, 3, arg1)
 	})
@@ -652,7 +646,6 @@ func Test_Call_call(t *testing.T) {
 
 		// --- Then ---
 		assert.Equal(t, Arguments{"c abc []"}, have)
-		assert.Equal(t, 1, call.haveCalls)
 	})
 
 	t.Run("alter called before proxied call", func(t *testing.T) {
@@ -669,7 +662,6 @@ func Test_Call_call(t *testing.T) {
 		// --- Then ---
 		want := "abc xyz"
 		assert.Equal(t, Arguments{&want}, have)
-		assert.Equal(t, 1, call.haveCalls)
 	})
 }
 

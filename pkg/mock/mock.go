@@ -269,6 +269,9 @@ func (mck *Mock) Call(method string, args ...any) Arguments {
 		mck.t.Fatal(err)
 	}
 
+	// Record the call under the mock lock so concurrent Call/CanCall see a
+	// consistent haveCalls (wait/proxy still run unlocked below).
+	call.haveCalls++
 	mck.calls = append(mck.calls, cStack{Method: method, Stack: cs})
 	mck.mx.Unlock()
 	return call.call(args...)
