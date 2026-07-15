@@ -155,6 +155,69 @@ func genImports(imps []*gopkg) string {
 	return buf.String()
 }
 
+// resolveImportNameClashes assigns stable aliases when two imports share a
+// package name, and rewrites method type strings that used the old name.
+func resolveImportNameClashes(imps []*gopkg, methods []*method) {
+	used := make(map[string]*gopkg, len(imps))
+	for _, imp := range imps {
+		if imp == nil || imp.pkgPath == "" {
+			continue
+		}
+		name := imp.pkgName
+		if existing, ok := used[name]; ok && existing.pkgPath != imp.pkgPath {
+			old := imp.pkgName
+			alias := nextImportAlias(old, used)
+			imp.setAlias(alias)
+			rewriteTypePkgPrefix(methods, imp, old, alias)
+			used[alias] = imp
+			continue
+		}
+		if _, ok := used[name]; !ok {
+			used[name] = imp
+		}
+	}
+}
+
+// nextImportAlias returns base2, base3, … not present in used.
+func nextImportAlias(base string, used map[string]*gopkg) string {
+	for i := 2; ; i++ {
+		a := fmt.Sprintf("%s%d", base, i)
+		if _, ok := used[a]; !ok {
+			return a
+		}
+	}
+}
+
+// rewriteTypePkgPrefix renames old. to neu. in types that reference pkg.
+func rewriteTypePkgPrefix(methods []*method, pkg *gopkg, old, neu string) {
+	from, to := old+".", neu+"."
+	for _, met := range methods {
+		if met == nil {
+			continue
+		}
+		for i := range met.args {
+			if argUsesPkg(&met.args[i], pkg) {
+				met.args[i].typ = strings.ReplaceAll(met.args[i].typ, from, to)
+			}
+		}
+		for i := range met.rets {
+			if argUsesPkg(&met.rets[i], pkg) {
+				met.rets[i].typ = strings.ReplaceAll(met.rets[i].typ, from, to)
+			}
+		}
+	}
+}
+
+// argUsesPkg reports whether arg's package list includes pkg.
+func argUsesPkg(arg *argument, pkg *gopkg) bool {
+	for _, p := range arg.pks {
+		if p == pkg || (p != nil && p.pkgPath == pkg.pkgPath) {
+			return true
+		}
+	}
+	return false
+}
+
 // toLowerSnakeCase converts camel case to lowercase snake case.
 func toLowerSnakeCase(camel string) string {
 	var runes = make([]rune, 0, len(camel)+10)

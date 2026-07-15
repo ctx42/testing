@@ -106,6 +106,7 @@ func (mck *Mocker) Generate(name string, opts ...Option) error {
 	tstImp := &gopkg{pkgName: assumedPackageName(testerImp), pkgPath: testerImp}
 	tstImp.setAlias(cfg.testerAlias)
 	imps := append(itf.imports(), mckImp, tstImp)
+	resolveImportNameClashes(imps, itf.methods)
 
 	buf.WriteString(genImports(imps))
 	buf.WriteString("\n\n")

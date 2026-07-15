@@ -232,6 +232,45 @@ func Test_sortImports(t *testing.T) {
 	})
 }
 
+func Test_resolveImportNameClashes(t *testing.T) {
+	t.Run("renames second package with same name", func(t *testing.T) {
+		// --- Given ---
+		a := &gopkg{pkgName: "foo", pkgPath: "example.com/a/foo"}
+		b := &gopkg{pkgName: "foo", pkgPath: "example.com/b/foo"}
+		met := &method{
+			args: []argument{{
+				typ: "foo.T",
+				pks: []*gopkg{b},
+			}},
+		}
+		imps := []*gopkg{a, b}
+
+		// --- When ---
+		resolveImportNameClashes(imps, []*method{met})
+
+		// --- Then ---
+		assert.Equal(t, "foo", a.pkgName)
+		assert.Equal(t, "foo2", b.pkgName)
+		assert.Equal(t, "foo2", b.alias)
+		assert.Equal(t, "foo2.T", met.args[0].typ)
+	})
+
+	t.Run("no clash leaves names", func(t *testing.T) {
+		// --- Given ---
+		a := &gopkg{pkgName: "a", pkgPath: "example.com/a"}
+		b := &gopkg{pkgName: "b", pkgPath: "example.com/b"}
+
+		// --- When ---
+		resolveImportNameClashes([]*gopkg{a, b}, nil)
+
+		// --- Then ---
+		assert.Equal(t, "a", a.pkgName)
+		assert.Equal(t, "b", b.pkgName)
+		assert.Equal(t, "", a.alias)
+		assert.Equal(t, "", b.alias)
+	})
+}
+
 func Test_genImports(t *testing.T) {
 	t.Run("no imports", func(t *testing.T) {
 		// --- When ---
