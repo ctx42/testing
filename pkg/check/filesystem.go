@@ -37,32 +37,12 @@ func FileExist(pth string, opts ...any) error {
 	return nil
 }
 
-// NoFileExist checks that "pth" does not point to an existing file.
+// NoFileExist checks that nothing exists at "pth". A directory at "pth" fails
+// the check too.
 //
 // See assert.NoFileExist for the assertion wrapper.
 func NoFileExist(pth string, opts ...any) error {
-	inf, err := os.Lstat(pth)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		ops := DefaultOptions(opts...)
-		msg := notice.New("expected os.Lstat to succeed").
-			Append("path", "%s", pth).
-			Append("error", "%s", err)
-		return AddRows(ops, msg)
-	}
-	if inf.IsDir() {
-		ops := DefaultOptions(opts...)
-		msg := notice.New("expected path to not be an existing file").
-			Append("path", "%s", pth)
-		return AddRows(ops, msg)
-	}
-
-	ops := DefaultOptions(opts...)
-	msg := notice.New("expected path to not be an existing file").
-		Append("path", "%s", pth)
-	return AddRows(ops, msg)
+	return noPathExist(pth, opts...)
 }
 
 // Content declares type constraint for file content.
@@ -120,30 +100,28 @@ func DirExist(pth string, opts ...any) error {
 	return nil
 }
 
-// NoDirExist checks that "pth" does not point to an existing directory.
+// NoDirExist checks that nothing exists at "pth". A file at "pth" fails the
+// check too.
+//
 // See assert.NoDirExist.
 func NoDirExist(pth string, opts ...any) error {
-	inf, err := os.Lstat(pth)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
+	return noPathExist(pth, opts...)
+}
 
-		ops := DefaultOptions(opts...)
+// noPathExist checks that nothing exists at "pth".
+func noPathExist(pth string, opts ...any) error {
+	_, err := os.Lstat(pth)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	ops := DefaultOptions(opts...)
+	if err != nil {
 		msg := notice.New("expected os.Lstat to succeed").
 			Append("path", "%s", pth).
 			Append("error", "%s", err)
 		return AddRows(ops, msg)
 	}
-	if !inf.IsDir() {
-		ops := DefaultOptions(opts...)
-		msg := notice.New("expected path to not be an existing directory").
-			Append("path", "%s", pth)
-		return AddRows(ops, msg)
-	}
-
-	ops := DefaultOptions(opts...)
-	msg := notice.New("expected path to not be an existing directory").
+	msg := notice.New("expected path not to exist").
 		Append("path", "%s", pth)
 	return AddRows(ops, msg)
 }

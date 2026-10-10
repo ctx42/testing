@@ -20,7 +20,8 @@ func FileExist(t tester.T, pth string, opts ...any) bool {
 	return true
 }
 
-// NoFileExist asserts that "pth" does not point to an existing file.
+// NoFileExist asserts that nothing exists at "pth". A directory at "pth"
+// fails the assertion too.
 //
 // See [check.NoFileExist] for the error-returning form.
 func NoFileExist(t tester.T, pth string, opts ...any) bool {
@@ -61,7 +62,8 @@ func DirExist(t tester.T, pth string, opts ...any) bool {
 	return true
 }
 
-// NoDirExist asserts that "pth" does not point to an existing directory.
+// NoDirExist asserts that nothing exists at "pth". A file at "pth" fails the
+// assertion too.
 // See [check.NoDirExist].
 func NoDirExist(t tester.T, pth string, opts ...any) bool {
 	t.Helper()
