@@ -166,6 +166,23 @@ func Test_ErrorIsNot(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, true, have)
 	})
+
+	t.Run("error - error in the tree", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		tspy.ExpectLogContain("expected error to not have a target in its tree")
+		tspy.ExpectLogContain("  trail: type.field\n")
+		tspy.Close()
+
+		err0 := errors.New("err0")
+
+		// --- When ---
+		have := ErrorIsNot(tspy, err0, err0, check.WithTrail("type.field"))
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
 }
 
 func Test_ErrorAs(t *testing.T) {

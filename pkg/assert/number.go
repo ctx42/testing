@@ -146,7 +146,7 @@ func Epsilon[T, E constraints.Number](
 }
 
 // EpsilonSlice asserts that the relative error between corresponding elements
-// of "want" and "have" is less than "epsilon":
+// of "want" and "have" is at most "epsilon":
 //
 //	|w[i]-h[i]|/|w[i]| <= epsilon
 //

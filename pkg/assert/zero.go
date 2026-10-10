@@ -9,6 +9,8 @@ import (
 )
 
 // Zero asserts that "have" is the zero value for its type using [check.Zero].
+// Like [check.Zero], it does not treat nil pointers, slices, maps, channels,
+// functions or interfaces as zero values.
 func Zero(t tester.T, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Zero(have, opts...); e != nil {

@@ -153,7 +153,7 @@ func MapSubset[K comparable, V any](
 }
 
 // MapsSubset asserts that every map in "want" is a subset of the corresponding
-// map in "have" (using [MapSubset]). See [check.MapsSubset].
+// map in "have". See [check.MapsSubset].
 func MapsSubset[K comparable, V any](
 	t tester.T,
 	want, have []map[K]V,

@@ -225,6 +225,20 @@ func Test_After(t *testing.T) {
 }
 
 func Test_BeforeOrEqual(t *testing.T) {
+	t.Run("equal", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+
+		// --- When ---
+		have := BeforeOrEqual(tspy, mark, date)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
@@ -256,7 +270,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -276,6 +290,20 @@ func Test_BeforeOrEqual(t *testing.T) {
 }
 
 func Test_AfterOrEqual(t *testing.T) {
+	t.Run("equal", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+
+		// --- When ---
+		have := AfterOrEqual(tspy, mark, date)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()

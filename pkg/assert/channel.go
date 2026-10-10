@@ -9,7 +9,8 @@ import (
 )
 
 // ChannelWillClose asserts that the channel will be closed within the given
-// duration.
+// duration. Values received before the channel closes are discarded, and a
+// nil channel is reported as closed.
 //
 // See [check.ChannelWillClose] for details on the timeout format and
 // the package documentation for options.

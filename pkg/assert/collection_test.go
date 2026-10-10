@@ -536,7 +536,7 @@ func Test_MapsSubset(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
-		tspy.ExpectLogContain("  trail: <slice>[0]map[2]\n")
+		tspy.ExpectLogContain("  trail: type.field[0]map[2]\n")
 		tspy.Close()
 
 		w0 := []map[int]int{
@@ -547,7 +547,7 @@ func Test_MapsSubset(t *testing.T) {
 		}
 
 		// --- When ---
-		have := MapsSubset(tspy, w0, w1)
+		have := MapsSubset(tspy, w0, w1, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

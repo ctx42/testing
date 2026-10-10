@@ -20,6 +20,11 @@
 //   - Report a structured error (via t.Error or t.Fatal) and return false
 //     on failure.
 //
+// Most assertions report with t.Error, so the test continues. These stop the
+// test with t.Fatal, because code after them usually depends on their
+// outcome: [NoError], [ErrorIs], [NotNil], [SameType], [NotSameType], [Type],
+// and [Len] and [Cap] when want exceeds the length or capacity.
+//
 // Errors are built with [notice] and can be customized with options from
 // [check] and [dump].
 //
