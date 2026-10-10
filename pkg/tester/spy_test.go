@@ -1731,7 +1731,7 @@ func Test_Spy_IgnoreLogs(t *testing.T) {
 		affirm.Equal(t, true, spy.panicked)
 	})
 
-	t.Run("error - any of the ExpectLog* methods used", func(t *testing.T) {
+	t.Run("error - after an ExpectLog method", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
 
