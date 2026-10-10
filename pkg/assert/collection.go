@@ -13,7 +13,7 @@ import (
 //
 // See the Design section in the root README for the layered assert/check/notice
 // architecture. Errors are built with [notice] and can be customized with
-// options from [check] and [dump].
+// options from [check] and dump.
 func Len(t tester.T, want int, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Len(want, have, opts...); e != nil {

@@ -23,7 +23,7 @@ func Test_True(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -37,17 +37,15 @@ func Test_True(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
 		tspy.ExpectLogContain("  trail: type.field")
 		tspy.Close()
 
-		opt := check.WithTrail("type.field")
-
 		// --- When ---
-		have := True(tspy, false, opt)
+		have := True(tspy, false, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -66,7 +64,7 @@ func Test_False(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -80,17 +78,15 @@ func Test_False(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
 		tspy.ExpectLogContain("  trail: type.field")
 		tspy.Close()
 
-		opt := check.WithTrail("type.field")
-
 		// --- When ---
-		have := False(tspy, true, opt)
+		have := False(tspy, true, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

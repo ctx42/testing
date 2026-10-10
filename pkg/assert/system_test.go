@@ -27,7 +27,7 @@ func Test_ExitCode(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -44,7 +44,7 @@ func Test_ExitCode(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -53,10 +53,9 @@ func Test_ExitCode(t *testing.T) {
 
 		cmd := os.Args[0]
 		val := exec.Command(cmd, "--exitCode", "99").Run()
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := ExitCode(tspy, 77, val, opt)
+		have := ExitCode(tspy, 77, val, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

@@ -11,7 +11,7 @@
 // control per assertion:
 //   - Global type checkers via [check.RegisterTypeChecker].
 //   - Per-assertion options such as [check.WithTrail], [check.WithTypeChecker],
-//     and [dump] options.
+//     and dump options.
 //   - Full control via [check.DefaultOptions] and [check.WithOptions].
 //
 // All assertion functions follow a consistent pattern:
@@ -26,7 +26,7 @@
 // and [Len] and [Cap] when want exceeds the length or capacity.
 //
 // Errors are built with [notice] and can be customized with options from
-// [check] and [dump].
+// [check] and dump.
 //
 // See individual function documentation for behavior specific to each
 // assertion.

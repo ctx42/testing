@@ -30,7 +30,7 @@ func Test_Time(t *testing.T) {
 		affirm.Equal(t, true, wantT.Equal(haveT))
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -48,7 +48,7 @@ func Test_Time(t *testing.T) {
 		affirm.Equal(t, false, wantT.Equal(haveT))
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -57,10 +57,9 @@ func Test_Time(t *testing.T) {
 
 		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		haveT := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Time(tspy, wantT, haveT, opt)
+		have := Time(tspy, wantT, haveT, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -83,7 +82,7 @@ func Test_Exact(t *testing.T) {
 		affirm.Equal(t, true, wantT.Equal(haveT))
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -101,7 +100,7 @@ func Test_Exact(t *testing.T) {
 		affirm.Equal(t, false, wantT.Equal(haveT))
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -110,10 +109,9 @@ func Test_Exact(t *testing.T) {
 
 		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		haveT := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Exact(tspy, wantT, haveT, opt)
+		have := Exact(tspy, wantT, haveT, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -137,7 +135,7 @@ func Test_Before(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("equal", func(t *testing.T) {
+	t.Run("error - equal", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -154,7 +152,7 @@ func Test_Before(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -163,10 +161,9 @@ func Test_Before(t *testing.T) {
 
 		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Before(tspy, mark, date, opt)
+		have := Before(tspy, mark, date, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -188,7 +185,7 @@ func Test_After(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("equal", func(t *testing.T) {
+	t.Run("error - equal", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -205,7 +202,7 @@ func Test_After(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -214,10 +211,9 @@ func Test_After(t *testing.T) {
 
 		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := After(tspy, mark, date, opt)
+		have := After(tspy, mark, date, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -253,7 +249,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -279,10 +275,9 @@ func Test_BeforeOrEqual(t *testing.T) {
 
 		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := BeforeOrEqual(tspy, mark, date, opt)
+		have := BeforeOrEqual(tspy, mark, date, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -318,7 +313,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -335,7 +330,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -344,10 +339,9 @@ func Test_AfterOrEqual(t *testing.T) {
 
 		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := AfterOrEqual(tspy, mark, date, opt)
+		have := AfterOrEqual(tspy, mark, date, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -369,7 +363,7 @@ func Test_Within(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -386,7 +380,7 @@ func Test_Within(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -395,16 +389,15 @@ func Test_Within(t *testing.T) {
 
 		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		haveT := time.Date(2000, 1, 2, 3, 4, 6, int(500*time.Millisecond), time.UTC)
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Within(tspy, wantT, "1s", haveT, opt)
+		have := Within(tspy, wantT, "1s", haveT, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("want is not time.Time", func(t *testing.T) {
+	t.Run("error - want not time", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -424,7 +417,7 @@ func Test_Within(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("have is not time.Time", func(t *testing.T) {
+	t.Run("error - have not time", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -459,7 +452,7 @@ func Test_Recent(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -475,7 +468,7 @@ func Test_Recent(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -483,10 +476,9 @@ func Test_Recent(t *testing.T) {
 		tspy.Close()
 
 		haveT := time.Now().Add(-10 * time.Second)
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Recent(tspy, haveT, opt)
+		have := Recent(tspy, haveT, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -505,7 +497,7 @@ func Test_Zone(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -519,17 +511,15 @@ func Test_Zone(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		opt := check.WithTrail("type.field")
-
 		// --- When ---
-		have := Zone(tspy, nil, testcases.WAW, opt)
+		have := Zone(tspy, nil, testcases.WAW, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -548,7 +538,7 @@ func Test_Duration(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -562,7 +552,7 @@ func Test_Duration(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()

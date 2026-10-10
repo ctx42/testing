@@ -26,7 +26,7 @@ func Test_Error(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -40,17 +40,15 @@ func Test_Error(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("option is passed", func(t *testing.T) {
+	t.Run("error - with option", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
 		tspy.ExpectLogContain("  trail: type.field")
 		tspy.Close()
 
-		opt := check.WithTrail("type.field")
-
 		// --- When ---
-		have := Error(tspy, nil, opt)
+		have := Error(tspy, nil, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -69,7 +67,7 @@ func Test_NoError(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -83,7 +81,7 @@ func Test_NoError(t *testing.T) {
 		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -116,7 +114,7 @@ func Test_ErrorIs(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -133,7 +131,7 @@ func Test_ErrorIs(t *testing.T) {
 		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -199,7 +197,7 @@ func Test_ErrorAs(t *testing.T) {
 		affirm.Equal(t, "A", target.Val)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -216,7 +214,7 @@ func Test_ErrorAs(t *testing.T) {
 		affirm.Equal(t, "", target.Val)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -247,7 +245,7 @@ func Test_ErrorEqual(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -261,7 +259,7 @@ func Test_ErrorEqual(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -290,7 +288,7 @@ func Test_ErrorContain(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -304,7 +302,7 @@ func Test_ErrorContain(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -333,7 +331,7 @@ func Test_ErrorRegexp(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -347,7 +345,7 @@ func Test_ErrorRegexp(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -363,7 +361,7 @@ func Test_ErrorRegexp(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("invalid regex", func(t *testing.T) {
+	t.Run("error - invalid regexp", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()

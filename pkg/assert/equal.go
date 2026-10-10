@@ -11,7 +11,7 @@ import (
 // Equal asserts that want and have are equal using [check.Equal].
 //
 // See the package documentation for customization options
-// ([check.WithTrail], [check.WithTypeChecker], [dump] options, etc.).
+// ([check.WithTrail], [check.WithTypeChecker], dump options, etc.).
 func Equal(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if err := check.Equal(want, have, opts...); err != nil {

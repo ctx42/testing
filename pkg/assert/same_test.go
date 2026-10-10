@@ -76,7 +76,7 @@ func Test_Same(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -86,10 +86,8 @@ func Test_Same(t *testing.T) {
 		ptr0 := &testcases.TPtr{Val: "0"}
 		ptr1 := &testcases.TPtr{Val: "1"}
 
-		opt := check.WithTrail("type.field")
-
 		// --- When ---
-		have := Same(tspy, ptr0, ptr1, opt)
+		have := Same(tspy, ptr0, ptr1, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -111,7 +109,7 @@ func Test_NotSame(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -127,7 +125,7 @@ func Test_NotSame(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -136,10 +134,8 @@ func Test_NotSame(t *testing.T) {
 
 		ptr0 := &testcases.TPtr{Val: "0"}
 
-		opt := check.WithTrail("type.field")
-
 		// --- When ---
-		have := NotSame(tspy, ptr0, ptr0, opt)
+		have := NotSame(tspy, ptr0, ptr0, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

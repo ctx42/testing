@@ -23,7 +23,7 @@ func Test_Len(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("fatal when want is greater than actual length", func(t *testing.T) {
+	t.Run("error - want greater than length", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -37,7 +37,7 @@ func Test_Len(t *testing.T) {
 		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
-	t.Run("error - when want is less than the actual length", func(t *testing.T) {
+	t.Run("error - want less than length", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -51,17 +51,15 @@ func Test_Len(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		opt := check.WithTrail("type.field")
-
 		// --- When ---
-		have := Len(tspy, 1, []int{0, 1}, opt)
+		have := Len(tspy, 1, []int{0, 1}, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -80,7 +78,7 @@ func Test_Cap(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("fatal when want is greater than actual capacity", func(t *testing.T) {
+	t.Run("error - want greater than capacity", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -94,7 +92,7 @@ func Test_Cap(t *testing.T) {
 		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
-	t.Run("error - when want is less than the actual capacity", func(t *testing.T) {
+	t.Run("error - want less than capacity", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -110,17 +108,15 @@ func Test_Cap(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		opt := check.WithTrail("type.field")
-
 		// --- When ---
-		have := Cap(tspy, 1, []int{0, 1}, opt)
+		have := Cap(tspy, 1, []int{0, 1}, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -141,7 +137,7 @@ func Test_Has(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -157,7 +153,7 @@ func Test_Has(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -165,10 +161,9 @@ func Test_Has(t *testing.T) {
 		tspy.Close()
 
 		val := []int{1, 2, 3}
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Has(tspy, 42, val, opt)
+		have := Has(tspy, 42, val, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -188,7 +183,7 @@ func Test_HasNo(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -204,7 +199,7 @@ func Test_HasNo(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -212,10 +207,9 @@ func Test_HasNo(t *testing.T) {
 		tspy.Close()
 
 		val := []int{1, 2, 3}
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := HasNo(tspy, 2, val, opt)
+		have := HasNo(tspy, 2, val, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -230,14 +224,14 @@ func Test_HasKey(t *testing.T) {
 		val := map[string]int{"A": 1, "B": 2, "C": 3}
 
 		// --- When ---
-		haveValue, haveHas := HasKey(tspy, "B", val)
+		hVal, hHas := HasKey(tspy, "B", val)
 
 		// --- Then ---
-		affirm.Equal(t, 2, haveValue)
-		affirm.Equal(t, true, haveHas)
+		affirm.Equal(t, 2, hVal)
+		affirm.Equal(t, true, hHas)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -247,14 +241,14 @@ func Test_HasKey(t *testing.T) {
 		val := map[string]int{"A": 1, "B": 2, "C": 3}
 
 		// --- When ---
-		haveValue, haveHas := HasKey(tspy, "X", val)
+		hVal, hHas := HasKey(tspy, "X", val)
 
 		// --- Then ---
-		affirm.Equal(t, 0, haveValue)
-		affirm.Equal(t, false, haveHas)
+		affirm.Equal(t, 0, hVal)
+		affirm.Equal(t, false, hHas)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -265,11 +259,11 @@ func Test_HasKey(t *testing.T) {
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		haveValue, haveHas := HasKey(tspy, "X", val, opt)
+		hVal, hHas := HasKey(tspy, "X", val, opt)
 
 		// --- Then ---
-		affirm.Equal(t, 0, haveValue)
-		affirm.Equal(t, false, haveHas)
+		affirm.Equal(t, 0, hVal)
+		affirm.Equal(t, false, hHas)
 	})
 }
 
@@ -287,7 +281,7 @@ func Test_HasNoKey(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -303,7 +297,7 @@ func Test_HasNoKey(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -311,10 +305,9 @@ func Test_HasNoKey(t *testing.T) {
 		tspy.Close()
 
 		val := map[string]int{"A": 1, "B": 2, "C": 3}
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := HasNoKey(tspy, "B", val, opt)
+		have := HasNoKey(tspy, "B", val, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -334,7 +327,7 @@ func Test_HasKeyValue(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -350,7 +343,7 @@ func Test_HasKeyValue(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -358,10 +351,9 @@ func Test_HasKeyValue(t *testing.T) {
 		tspy.Close()
 
 		val := map[string]int{"A": 1, "B": 2, "C": 3}
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := HasKeyValue(tspy, "B", 100, val, opt)
+		have := HasKeyValue(tspy, "B", 100, val, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -384,7 +376,7 @@ func Test_SliceSubset(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -401,7 +393,7 @@ func Test_SliceSubset(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -410,10 +402,9 @@ func Test_SliceSubset(t *testing.T) {
 
 		s0 := []string{"X", "Y", "A", "B", "C"}
 		s1 := []string{"C", "B", "A"}
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := SliceSubset(tspy, s0, s1, opt)
+		have := SliceSubset(tspy, s0, s1, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -441,7 +432,7 @@ func Test_MapSubset(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -465,7 +456,7 @@ func Test_MapSubset(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -479,10 +470,9 @@ func Test_MapSubset(t *testing.T) {
 		m1 := map[string]string{
 			"KEY0": "VAL0",
 		}
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := MapSubset(tspy, m0, m1, opt)
+		have := MapSubset(tspy, m0, m1, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -511,7 +501,7 @@ func Test_MapsSubset(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -532,7 +522,7 @@ func Test_MapsSubset(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()

@@ -11,7 +11,7 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-func Test_wait(t *testing.T) {
+func Test_Wait(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
@@ -26,7 +26,7 @@ func Test_wait(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -42,7 +42,7 @@ func Test_wait(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -50,10 +50,9 @@ func Test_wait(t *testing.T) {
 		tspy.Close()
 
 		fn := func() bool { return false }
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := Wait(tspy, "100ms", fn, opt)
+		have := Wait(tspy, "100ms", fn, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

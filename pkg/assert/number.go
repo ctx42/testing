@@ -170,12 +170,7 @@ func EpsilonSlice[T, E constraints.Number](
 // Increasing asserts that the given sequence is in strictly increasing order.
 // Use [check.WithIncreasingSoft] to allow equal consecutive values.
 // See [check.Increasing].
-func Increasing[T constraints.Ordered](
-	t tester.T,
-	seq []T,
-	opts ...any,
-) bool {
-
+func Increasing[T constraints.Ordered](t tester.T, seq []T, opts ...any) bool {
 	t.Helper()
 	if err := check.Increasing(seq, opts...); err != nil {
 		t.Error(err)
@@ -203,12 +198,7 @@ func NotIncreasing[T constraints.Ordered](
 // Decreasing asserts that the given sequence is in strictly decreasing order.
 // Use [check.WithDecreasingSoft] to allow equal consecutive values.
 // See [check.Decreasing].
-func Decreasing[T constraints.Ordered](
-	t tester.T,
-	seq []T,
-	opts ...any,
-) bool {
-
+func Decreasing[T constraints.Ordered](t tester.T, seq []T, opts ...any) bool {
 	t.Helper()
 	if err := check.Decreasing(seq, opts...); err != nil {
 		t.Error(err)

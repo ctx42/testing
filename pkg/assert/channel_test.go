@@ -28,7 +28,7 @@ func Test_ChannelWillClose(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -46,7 +46,7 @@ func Test_ChannelWillClose(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
@@ -55,10 +55,9 @@ func Test_ChannelWillClose(t *testing.T) {
 
 		c := make(chan struct{})
 		defer close(c)
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := ChannelWillClose(tspy, "1s", c, opt)
+		have := ChannelWillClose(tspy, "1s", c, check.WithTrail("type.field"))
 
 		// --- Then ---
 		tspy.Finish().AssertExpectations()

@@ -16,90 +16,90 @@ func Test_JSON(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		want := ` {"hello": "world"} `
-		have := `{"hello": "world"}`
+		wJSON := ` {"hello": "world"} `
+		hJSON := `{"hello": "world"}`
 
 		// --- When ---
-		got := JSON(tspy, want, have)
+		have := JSON(tspy, wJSON, hJSON)
 
 		// --- Then ---
-		affirm.Equal(t, true, got)
+		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		want := ` {"hello": "world"} `
-		have := `{"hello": "ms"}`
+		wJSON := ` {"hello": "world"} `
+		hJSON := `{"hello": "ms"}`
 
 		// --- When ---
-		got := JSON(tspy, want, have)
+		have := JSON(tspy, wJSON, hJSON)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 
 	t.Run("success bytes want", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		want := []byte(` {"hello": "world"} `)
-		have := `{"hello": "world"}`
+		wJSON := []byte(` {"hello": "world"} `)
+		hJSON := `{"hello": "world"}`
 
 		// --- When ---
-		got := JSON(tspy, want, have)
+		have := JSON(tspy, wJSON, hJSON)
 
 		// --- Then ---
-		affirm.Equal(t, true, got)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("success bytes have", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		want := ` {"hello": "world"} `
-		have := []byte(`{"hello": "world"}`)
+		wJSON := ` {"hello": "world"} `
+		hJSON := []byte(`{"hello": "world"}`)
 
 		// --- When ---
-		got := JSON(tspy, want, have)
+		have := JSON(tspy, wJSON, hJSON)
 
 		// --- Then ---
-		affirm.Equal(t, true, got)
+		affirm.Equal(t, true, have)
 	})
 
 	t.Run("success bytes", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		want := []byte(` {"hello": "world"} `)
-		have := []byte(`{"hello": "world"}`)
+		wJSON := []byte(` {"hello": "world"} `)
+		hJSON := []byte(`{"hello": "world"}`)
 
 		// --- When ---
-		got := JSON(tspy, want, have)
+		have := JSON(tspy, wJSON, hJSON)
 
 		// --- Then ---
-		affirm.Equal(t, true, got)
+		affirm.Equal(t, true, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		want := ` {"hello": "world"} `
-		have := `{"hello": "ms"}`
+		wJSON := ` {"hello": "world"} `
+		hJSON := `{"hello": "ms"}`
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		got := JSON(tspy, want, have, opt)
+		have := JSON(tspy, wJSON, hJSON, opt)
 
 		// --- Then ---
-		affirm.Equal(t, false, got)
+		affirm.Equal(t, false, have)
 	})
 }

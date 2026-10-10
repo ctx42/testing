@@ -12,7 +12,7 @@ import (
 //
 // See the Design section in the root README for the layered assert/check/notice
 // architecture. Errors are built with [notice] and can be customized with
-// options from [check] and [dump].
+// options from [check] and dump.
 func Nil(t tester.T, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Nil(have, opts...); e != nil {
@@ -26,7 +26,7 @@ func Nil(t tester.T, have any, opts ...any) bool {
 //
 // See the Design section in the root README for the layered assert/check/notice
 // architecture. Errors are built with [notice] and can be customized with
-// options from [check] and [dump].
+// options from [check] and dump.
 func NotNil(t tester.T, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.NotNil(have, opts...); e != nil {

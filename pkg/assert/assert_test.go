@@ -25,7 +25,7 @@ func Test_Count(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -39,17 +39,15 @@ func Test_Count(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
 		tspy.ExpectLogContain("  trail: type.field")
 		tspy.Close()
 
-		opt := check.WithTrail("type.field")
-
 		// --- When ---
-		have := Count(tspy, 1, 123, "ab cd ef", opt)
+		have := Count(tspy, 1, 123, "ab cd ef", check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -69,7 +67,7 @@ func Test_SameType(t *testing.T) {
 		affirm.Equal(t, true, success)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -83,7 +81,7 @@ func Test_SameType(t *testing.T) {
 		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
-	t.Run("log message with trails", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -112,7 +110,7 @@ func Test_NotSameType(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -126,7 +124,7 @@ func Test_NotSameType(t *testing.T) {
 		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
-	t.Run("log message with trails", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -157,7 +155,7 @@ func Test_Type(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -173,7 +171,7 @@ func Test_Type(t *testing.T) {
 		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
-	t.Run("log message with trails", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
@@ -204,7 +202,7 @@ func Test_Fields(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -218,17 +216,15 @@ func Test_Fields(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		opt := check.WithTrail("type.field")
-
 		// --- When ---
-		have := Fields(tspy, 1, &testcases.TA{}, opt)
+		have := Fields(tspy, 1, &testcases.TA{}, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
