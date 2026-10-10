@@ -13,7 +13,7 @@ import (
 func ExampleFirst() {
 	type Row struct{ Name string }
 
-	// Query to a database returning rows.
+	// Simulate a database query returning rows.
 	query := func() ([]Row, error) {
 		return []Row{{"a"}, {"b"}}, nil
 	}
@@ -29,7 +29,7 @@ func ExampleFirst() {
 func ExampleSingle() {
 	type Row struct{ Name string }
 
-	// Query to a database returning rows.
+	// Simulate a database query returning rows.
 	query := func() ([]Row, error) {
 		return []Row{{"a"}}, nil
 	}

@@ -42,11 +42,8 @@ func Test_Values(t *testing.T) {
 	})
 
 	t.Run("error - not nil", func(t *testing.T) {
-		// --- Given ---
-		err := errors.New("test")
-
 		// --- When ---
-		have := affirm.Panic(t, func() { Values(0, 0.0, err) })
+		have := affirm.Panic(t, func() { Values(0, 0.0, errors.New("test")) })
 
 		// --- Then ---
 		affirm.Equal(t, "test", *have)
@@ -75,8 +72,11 @@ func Test_First(t *testing.T) {
 	type T struct{ V int }
 
 	t.Run("one element", func(t *testing.T) {
+		// --- Given ---
+		items := []T{{V: 1}}
+
 		// --- When ---
-		have := First([]T{{V: 1}}, nil)
+		have := First(items, nil)
 
 		// --- Then ---
 		affirm.Equal(t, T{V: 1}, have)
@@ -91,8 +91,11 @@ func Test_First(t *testing.T) {
 	})
 
 	t.Run("more than one element", func(t *testing.T) {
+		// --- Given ---
+		items := []T{{V: 1}, {V: 2}}
+
 		// --- When ---
-		have := First([]T{{V: 1}, {V: 2}}, nil)
+		have := First(items, nil)
 
 		// --- Then ---
 		affirm.Equal(t, T{V: 1}, have)
@@ -100,10 +103,11 @@ func Test_First(t *testing.T) {
 
 	t.Run("error - not nil", func(t *testing.T) {
 		// --- Given ---
+		items := []T{{V: 1}}
 		err := errors.New("test msg")
 
 		// --- When ---
-		have, _ := core.WillPanic(func() { First([]T{{V: 1}}, err) })
+		have, _ := core.WillPanic(func() { First(items, err) })
 
 		// --- Then ---
 		affirm.Equal(t, true, have == any(err))
@@ -111,11 +115,12 @@ func Test_First(t *testing.T) {
 
 	t.Run("error - wraps the single result error", func(t *testing.T) {
 		// --- Given ---
-		_, single := single([]T{{V: 1}, {V: 2}}, nil)
-		err := fmt.Errorf("query: %w", single)
+		items := []T{{V: 1}}
+		_, errSingle := single([]T{{V: 1}, {V: 2}}, nil)
+		err := fmt.Errorf("query: %w", errSingle)
 
 		// --- When ---
-		have, _ := core.WillPanic(func() { First([]T{{V: 1}}, err) })
+		have, _ := core.WillPanic(func() { First(items, err) })
 
 		// --- Then ---
 		affirm.Equal(t, true, have == any(err))
@@ -126,8 +131,11 @@ func Test_Single(t *testing.T) {
 	type T struct{ V int }
 
 	t.Run("one element", func(t *testing.T) {
+		// --- Given ---
+		items := []T{{V: 1}}
+
 		// --- When ---
-		have := Single([]T{{V: 1}}, nil)
+		have := Single(items, nil)
 
 		// --- Then ---
 		affirm.Equal(t, T{V: 1}, have)
@@ -143,18 +151,22 @@ func Test_Single(t *testing.T) {
 
 	t.Run("error - not nil", func(t *testing.T) {
 		// --- Given ---
+		items := []T{{V: 1}}
 		err := errors.New("test msg")
 
 		// --- When ---
-		have, _ := core.WillPanic(func() { Single([]T{{V: 1}}, err) })
+		have, _ := core.WillPanic(func() { Single(items, err) })
 
 		// --- Then ---
 		affirm.Equal(t, true, have == any(err))
 	})
 
 	t.Run("error - more than one element", func(t *testing.T) {
+		// --- Given ---
+		items := []T{{V: 1}, {V: 2}}
+
 		// --- When ---
-		have := affirm.Panic(t, func() { Single([]T{{V: 1}, {V: 2}}, nil) })
+		have := affirm.Panic(t, func() { Single(items, nil) })
 
 		// --- Then ---
 		affirm.Equal(t, "expected a single result: got 2", *have)

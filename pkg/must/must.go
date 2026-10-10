@@ -60,8 +60,8 @@ func First[T any](s []T, err error) T {
 }
 
 // Single returns the single element of s (or the zero value if empty).
-// Panics if err is not nil, or with a specific error if s has more than
-// one element.
+// Panics with err if err is not nil, or with a specific error if s has more
+// than one element.
 //
 // See [First] when you only need the first element.
 func Single[T any](s []T, err error) T {
@@ -88,8 +88,10 @@ func single[T any](s []T, err error) (T, error) {
 	switch len(s) {
 	case 0:
 		return t, nil
+
 	case 1:
 		return s[0], nil
+
 	default:
 		return s[0], fmt.Errorf("%w: got %d", errExpSingle, len(s))
 	}
