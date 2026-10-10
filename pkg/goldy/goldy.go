@@ -31,11 +31,15 @@ import (
 // Marker is a separator between a golden file comment and the content.
 const Marker = "---\n"
 
-// WithData is the [Open] option setting [Goldy] data for golden files which
-// are text templates.
+// WithData is the [Open] option setting [Goldy] data for golden files that
+// are text templates. The file is treated as a template even when data is
+// nil or empty.
 func WithData(data map[string]any) func(*Goldy) {
-	return func(gld *Goldy) { gld.data = data }
+	return func(gld *Goldy) { gld.data = data; gld.isTpl = true }
 }
+
+// bom is the UTF-8 byte order mark.
+var bom = []byte("\xef\xbb\xbf")
 
 // Goldy represents a golden file.
 //
@@ -51,6 +55,7 @@ type Goldy struct {
 	comment string         // Golden file comment.
 	content []byte         // Golden file content.
 	data    map[string]any // Template data.
+	isTpl   bool           // True when the content is a text template.
 	tpl     []byte         // Raw text template.
 	t       tester.T       // Test manager.
 }
@@ -66,12 +71,11 @@ func Open(t tester.T, pth string, opts ...func(*Goldy)) *Goldy {
 	// G304: path comes from test code calling golden file helpers.
 	fil, err := os.Open(pth) // nolint:gosec
 	if err != nil {
-		t.Errorf("error opening file: %v", err)
+		t.Fatalf("error opening file: %v", err)
 		return nil
 	}
 	defer func() { _ = fil.Close() }()
 
-	mark := []byte(Marker)
 	gld := &Goldy{
 		pth:     pth,
 		content: make([]byte, 0, 4*1024),
@@ -83,22 +87,30 @@ func Open(t tester.T, pth string, opts ...func(*Goldy)) *Goldy {
 
 	var started bool
 	rdr := bufio.NewReader(fil)
-	for {
+	for first := true; ; first = false {
 		line, err := rdr.ReadBytes('\n')
 		eof := errors.Is(err, io.EOF)
 		if err != nil && !eof {
-			t.Errorf("error reading file: %v", err)
+			t.Fatalf("error reading file %s: %v", pth, err)
 			return nil
 		}
+		if first {
+			line = bytes.TrimPrefix(line, bom)
+		}
+		line = crlfToLF(line)
 		if !started {
-			started = bytes.Equal(line, mark)
+			started = isMarker(line)
 			if !started {
 				if eof {
 					m := strings.TrimSpace(Marker)
-					t.Errorf("the golden file is missing the %q marker", m)
+					format := "the golden file %s is missing the %q marker"
+					t.Fatalf(format, pth, m)
 					return nil
 				}
 				gld.comment += string(line)
+			}
+			if eof {
+				break
 			}
 			continue
 		}
@@ -108,7 +120,7 @@ func Open(t tester.T, pth string, opts ...func(*Goldy)) *Goldy {
 		}
 	}
 
-	if gld.data != nil {
+	if gld.isTpl {
 		gld.tpl = gld.content
 		return gld.renderTemplate()
 	}
@@ -124,7 +136,7 @@ func Create(t tester.T, pth string) *Goldy {
 	// G304: path comes from test code calling golden file helpers.
 	fil, err := os.Create(pth) // nolint:gosec
 	if err != nil {
-		t.Errorf("error creating file: %v", err)
+		t.Fatalf("error creating file: %v", err)
 		return nil
 	}
 	defer func() { _ = fil.Close() }()
@@ -155,26 +167,36 @@ func (gld *Goldy) SetComment(comment string) *Goldy {
 // Implements fluent interface.
 func (gld *Goldy) SetContent(content string) *Goldy {
 	gld.content = []byte(content)
-	if gld.data != nil {
+	if gld.isTpl {
 		gld.tpl = gld.content
 		return gld.renderTemplate()
 	}
 	return gld
 }
 
-// Save writes the golden file (comment + [Marker] + content) back to its
-// original path. It reports errors via the test's t.Error.
+// Save writes the golden file (comment + [Marker] + content, the raw template
+// for templated files) to its path. It reports errors via the test's t.Error,
+// including a comment containing a [Marker] line, which would move the
+// content when the file is opened.
 func (gld *Goldy) Save() {
 	gld.t.Helper()
 
-	buf := &bytes.Buffer{}
 	comment := gld.comment
-	if !strings.HasSuffix(comment, "\n") {
+	if comment != "" && !strings.HasSuffix(comment, "\n") {
 		comment += "\n"
 	}
+	for _, line := range strings.SplitAfter(comment, "\n") {
+		if isMarker([]byte(line)) {
+			format := "golden file (%s) comment must not contain the %q marker"
+			gld.t.Errorf(format, gld.pth, strings.TrimSpace(Marker))
+			return
+		}
+	}
+
+	buf := &bytes.Buffer{}
 	buf.WriteString(comment)
 	buf.WriteString(Marker)
-	if gld.data != nil {
+	if gld.isTpl {
 		buf.Write(gld.tpl)
 	} else {
 		buf.Write(gld.content)
@@ -190,18 +212,32 @@ func (gld *Goldy) renderTemplate() *Goldy {
 	gld.t.Helper()
 
 	var err error
-	tpl := template.New("goldy")
+	tpl := template.New(gld.pth)
 	tpl.Option("missingkey=error")
 	if tpl, err = tpl.Parse(string(gld.content)); err != nil {
-		gld.t.Error(err)
+		gld.t.Fatal(err)
 		return nil
 	}
 
 	buf := &bytes.Buffer{}
 	if err = tpl.Execute(buf, gld.data); err != nil {
-		gld.t.Error(err)
+		gld.t.Fatal(err)
 		return nil
 	}
 	gld.content = buf.Bytes()
 	return gld
+}
+
+// isMarker reports whether line is the [Marker] line, ignoring trailing
+// spaces, tabs and the line ending.
+func isMarker(line []byte) bool {
+	return string(bytes.TrimRight(line, " \t\r\n")) == strings.TrimSpace(Marker)
+}
+
+// crlfToLF replaces a trailing CRLF line ending with LF.
+func crlfToLF(line []byte) []byte {
+	if bytes.HasSuffix(line, []byte("\r\n")) {
+		line = append(line[:len(line)-2], '\n')
+	}
+	return line
 }

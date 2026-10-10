@@ -27,6 +27,99 @@ func Test_WithData(t *testing.T) {
 }
 
 func Test_Open(t *testing.T) {
+	t.Run("CRLF line endings", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		pth := filepath.Join(t.TempDir(), "crlf.gld")
+		must.Nil(os.WriteFile(pth, []byte("doc\r\n---\r\nline\r\n"), 0o600))
+
+		// --- When ---
+		have := Open(tspy, pth)
+
+		// --- Then ---
+		affirm.Equal(t, "doc\n", have.comment)
+		affirm.Equal(t, "line\n", have.String())
+	})
+
+	t.Run("byte order mark before the marker", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		pth := filepath.Join(t.TempDir(), "bom.gld")
+		must.Nil(os.WriteFile(pth, []byte("\xef\xbb\xbf---\nline"), 0o600))
+
+		// --- When ---
+		have := Open(tspy, pth)
+
+		// --- Then ---
+		affirm.Equal(t, "", have.comment)
+		affirm.Equal(t, "line", have.String())
+	})
+
+	t.Run("marker with trailing space", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		pth := filepath.Join(t.TempDir(), "space.gld")
+		must.Nil(os.WriteFile(pth, []byte("doc\n--- \nline"), 0o600))
+
+		// --- When ---
+		have := Open(tspy, pth)
+
+		// --- Then ---
+		affirm.Equal(t, "line", have.String())
+	})
+
+	t.Run("marker as the last line without new line", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		pth := filepath.Join(t.TempDir(), "last.gld")
+		must.Nil(os.WriteFile(pth, []byte("doc\n---"), 0o600))
+
+		// --- When ---
+		have := Open(tspy, pth)
+
+		// --- Then ---
+		affirm.Equal(t, "doc\n", have.comment)
+		affirm.Equal(t, "", have.String())
+	})
+
+	t.Run("template with nil data", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		pth := filepath.Join(t.TempDir(), "tpl.gld")
+		must.Nil(os.WriteFile(pth, []byte("---\n{{ \"a\" }}"), 0o600))
+
+		// --- When ---
+		have := Open(tspy, pth, WithData(nil))
+
+		// --- Then ---
+		affirm.Equal(t, "a", have.String())
+	})
+
+	t.Run("error - read failure", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectFatal()
+		wMsg := "error reading file testdata: read testdata: is a directory"
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
+
+		// --- When ---
+		msg := affirm.Panic(t, func() { Open(tspy, "testdata") })
+
+		// --- Then ---
+		affirm.Equal(t, tester.FailNowMsg, *msg)
+	})
+
 	t.Run("test runner set", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
@@ -37,7 +130,6 @@ func Test_Open(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
-		affirm.NotNil(t, have.comment)
 		affirm.Equal(t, true, core.Same(tspy, have.t))
 	})
 
@@ -126,54 +218,68 @@ func Test_Open(t *testing.T) {
 	t.Run("error - no marker", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
-		tspy.ExpectError()
-		tspy.ExpectLogEqual("the golden file is missing the \"---\" marker")
+		tspy.ExpectFatal()
+		wMsg := "" +
+			"the golden file testdata/test_no_marker.gld is missing " +
+			"the \"---\" marker"
+		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
 		// --- When ---
-		have := Open(tspy, "testdata/test_no_marker.gld")
+		msg := affirm.Panic(t, func() {
+			Open(tspy, "testdata/test_no_marker.gld")
+		})
 
 		// --- Then ---
-		affirm.Nil(t, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
 	t.Run("error - not existing file", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
-		tspy.ExpectError()
+		tspy.ExpectFatal()
 		wMsg := "error opening file: open testdata/not-existing.txt: " +
 			"no such file or directory"
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
 		// --- When ---
-		have := Open(tspy, "testdata/not-existing.txt")
+		msg := affirm.Panic(t, func() {
+			Open(tspy, "testdata/not-existing.txt")
+		})
 
 		// --- Then ---
-		affirm.Nil(t, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
 	t.Run("error - golden file invalid template", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
-		tspy.ExpectError()
-		tspy.ExpectLogEqual("template: goldy:2: unexpected \"}\" in operand")
+		tspy.ExpectFatal()
+		wMsg := "" +
+			"template: testdata/test_tpl_invalid.gld:2: " +
+			"unexpected \"}\" in operand"
+		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
 		data := WithData(map[string]any{"second": 2})
 
 		// --- When ---
-		have := Open(tspy, "testdata/test_tpl_invalid.gld", data)
+		msg := affirm.Panic(t, func() {
+			Open(tspy, "testdata/test_tpl_invalid.gld", data)
+		})
 
 		// --- Then ---
-		affirm.Nil(t, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
 	t.Run("error - golden file template missing data", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
-		tspy.ExpectError()
-		wMsg := "template: goldy:1:12: executing \"goldy\" at <.first>: " +
+		tspy.ExpectFatal()
+		wMsg := "" +
+			"template: testdata/test_tpl.gld:1:12: executing " +
+			"\"testdata/test_tpl.gld\" at <.first>: " +
 			"map has no entry for key \"first\""
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
@@ -181,26 +287,30 @@ func Test_Open(t *testing.T) {
 		data := WithData(map[string]any{"other": 1})
 
 		// --- When ---
-		have := Open(tspy, "testdata/test_tpl.gld", data)
+		msg := affirm.Panic(t, func() {
+			Open(tspy, "testdata/test_tpl.gld", data)
+		})
 
 		// --- Then ---
-		affirm.Nil(t, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 
 	t.Run("error - golden file not found", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
-		tspy.ExpectError()
+		tspy.ExpectFatal()
 		wMsg := "error opening file: open testdata/does_not_exist.gld: " +
 			"no such file or directory"
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
 		// --- When ---
-		have := Open(tspy, "testdata/does_not_exist.gld")
+		msg := affirm.Panic(t, func() {
+			Open(tspy, "testdata/does_not_exist.gld")
+		})
 
 		// --- Then ---
-		affirm.Nil(t, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 }
 
@@ -218,7 +328,7 @@ func Test_Create(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, have)
 		affirm.Equal(t, false, tspy.Failed())
-		affirm.NotNil(t, have.comment)
+		affirm.Equal(t, "", have.comment)
 		affirm.Equal(t, true, core.Same(tspy, have.t))
 
 		content, err := os.ReadFile(pth)
@@ -229,7 +339,7 @@ func Test_Create(t *testing.T) {
 	t.Run("error - cannot create the file", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
-		tspy.ExpectError()
+		tspy.ExpectFatal()
 		pth := filepath.Join(t.TempDir(), "not-existing-dir", "empty.gld")
 		wMsg := "error creating file: open " + pth +
 			": no such file or directory"
@@ -237,10 +347,10 @@ func Test_Create(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		have := Create(tspy, pth)
+		msg := affirm.Panic(t, func() { Create(tspy, pth) })
 
 		// --- Then ---
-		affirm.Nil(t, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 }
 
@@ -265,6 +375,18 @@ func Test_Goldy_Bytes(t *testing.T) {
 	// --- Then ---
 	affirm.DeepEqual(t, []byte("content"), have)
 	affirm.Equal(t, false, core.Same(gld.content, have))
+}
+
+func Test_Goldy_SetComment(t *testing.T) {
+	// --- Given ---
+	gld := &Goldy{comment: "old"}
+
+	// --- When ---
+	have := gld.SetComment("new")
+
+	// --- Then ---
+	affirm.Equal(t, true, core.Same(gld, have))
+	affirm.Equal(t, "new", have.comment)
 }
 
 func Test_Goldy_SetContent(t *testing.T) {
@@ -305,8 +427,10 @@ func Test_Goldy_SetContent(t *testing.T) {
 	t.Run("error - rendering template", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
-		tspy.ExpectError()
-		wMsg := "template: goldy:1:4: executing \"goldy\" at <.other>: " +
+		tspy.ExpectFatal()
+		wMsg := "" +
+			"template: testdata/test_tpl.gld:1:4: executing " +
+			"\"testdata/test_tpl.gld\" at <.other>: " +
 			"map has no entry for key \"other\""
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
@@ -315,14 +439,51 @@ func Test_Goldy_SetContent(t *testing.T) {
 		gld := Open(tspy, "testdata/test_tpl.gld", data)
 
 		// --- When ---
-		have := gld.SetContent("32{{.other}}")
+		msg := affirm.Panic(t, func() { gld.SetContent("32{{.other}}") })
 
 		// --- Then ---
-		affirm.Nil(t, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
 }
 
 func Test_Goldy_Save(t *testing.T) {
+	t.Run("empty comment round trip", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		pth := filepath.Join(t.TempDir(), "golden.gld")
+		gld := Create(tspy, pth).SetContent("content")
+
+		// --- When ---
+		gld.Save()
+
+		// --- Then ---
+		affirm.Equal(t, "---\ncontent", string(must.Value(os.ReadFile(pth))))
+		have := Open(tspy, pth)
+		affirm.Equal(t, "", have.comment)
+		affirm.Equal(t, "content", have.String())
+	})
+
+	t.Run("error - comment with marker line", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		pth := filepath.Join(t.TempDir(), "golden.gld")
+		wMsg := "golden file (" + pth + ") comment must not contain " +
+			"the \"---\" marker"
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
+
+		gld := Create(tspy, pth).SetComment("a\n---\nb").SetContent("c")
+
+		// --- When ---
+		gld.Save()
+
+		// --- Then ---
+		affirm.Equal(t, 0, len(must.Value(os.ReadFile(pth))))
+	})
+
 	t.Run("when not a template", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
@@ -357,6 +518,7 @@ func Test_Goldy_Save(t *testing.T) {
 			comment: "comment\n",
 			content: []byte("content 1"),
 			data:    map[string]any{"first": 1},
+			isTpl:   true,
 			tpl:     []byte("content {{ .first }}"),
 			t:       tspy,
 		}
@@ -430,7 +592,7 @@ func Benchmark_Goldy_Open_Small(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		g := Open(&testing.T{}, pth)
+		g := Open(b, pth)
 		_ = g.Bytes()
 	}
 }
@@ -449,7 +611,7 @@ func Benchmark_Goldy_Open_WithTemplate(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		g := Open(&testing.T{}, pth, WithData(data))
+		g := Open(b, pth, WithData(data))
 		_ = g.Bytes()
 	}
 }
@@ -466,7 +628,7 @@ func Benchmark_Goldy_Save(b *testing.B) {
 			pth:     pth,
 			comment: "Benchmark comment\n",
 			content: []byte("benchmark content line\n"),
-			t:       &testing.T{},
+			t:       b,
 		}
 		g.Save()
 	}
