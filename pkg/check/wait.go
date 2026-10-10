@@ -13,7 +13,7 @@ import (
 // Wait waits for "fn" to return true but no longer than the given timeout. By
 // default, calls to "fn" are throttled with a default throttle set in
 // [Options.WaitThrottle] — use [WithWaitThrottle] to change it.
-// See [assert.Wait].
+// See assert.Wait.
 //
 // The "timeout" may represent duration in the form of a string, int, int64, or
 // [time.Duration].

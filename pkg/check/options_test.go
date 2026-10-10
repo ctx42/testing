@@ -537,18 +537,24 @@ func Test_parseCheckArgs_tabular(t *testing.T) {
 	}{
 		{"empty", nil, "", nil, 0},
 		{"only format", []any{"hello %s"}, "hello %s", nil, 0},
-		{"format+args", []any{"A%d %s", 42, "x"}, "A%d %s", []any{42, "x"}, 0},
 		{
-			"format + non-string arg",
+			"format plus args",
+			[]any{"A%d %s", 42, "x"},
+			"A%d %s",
+			[]any{42, "x"},
+			0,
+		},
+		{
+			"format plus non-string arg",
 			[]any{"v=%v", struct{}{}},
 			"v=%v",
 			[]any{struct{}{}},
 			0,
 		},
-		{"single With* option", []any{WithTrail("f")}, "", nil, 1},
+		{"single With pointer option", []any{WithTrail("f")}, "", nil, 1},
 		{"single Option value", []any{WithCmpBaseTypes()}, "", nil, 1},
 		{
-			"raw func(Options)Options",
+			"raw func Options Options",
 			[]any{func(o Options) Options { o.Trail = "raw"; return o }},
 			"",
 			nil,
@@ -563,7 +569,7 @@ func Test_parseCheckArgs_tabular(t *testing.T) {
 		},
 		{"comment then option", []any{"X", WithSkipUnexported()}, "X", nil, 1},
 		{
-			"multiple options + comment",
+			"multiple options plus comment",
 			[]any{WithTrail("a"), WithRecent(time.Second), "M", 1, true},
 			"M",
 			[]any{1, true},
@@ -640,9 +646,9 @@ func Test_Options_StructTrail_tabular(t *testing.T) {
 		{"trail and type", "trail", "type", "", "trail"},
 		{"trail and field", "trail", "", "field", "trail.field"},
 		{"trail and type and field", "trail", "type", "field", "trail.field"},
-		{"trail[] and type", "[]", "type", "", "[]"},
-		{"trail[] and field", "[]", "", "field", "[].field"},
-		{"trail[] and type and field", "[]", "type", "field", "[].field"},
+		{"trail slice and type", "[]", "type", "", "[]"},
+		{"trail slice and field", "[]", "", "field", "[].field"},
+		{"trail slice and type and field", "[]", "type", "field", "[].field"},
 	}
 
 	for _, tc := range tt {

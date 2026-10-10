@@ -13,7 +13,7 @@ import (
 // ExitCode checks that "err" is an [*exec.ExitError] (or wraps one) with the
 // given exit code.
 //
-// See [assert.ExitCode] for the assertion wrapper.
+// See assert.ExitCode for the assertion wrapper.
 func ExitCode(want int, err error, opts ...any) error {
 	if want == 0 && err == nil {
 		return nil

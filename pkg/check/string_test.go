@@ -11,7 +11,7 @@ import (
 )
 
 func Test_EqualFold(t *testing.T) {
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -20,7 +20,8 @@ func Test_EqualFold(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected strings to be equal (case-insensitive):\n" +
+		wMsg := "" +
+			"expected strings to be equal (case-insensitive):\n" +
 			"  trail: type.field\n" +
 			"   want: \"ABC\"\n" +
 			"   have: \"xyz\""
@@ -70,7 +71,8 @@ func Test_EqualFold_error_tabular(t *testing.T) {
 
 			// --- Then ---
 			affirm.NotNil(t, err)
-			wMsg := "expected strings to be equal (case-insensitive):\n" +
+			wMsg := "" +
+				"expected strings to be equal (case-insensitive):\n" +
 				"  want: %q\n" +
 				"  have: %q"
 			wMsg = fmt.Sprintf(wMsg, tc.want, tc.have)
@@ -80,7 +82,7 @@ func Test_EqualFold_error_tabular(t *testing.T) {
 }
 
 func Test_Contain(t *testing.T) {
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -89,7 +91,8 @@ func Test_Contain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected string to contain substring:\n" +
+		wMsg := "" +
+			"expected string to contain substring:\n" +
 			"      trail: type.field\n" +
 			"     string: \"xyz\"\n" +
 			"  substring: \"abc\""
@@ -138,7 +141,8 @@ func Test_Contain_error_tabular(t *testing.T) {
 
 			// --- Then ---
 			affirm.NotNil(t, err)
-			wMsg := "expected string to contain substring:\n" +
+			wMsg := "" +
+				"expected string to contain substring:\n" +
 				"     string: %q\n" +
 				"  substring: %q"
 			wMsg = fmt.Sprintf(wMsg, tc.s, tc.sub)
@@ -148,7 +152,7 @@ func Test_Contain_error_tabular(t *testing.T) {
 }
 
 func Test_ContainFold(t *testing.T) {
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -157,7 +161,8 @@ func Test_ContainFold(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected string to contain substring (case-insensitive):\n" +
+		wMsg := "" +
+			"expected string to contain substring (case-insensitive):\n" +
 			"      trail: type.field\n" +
 			"     string: \"xyz\"\n" +
 			"  substring: \"abc\""
@@ -207,7 +212,8 @@ func Test_ContainFold_error_tabular(t *testing.T) {
 
 			// --- Then ---
 			affirm.NotNil(t, err)
-			wMsg := "expected string to contain substring (case-insensitive):\n" +
+			wMsg := "" +
+				"expected string to contain substring (case-insensitive):\n" +
 				"     string: %q\n" +
 				"  substring: %q"
 			wMsg = fmt.Sprintf(wMsg, tc.have, tc.want)
@@ -217,7 +223,7 @@ func Test_ContainFold_error_tabular(t *testing.T) {
 }
 
 func Test_NotContain(t *testing.T) {
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -226,7 +232,8 @@ func Test_NotContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected string not to contain substring:\n" +
+		wMsg := "" +
+			"expected string not to contain substring:\n" +
 			"      trail: type.field\n" +
 			"     string: \"abc\"\n" +
 			"  substring: \"abc\""
@@ -274,7 +281,8 @@ func Test_NotContain_error_tabular(t *testing.T) {
 
 			// --- Then ---
 			affirm.NotNil(t, err)
-			wMsg := "expected string not to contain substring:\n" +
+			wMsg := "" +
+				"expected string not to contain substring:\n" +
 				"     string: %q\n" +
 				"  substring: %q"
 			wMsg = fmt.Sprintf(wMsg, tc.s, tc.sub)

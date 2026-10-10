@@ -455,7 +455,7 @@ func Test_Equal_kind_Ptr(t *testing.T) {
 		affirm.DeepEqual(t, []string{"Int"}, trail)
 	})
 
-	t.Run("equal time.Location", func(t *testing.T) {
+	t.Run("equal time Location", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithTrail("type")}
@@ -471,7 +471,7 @@ func Test_Equal_kind_Ptr(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type"}, trail)
 	})
 
-	t.Run("not equal time.Location", func(t *testing.T) {
+	t.Run("not equal time Location", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithTrail("type")}
@@ -626,7 +626,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("equal time.Location struct value", func(t *testing.T) {
+	t.Run("equal time Location struct value", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithTrail("type")}
@@ -642,13 +642,14 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type"}, trail)
 	})
 
-	t.Run("equal time.Location struct field", func(t *testing.T) {
+	t.Run("equal time Location struct field", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail)}
 
-		want := testcases.TLoc{Loc: must.Value(time.LoadLocation("Europe/Warsaw"))}
-		have := testcases.TLoc{Loc: must.Value(time.LoadLocation("Europe/Warsaw"))}
+		waw := must.Value(time.LoadLocation("Europe/Warsaw"))
+		want := testcases.TLoc{Loc: waw}
+		have := testcases.TLoc{Loc: waw}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -658,7 +659,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.DeepEqual(t, []string{"TLoc.Loc"}, trail)
 	})
 
-	t.Run("not equal time.Location nil have", func(t *testing.T) {
+	t.Run("not equal time Location nil have", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail)}
@@ -809,8 +810,12 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithSkipUnexported()}
 
-		want := testcases.TNested{STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 42}}}}
-		have := testcases.TNested{STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 44}}}}
+		want := testcases.TNested{
+			STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 42}}},
+		}
+		have := testcases.TNested{
+			STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 44}}},
+		}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -855,8 +860,12 @@ func Test_Equal_kind_Struct(t *testing.T) {
 			WithSkipUnexported(),
 		}
 
-		want := testcases.TNested{STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 42}}}}
-		have := testcases.TNested{STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 44}}}}
+		want := testcases.TNested{
+			STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 42}}},
+		}
+		have := testcases.TNested{
+			STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 44}}},
+		}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1883,7 +1892,7 @@ func Test_NotEqual(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := NotEqual(42, 42)
 
@@ -1909,7 +1918,7 @@ func Test_NotEqual(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -1936,7 +1945,8 @@ func Test_equalError(t *testing.T) {
 		err := equalError(42, 44, WithOptions(ops))
 
 		// --- Then ---
-		wMsg := "expected values to be equal:\n" +
+		wMsg := "" +
+			"expected values to be equal:\n" +
 			"  want: 42\n" +
 			"  have: 44"
 		affirm.Equal(t, wMsg, err.Error())
@@ -1975,7 +1985,7 @@ func Test_equalError(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("it does not override the already set byte dumper", func(t *testing.T) {
+	t.Run("keeps the byte dumper already set", func(t *testing.T) {
 		// --- Given ---
 		w := byte('A')
 		h := byte('B')
@@ -2265,7 +2275,8 @@ func Benchmark_Equal_DeepWithCustomChecker(b *testing.B) {
 
 		// Delegate to normal comparison while explicitly disabling this
 		// custom checker for the recursive call (prevents infinite recursion).
-		callOpts := append(append([]any{}, opts...), WithTypeChecker(benchOrder{}, nil))
+		callOpts := append([]any{}, opts...)
+		callOpts = append(callOpts, WithTypeChecker(benchOrder{}, nil))
 		return Equal(want, have, callOpts...)
 	}
 

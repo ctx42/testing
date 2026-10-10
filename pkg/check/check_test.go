@@ -43,7 +43,7 @@ func Test_Count(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -128,7 +128,7 @@ func Test_SameType(t *testing.T) {
 		affirm.Nil(t, have)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -196,7 +196,10 @@ func Test_SameType_error_tabular(t *testing.T) {
 			"different ptr types",
 			&testcases.TPtr{},
 			&testcases.TVal{},
-			"expected same types:\n  want: *testcases.TPtr\n  have: *testcases.TVal",
+			"" +
+				"expected same types:\n" +
+				"  want: *testcases.TPtr\n" +
+				"  have: *testcases.TVal",
 		},
 	}
 
@@ -214,7 +217,7 @@ func Test_SameType_error_tabular(t *testing.T) {
 }
 
 func Test_NotSameType(t *testing.T) {
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -278,13 +281,19 @@ func Test_NotSameType_error_tabular(t *testing.T) {
 			"same ptr types",
 			&testcases.TPtr{},
 			&testcases.TPtr{},
-			"expected different types:\n  want: *testcases.TPtr\n  have: *testcases.TPtr",
+			"" +
+				"expected different types:\n" +
+				"  want: *testcases.TPtr\n" +
+				"  have: *testcases.TPtr",
 		},
 		{
 			"same ptr and interface",
 			ptr,
 			itf,
-			"expected different types:\n  want: *testcases.TPtr\n  have: *testcases.TPtr",
+			"" +
+				"expected different types:\n" +
+				"  want: *testcases.TPtr\n" +
+				"  have: *testcases.TPtr",
 		},
 	}
 
@@ -385,7 +394,7 @@ func Test_Type(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error - cannot assert type", func(t *testing.T) {
+	t.Run("error - cannot assert type to pointer", func(t *testing.T) {
 		// --- Given ---
 		target := &testcases.TPrv{}
 		src := testcases.TIntStr{}
@@ -458,7 +467,7 @@ func Test_Fields(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 

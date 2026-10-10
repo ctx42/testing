@@ -16,7 +16,7 @@ import (
 // "want" may be a regexp string or [*regexp.Regexp]. [fmt.Sprint] is used
 // on "have".
 //
-// See [assert.Regexp] for the assertion wrapper.
+// See assert.Regexp for the assertion wrapper.
 func Regexp(want, have any, opts ...any) error {
 	match, err := matchRegexp(want, have)
 	if err != nil {
@@ -34,7 +34,7 @@ func Regexp(want, have any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// matchRegexp return true if a specified regexp matches a string.
+// matchRegexp returns true if the regexp matches the string form of have.
 func matchRegexp(rx, have any) (bool, error) {
 	var r *regexp.Regexp
 	if rr, ok := rx.(*regexp.Regexp); ok {

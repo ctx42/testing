@@ -31,7 +31,7 @@ func Test_Greater(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := Greater(4, 2)
 
@@ -44,7 +44,7 @@ func Test_Greater(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -79,7 +79,7 @@ func Test_GreaterOrEqual(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := GreaterOrEqual(4, 2)
 
@@ -92,7 +92,7 @@ func Test_GreaterOrEqual(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -132,7 +132,7 @@ func Test_Smaller(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := Smaller(2, 4)
 
@@ -145,7 +145,7 @@ func Test_Smaller(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -180,7 +180,7 @@ func Test_SmallerOrEqual(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := SmallerOrEqual(2, 4)
 
@@ -193,7 +193,7 @@ func Test_SmallerOrEqual(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -261,7 +261,7 @@ func Test_Delta(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := Delta(42.0, 2, 39.9)
 
@@ -276,7 +276,7 @@ func Test_Delta(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -337,7 +337,8 @@ func Test_DeltaSlice(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
-			"expected all numbers to be within the given delta respectively:\n" +
+			"expected all numbers to be within the given delta " +
+			"respectively:\n" +
 			"       trail: <[]float64>[1]\n" +
 			"        want: 2.123\n" +
 			"        have: 2.143\n" +
@@ -406,7 +407,7 @@ func Test_Epsilon(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := Epsilon(uint(42), 0.10, uint(47))
 
@@ -421,7 +422,7 @@ func Test_Epsilon(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -482,7 +483,8 @@ func Test_EpsilonSlice(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
-			"expected all numbers to be within the given epsilon respectively:\n" +
+			"expected all numbers to be within the given epsilon " +
+			"respectively:\n" +
 			"         trail: <[]float64>[1]\n" +
 			"          want: 2.123\n" +
 			"          have: 2.143\n" +
@@ -567,7 +569,7 @@ func Test_Increasing(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		seq := []float64{1, 2, 2, 4}
 		opt := WithTrail("type.field")
@@ -716,7 +718,7 @@ func Test_Decreasing(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		seq := []float64{4, 3, 3, 1}
 		opt := WithTrail("type.field")

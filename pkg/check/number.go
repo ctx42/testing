@@ -16,7 +16,7 @@ import (
 
 // Greater checks that "have" is strictly greater than "want".
 //
-// See [assert.Greater] for the assertion wrapper.
+// See assert.Greater for the assertion wrapper.
 func Greater[T constraints.Ordered](want, have T, opts ...any) error {
 	if want < have {
 		return nil
@@ -30,7 +30,7 @@ func Greater[T constraints.Ordered](want, have T, opts ...any) error {
 
 // GreaterOrEqual checks that "have" is greater than or equal to "want".
 //
-// See [assert.GreaterOrEqual] for the assertion wrapper.
+// See assert.GreaterOrEqual for the assertion wrapper.
 func GreaterOrEqual[T constraints.Ordered](want, have T, opts ...any) error {
 	if want <= have {
 		return nil
@@ -44,7 +44,7 @@ func GreaterOrEqual[T constraints.Ordered](want, have T, opts ...any) error {
 
 // Smaller checks that "have" is strictly smaller than "want".
 //
-// See [assert.Smaller] for the assertion wrapper.
+// See assert.Smaller for the assertion wrapper.
 func Smaller[T constraints.Ordered](want, have T, opts ...any) error {
 	if want > have {
 		return nil
@@ -58,7 +58,7 @@ func Smaller[T constraints.Ordered](want, have T, opts ...any) error {
 
 // SmallerOrEqual checks that "have" is smaller than or equal to "want".
 //
-// See [assert.SmallerOrEqual] for the assertion wrapper.
+// See assert.SmallerOrEqual for the assertion wrapper.
 func SmallerOrEqual[T constraints.Ordered](want, have T, opts ...any) error {
 	if want >= have {
 		return nil
@@ -75,7 +75,7 @@ func SmallerOrEqual[T constraints.Ordered](want, have T, opts ...any) error {
 //
 //	|w-h| <= delta
 //
-// See [assert.Delta] for the assertion form and options.
+// See assert.Delta for the assertion form and options.
 func Delta[T, E constraints.Number](
 	want T,
 	delta E,
@@ -118,7 +118,7 @@ func Delta[T, E constraints.Number](
 //
 //	|w[i]-h[i]| <= delta
 //
-// See [assert.DeltaSlice].
+// See assert.DeltaSlice.
 func DeltaSlice[T, E constraints.Number](
 	want []T,
 	delta E,
@@ -137,7 +137,8 @@ func DeltaSlice[T, E constraints.Number](
 	for i, w := range want {
 		iOps := ops.ArrTrail(knd, i)
 		if e := Delta(w, fDelta, have[i], WithOptions(iOps)); e != nil {
-			const hHeader = "expected all numbers to be " +
+			const hHeader = "" +
+				"expected all numbers to be " +
 				"within the given delta respectively"
 			msg := notice.From(e).SetHeader(hHeader)
 			return AddRows(iOps, msg)
@@ -154,7 +155,7 @@ func DeltaSlice[T, E constraints.Number](
 // When want is zero, relative error is undefined: both want and have zero
 // succeeds, otherwise the check fails.
 //
-// See [assert.Epsilon] for the assertion form and options.
+// See assert.Epsilon for the assertion form and options.
 func Epsilon[T, E constraints.Number](
 	want T,
 	epsilon E,
@@ -206,7 +207,7 @@ func Epsilon[T, E constraints.Number](
 //
 //	|w[i]-h[i]|/|w[i]| <= epsilon
 //
-// See [assert.EpsilonSlice].
+// See assert.EpsilonSlice.
 func EpsilonSlice[T, E constraints.Number](
 	want []T,
 	epsilon E,
@@ -225,7 +226,8 @@ func EpsilonSlice[T, E constraints.Number](
 	for i, w := range want {
 		iOps := ops.ArrTrail(knd, i)
 		if e := Epsilon(w, fEpsilon, have[i], WithOptions(iOps)); e != nil {
-			const hHeader = "expected all numbers to be " +
+			const hHeader = "" +
+				"expected all numbers to be " +
 				"within the given epsilon respectively"
 			msg := notice.From(e).SetHeader(hHeader)
 			return AddRows(iOps, msg)
@@ -236,7 +238,7 @@ func EpsilonSlice[T, E constraints.Number](
 
 // Increasing checks that the sequence is strictly increasing.
 // Use [WithIncreasingSoft] to allow equal consecutive values.
-// See [assert.Increasing].
+// See assert.Increasing.
 func Increasing[T constraints.Ordered](seq []T, opts ...any) error {
 	if len(seq) <= 1 {
 		return nil
@@ -272,7 +274,7 @@ func Increasing[T constraints.Ordered](seq []T, opts ...any) error {
 }
 
 // NotIncreasing is the inverse of [Increasing].
-// See [assert.NotIncreasing].
+// See assert.NotIncreasing.
 func NotIncreasing[T constraints.Ordered](seq []T, opts ...any) error {
 	if err := Increasing(seq, opts...); err != nil {
 		return nil //nolint:nilerr
@@ -291,7 +293,7 @@ func NotIncreasing[T constraints.Ordered](seq []T, opts ...any) error {
 
 // Decreasing checks that the sequence is strictly decreasing.
 // Use [WithDecreasingSoft] to allow equal consecutive values.
-// See [assert.Decreasing].
+// See assert.Decreasing.
 func Decreasing[T constraints.Ordered](seq []T, opts ...any) error {
 	if len(seq) <= 1 {
 		return nil
@@ -326,7 +328,7 @@ func Decreasing[T constraints.Ordered](seq []T, opts ...any) error {
 }
 
 // NotDecreasing is the inverse of [Decreasing].
-// See [assert.NotDecreasing].
+// See assert.NotDecreasing.
 func NotDecreasing[T constraints.Ordered](seq []T, opts ...any) error {
 	if err := Decreasing(seq, opts...); err != nil {
 		return nil //nolint:nilerr

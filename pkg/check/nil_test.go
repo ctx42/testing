@@ -18,19 +18,20 @@ func Test_Nil(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := Nil(42)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected value to be nil:\n" +
+		wMsg := "" +
+			"expected value to be nil:\n" +
 			"  want: nil\n" +
 			"  have: 42"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -39,7 +40,8 @@ func Test_Nil(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected value to be nil:\n" +
+		wMsg := "" +
+			"expected value to be nil:\n" +
 			"  trail: type.field\n" +
 			"   want: nil\n" +
 			"   have: 42"
@@ -56,7 +58,7 @@ func Test_NotNil(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := NotNil(nil)
 
@@ -66,7 +68,7 @@ func Test_NotNil(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 

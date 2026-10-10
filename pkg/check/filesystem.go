@@ -12,7 +12,7 @@ import (
 
 // FileExist checks that "pth" points to an existing file.
 //
-// See [assert.FileExist] for the assertion wrapper.
+// See assert.FileExist for the assertion wrapper.
 func FileExist(pth string, opts ...any) error {
 	inf, err := os.Lstat(pth)
 	if err != nil {
@@ -39,7 +39,7 @@ func FileExist(pth string, opts ...any) error {
 
 // NoFileExist checks that "pth" does not point to an existing file.
 //
-// See [assert.NoFileExist] for the assertion wrapper.
+// See assert.NoFileExist for the assertion wrapper.
 func NoFileExist(pth string, opts ...any) error {
 	inf, err := os.Lstat(pth)
 	if err != nil {
@@ -71,7 +71,7 @@ type Content interface {
 }
 
 // FileContain checks that the file at "pth" can be read and contains "want"
-// (full read + [strings.Contains]). See [assert.FileContain].
+// (full read + [strings.Contains]). See assert.FileContain.
 func FileContain[T Content](want T, pth string, opts ...any) error {
 	// G304: path comes from test assertions on filesystem content.
 	content, err := os.ReadFile(pth) //nolint:gosec
@@ -94,7 +94,7 @@ func FileContain[T Content](want T, pth string, opts ...any) error {
 }
 
 // DirExist checks that "pth" points to an existing directory.
-// See [assert.DirExist].
+// See assert.DirExist.
 func DirExist(pth string, opts ...any) error {
 	inf, err := os.Lstat(pth)
 	if err != nil {
@@ -121,7 +121,7 @@ func DirExist(pth string, opts ...any) error {
 }
 
 // NoDirExist checks that "pth" does not point to an existing directory.
-// See [assert.NoDirExist].
+// See assert.NoDirExist.
 func NoDirExist(pth string, opts ...any) error {
 	inf, err := os.Lstat(pth)
 	if err != nil {

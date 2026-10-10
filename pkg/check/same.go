@@ -13,7 +13,7 @@ import (
 // Sameness is based on type + value equality (via [internal/core.Same]).
 // Works for pointers, slices, maps, funcs. Arrays always fail.
 //
-// See [assert.Same] for the assertion wrapper.
+// See assert.Same for the assertion wrapper.
 func Same(want, have any, opts ...any) error {
 	if core.Same(want, have) {
 		return nil
@@ -27,11 +27,9 @@ func Same(want, have any, opts ...any) error {
 
 // NotSame checks that "want" and "have" are not pointers to the same object.
 //
-// NotSame checks that "want" and "have" are not pointers to the same object.
-//
 // Both must be pointer variables. Sameness check is type + value equality.
 //
-// See [assert.NotSame] for the assertion wrapper.
+// See assert.NotSame for the assertion wrapper.
 func NotSame(want, have any, opts ...any) error {
 	if Same(want, have) == nil {
 		ops := DefaultOptions(opts...)

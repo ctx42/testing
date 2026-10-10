@@ -58,7 +58,8 @@ func Test_ExitCode(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected exit code:\n" +
+		wMsg := "" +
+			"expected exit code:\n" +
 			"  want: 77\n" +
 			"  have: 99"
 		affirm.Equal(t, wMsg, err.Error())
@@ -74,7 +75,7 @@ func Test_ExitCode(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("no exec.ExitError in the chain", func(t *testing.T) {
+	t.Run("no exec ExitError in the chain", func(t *testing.T) {
 		// --- When ---
 		err := ExitCode(1, errors.New("test"))
 
@@ -84,7 +85,7 @@ func Test_ExitCode(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -93,7 +94,8 @@ func Test_ExitCode(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected err to have \"*exec.ExitError\" in its chain:\n" +
+		wMsg := "" +
+			"expected err to have \"*exec.ExitError\" in its chain:\n" +
 			"  trail: type.field"
 		affirm.Equal(t, wMsg, err.Error())
 	})

@@ -22,7 +22,7 @@ func Test_Error(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := Error(nil)
 
@@ -31,7 +31,7 @@ func Test_Error(t *testing.T) {
 		affirm.Equal(t, "expected non-nil error", err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -54,19 +54,20 @@ func Test_NoError(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := NoError(errors.New("e0"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error to be nil:\n" +
+		wMsg := "" +
+			"expected the error to be nil:\n" +
 			"  want: nil\n" +
 			"  have: \"e0\""
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -75,7 +76,8 @@ func Test_NoError(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error to be nil:\n" +
+		wMsg := "" +
+			"expected the error to be nil:\n" +
 			"  trail: type.field\n" +
 			"   want: nil\n" +
 			"   have: \"e0\""
@@ -91,13 +93,14 @@ func Test_NoError(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error to be nil:\n" +
+		wMsg := "" +
+			"expected the error to be nil:\n" +
 			"  want: nil\n" +
 			"  have: *testcases.TPtr"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - typed nil with trail", func(t *testing.T) {
 		// --- Given ---
 		var e *testcases.TPtr
 		opt := WithTrail("type.field")
@@ -107,7 +110,8 @@ func Test_NoError(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error to be nil:\n" +
+		wMsg := "" +
+			"expected the error to be nil:\n" +
 			"  trail: type.field\n" +
 			"   want: nil\n" +
 			"   have: *testcases.TPtr"
@@ -123,7 +127,8 @@ func Test_NoError(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error to be nil:\n" +
+		wMsg := "" +
+			"expected the error to be nil:\n" +
 			"  want: nil\n" +
 			"  have: \"\""
 		affirm.Equal(t, wMsg, err.Error())
@@ -131,7 +136,7 @@ func Test_NoError(t *testing.T) {
 }
 
 func Test_ErrorIs(t *testing.T) {
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -140,7 +145,8 @@ func Test_ErrorIs(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, have)
-		wMsg := "expected error to have a target in its tree:\n" +
+		wMsg := "" +
+			"expected error to have a target in its tree:\n" +
 			"  trail: type.field\n" +
 			"   want: (*errors.errorString) err0\n" +
 			"   have: (*errors.errorString) err0"
@@ -193,15 +199,40 @@ func Test_ErrorIs_error_tabular(t *testing.T) {
 	}{
 		{"err nil", err0, "*errors.errorString", "err0", nil, "<nil>", "<nil>"},
 		{"nil err", nil, "<nil>", "<nil>", err0, "*errors.errorString", "err0"},
-		{"not related", err0, "*errors.errorString", "err0", err1, "*errors.errorString", "err1"},
-		{"not related 0", err0, "*errors.errorString", "err0", err2, "*fmt.wrapErrors", "wrap: err0 err1"},
-		{"not related 1", err1, "*errors.errorString", "err1", err2, "*fmt.wrapErrors", "wrap: err0 err1"},
+		{
+			"not related",
+			err0,
+			"*errors.errorString",
+			"err0",
+			err1,
+			"*errors.errorString",
+			"err1",
+		},
+		{
+			"not related 0",
+			err0,
+			"*errors.errorString",
+			"err0",
+			err2,
+			"*fmt.wrapErrors",
+			"wrap: err0 err1",
+		},
+		{
+			"not related 1",
+			err1,
+			"*errors.errorString",
+			"err1",
+			err2,
+			"*fmt.wrapErrors",
+			"wrap: err0 err1",
+		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- Given ---
-			const format = "expected error to have a target in its tree:\n" +
+			const format = "" +
+				"expected error to have a target in its tree:\n" +
 				"  want: (%s) %s\n" +
 				"  have: (%s) %s"
 
@@ -265,15 +296,40 @@ func Test_ErrorIsNot_error_tabular(t *testing.T) {
 		wantType string
 		wantStr  string
 	}{
-		{"same error", err0, "*errors.errorString", "err0", err0, "*errors.errorString", "err0"},
-		{"wrapped contains target", err2, "*fmt.wrapErrors", "wrap: err0 err1", err0, "*errors.errorString", "err0"},
-		{"wrapped contains target 1", err2, "*fmt.wrapErrors", "wrap: err0 err1", err1, "*errors.errorString", "err1"},
+		{
+			"same error",
+			err0,
+			"*errors.errorString",
+			"err0",
+			err0,
+			"*errors.errorString",
+			"err0",
+		},
+		{
+			"wrapped contains target",
+			err2,
+			"*fmt.wrapErrors",
+			"wrap: err0 err1",
+			err0,
+			"*errors.errorString",
+			"err0",
+		},
+		{
+			"wrapped contains target 1",
+			err2,
+			"*fmt.wrapErrors",
+			"wrap: err0 err1",
+			err1,
+			"*errors.errorString",
+			"err1",
+		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- Given ---
-			const format = "expected error to not have a target in its tree:\n" +
+			const format = "" +
+				"expected error to not have a target in its tree:\n" +
 				"  want: (%s) %s\n" +
 				"  have: (%s) %s"
 
@@ -396,7 +452,7 @@ func Test_ErrorAs(t *testing.T) {
 		affirm.Nil(t, target)
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 		var target *testcases.TPtr
@@ -406,7 +462,8 @@ func Test_ErrorAs(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error to have a target in its tree:\n" +
+		wMsg := "" +
+			"expected error to have a target in its tree:\n" +
 			"   trail: type.field\n" +
 			"  target: *testcases.TPtr\n" +
 			"   error: *errors.errorString"
@@ -456,19 +513,20 @@ func Test_ErrorEqual(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := ErrorEqual("e1", errors.New("e0"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error message to be:\n" +
+		wMsg := "" +
+			"expected the error message to be:\n" +
 			"  want: \"e1\"\n" +
 			"  have: \"e0\""
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -477,7 +535,8 @@ func Test_ErrorEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error message to be:\n" +
+		wMsg := "" +
+			"expected the error message to be:\n" +
 			"  trail: type.field\n" +
 			"   want: \"e1\"\n" +
 			"   have: \"e0\""
@@ -490,7 +549,8 @@ func Test_ErrorEqual(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error message to be:\n" +
+		wMsg := "" +
+			"expected the error message to be:\n" +
 			"  want: \"e1\"\n" +
 			"  have: <nil>"
 		affirm.Equal(t, wMsg, err.Error())
@@ -506,19 +566,20 @@ func Test_ErrorContain(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := ErrorContain("xyz", errors.New("abc def ghi"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error message to contain:\n" +
+		wMsg := "" +
+			"expected the error message to contain:\n" +
 			"  want: \"xyz\"\n" +
 			"  have: \"abc def ghi\""
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -527,7 +588,8 @@ func Test_ErrorContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error message to contain:\n" +
+		wMsg := "" +
+			"expected the error message to contain:\n" +
 			"  trail: type.field\n" +
 			"   want: \"xyz\"\n" +
 			"   have: \"abc def ghi\""
@@ -540,7 +602,8 @@ func Test_ErrorContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error not to be nil:\n" +
+		wMsg := "" +
+			"expected error not to be nil:\n" +
 			"  want: <non-nil>\n" +
 			"  have: <nil>"
 		affirm.Equal(t, wMsg, err.Error())
@@ -555,7 +618,8 @@ func Test_ErrorContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error not to be nil:\n" +
+		wMsg := "" +
+			"expected error not to be nil:\n" +
 			"  trail: type.field\n" +
 			"   want: <non-nil>\n" +
 			"   have: <nil>"
@@ -571,7 +635,8 @@ func Test_ErrorContain(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error not to be nil:\n" +
+		wMsg := "" +
+			"expected error not to be nil:\n" +
 			"  want: <non-nil>\n" +
 			"  have: *testcases.TPtr"
 		affirm.Equal(t, wMsg, err.Error())
@@ -598,7 +663,7 @@ func Test_ErrorRegexp(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("regex", func(t *testing.T) {
+	t.Run("compiled regexp", func(t *testing.T) {
 		// --- Given ---
 		rx := regexp.MustCompile(".* def .*")
 
@@ -609,7 +674,7 @@ func Test_ErrorRegexp(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("regex", func(t *testing.T) {
+	t.Run("regexp string", func(t *testing.T) {
 		// --- When ---
 		err := ErrorRegexp("ghi$", errors.New("abc def ghi"))
 
@@ -617,19 +682,20 @@ func Test_ErrorRegexp(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := ErrorRegexp("^xyz", errors.New("abc def ghi"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error message to match regexp:\n" +
+		wMsg := "" +
+			"expected the error message to match regexp:\n" +
 			"  regexp: ^xyz\n" +
 			"    have: \"abc def ghi\""
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -638,7 +704,8 @@ func Test_ErrorRegexp(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected the error message to match regexp:\n" +
+		wMsg := "" +
+			"expected the error message to match regexp:\n" +
 			"   trail: type.field\n" +
 			"  regexp: ^xyz\n" +
 			"    have: \"abc def ghi\""
@@ -651,7 +718,8 @@ func Test_ErrorRegexp(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error not to be nil:\n" +
+		wMsg := "" +
+			"expected error not to be nil:\n" +
 			"  want: <non-nil>\n" +
 			"  have: <nil>"
 		affirm.Equal(t, wMsg, err.Error())
@@ -666,7 +734,8 @@ func Test_ErrorRegexp(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error not to be nil:\n" +
+		wMsg := "" +
+			"expected error not to be nil:\n" +
 			"  trail: type.field\n" +
 			"   want: <non-nil>\n" +
 			"   have: <nil>"
@@ -682,7 +751,8 @@ func Test_ErrorRegexp(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected error not to be nil:\n" +
+		wMsg := "" +
+			"expected error not to be nil:\n" +
 			"  want: <non-nil>\n" +
 			"  have: *testcases.TPtr"
 		affirm.Equal(t, wMsg, err.Error())

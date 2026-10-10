@@ -31,7 +31,7 @@ func Test_Empty(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := Empty("abc")
 
@@ -44,7 +44,7 @@ func Test_Empty(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -62,20 +62,16 @@ func Test_Empty(t *testing.T) {
 	})
 }
 
-func Test_Empty_ZENValues(t *testing.T) {
+func Test_Empty_tabular(t *testing.T) {
 	for _, tc := range testcases.ZENValues() {
 		t.Run("Empty "+tc.Desc, func(t *testing.T) {
 			// --- When ---
-			have := Empty(tc.Val)
+			err := Empty(tc.Val)
 
 			// --- Then ---
-			if tc.IsEmpty && have != nil {
-				format := "expected nil error:\n  have: %#v"
-				t.Errorf(format, have)
-			}
-			if !tc.IsEmpty && have == nil {
-				format := "expected not-nil error:\n  have: %#v"
-				t.Errorf(format, have)
+			if have := err == nil; tc.IsEmpty != have {
+				format := "expected Empty to accept %#v: %v\n  have: %v"
+				t.Errorf(format, tc.Val, tc.IsEmpty, err)
 			}
 		})
 	}
@@ -90,7 +86,7 @@ func Test_NotEmpty(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
 		err := NotEmpty("")
 
@@ -100,7 +96,7 @@ func Test_NotEmpty(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 

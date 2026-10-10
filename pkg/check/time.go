@@ -106,7 +106,7 @@ func Time(want, have any, opts ...any) error {
 }
 
 // Exact checks "want" and "have" dates are equal and are in the same timezone.
-// Returns nil they are, otherwise returns an error with a message indicating
+// Returns nil if they are, otherwise returns an error with a message indicating
 // the expected and actual values.
 //
 // The "want" and "have" may represent dates in the form of a string, int,

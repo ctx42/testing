@@ -12,7 +12,7 @@ import (
 )
 
 // TestFunc is a signature used by check functions dealing with panics.
-// See [assert.Panic], [assert.NoPanic], etc.
+// See assert.Panic, assert.NoPanic, etc.
 type TestFunc func()
 
 // Panic checks that calling "fn" causes a panic.
@@ -46,7 +46,7 @@ func NoPanic(fn TestFunc, opts ...any) error {
 // PanicContain checks that "fn" panics and that the string representation
 // of the recovered panic value contains the substring "want".
 //
-// See [assert.PanicContain] for the assertion wrapper.
+// See assert.PanicContain for the assertion wrapper.
 func PanicContain(want string, fn TestFunc, opts ...any) error {
 	val, stack := core.WillPanic(fn)
 	if stack == "" {
@@ -76,7 +76,7 @@ func PanicContain(want string, fn TestFunc, opts ...any) error {
 
 // PanicMsg checks that "fn" panics and returns the recovered panic value as a
 // string. Returns an error if "fn" did not panic.
-// See [assert.PanicMsg].
+// See assert.PanicMsg.
 func PanicMsg(fn TestFunc, opts ...any) (*string, error) {
 	val, stack := core.WillPanic(fn)
 	if stack == "" {

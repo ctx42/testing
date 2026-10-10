@@ -180,14 +180,16 @@ func deepEqual(
 			}
 			wSF := wVal.Type().Field(i)
 			iOps := sOps.StructTrail("", wSF.Name)
-			if e := deepEqual(wfVal, hfVal, visited, WithOptions(iOps)); e != nil {
+			e := deepEqual(wfVal, hfVal, visited, WithOptions(iOps))
+			if e != nil {
 				err = notice.Join(err, e)
 			}
 		}
 		return err
 
 	case reflect.Slice, reflect.Array:
-		// Lengths must match first. Then compare element-wise with index trails.
+		// Lengths must match first. Then compare element-wise with index
+		// trails.
 		if wVal.Len() != hVal.Len() {
 			ops.LogTrail()
 			wStr, hStr, diff := ops.Dumper.DiffValue(wVal, hVal)
@@ -208,7 +210,8 @@ func deepEqual(
 			wiVal := wVal.Index(i)
 			hiVal := hVal.Index(i)
 			iOps := ops.ArrTrail(knd.String(), i)
-			if e := deepEqual(wiVal, hiVal, visited, WithOptions(iOps)); e != nil {
+			e := deepEqual(wiVal, hiVal, visited, WithOptions(iOps))
+			if e != nil {
 				err = notice.Join(err, e)
 			}
 		}
@@ -252,7 +255,8 @@ func deepEqual(
 				err = notice.Join(err, e)
 				continue
 			}
-			if e := deepEqual(wkVal, hkVal, visited, WithOptions(kOps)); e != nil {
+			e := deepEqual(wkVal, hkVal, visited, WithOptions(kOps))
+			if e != nil {
 				err = notice.Join(err, e)
 			}
 		}
@@ -505,7 +509,7 @@ func equalError(want, have any, opts ...any) *notice.Notice {
 	return AddRows(ops, msg)
 }
 
-// dumpByte is a custom bumper for bytes.
+// dumpByte is a custom dumper for bytes.
 func dumpByte(dmp dump.Dump, lvl int, val reflect.Value) string {
 	v := byte(val.Uint())
 	var str string

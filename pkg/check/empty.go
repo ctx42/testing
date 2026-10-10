@@ -25,7 +25,7 @@ import (
 //   - len(chan) == 0
 //   - time.Time{}
 //
-// See [assert.Empty] for the assertion form.
+// See assert.Empty for the assertion form.
 func Empty(have any, opts ...any) error {
 	if isEmpty(have) {
 		return nil
@@ -78,7 +78,7 @@ func isEmptyVisit(have any, seen map[uintptr]bool) bool {
 
 // NotEmpty checks that "have" is not empty.
 //
-// See [Empty] and [assert.NotEmpty] for related functions.
+// See [Empty] and assert.NotEmpty for related functions.
 func NotEmpty(have any, opts ...any) error {
 	if !isEmpty(have) {
 		return nil

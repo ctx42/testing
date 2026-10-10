@@ -13,7 +13,7 @@ import (
 )
 
 func Test_Time(t *testing.T) {
-	t.Run("equal both time.Time", func(t *testing.T) {
+	t.Run("equal both time Time", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
@@ -26,7 +26,7 @@ func Test_Time(t *testing.T) {
 		affirm.Equal(t, true, want.Equal(have))
 	})
 
-	t.Run("not equal both time.Time", func(t *testing.T) {
+	t.Run("not equal both time Time", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
@@ -124,7 +124,8 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "[want] failed to parse time:\n" +
+		wMsg := "" +
+			"[want] failed to parse time:\n" +
 			"  format: abc\n" +
 			"   value: 2022-02-18"
 		affirm.Equal(t, wMsg, err.Error())
@@ -244,7 +245,8 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected timezones to be equal:\n" +
+		wMsg := "" +
+			"expected timezones to be equal:\n" +
 			"  want: UTC\n" +
 			"  have: Europe/Warsaw"
 		affirm.Equal(t, wMsg, err.Error())
@@ -706,7 +708,8 @@ func Test_Within(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected dates to be within:\n" +
+		wMsg := "" +
+			"expected dates to be within:\n" +
 			"          want: 2000-01-02T03:04:05Z\n" +
 			"          have: 2001-01-02T03:04:05Z\n" +
 			"  max diff +/-: 1000s\n" +
@@ -753,7 +756,7 @@ func Test_Within(t *testing.T) {
 	t.Run("log message with trail", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 3, 4, 6, int(500*time.Millisecond), time.UTC)
+		have := time.Date(2000, 1, 2, 3, 4, 6, 5e8, time.UTC)
 		opt := WithTrail("type.field")
 
 		// --- When ---
@@ -1076,8 +1079,10 @@ func Test_formatDates(t *testing.T) {
 		wHave, hHave := formatDates(wTim, wTimStr, hTim, hTimStr)
 
 		// --- Then ---
-		affirm.Equal(t, "2000-01-02T02:04:05Z ( 2000-01-02T03:04:05+02:00 )", wHave)
-		affirm.Equal(t, "2001-01-02T02:04:05Z ( 2001-01-02T03:04:05+02:00 )", hHave)
+		want := "2000-01-02T02:04:05Z ( 2000-01-02T03:04:05+02:00 )"
+		affirm.Equal(t, want, wHave)
+		want = "2001-01-02T02:04:05Z ( 2001-01-02T03:04:05+02:00 )"
+		affirm.Equal(t, want, hHave)
 	})
 
 	t.Run("shorted format when both dates in UTC", func(t *testing.T) {
@@ -1106,7 +1111,8 @@ func Test_formatDates(t *testing.T) {
 		wHave, hHave := formatDates(wTim, wTimStr, hTim, hTimStr)
 
 		// --- Then ---
-		affirm.Equal(t, "2001-01-02T02:04:05Z ( 2001-01-02T03:04:05+01:00 )", wHave)
+		want := "2001-01-02T02:04:05Z ( 2001-01-02T03:04:05+01:00 )"
+		affirm.Equal(t, want, wHave)
 		affirm.Equal(t, "2000-01-02T03:04:05Z", hHave)
 	})
 
@@ -1122,7 +1128,8 @@ func Test_formatDates(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "2000-01-02T03:04:05Z", wHave)
-		affirm.Equal(t, "2001-01-02T02:04:05Z ( 2001-01-02T03:04:05+01:00 )", hHave)
+		want := "2001-01-02T02:04:05Z ( 2001-01-02T03:04:05+01:00 )"
+		affirm.Equal(t, want, hHave)
 	})
 }
 
@@ -1180,7 +1187,8 @@ func Test_getTime(t *testing.T) {
 		affirm.Equal(t, true, have.IsZero())
 		affirm.Equal(t, "2000-01-02", haveStr)
 		affirm.Equal(t, timeTypeStr, haveRep)
-		wMsg := "failed to parse time:\n" +
+		wMsg := "" +
+			"failed to parse time:\n" +
 			"   trail: type.field\n" +
 			"  format: 2006-01-02T15:04:05Z07:00\n" +
 			"   value: 2000-01-02"
@@ -1235,7 +1243,7 @@ func Test_getTime_success_tabular(t *testing.T) {
 		wantTZ  *time.Location
 	}{
 		{
-			"time.Time in UTC",
+			"time Time in UTC",
 			nil,
 			time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
 			"2000-01-02T03:04:05Z",
@@ -1244,7 +1252,7 @@ func Test_getTime_success_tabular(t *testing.T) {
 			time.UTC,
 		},
 		{
-			"time.Time in UTC - apply different timezone",
+			"time Time in UTC - apply different timezone",
 			[]any{WithZone(testcases.WAW)},
 			time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
 			"2000-01-02T04:04:05+01:00",
@@ -1253,7 +1261,7 @@ func Test_getTime_success_tabular(t *testing.T) {
 			testcases.WAW,
 		},
 		{
-			"time.Time in WAW",
+			"time Time in WAW",
 			nil,
 			time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW),
 			"2000-01-02T03:04:05+01:00",
@@ -1392,7 +1400,8 @@ func Test_getZone(t *testing.T) {
 		affirm.Nil(t, have)
 		affirm.Equal(t, "abc///", haveStr)
 		affirm.Equal(t, zoneString, haveRep)
-		wMsg := "failed to parse timezone:\n" +
+		wMsg := "" +
+			"failed to parse timezone:\n" +
 			"  value: abc///"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.Equal(t, true, errors.Is(err, ErrZoneParse))
@@ -1475,17 +1484,17 @@ func Test_getDur_success_tabular(t *testing.T) {
 		haveRep durRep
 		want    time.Duration
 	}{
-		{"time.Duration", time.Second, "1s", durTypeDur, time.Second},
-		{"time.Duration as string", "1s", "1s", durTypeStr, time.Second},
+		{"time Duration", time.Second, "1s", durTypeDur, time.Second},
+		{"time Duration as string", "1s", "1s", durTypeStr, time.Second},
 		{
-			"time.Duration as int",
+			"time Duration as int",
 			12345678,
 			"12345678",
 			durTypeInt,
 			time.Duration(12345678),
 		},
 		{
-			"time.Duration as int",
+			"time Duration as int",
 			int64(12345678),
 			"12345678",
 			durTypeInt64,

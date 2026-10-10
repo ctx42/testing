@@ -62,7 +62,7 @@ func Cap(want int, have any, opts ...any) (err error) {
 
 // Has checks that the slice "bag" contains the value "want".
 //
-// See [assert.Has] for the assertion form and the package documentation for
+// See assert.Has for the assertion form and the package documentation for
 // option handling ([DefaultOptions], [WithTrail], custom checkers, etc.).
 func Has[T comparable](want T, bag []T, opts ...any) error {
 	if slices.Contains(bag, want) {
@@ -77,7 +77,7 @@ func Has[T comparable](want T, bag []T, opts ...any) error {
 
 // HasNo checks that the slice "set" does not contain the value "want".
 //
-// See [assert.HasNo] for the assertion form.
+// See assert.HasNo for the assertion form.
 func HasNo[T comparable](want T, set []T, opts ...any) error {
 	for i, got := range set {
 		if want == got {
@@ -110,7 +110,7 @@ func HasKey[K comparable, V any](key K, set map[K]V, opts ...any) (V, error) {
 
 // HasNoKey checks that the map "set" does not contain the key "key".
 //
-// See [assert.HasNoKey] for the assertion wrapper.
+// See assert.HasNoKey for the assertion wrapper.
 func HasNoKey[K comparable, V any](key K, set map[K]V, opts ...any) error {
 	val, ok := set[key]
 	if !ok {
@@ -126,7 +126,7 @@ func HasNoKey[K comparable, V any](key K, set map[K]V, opts ...any) error {
 
 // HasKeyValue checks that the map contains "key" mapped to exactly "want".
 //
-// See [assert.HasKeyValue] for the assertion wrapper.
+// See assert.HasKeyValue for the assertion wrapper.
 func HasKeyValue[K, V comparable](
 	key K,
 	want V,
@@ -152,7 +152,7 @@ func HasKeyValue[K, V comparable](
 // SliceSubset checks that every element in "want" also appears in "have"
 // (i.e. "want" is a subset of "have").
 //
-// See [assert.SliceSubset] for the corresponding assertion.
+// See assert.SliceSubset for the corresponding assertion.
 func SliceSubset[V comparable](want, have []V, opts ...any) error {
 	var missing []V
 	for _, wantVal := range want {
@@ -174,7 +174,7 @@ func SliceSubset[V comparable](want, have []V, opts ...any) error {
 
 // MapSubset checks that "want" is a subset of "have". All keys and values from
 // "want" must exist in "have". Extra keys in "have" are allowed.
-// See [assert.MapSubset] for the assertion form.
+// See assert.MapSubset for the assertion form.
 func MapSubset[K comparable, V any](want, have map[K]V, opts ...any) error {
 	ops := DefaultOptions(opts...)
 
@@ -210,7 +210,7 @@ func MapSubset[K comparable, V any](want, have map[K]V, opts ...any) error {
 // MapsSubset checks that every map in "want" is a subset of the corresponding
 // map in "have" (using [MapSubset]).
 //
-// See [assert.MapsSubset] for the assertion form.
+// See assert.MapsSubset for the assertion form.
 func MapsSubset[K comparable, V any](want, have []map[K]V, opts ...any) error {
 	ops := DefaultOptions(opts...)
 	if len(want) != len(have) {

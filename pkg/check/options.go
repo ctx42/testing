@@ -51,7 +51,7 @@ var (
 	// RecentDuration is a configurable duration when comparing recent dates.
 	RecentDuration = DefaultRecentDuration
 
-	// DumpTimeFormat is configurable format for dumping [time.Time] values.
+	// DumpTimeFormat is the format for dumping [time.Time] values.
 	DumpTimeFormat = DefaultDumpTimeFormat
 
 	// DumpDepth is a configurable depth when dumping values in log messages.
@@ -164,14 +164,14 @@ func WithRecent(recent time.Duration) Option {
 	}
 }
 
-// WithDumper is [Checker] option setting [dump.Config] options.
+// WithDumper is a [Checker] option applying [dump.Option] options.
 func WithDumper(optsD ...dump.Option) Option {
-	return func(optsC Options) Options {
-		optsC.Dumper.Dumpers = maps.Clone(optsC.Dumper.Dumpers)
+	return func(ops Options) Options {
+		ops.Dumper.Dumpers = maps.Clone(ops.Dumper.Dumpers)
 		for _, opt := range optsD {
-			opt(&optsC.Dumper)
+			opt(&ops.Dumper)
 		}
-		return optsC
+		return ops
 	}
 }
 
@@ -252,7 +252,7 @@ func WithDecreasingSoft() Option {
 // comparisons.
 //
 // During a normal operation, when comparing values with different types, the
-// error is returned. Then this option is used, and both values have the same
+// error is returned. When this option is used, and both values have the same
 // underlying simple type the values of that base type will be compared.
 //
 // Simple types are defined as:
@@ -383,7 +383,7 @@ type Options struct {
 	// Comment row for all error messages.
 	Comment string
 
-	// Function used to get current time. Used preliminary to inject a clock in
+	// Function used to get the current time. Used mainly to inject a clock in
 	// tests of checks and assertions using [time.Now].
 	now func() time.Time
 }

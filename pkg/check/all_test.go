@@ -44,7 +44,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// WithNow used to set a custom function returning current time.
+// WithNow sets a custom function returning the current time.
 func WithNow(fn func() time.Time) Option {
 	return func(ops Options) Options {
 		ops.now = fn

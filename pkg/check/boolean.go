@@ -9,7 +9,7 @@ import (
 
 // True checks that "have" is true.
 //
-// See [assert.True] for the assertion wrapper and the package documentation
+// See assert.True for the assertion wrapper and the package documentation
 // for option handling and customization.
 func True(have bool, opts ...any) error {
 	if !have {
@@ -22,7 +22,7 @@ func True(have bool, opts ...any) error {
 
 // False checks that "have" is false.
 //
-// See [assert.False] for the assertion wrapper and the package documentation
+// See assert.False for the assertion wrapper and the package documentation
 // for option handling and customization.
 func False(have bool, opts ...any) error {
 	if have {

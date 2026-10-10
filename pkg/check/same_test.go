@@ -33,7 +33,8 @@ func Test_Same(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected same pointers:\n" +
+		wMsg := "" +
+			"expected same pointers:\n" +
 			"  want: %%!p(testcases.TPtr={0}) testcases.TPtr{Val:\"0\"}\n" +
 			"  have: %p &testcases.TPtr{Val:\"0\"}"
 		wMsg = fmt.Sprintf(wMsg, have)
@@ -50,7 +51,8 @@ func Test_Same(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected same pointers:\n" +
+		wMsg := "" +
+			"expected same pointers:\n" +
 			"  want: %p &testcases.TPtr{Val:\"0\"}\n" +
 			"  have: %%!p(testcases.TPtr={0}) testcases.TPtr{Val:\"0\"}"
 		wMsg = fmt.Sprintf(wMsg, want)
@@ -67,14 +69,15 @@ func Test_Same(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected same pointers:\n" +
+		wMsg := "" +
+			"expected same pointers:\n" +
 			"  want: %p &testcases.TPtr{Val:\"0\"}\n" +
 			"  have: %p &testcases.TPtr{Val:\"1\"}"
 		wMsg = fmt.Sprintf(wMsg, ptr0, ptr1)
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		ptr0 := &testcases.TPtr{Val: "0"}
 		ptr1 := &testcases.TPtr{Val: "1"}
@@ -86,7 +89,8 @@ func Test_Same(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected same pointers:\n" +
+		wMsg := "" +
+			"expected same pointers:\n" +
 			"  trail: type.field\n" +
 			"   want: %p &testcases.TPtr{Val:\"0\"}\n" +
 			"   have: %p &testcases.TPtr{Val:\"1\"}"
@@ -114,7 +118,12 @@ func Test_Same_tabular(t *testing.T) {
 
 		{"not same itf ptr", itfPtr0, itfPtr1, false},
 		{"not same val", testcases.TVal{}, testcases.TVal{}, false},
-		{"not same ptr different types", &testcases.TPtr{}, &testcases.TVal{}, false},
+		{
+			"not same ptr different types",
+			&testcases.TPtr{},
+			&testcases.TVal{},
+			false,
+		},
 	}
 
 	for _, tc := range tt {
@@ -144,7 +153,7 @@ func Test_NotSame(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		ptr0 := &testcases.TPtr{Val: "0"}
 
@@ -153,14 +162,15 @@ func Test_NotSame(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected different pointers:\n" +
+		wMsg := "" +
+			"expected different pointers:\n" +
 			"  want: %p &testcases.TPtr{Val:\"0\"}\n" +
 			"  have: %p &testcases.TPtr{Val:\"0\"}"
 		wMsg = fmt.Sprintf(wMsg, ptr0, ptr0)
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		ptr0 := &testcases.TPtr{Val: "0"}
 
@@ -171,7 +181,8 @@ func Test_NotSame(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected different pointers:\n" +
+		wMsg := "" +
+			"expected different pointers:\n" +
 			"  trail: type.field\n" +
 			"   want: %p &testcases.TPtr{Val:\"0\"}\n" +
 			"   have: %p &testcases.TPtr{Val:\"0\"}"

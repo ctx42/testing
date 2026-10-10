@@ -12,7 +12,7 @@ import (
 // EqualFold checks that "want" and "have" are equal using a case-insensitive
 // comparison.
 //
-// See [assert.EqualFold] for the assertion wrapper.
+// See assert.EqualFold for the assertion wrapper.
 func EqualFold(want, have string, opts ...any) error {
 	if strings.EqualFold(want, have) {
 		return nil
@@ -26,7 +26,7 @@ func EqualFold(want, have string, opts ...any) error {
 
 // Contain checks that the string "have" contains the substring "want".
 //
-// See [assert.Contain] for the assertion wrapper.
+// See assert.Contain for the assertion wrapper.
 func Contain(want, have string, opts ...any) error {
 	if strings.Contains(have, want) {
 		return nil
@@ -41,13 +41,14 @@ func Contain(want, have string, opts ...any) error {
 // ContainFold checks that "have" contains the substring "want" using a
 // case-insensitive comparison.
 //
-// See [assert.ContainFold] for the assertion wrapper.
+// See assert.ContainFold for the assertion wrapper.
 func ContainFold(want, have string, opts ...any) error {
 	if strings.Contains(strings.ToLower(have), strings.ToLower(want)) {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
-	msg := notice.New("expected string to contain substring (case-insensitive)").
+	const mHeader = "expected string to contain substring (case-insensitive)"
+	msg := notice.New(mHeader).
 		Append("string", "%q", have).
 		Append("substring", "%q", want)
 	return AddRows(ops, msg)
@@ -56,7 +57,7 @@ func ContainFold(want, have string, opts ...any) error {
 // NotContain checks that the string "have" does **not** contain the
 // substring "want".
 //
-// See [assert.NotContain] for the assertion wrapper.
+// See assert.NotContain for the assertion wrapper.
 func NotContain(want, have string, opts ...any) error {
 	if strings.Contains(have, want) {
 		ops := DefaultOptions(opts...)

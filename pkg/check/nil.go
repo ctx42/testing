@@ -10,7 +10,7 @@ import (
 
 // Nil checks that "have" is nil (including typed nils such as (*T)(nil)).
 //
-// See [assert.Nil] for the assertion wrapper.
+// See assert.Nil for the assertion wrapper.
 func Nil(have any, opts ...any) error {
 	if is := core.IsNil(have); is {
 		return nil
@@ -23,7 +23,7 @@ func Nil(have any, opts ...any) error {
 
 // NotNil checks that "have" is not nil.
 //
-// See [assert.NotNil] for the assertion wrapper.
+// See assert.NotNil for the assertion wrapper.
 func NotNil(have any, opts ...any) error {
 	if is := core.IsNil(have); !is {
 		return nil

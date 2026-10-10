@@ -19,7 +19,7 @@ type Text interface {
 }
 
 // JSON checks that two JSON texts are equivalent (after unmarshalling).
-// See [assert.JSON].
+// See assert.JSON.
 //
 // Example:
 //

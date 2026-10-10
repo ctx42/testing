@@ -14,7 +14,7 @@ import (
 	"github.com/ctx42/testing/pkg/check"
 )
 
-// AssertTA is custom assertion example.
+// AssertTA is a custom assertion example.
 func AssertTA(t tester.T, want, have *testcases.TA, opts ...any) bool {
 	t.Helper()
 
@@ -50,8 +50,8 @@ func Test_AssertTA(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.Close()
 
-		w := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2, Str: "b"}}
-		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2, Str: "b"}}
+		w := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2}}
+		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2}}
 
 		// --- When ---
 		have := AssertTA(tspy, w, h)
@@ -72,8 +72,8 @@ func Test_AssertTA(t *testing.T) {
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
-		w := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2, Str: "b"}}
-		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 3, Str: "b"}}
+		w := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2}}
+		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 3}}
 
 		// --- When ---
 		have := AssertTA(tspy, w, h)

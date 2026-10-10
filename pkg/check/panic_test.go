@@ -31,7 +31,7 @@ func Test_Panic(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -40,7 +40,8 @@ func Test_Panic(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "func should panic:\n" +
+		wMsg := "" +
+			"func should panic:\n" +
 			"  trail: type.field"
 		affirm.Equal(t, wMsg, err.Error())
 	})
@@ -60,7 +61,7 @@ func Test_NoPanic(t *testing.T) {
 		affirm.Equal(t, true, strings.Contains(hMsg, "panic stack:"))
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -72,7 +73,8 @@ func Test_NoPanic(t *testing.T) {
 
 		hMsg := err.Error()
 		affirm.Equal(t, true, strings.Contains(hMsg, "func should not panic"))
-		affirm.Equal(t, true, strings.Contains(hMsg, "        trail: type.field"))
+		hasTrail := strings.Contains(hMsg, "        trail: type.field")
+		affirm.Equal(t, true, hasTrail)
 		affirm.Equal(t, true, strings.Contains(hMsg, "panic value: test"))
 		affirm.Equal(t, true, strings.Contains(hMsg, "panic stack:"))
 	})
@@ -116,11 +118,12 @@ func Test_PanicContain(t *testing.T) {
 		hMsg := err.Error()
 		affirm.Equal(t, true, strings.Contains(hMsg, wMsg))
 		affirm.Equal(t, true, strings.Contains(hMsg, "substring: \"xyz\""))
-		affirm.Equal(t, true, strings.Contains(hMsg, "panic value: abc def ghi"))
+		hasValue := strings.Contains(hMsg, "panic value: abc def ghi")
+		affirm.Equal(t, true, hasValue)
 		affirm.Equal(t, true, strings.Contains(hMsg, "panic stack:"))
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -134,7 +137,8 @@ func Test_PanicContain(t *testing.T) {
 		affirm.Equal(t, true, strings.Contains(hMsg, wMsg))
 		affirm.Equal(t, true, strings.Contains(hMsg, "trail: type.field"))
 		affirm.Equal(t, true, strings.Contains(hMsg, "substring: \"xyz\""))
-		affirm.Equal(t, true, strings.Contains(hMsg, "panic value: abc def ghi"))
+		hasValue := strings.Contains(hMsg, "panic value: abc def ghi")
+		affirm.Equal(t, true, hasValue)
 		affirm.Equal(t, true, strings.Contains(hMsg, "panic stack:"))
 	})
 
@@ -195,7 +199,7 @@ func Test_PanicMsg(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("additional message rows added", func(t *testing.T) {
+	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -207,7 +211,8 @@ func Test_PanicMsg(t *testing.T) {
 		if msg != nil {
 			t.Error("expected PanicMsg to return nil value")
 		}
-		wMsg := "func should panic:\n" +
+		wMsg := "" +
+			"func should panic:\n" +
 			"  trail: type.field"
 		affirm.Equal(t, wMsg, err.Error())
 	})

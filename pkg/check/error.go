@@ -16,7 +16,7 @@ import (
 
 // Error checks that "err" is not nil.
 //
-// See [assert.Error] for the assertion wrapper.
+// See assert.Error for the assertion wrapper.
 func Error(err error, opts ...any) error {
 	if err != nil {
 		return nil //nolint:nilerr
@@ -28,7 +28,7 @@ func Error(err error, opts ...any) error {
 
 // NoError checks that "err" is nil.
 //
-// See [assert.NoError] for the assertion wrapper.
+// See assert.NoError for the assertion wrapper.
 func NoError(err error, opts ...any) error {
 	if err == nil {
 		return nil
@@ -46,7 +46,7 @@ func NoError(err error, opts ...any) error {
 // ErrorIs checks that the error tree rooted at "err" contains an error
 // that matches "want" according to [errors.Is].
 //
-// See [assert.ErrorIs] for the assertion wrapper.
+// See assert.ErrorIs for the assertion wrapper.
 func ErrorIs(want, err error, opts ...any) error {
 	if errors.Is(err, want) {
 		return nil
@@ -62,7 +62,7 @@ func ErrorIs(want, err error, opts ...any) error {
 // ErrorIsNot checks that no error in the tree rooted at "err" matches
 // "want" according to [errors.Is].
 //
-// See [assert.ErrorIsNot] for the assertion wrapper.
+// See assert.ErrorIsNot for the assertion wrapper.
 func ErrorIsNot(want, err error, opts ...any) error {
 	if !errors.Is(err, want) {
 		return nil
@@ -91,7 +91,8 @@ func ErrorAs(want any, err error, opts ...any) error {
 	if tgtTyp := tgtVal.Type().Elem(); tgtTyp.Kind() != reflect.Interface &&
 		!tgtTyp.Implements(typError) {
 
-		const mHeader = "expected target to be a pointer to " +
+		const mHeader = "" +
+			"expected target to be a pointer to " +
 			"an interface or error"
 		msg := notice.New(mHeader).Append("target", "%T", want)
 		return AddRows(ops, msg)
@@ -114,7 +115,7 @@ func ErrorAs(want any, err error, opts ...any) error {
 // ErrorEqual checks that "err" is not nil and that err.Error() exactly
 // equals the string "want".
 //
-// See [assert.ErrorEqual] for the assertion wrapper.
+// See assert.ErrorEqual for the assertion wrapper.
 func ErrorEqual(want string, err error, opts ...any) error {
 	isNil := core.IsNil(err)
 	if !isNil && want == err.Error() {
@@ -134,7 +135,7 @@ func ErrorEqual(want string, err error, opts ...any) error {
 
 // ErrorContain checks that "err" is not nil and its message contains "want".
 //
-// See [assert.ErrorContain] for the assertion wrapper.
+// See assert.ErrorContain for the assertion wrapper.
 func ErrorContain(want string, err error, opts ...any) error {
 	if is := core.IsNil(err); is {
 		ops := DefaultOptions(opts...)
@@ -158,7 +159,7 @@ func ErrorContain(want string, err error, opts ...any) error {
 // ErrorRegexp checks that "err" is not nil and its message matches the "want"
 // regexp (string or [*regexp.Regexp]). Uses [fmt.Sprint] for error text.
 //
-// See [assert.ErrorRegexp] for the assertion wrapper.
+// See assert.ErrorRegexp for the assertion wrapper.
 func ErrorRegexp(want any, err error, opts ...any) error {
 	if is := core.IsNil(err); is {
 		ops := DefaultOptions(opts...)
