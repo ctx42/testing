@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"slices"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/ctx42/testing/pkg/dump"
@@ -73,14 +74,18 @@ var (
 type Checker func(want, have any, opts ...any) error
 
 // typeCheckers holds globally registered custom checkers (see
-// [RegisterTypeChecker]).
-var typeCheckers map[reflect.Type]Checker
+// [RegisterTypeChecker]), guarded by typeCheckersMx.
+var (
+	typeCheckers   map[reflect.Type]Checker
+	typeCheckersMx sync.RWMutex
+)
 
 // RegisterTypeChecker globally registers a custom [Checker] for values of the
 // given type. It will be used by default in all checks (via [DefaultOptions])
 // unless overridden per-call with [WithTypeChecker].
 //
-// It panics if a checker for the same type is already registered.
+// It panics if a checker for the same type is already registered. It is safe
+// to call concurrently with checks.
 //
 // See the Design section in the root README for the overall customization
 // model, and [WithTypeChecker] for per-check overrides.
@@ -88,6 +93,8 @@ func RegisterTypeChecker(typ any, chk Checker) {
 	if chk == nil {
 		panic("cannot register a nil type checker")
 	}
+	typeCheckersMx.Lock()
+	defer typeCheckersMx.Unlock()
 	if typeCheckers == nil {
 		typeCheckers = make(map[reflect.Type]Checker)
 	}
@@ -174,15 +181,19 @@ func WithDumper(optsD ...dump.Option) Option {
 //
 // See the Design section in the root README for the customization model.
 func WithTypeChecker(typ any, chk Checker) Option {
+	rt := reflect.TypeOf(typ)
+	typeCheckersMx.RLock()
+	_, global := typeCheckers[rt]
+	typeCheckersMx.RUnlock()
+	if global {
+		// Logged once, attributed to the caller of WithTypeChecker.
+		format := "Overwriting the global type checker for: %s"
+		_ = globLog.Output(2, fmt.Sprintf(format, rt))
+	}
 	return func(ops Options) Options {
 		ops.TypeCheckers = maps.Clone(ops.TypeCheckers)
 		if ops.TypeCheckers == nil {
 			ops.TypeCheckers = make(map[reflect.Type]Checker)
-		}
-		rt := reflect.TypeOf(typ)
-		if _, ok := typeCheckers[rt]; ok {
-			format := "Overwriting the global type checker for: %s"
-			_ = globLog.Output(2, fmt.Sprintf(format, rt))
 		}
 		ops.TypeCheckers[rt] = chk
 		return ops
@@ -393,7 +404,7 @@ func DefaultOptions(opts ...any) Options {
 		Recent:       RecentDuration,
 		TimeFormat:   ParseTimeFormat,
 		Zone:         nil,
-		TypeCheckers: maps.Clone(typeCheckers),
+		TypeCheckers: cloneTypeCheckers(),
 		WaitThrottle: 10 * time.Millisecond,
 		now:          time.Now,
 	}
@@ -425,6 +436,13 @@ func DefaultOptions(opts ...any) Options {
 		ops.TypeCheckers[typ] = chk
 	}
 	return ops
+}
+
+// cloneTypeCheckers returns a copy of the globally registered checkers.
+func cloneTypeCheckers() map[reflect.Type]Checker {
+	typeCheckersMx.RLock()
+	defer typeCheckersMx.RUnlock()
+	return maps.Clone(typeCheckers)
 }
 
 // parseCheckArgs separates the variadic arguments for [DefaultOptions] into

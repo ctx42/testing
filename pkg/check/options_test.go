@@ -60,6 +60,26 @@ func Test_RegisterTypeChecker(t *testing.T) {
 		affirm.Equal(t, "", buf.String())
 	})
 
+	t.Run("concurrent with checks", func(t *testing.T) {
+		// --- Given ---
+		type custom struct{}
+		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
+		done := make(chan struct{})
+		go func() {
+			defer close(done)
+			for range 100 {
+				_ = Equal(1, 1)
+			}
+		}()
+
+		// --- When ---
+		RegisterTypeChecker(custom{}, chk)
+
+		// --- Then ---
+		<-done
+		affirm.Equal(t, 1, len(typeCheckers))
+	})
+
 	t.Run("panics if the checker is nil", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
