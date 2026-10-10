@@ -67,7 +67,7 @@ func (am *Matcher) Match(have any) bool {
 // [reflect.Value]. Function panics on error.
 func matcherFunc(fn any) reflect.Value {
 	fnType := reflect.TypeOf(fn)
-	if fnType.Kind() != reflect.Func {
+	if fnType == nil || fnType.Kind() != reflect.Func {
 		panic(fmt.Sprintf("mock: \"%T\" is not a match function", fn))
 	}
 	if fnType.NumIn() != 1 {

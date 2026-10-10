@@ -195,7 +195,7 @@ func (mck *Mock) Proxy(met any, name ...string) *Call {
 
 	typ := reflect.TypeOf(met)
 	val := reflect.ValueOf(met)
-	if typ.Kind() != reflect.Func || val.IsNil() {
+	if typ == nil || typ.Kind() != reflect.Func || val.IsNil() {
 		panic("Proxy requires a valid not nil method")
 	}
 
@@ -228,30 +228,49 @@ func (mck *Mock) called(skip int) string {
 		panic("could not get the caller information")
 	}
 	name := runtime.FuncForPC(pc).Name()
-	if strings.Contains(name, ".func") {
+	name = name[strings.LastIndex(name, ".")+1:]
+	if isClosureName(name) {
 		return "<anonymous>"
 	}
-	parts := strings.Split(name, ".")
-	return parts[len(parts)-1]
+	return name
+}
+
+// isClosureName reports whether name, the last dot-separated element of a
+// function name, belongs to a function literal: "func1", or "2" for a
+// literal nested in another one.
+func isClosureName(name string) bool {
+	name = strings.TrimPrefix(name, "func")
+	if name == "" {
+		return false
+	}
+	for _, r := range name {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // Call invokes the named method with the given arguments and returns the
-// configured [Arguments] return values. It panics (via t.Fatal) if no
+// configured [Arguments] return values. It fails the test with t.Fatal if no
 // matching expectation exists or if prerequisites are not met. Most users go
-// through generated wrappers that call [Mock.Called].
+// through generated wrappers that call [Mock.Called]. As t.Fatal stops only
+// the goroutine calling it, a failing call from a goroutine other than the
+// test's does not stop the test.
 //
 // The call blocks if the matching expectation uses [Call.Until] or
 // [Call.After]. The mock mutex is held only for matching and recording;
 // wait/sleep/proxy run unlocked so another Call on the same mock can still
 // progress (e.g. close an Until channel).
 func (mck *Mock) Call(method string, args ...any) Arguments {
-	mck.mx.Lock()
 	mck.t.Helper()
 
+	// Capture the stack before locking; the field is set only by NewMock.
 	var cs []string
 	if mck.stack {
 		cs = callStack()
 	}
+	mck.mx.Lock()
 
 	call, err := mck.find(method, args, cs)
 	if err != nil {
@@ -270,7 +289,7 @@ func (mck *Mock) Call(method string, args ...any) Arguments {
 
 	// Record the call under the mock lock so concurrent Call/CanCall see a
 	// consistent haveCalls (wait/proxy still run unlocked below).
-	call.haveCalls++
+	call.addCall()
 	mck.calls = append(mck.calls, cStack{Method: method, Stack: cs})
 	mck.mx.Unlock()
 	return call.call(args...)
@@ -304,24 +323,26 @@ func (mck *Mock) Callable(method string, args ...any) error {
 //
 // nolint: cyclop
 func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
-	var err error
+	// The first error of an expectation whose arguments match, reported when
+	// no expectation is callable, whatever the registration order.
+	var tooMany error
 
 	// Find a method (including proxies) with matching arguments.
 	for _, call := range mck.expected {
 		if call.Method != method {
 			continue
 		}
-		err = call.CanCall()
-		if errors.Is(err, ErrTooManyCalls) {
-			continue
+		if !call.argsAny {
+			if _, cnt := call.args.Diff(args); cnt != 0 {
+				continue
+			}
 		}
-		if call.argsAny && err == nil {
+		err := call.CanCall()
+		if err == nil {
 			return call, nil
 		}
-		if _, cnt := call.args.Diff(args); cnt == 0 {
-			if err == nil {
-				return call, nil
-			}
+		if tooMany == nil {
+			tooMany = err
 		}
 	}
 
@@ -332,14 +353,18 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 			continue
 		}
 		if call.proxy.IsValid() && len(call.args) == 0 {
-			if err = call.CanCall(); err == nil {
+			err := call.CanCall()
+			if err == nil {
 				return call, nil
+			}
+			if tooMany == nil {
+				tooMany = err
 			}
 		}
 	}
 
-	if err != nil {
-		return nil, err
+	if tooMany != nil {
+		return nil, tooMany
 	}
 
 	var msg *notice.Notice
@@ -418,7 +443,10 @@ func (mck *Mock) Unset(remove *Call) *Mock {
 	mck.expected = expected
 
 	if !found {
-		method := formatMethod(remove.Method, remove.args, nil)
+		method := "<nil>"
+		if remove != nil {
+			method = formatMethod(remove.Method, remove.args, nil)
+		}
 		msg := notice.New("[mock] unsetting non-existing method").
 			Append("method", "%s", method).
 			Wrap(ErrNotFound)

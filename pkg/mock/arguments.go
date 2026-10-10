@@ -22,7 +22,7 @@ type Arguments []any
 // Get returns the value at the given index. It panics with a descriptive
 // [notice.Notice] when the index is out of range.
 func (args Arguments) Get(idx int) any {
-	if idx+1 > len(args) {
+	if idx < 0 || idx >= len(args) {
 		mHeader := "[mock] arguments: Get(%d) out of range %d max"
 		msg := notice.New(mHeader, idx, len(args)-1)
 		panic(msg)
@@ -62,10 +62,11 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 	cnt := max(len(vs), len(args))
 
 	for i := 0; i < cnt; i++ {
-		var want, have any = "(Missing)", "(Missing)"
+		var want, have any
 		wantFmt, haveFmt := "(Missing)", "(Missing)"
+		wantOK, haveOK := len(args) > i, len(vs) > i
 
-		if len(vs) > i {
+		if haveOK {
 			have = vs[i]
 			if _, ok := have.(context.Context); ok {
 				haveFmt = fmt.Sprintf("(%[1]T=%[1]T)", have)
@@ -74,11 +75,21 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 			}
 		}
 
-		if len(args) > i {
+		if !wantOK || !haveOK {
+			// An argument missing on either side never matches.
+			if wantOK {
+				wantFmt = formatArg(args[i])
+			}
+			diffCnt++
+			out = append(out, formatFail(i, wantFmt, haveFmt))
+			continue
+		}
+
+		if wantOK {
 			want = args[i]
 			if want == Any {
 				wantFmt = "(any=mock.Any)"
-			} else if _, ok := have.(context.Context); ok {
+			} else if _, ok := want.(context.Context); ok {
 				wantFmt = fmt.Sprintf("(%[1]T=%[1]T)", want)
 			} else {
 				wantFmt = fmt.Sprintf("(%[1]T=%#[1]v)", want)
@@ -112,8 +123,7 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 		}
 
 		// Normal checking.
-		if haveFmt != "(Missing)" &&
-			(reflect.DeepEqual(want, Any) || reflect.DeepEqual(want, have)) {
+		if reflect.DeepEqual(want, Any) || reflect.DeepEqual(want, have) {
 			msg := fmt.Sprintf("%d: PASS: %s == %s", i, wantFmt, haveFmt)
 			out = append(out, msg)
 			continue
@@ -221,4 +231,19 @@ func formatFail(i int, left, right string) string {
 		return fmt.Sprintf(format, i, left, right)
 	}
 	return fmt.Sprintf("%d: FAIL: %s != %s", i, left, right)
+}
+
+// formatArg formats an expected argument for a [Arguments.Diff] line.
+func formatArg(want any) string {
+	switch val := want.(type) {
+	case *Matcher:
+		return val.Desc()
+	case context.Context:
+		return fmt.Sprintf("(%[1]T=%[1]T)", val)
+	default:
+		if want == Any {
+			return "(any=mock.Any)"
+		}
+		return fmt.Sprintf("(%[1]T=%#[1]v)", want)
+	}
 }

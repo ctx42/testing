@@ -12,6 +12,7 @@ import (
 	"github.com/ctx42/testing/pkg/assert"
 	"github.com/ctx42/testing/pkg/goldy"
 	"github.com/ctx42/testing/pkg/testcases"
+	"github.com/ctx42/testing/pkg/tester"
 )
 
 func Test_newCall(t *testing.T) {
@@ -412,6 +413,7 @@ func Test_Call_CanCall_tabular(t *testing.T) {
 			call := &Call{
 				wantCalls: tc.max,
 				haveCalls: tc.cnt,
+				optional:  tc.optional,
 			}
 
 			// --- When ---
@@ -424,6 +426,32 @@ func Test_Call_CanCall_tabular(t *testing.T) {
 }
 
 func Test_Call_Satisfied(t *testing.T) {
+	t.Run("concurrent with calls", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy, WithNoStack)
+		call := mck.On("Method")
+		done := make(chan struct{})
+		go func() {
+			defer close(done)
+			for range 100 {
+				_ = call.Satisfied()
+			}
+		}()
+
+		// --- When ---
+		for range 100 {
+			mck.Call("Method")
+		}
+
+		// --- Then ---
+		<-done
+		assert.True(t, call.Satisfied())
+	})
+
 	t.Run("satisfied", func(t *testing.T) {
 		// --- Given ---
 		call := &Call{
@@ -936,16 +964,6 @@ func Benchmark_Call_Return_Chain(b *testing.B) {
 }
 
 // Additional mock hot path benchmarks (expectation setup and basic satisfaction).
-
-func Benchmark_Mock_SimpleExpectation(b *testing.B) {
-	// NewMock requires tester.T; benchmark the Call construction path instead
-	// (see Benchmark_Call_Return_Chain above for the main expectation setup cost).
-	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = struct{}{} // placeholder to keep benchmark structure
-	}
-}
 
 func Benchmark_Call_Satisfied_Many(b *testing.B) {
 	mck := &Mock{}

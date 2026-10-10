@@ -5,7 +5,6 @@ package mock
 
 import (
 	"fmt"
-	"path/filepath"
 	"reflect"
 	"runtime"
 	"strings"
@@ -56,11 +55,8 @@ func callStack() []string {
 			break
 		}
 
-		parts := strings.Split(file, "/")
-		file = parts[len(parts)-1]
-		if len(parts) > 1 {
-			path, _ := filepath.Abs(file)
-			callers = append(callers, fmt.Sprintf("%s:%d", path, line))
+		if strings.Contains(file, "/") {
+			callers = append(callers, fmt.Sprintf("%s:%d", file, line))
 		}
 
 		// Drop the package.

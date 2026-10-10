@@ -898,6 +898,31 @@ func Test_Mock_Call(t *testing.T) {
 }
 
 func Test_Mock_Callable(t *testing.T) {
+	t.Run("too many calls whatever the registration order", func(t *testing.T) {
+		for _, first := range []int{1, 2} {
+			// --- Given ---
+			tspy := tester.New(t)
+			tspy.ExpectCleanups(1)
+			tspy.Close()
+
+			mck := NewMock(tspy, WithNoStack)
+			if first == 1 {
+				mck.On("A", 1).Once()
+				mck.On("A", 2).Optional()
+			} else {
+				mck.On("A", 2).Optional()
+				mck.On("A", 1).Once()
+			}
+			mck.Call("A", 1)
+
+			// --- When ---
+			err := mck.Callable("A", 1)
+
+			// --- Then ---
+			assert.ErrorIs(t, ErrTooManyCalls, err)
+		}
+	})
+
 	t.Run("callable", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
@@ -1429,6 +1454,23 @@ func Test_Mock_Failed(t *testing.T) {
 }
 
 func Test_Mock_Unset(t *testing.T) {
+	t.Run("error - nil call", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.ExpectError()
+		tspy.ExpectLogContain("[mock] unsetting non-existing method")
+		tspy.Close()
+
+		mck := NewMock(tspy, WithNoStack)
+
+		// --- When ---
+		have := mck.Unset(nil)
+
+		// --- Then ---
+		assert.Same(t, mck, have)
+	})
+
 	t.Run("existing call", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)

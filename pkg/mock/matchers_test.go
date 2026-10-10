@@ -128,6 +128,22 @@ func Test_MatchSame(t *testing.T) {
 }
 
 func Test_MatchBy(t *testing.T) {
+	t.Run("panics if not a function", func(t *testing.T) {
+		// --- When ---
+		msg := assert.PanicMsg(t, func() { MatchBy(42) })
+
+		// --- Then ---
+		assert.Equal(t, `mock: "int" is not a match function`, *msg)
+	})
+
+	t.Run("panics if nil", func(t *testing.T) {
+		// --- When ---
+		msg := assert.PanicMsg(t, func() { MatchBy(nil) })
+
+		// --- Then ---
+		assert.Equal(t, `mock: "<nil>" is not a match function`, *msg)
+	})
+
 	t.Run("construct", func(t *testing.T) {
 		// --- Given ---
 		fn := func(have int) bool { return have == 42 }
@@ -242,6 +258,22 @@ func Test_MatchOfType_description_tabular(t *testing.T) {
 			assert.Equal(t, tc.want, have.Desc())
 		})
 	}
+}
+
+func Test_MatchType(t *testing.T) {
+	t.Run("same name different type", func(t *testing.T) {
+		// --- Given ---
+		val0 := func() any { type T struct{}; return T{} }()
+		val1 := func() any { type T struct{}; return T{} }()
+		mat := MatchType(val0)
+
+		// --- When ---
+		have := mat.Match(val1)
+
+		// --- Then ---
+		assert.False(t, have)
+		assert.True(t, mat.Match(val0))
+	})
 }
 
 func Test_MatchType_match_tabular(t *testing.T) {

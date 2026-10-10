@@ -4,7 +4,9 @@
 package mock
 
 import (
+	"os"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -14,6 +16,35 @@ import (
 )
 
 func Test_callStack(t *testing.T) {
+	t.Run("frames from other directories", func(t *testing.T) {
+		// --- Given ---
+		var have []string
+		less := func(i, j int) bool {
+			if have == nil {
+				have = callStack()
+			}
+			return i < j
+		}
+
+		// --- When ---
+		sort.Slice([]int{2, 1, 3}, less)
+
+		// --- Then ---
+		for _, frame := range have {
+			pth := frame[:strings.LastIndex(frame, ":")]
+			_, err := os.Stat(pth)
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("closure names", func(t *testing.T) {
+		assert.True(t, isClosureName("func1"))
+		assert.True(t, isClosureName("2"))
+		assert.False(t, isClosureName("funcX"))
+		assert.False(t, isClosureName("func"))
+		assert.False(t, isClosureName("Method"))
+	})
+
 	// --- When ---
 	have := callStack()
 

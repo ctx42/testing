@@ -28,6 +28,9 @@ type cStack struct {
 // form a fluent builder for expectations:
 //
 //	Mock.On("Method", 1, mock.Any).Return("x").Times(3).Requires(otherCall)
+//
+// The setters are not synchronized: configure a Call before the mock is used
+// from other goroutines.
 type Call struct {
 	// Method name and call stack where the method call requirement was defined.
 	cStack
@@ -79,7 +82,8 @@ type Call struct {
 	// The actual method to call.
 	proxy reflect.Value
 
-	// Guards the fields.
+	// Guards haveCalls, which is read by other mocks checking [Call.Requires]
+	// prerequisites without holding this call's parent mock lock.
 	mx sync.Mutex
 }
 
@@ -215,7 +219,7 @@ func (c *Call) Requires(calls ...*Call) *Call {
 // right now. Returns nil if allowed, otherwise one of the Err* sentinels or
 // a richer [notice.Notice] explaining the violation.
 func (c *Call) CanCall() error {
-	err := c.satisfied(c.haveCalls + 1)
+	err := c.satisfied(c.calls() + 1)
 	if err == nil ||
 		errors.Is(err, ErrNeverCalled) || errors.Is(err, ErrTooFewCalls) {
 		return nil
@@ -226,7 +230,21 @@ func (c *Call) CanCall() error {
 // Satisfied reports whether this expectation has been fully met (correct
 // call count + all prerequisites satisfied).
 func (c *Call) Satisfied() bool {
-	return c.satisfied(c.haveCalls) == nil
+	return c.satisfied(c.calls()) == nil
+}
+
+// calls returns the number of recorded calls.
+func (c *Call) calls() int {
+	c.mx.Lock()
+	defer c.mx.Unlock()
+	return c.haveCalls
+}
+
+// addCall records one call.
+func (c *Call) addCall() {
+	c.mx.Lock()
+	defer c.mx.Unlock()
+	c.haveCalls++
 }
 
 // satisfied returns nil if the call requirements are satisfied. It takes

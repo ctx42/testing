@@ -12,6 +12,17 @@ import (
 )
 
 func Test_Arguments_Get(t *testing.T) {
+	t.Run("negative index", func(t *testing.T) {
+		// --- Given ---
+		args := Arguments{"str"}
+
+		// --- When ---
+		msg := assert.PanicMsg(t, func() { args.Get(-1) })
+
+		// --- Then ---
+		assert.Equal(t, "[mock] arguments: Get(-1) out of range 0 max", *msg)
+	})
+
 	t.Run("existing", func(t *testing.T) {
 		// --- Given ---
 		var args = Arguments{"str", 42, true}
@@ -66,6 +77,36 @@ func Test_Arguments_Equal(t *testing.T) {
 }
 
 func Test_Arguments_Diff(t *testing.T) {
+	t.Run("missing argument does not match a matcher", func(t *testing.T) {
+		// --- Given ---
+		args := Arguments{"a", AnyString}
+
+		// --- When ---
+		have, cnt := args.Diff([]any{"a"})
+
+		// --- Then ---
+		assert.Equal(t, 1, cnt)
+		want := "1: FAIL: [mock.MatchOfType=string] != (Missing)"
+		assert.Equal(t, want, have[1])
+	})
+
+	t.Run("extra argument looking like a missing one", func(t *testing.T) {
+		// --- When ---
+		_, cnt := Arguments{}.Diff([]any{"(Missing)"})
+
+		// --- Then ---
+		assert.Equal(t, 1, cnt)
+	})
+
+	t.Run("expected value and context argument", func(t *testing.T) {
+		// --- When ---
+		have, cnt := Arguments{"abc"}.Diff([]any{t.Context()})
+
+		// --- Then ---
+		assert.Equal(t, 1, cnt)
+		assert.Contain(t, `(string="abc")`, have[0])
+	})
+
 	t.Run("matches with no differences", func(t *testing.T) {
 		// --- Given ---
 		wantA := []any{"str", 42, true}

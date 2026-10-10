@@ -38,18 +38,17 @@ func MatchSame(want any) *Matcher {
 // causes a panic at construction time.
 //
 // MatchBy is the foundation for all custom matchers and for the predefined
-// ones (MatchOfType, MatchError, Any*, ...).
+// ones (MatchOfType, MatchError, Any*, ...). The function runs while the mock
+// is locked, so it must not call the mock.
 //
 // Example:
 //
 //	MatchBy(func(req *http.Request) bool { return req.Host == "localhost" })
 func MatchBy(fn any) *Matcher {
-	val := reflect.ValueOf(fn)
-	desc := fmt.Sprintf(
-		"[mock.MatchBy=func(%s) bool]",
-		val.Type().In(0).String(),
-	)
-	return NewMatcher(fn, desc)
+	mat := NewMatcher(fn, "")
+	format := "[mock.MatchBy=func(%s) bool]"
+	mat.desc = fmt.Sprintf(format, mat.fn.Type().In(0))
+	return mat
 }
 
 // MatchOfType returns a matcher that accepts only arguments whose
@@ -88,16 +87,10 @@ func MatchType(typ any) *Matcher {
 	if typTyp == nil {
 		panic("mock: MatchType: typ must not be nil")
 	}
-	typStr := typTyp.String()
-
 	fn := func(have any) bool {
-		haveTyp := reflect.TypeOf(have)
-		if haveTyp == nil {
-			return false
-		}
-		return typStr == haveTyp.String()
+		return reflect.TypeOf(have) == typTyp
 	}
-	desc := fmt.Sprintf("[mock.MatchType=%s]", typStr)
+	desc := fmt.Sprintf("[mock.MatchType=%s]", typTyp)
 	return NewMatcher(fn, desc)
 }
 
