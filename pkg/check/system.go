@@ -19,7 +19,9 @@ func ExitCode(want int, err error, opts ...any) error {
 		return nil
 	}
 	if err == nil {
-		return notice.New("expected *exec.ExitError got nil")
+		ops := DefaultOptions(opts...)
+		msg := notice.New("expected *exec.ExitError got nil")
+		return AddRows(ops, msg)
 	}
 
 	var ee *exec.ExitError

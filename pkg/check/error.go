@@ -6,6 +6,7 @@ package check
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/ctx42/testing/internal/core"
@@ -78,14 +79,27 @@ func ErrorIsNot(want, err error, opts ...any) error {
 // target "want" according to [errors.As], and if so, assigns it into the
 // pointer provided in "want".
 func ErrorAs(want any, err error, opts ...any) error {
-	if e := Error(err); e != nil {
+	if e := Error(err, opts...); e != nil {
 		return e
+	}
+	ops := DefaultOptions(opts...)
+	tgtVal := reflect.ValueOf(want)
+	if !tgtVal.IsValid() || tgtVal.Kind() != reflect.Pointer || tgtVal.IsNil() {
+		msg := notice.New("expected target to be a non-nil pointer")
+		return AddRows(ops, msg)
+	}
+	if tgtTyp := tgtVal.Type().Elem(); tgtTyp.Kind() != reflect.Interface &&
+		!tgtTyp.Implements(typError) {
+
+		const mHeader = "expected target to be a pointer to " +
+			"an interface or error"
+		msg := notice.New(mHeader).Append("target", "%T", want)
+		return AddRows(ops, msg)
 	}
 	//goland:noinspection GoErrorsAs
 	if errors.As(err, want) {
 		return nil
 	}
-	ops := DefaultOptions(opts...)
 
 	tgt := fmt.Sprintf("%T", want)
 	if strings.HasPrefix(tgt, "**") {
@@ -102,12 +116,12 @@ func ErrorAs(want any, err error, opts ...any) error {
 //
 // See [assert.ErrorEqual] for the assertion wrapper.
 func ErrorEqual(want string, err error, opts ...any) error {
-	if err != nil && want == err.Error() {
+	isNil := core.IsNil(err)
+	if !isNil && want == err.Error() {
 		return nil
 	}
 	var have any
-	have = nil
-	if err != nil {
+	if !isNil {
 		have = err.Error()
 	}
 
@@ -153,11 +167,12 @@ func ErrorRegexp(want any, err error, opts ...any) error {
 			Have("%T", err)
 		return AddRows(ops, msg)
 	}
-	if e := Regexp(want, err.Error()); e != nil {
-		ops := DefaultOptions(opts...)
-		msg := notice.From(e).
+	if _, e := matchRegexp(want, ""); e != nil {
+		return Regexp(want, err.Error(), opts...) // Invalid regexp notice.
+	}
+	if e := Regexp(want, err.Error(), opts...); e != nil {
+		return notice.From(e).
 			SetHeader("expected the error message to match regexp")
-		return AddRows(ops, msg)
 	}
 	return nil
 }

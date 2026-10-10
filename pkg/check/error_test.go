@@ -296,6 +296,45 @@ func Test_ErrorIsNot_error_tabular(t *testing.T) {
 }
 
 func Test_ErrorAs(t *testing.T) {
+	t.Run("error - nil error with trail", func(t *testing.T) {
+		// --- Given ---
+		var target *testcases.TPtr
+
+		// --- When ---
+		err := ErrorAs(&target, nil, WithTrail("type.field"))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected non-nil error:\n" +
+			"  trail: type.field"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - nil target", func(t *testing.T) {
+		// --- When ---
+		err := ErrorAs(nil, errors.New("e"), WithTrail("type.field"))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected target to be a non-nil pointer:\n" +
+			"  trail: type.field"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - target not pointer to error", func(t *testing.T) {
+		// --- Given ---
+		var target int
+
+		// --- When ---
+		err := ErrorAs(&target, errors.New("e"))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected target to be a pointer to an interface or error:\n" +
+			"  target: *int"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		var target *testcases.TPtr
@@ -378,6 +417,21 @@ func Test_ErrorAs(t *testing.T) {
 }
 
 func Test_ErrorEqual(t *testing.T) {
+	t.Run("error - typed nil error", func(t *testing.T) {
+		// --- Given ---
+		var e *testcases.TPtr
+
+		// --- When ---
+		err := ErrorEqual("abc", e)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected the error message to be:\n" +
+			"  want: \"abc\"\n" +
+			"  have: <nil>"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("success", func(t *testing.T) {
 		// --- When ---
 		err := ErrorEqual("e0", errors.New("e0"))
@@ -525,6 +579,17 @@ func Test_ErrorContain(t *testing.T) {
 }
 
 func Test_ErrorRegexp(t *testing.T) {
+	t.Run("error - invalid regexp", func(t *testing.T) {
+		// --- When ---
+		err := ErrorRegexp("[", errors.New("abc"))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected valid regexp:\n" +
+			"  error: \"error parsing regexp: missing closing ]: `[`\""
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("string", func(t *testing.T) {
 		// --- When ---
 		err := ErrorRegexp("def", errors.New("abc def ghi"))
@@ -577,17 +642,6 @@ func Test_ErrorRegexp(t *testing.T) {
 			"   trail: type.field\n" +
 			"  regexp: ^xyz\n" +
 			"    have: \"abc def ghi\""
-		affirm.Equal(t, wMsg, err.Error())
-	})
-
-	t.Run("invalid regexp", func(t *testing.T) {
-		// --- When ---
-		err := ErrorRegexp("[a-z", errors.New("abc def ghi"))
-
-		// --- Then ---
-		affirm.NotNil(t, err)
-		wMsg := "expected the error message to match regexp:\n" +
-			"  error: \"error parsing regexp: missing closing ]: `[a-z`\""
 		affirm.Equal(t, wMsg, err.Error())
 	})
 

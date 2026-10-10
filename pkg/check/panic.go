@@ -50,7 +50,8 @@ func NoPanic(fn TestFunc, opts ...any) error {
 func PanicContain(want string, fn TestFunc, opts ...any) error {
 	val, stack := core.WillPanic(fn)
 	if stack == "" {
-		return notice.New("func should panic")
+		ops := DefaultOptions(opts...)
+		return AddRows(ops, notice.New("func should panic"))
 	}
 
 	var msg string

@@ -87,6 +87,17 @@ func Test_NoPanic(t *testing.T) {
 }
 
 func Test_PanicContain(t *testing.T) {
+	t.Run("error - no panic with trail", func(t *testing.T) {
+		// --- When ---
+		err := PanicContain("abc", func() {}, WithTrail("type.field"))
+
+		// --- Then ---
+		wMsg := "" +
+			"func should panic:\n" +
+			"  trail: type.field"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("panic message contains", func(t *testing.T) {
 		// --- When ---
 		err := PanicContain("def", func() { panic("abc def ghi") })

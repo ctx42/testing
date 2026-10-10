@@ -11,6 +11,20 @@ import (
 )
 
 func Test_Regexp(t *testing.T) {
+	t.Run("error - nil regexp", func(t *testing.T) {
+		// --- Given ---
+		var rx *regexp.Regexp
+
+		// --- When ---
+		err := Regexp(rx, "abc")
+
+		// --- Then ---
+		wMsg := "" +
+			"expected valid regexp:\n" +
+			"  error: \"nil regexp\""
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("match string", func(t *testing.T) {
 		// --- When ---
 		err := Regexp("^abc123.*$", "abc1234")

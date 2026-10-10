@@ -39,6 +39,12 @@ func Empty(have any, opts ...any) error {
 
 // isEmpty returns true if "have" is empty.
 func isEmpty(have any) bool {
+	return isEmptyVisit(have, nil)
+}
+
+// isEmptyVisit implements [isEmpty]. The seen set holds the pointers already
+// followed, so a pointer cycle is reported as not empty.
+func isEmptyVisit(have any, seen map[uintptr]bool) bool {
 	if is := core.IsNil(have); is {
 		return true
 	}
@@ -51,7 +57,14 @@ func isEmpty(have any) bool {
 		}
 
 	case reflect.Pointer:
-		return isEmpty(val.Elem().Interface())
+		if seen[val.Pointer()] {
+			return false
+		}
+		if seen == nil {
+			seen = make(map[uintptr]bool)
+		}
+		seen[val.Pointer()] = true
+		return isEmptyVisit(val.Elem().Interface(), seen)
 
 	default:
 		zero := reflect.Zero(val.Type())

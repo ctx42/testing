@@ -102,12 +102,16 @@ func NotSameType(want, have any, opts ...any) error {
 // (equivalent to `ok := src.(target)`). "target" must be a non-nil pointer.
 func Type(target, src any, opts ...any) error {
 	if target == nil {
-		return notice.New("expected target to be a non-nil pointer")
+		ops := DefaultOptions(opts...)
+		msg := notice.New("expected target to be a non-nil pointer")
+		return AddRows(ops, msg)
 	}
 	tgtVal := reflect.ValueOf(target)
 	tgtTyp := tgtVal.Type()
 	if tgtTyp.Kind() != reflect.Pointer || tgtVal.IsNil() {
-		return notice.New("expected target to be a non-nil pointer")
+		ops := DefaultOptions(opts...)
+		msg := notice.New("expected target to be a non-nil pointer")
+		return AddRows(ops, msg)
 	}
 	tgtType := tgtTyp.Elem()
 	srcTyp := reflect.TypeOf(src)

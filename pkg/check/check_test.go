@@ -298,6 +298,17 @@ func Test_NotSameType_error_tabular(t *testing.T) {
 }
 
 func Test_Type(t *testing.T) {
+	t.Run("error - nil target with trail", func(t *testing.T) {
+		// --- When ---
+		err := Type(nil, 1, WithTrail("type.field"))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected target to be a non-nil pointer:\n" +
+			"  trail: type.field"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("assert type int", func(t *testing.T) {
 		// --- Given ---
 		var target int

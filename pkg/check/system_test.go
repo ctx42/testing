@@ -13,6 +13,17 @@ import (
 )
 
 func Test_ExitCode(t *testing.T) {
+	t.Run("error - nil error with trail", func(t *testing.T) {
+		// --- When ---
+		err := ExitCode(1, nil, WithTrail("type.field"))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected *exec.ExitError got nil:\n" +
+			"  trail: type.field"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("exit code 0", func(t *testing.T) {
 		// --- Given ---
 		cmd := os.Args[0]

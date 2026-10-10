@@ -19,6 +19,7 @@ var (
 	typZone    = reflect.TypeFor[time.Location]()
 	typZonePtr = reflect.TypeFor[*time.Location]()
 	typByte    = reflect.TypeFor[byte]()
+	typError   = reflect.TypeFor[error]()
 )
 
 // typeString returns a type of the value as a string.

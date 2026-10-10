@@ -11,6 +11,18 @@ import (
 )
 
 func Test_Empty(t *testing.T) {
+	t.Run("error - self referencing pointer", func(t *testing.T) {
+		// --- Given ---
+		var x any
+		x = &x
+
+		// --- When ---
+		err := Empty(&x)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+	})
+
 	t.Run("success", func(t *testing.T) {
 		// --- When ---
 		err := Empty("")

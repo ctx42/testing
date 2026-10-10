@@ -4,6 +4,7 @@
 package check
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 
@@ -37,6 +38,9 @@ func Regexp(want, have any, opts ...any) error {
 func matchRegexp(rx, have any) (bool, error) {
 	var r *regexp.Regexp
 	if rr, ok := rx.(*regexp.Regexp); ok {
+		if rr == nil {
+			return false, errors.New("nil regexp")
+		}
 		r = rr
 	} else {
 		var err error
