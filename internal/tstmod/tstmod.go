@@ -85,7 +85,6 @@ func New(t tester.T, version string) *Module {
 	}
 
 	mod.CreateDir("pkg/empty")
-	mod.CreateDir("pkg/mercury")
 
 	// Create external test modules (tst-a, tst-b) so that getModInfo
 	// tests do not depend on the global module cache. This makes the
@@ -93,7 +92,7 @@ func New(t tester.T, version string) *Module {
 	mod.createExternalModules(base, vrt.version)
 
 	mod.WriteFile("go.mod", goMod(vrt.version))
-	mod.WriteFile("go.sum", goSum(vrt))
+	mod.WriteFile("go.sum", vrt.goSum())
 	mod.WriteFile("project.go", projectGo)
 	mod.WriteFile("pkg/mercury/mercury.go", "package mercury")
 
@@ -158,7 +157,7 @@ func goMod(version string) string {
 }
 
 // goSum returns the go.sum file content of the test module variant.
-func goSum(vrt variant) string {
+func (vrt variant) goSum() string {
 	ver := vrt.version
 	return "" +
 		tstA + " " + ver + " " + vrt.sumA + "\n" +
@@ -169,8 +168,8 @@ func goSum(vrt variant) string {
 
 // createExternalModules creates the tst-a and tst-b modules inside baseDir
 // and records their locations, so that getModInfo tests do not depend on the
-// global module cache. Each module has a go.mod file; tst-b also provides the
-// pkg/mocker/first package project.go imports and requires tst-a.
+// global module cache. Each module has a go.mod file; tst-b also requires
+// tst-a and provides the pkg/mocker/first package that project.go imports.
 func (mod *Module) createExternalModules(baseDir, version string) {
 	mod.t.Helper()
 	dirA := mod.CreateDir(filepath.Join(baseDir, "tst-a"))
