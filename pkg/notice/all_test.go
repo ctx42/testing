@@ -8,9 +8,9 @@ import (
 	"strings"
 )
 
-// FWD is a test helper function printing notice chain in the forward direction
-// starting at the given node. If the given node has no previous node, the
-// leading pipe will be printed.
+// FWD is a test helper function printing the notice chain in the forward
+// direction starting at the given node. If the given node has no previous
+// node, the leading pipe will be printed.
 //
 // Example:
 //
@@ -19,19 +19,19 @@ import (
 func FWD(node *Notice) string {
 	var have strings.Builder
 	if node != nil && node.prev == nil {
-		have.WriteString("| ")
+		_, _ = have.WriteString("| ")
 	}
 	for node != nil {
 		_, _ = fmt.Fprintf(&have, "%s (%s)", node.HeaderText, node.Trail)
 		node = node.next
 		if node != nil {
-			have.WriteString(" -> ")
+			_, _ = have.WriteString(" -> ")
 		}
 	}
 	return have.String()
 }
 
-// REV is a test helper function printing notice chain in the backward
+// REV is a test helper function printing the notice chain in the backward
 // direction starting at the given node. If the given node has no next node,
 // the leading pipe will be printed.
 //
@@ -42,13 +42,13 @@ func FWD(node *Notice) string {
 func REV(node *Notice) string {
 	var have strings.Builder
 	if node != nil && node.next == nil {
-		have.WriteString("| ")
+		_, _ = have.WriteString("| ")
 	}
 	for node != nil {
 		_, _ = fmt.Fprintf(&have, "%s (%s)", node.HeaderText, node.Trail)
 		node = node.prev
 		if node != nil {
-			have.WriteString(" -> ")
+			_, _ = have.WriteString(" -> ")
 		}
 	}
 	return have.String()

@@ -37,14 +37,14 @@ fmt.Println(msg)
 
 <!-- gmdoceg:ExampleNotice_Wrap -->
 ```go
-ErrMy := errors.New("my error")
+errMy := errors.New("my error")
 
 msg := notice.New("expected values to be equal").
 	Want("%s", "abc").
 	Have("%s", "xyz").
-	Wrap(ErrMy)
+	Wrap(errMy)
 
-is := errors.Is(msg, ErrMy)
+is := errors.Is(msg, errMy)
 fmt.Println(is)
 // Output: true
 ```
@@ -84,20 +84,22 @@ useful when multiple independent expectations fail in one assertion.
 
 ```go
 err := notice.Join(
-    notice.New("first failure"),
-    notice.New("second failure"),
+	notice.New("first failure"),
+	notice.New("second failure"),
 )
 ```
 
-The result is a single error whose [notice.Notice.All] returns the full
-list. Walk the chain with:
+The result is a single error; [notice.From] returns it as a
+[notice.Notice] whose [notice.Notice.All] returns the full list. Walk the
+chain with:
 
 - [notice.Notice.Head] — first element
 - [notice.Notice.Next] / [notice.Notice.Prev] — traversal
 - [notice.Join] — the builder used above
 
-Each notice delegates [errors.Is] and [errors.As] to its base error
-(default [notice.ErrNotice]). Change the base with [notice.Notice.Wrap]:
+[errors.Is] matches any base error or notice on the chain (via
+[notice.Notice.Is]); [errors.As] sees only the base error of the notice you
+pass (default [notice.ErrNotice]). Change a base with [notice.Notice.Wrap]:
 
 ```go
 myErr := errors.New("root cause")
@@ -105,5 +107,5 @@ n := notice.New("something failed").Wrap(myErr)
 fmt.Println(errors.Is(n, myErr)) // true
 ```
 
-Chains are mutable (see [notice.Notice.Chain]). Prefer [Join] when
+Chains are mutable (see [notice.Notice.Chain]). Prefer [notice.Join] when
 building from multiple values.

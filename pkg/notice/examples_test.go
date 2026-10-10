@@ -159,28 +159,50 @@ func ExampleNotice_SetTrail() {
 }
 
 func ExampleNotice_Wrap() {
-	ErrMy := errors.New("my error")
+	errMy := errors.New("my error")
 
 	msg := notice.New("expected values to be equal").
 		Want("%s", "abc").
 		Have("%s", "xyz").
-		Wrap(ErrMy)
+		Wrap(errMy)
 
-	is := errors.Is(msg, ErrMy)
+	is := errors.Is(msg, errMy)
 	fmt.Println(is)
 	// Output: true
 }
 
 func ExampleNotice_Unwrap() {
-	ErrMy := errors.New("my error")
+	errMy := errors.New("my error")
 
 	msg := notice.New("expected values to be equal").
 		Want("%s", "abc").
 		Have("%s", "xyz").
-		Wrap(ErrMy)
+		Wrap(errMy)
 
 	fmt.Println(msg.Unwrap())
 	// Output: my error
+}
+
+func ExampleNotice_Is() {
+	first := notice.New("first failure")
+	joined := notice.Join(first, notice.New("second failure"))
+
+	fmt.Println(errors.Is(joined, first))
+	fmt.Println(errors.Is(joined, notice.ErrNotice))
+	// Output:
+	// true
+	// true
+}
+
+func ExampleNotice_Chain() {
+	first := notice.New("first failure")
+	second := notice.New("second failure").Chain(first)
+
+	fmt.Println(second.Prev().HeaderText)
+	fmt.Println(first.Next().HeaderText)
+	// Output:
+	// first failure
+	// second failure
 }
 
 func ExampleNotice_MetaSet() {

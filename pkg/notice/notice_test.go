@@ -57,7 +57,7 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, true, have == nil)
 	})
 
-	t.Run("prefix is set on the whole chain", func(t *testing.T) {
+	t.Run("prefix on whole chain", func(t *testing.T) {
 		// --- Given ---
 		msg0 := New("header0")
 		msg1 := New("header1")
@@ -72,7 +72,7 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, "prefix", msg1.HeaderPrefix)
 	})
 
-	t.Run("not a notice keeps the error message", func(t *testing.T) {
+	t.Run("not a notice", func(t *testing.T) {
 		// --- When ---
 		have := From(errors.New("boom"))
 
@@ -141,7 +141,7 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, true, errors.Is(have, ErrNotice))
 	})
 
-	t.Run("chain of two - prefix propagates to prev", func(t *testing.T) {
+	t.Run("prefix on chain of two", func(t *testing.T) {
 		// --- Given ---
 		msg0 := New("header0")
 		msg1 := New("header1")
@@ -156,7 +156,7 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, "prefix", msg0.HeaderPrefix)
 	})
 
-	t.Run("chain of three - prefix propagates through all", func(t *testing.T) {
+	t.Run("prefix on chain of three", func(t *testing.T) {
 		// --- Given ---
 		msg0 := New("header0")
 		msg1 := New("header1")
@@ -358,7 +358,7 @@ func Test_Notice_Append(t *testing.T) {
 		affirm.DeepEqual(t, want, msg.Rows)
 	})
 
-	t.Run("append an existing name overwrites", func(t *testing.T) {
+	t.Run("append existing name", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header").Append("first", "%d", 1).Append("second", "%d", 2)
 
@@ -406,7 +406,7 @@ func Test_Notice_AppendRow(t *testing.T) {
 		affirm.DeepEqual(t, want, msg.Rows)
 	})
 
-	t.Run("append an existing name overwrites", func(t *testing.T) {
+	t.Run("append existing name", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header").Append("first", "%d", 1).Append("second", "%d", 2)
 
@@ -453,7 +453,7 @@ func Test_Notice_Prepend(t *testing.T) {
 		affirm.DeepEqual(t, want, msg.Rows)
 	})
 
-	t.Run("prepend existing name changes it", func(t *testing.T) {
+	t.Run("prepend existing name", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header").
 			Prepend("first", "%d", 1).
@@ -489,7 +489,7 @@ func Test_Notice_SetTrail(t *testing.T) {
 		affirm.DeepEqual(t, want, have)
 	})
 
-	t.Run("is not adding empty trails", func(t *testing.T) {
+	t.Run("empty trail", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header").Prepend("first", "%d", 1)
 
@@ -590,8 +590,8 @@ func Test_Notice_Have(t *testing.T) {
 
 func Test_Notice_Wrap(t *testing.T) {
 	// --- Given ---
-	var errMy = errors.New("my-error")
 	msg := New("header").Append("first", "%d", 1)
+	errMy := errors.New("my-error")
 
 	// --- When ---
 	have := msg.Wrap(errMy)
@@ -610,10 +610,10 @@ func Test_Notice_Unwrap(t *testing.T) {
 		msg := New("header").Append("first", "%d", 1)
 
 		// --- When ---
-		err := msg.Unwrap()
+		have := msg.Unwrap()
 
 		// --- Then ---
-		affirm.Equal(t, true, core.Same(ErrNotice, err))
+		affirm.Equal(t, true, core.Same(ErrNotice, have))
 	})
 
 	t.Run("wrapped", func(t *testing.T) {
@@ -622,10 +622,10 @@ func Test_Notice_Unwrap(t *testing.T) {
 		msg := New("header").Append("first", "%d", 1).Wrap(errMy)
 
 		// --- When ---
-		err := msg.Unwrap()
+		have := msg.Unwrap()
 
 		// --- Then ---
-		affirm.Equal(t, true, core.Same(errMy, err))
+		affirm.Equal(t, true, core.Same(errMy, have))
 	})
 }
 
@@ -668,6 +668,7 @@ func Test_Notice_Is(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
+
 		affirm.Equal(t, true, errors.Is(joined, ErrNotice))
 	})
 
@@ -684,8 +685,8 @@ func Test_Notice_Is(t *testing.T) {
 
 	t.Run("is not", func(t *testing.T) {
 		// --- Given ---
-		err := errors.New("my-error")
 		msg := New("header")
+		err := errors.New("my-error")
 
 		// --- When ---
 		have := msg.Is(err)
@@ -824,7 +825,7 @@ func Test_Notice_Error(t *testing.T) {
 		affirm.Equal(t, want, have)
 	})
 
-	t.Run("force a row message to start on the next line", func(t *testing.T) {
+	t.Run("leading newline in row", func(t *testing.T) {
 		// --- Given ---
 		msg := New("expected values to be equal").
 			Append("first", "%d", 1).
@@ -858,7 +859,7 @@ func Test_Notice_Error(t *testing.T) {
 		affirm.Equal(t, want, have)
 	})
 
-	t.Run("with rows and trial", func(t *testing.T) {
+	t.Run("with rows and trail", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header").
 			Want("%d", 42).
@@ -974,8 +975,7 @@ func Test_Notice_MetaSet(t *testing.T) {
 		have := msg.MetaSet("A", 0)
 
 		// --- Then ---
-		want := map[string]any{"A": 0}
-		affirm.DeepEqual(t, want, have.Meta)
+		affirm.DeepEqual(t, map[string]any{"A": 0}, have.Meta)
 	})
 
 	t.Run("overwrite", func(t *testing.T) {
@@ -986,8 +986,7 @@ func Test_Notice_MetaSet(t *testing.T) {
 		have := msg.MetaSet("A", 1)
 
 		// --- Then ---
-		want := map[string]any{"A": 1}
-		affirm.DeepEqual(t, want, have.Meta)
+		affirm.DeepEqual(t, map[string]any{"A": 1}, have.Meta)
 	})
 }
 
@@ -1044,7 +1043,7 @@ func Test_Notice_longest(t *testing.T) {
 		have := msg.longest()
 
 		// --- Then ---
-		affirm.DeepEqual(t, 3, have)
+		affirm.Equal(t, 3, have)
 	})
 
 	t.Run("trail set and all shorter than the trail", func(t *testing.T) {
@@ -1062,7 +1061,7 @@ func Test_Notice_longest(t *testing.T) {
 		have := msg.longest()
 
 		// --- Then ---
-		affirm.DeepEqual(t, 5, have)
+		affirm.Equal(t, 5, have)
 	})
 
 	t.Run("longer than the trail", func(t *testing.T) {
@@ -1079,12 +1078,12 @@ func Test_Notice_longest(t *testing.T) {
 		have := msg.longest()
 
 		// --- Then ---
-		affirm.DeepEqual(t, 9, have)
+		affirm.Equal(t, 9, have)
 	})
 }
 
 func Test_Notice_Chain(t *testing.T) {
-	t.Run("prev among successors is ignored", func(t *testing.T) {
+	t.Run("prev among successors", func(t *testing.T) {
 		// --- Given ---
 		msg0 := New("header0")
 		msg1 := New("header1")
@@ -1102,8 +1101,8 @@ func Test_Notice_Chain(t *testing.T) {
 
 	t.Run("links two notices", func(t *testing.T) {
 		// --- Given ---
-		msg0 := New("header0").Want("%d", 42).Have("%d", 44)
 		msg1 := New("header1").Want("%d", 11).Have("%d", 7)
+		msg0 := New("header0").Want("%d", 42).Have("%d", 44)
 
 		// --- When ---
 		have := msg1.Chain(msg0)
@@ -1116,59 +1115,61 @@ func Test_Notice_Chain(t *testing.T) {
 		affirm.Nil(t, msg1.next)
 	})
 
-	t.Run("rejoin detaches previous successor", func(t *testing.T) {
+	t.Run("rejoin", func(t *testing.T) {
 		// --- Given ---
-		a := New("a")
-		b := New("b")
-		c := New("c")
-		_ = b.Chain(a)
+		msgA := New("a")
+		msgB := New("b")
+		_ = msgB.Chain(msgA)
+
+		msgC := New("c")
 
 		// --- When ---
-		// Chain onto a replaces a's successor; Join would append after the
-		// tail so multi-notice operands stay intact.
-		_ = c.Chain(a)
+		// Chain onto msgA replaces its successor; Join would append after
+		// the tail so multi-notice operands stay intact.
+		_ = msgC.Chain(msgA)
 
 		// --- Then ---
-		affirm.Equal(t, true, core.Same(a.next, c))
-		affirm.Equal(t, true, core.Same(c.prev, a))
-		affirm.Nil(t, b.prev)
-		affirm.Nil(t, b.next)
-		affirm.Equal(t, true, core.Same(b.Head(), b))
-		affirm.Equal(t, 1, len(b.All()))
+		affirm.Equal(t, true, core.Same(msgA.next, msgC))
+		affirm.Equal(t, true, core.Same(msgC.prev, msgA))
+		affirm.Nil(t, msgB.prev)
+		affirm.Nil(t, msgB.next)
+		affirm.Equal(t, true, core.Same(msgB.Head(), msgB))
+		affirm.Equal(t, 1, len(msgB.All()))
 	})
 
-	t.Run("self chain is ignored", func(t *testing.T) {
+	t.Run("self chain", func(t *testing.T) {
 		// --- Given ---
-		a := New("a")
+		msg := New("a")
 
 		// --- When ---
-		have := a.Chain(a)
+		have := msg.Chain(msg)
 
 		// --- Then ---
-		affirm.Equal(t, true, core.Same(a, have))
-		affirm.Nil(t, a.prev)
-		affirm.Nil(t, a.next)
+		affirm.Equal(t, true, core.Same(msg, have))
+		affirm.Nil(t, msg.prev)
+		affirm.Nil(t, msg.next)
 	})
 
-	t.Run("moves msg with successors", func(t *testing.T) {
+	t.Run("msg with successors", func(t *testing.T) {
 		// --- Given ---
-		a := New("a")
-		b := New("b")
-		c := New("c")
-		x := New("x")
-		_ = Join(a, b, c)
+		msgA := New("a")
+		msgB := New("b")
+		msgC := New("c")
+		_ = Join(msgA, msgB, msgC)
+
+		msgX := New("x")
 
 		// --- When ---
-		have := b.Chain(x)
+		have := msgB.Chain(msgX)
 
 		// --- Then ---
-		affirm.Equal(t, true, core.Same(b, have))
-		affirm.Nil(t, a.next)
-		affirm.Equal(t, true, core.Same(x.next, b))
-		affirm.Equal(t, true, core.Same(b.prev, x))
-		affirm.Equal(t, true, core.Same(b.next, c))
-		affirm.Equal(t, true, core.Same(c.prev, b))
-		affirm.DeepEqual(t, []*Notice{x, b, c}, x.All())
+		affirm.Equal(t, true, core.Same(msgB, have))
+		affirm.Nil(t, msgA.next)
+		affirm.Equal(t, true, core.Same(msgX.next, msgB))
+		affirm.Equal(t, true, core.Same(msgB.prev, msgX))
+		affirm.Equal(t, true, core.Same(msgB.next, msgC))
+		affirm.Equal(t, true, core.Same(msgC.prev, msgB))
+		affirm.DeepEqual(t, []*Notice{msgX, msgB, msgC}, msgX.All())
 	})
 }
 
@@ -1409,11 +1410,11 @@ func Test_TrailCmp_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- Given ---
-			a := New("header").SetTrail(tc.a)
-			b := New("header").SetTrail(tc.b)
+			msgA := New("header").SetTrail(tc.a)
+			msgB := New("header").SetTrail(tc.b)
 
 			// --- When ---
-			have := TrailCmp(a, b)
+			have := TrailCmp(msgA, msgB)
 
 			// --- Then ---
 			affirm.Equal(t, tc.want, have)
@@ -1428,6 +1429,7 @@ func Test_SortNotices(t *testing.T) {
 		msgA := New("hdrA").SetTrail("a")
 		msgB := New("hdrB").SetTrail("bb")
 		_ = Join(msgA, msgC, msgB)
+
 		cmp := func(x, y *Notice) int { return len(x.Trail) - len(y.Trail) }
 
 		// --- When ---
@@ -1451,8 +1453,7 @@ func Test_SortNotices(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msgC, have))
-		wFwd := "| hdrA (A) -> hdrB (B) -> hdrC (C)"
-		affirm.Equal(t, wFwd, FWD(have.Head()))
+		affirm.Equal(t, "| hdrA (A) -> hdrB (B) -> hdrC (C)", FWD(have.Head()))
 		affirm.Equal(t, "| hdrC (C) -> hdrB (B) -> hdrA (A)", REV(have))
 	})
 

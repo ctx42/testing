@@ -6,7 +6,7 @@
 //
 // It is the formatting layer in the layered architecture: `assert`
 // (user-facing) is built on `check` (composable, returns error) which
-// produces `*Notice` values for detailed, trail-aware diagnostics.
+// produces [Notice] values for detailed, trail-aware diagnostics.
 //
 // Notices implement [error]. They wrap a base error (default [ErrNotice]).
 // [Notice.Is] makes [errors.Is] match any base on a [Join] chain; [errors.As]
@@ -38,6 +38,8 @@ import (
 	"unicode/utf8"
 )
 
+var _ error = (*Notice)(nil)
+
 // Row names and headers used when rendering notices.
 const (
 	// trail is the name of the row holding the field trail (path).
@@ -66,14 +68,14 @@ var ErrNotice = errors.New("notice error")
 //
 //nolint:errname
 type Notice struct {
-	HeaderText   string // Header message.
+	HeaderText   string // Header shown on the first line of the message.
 	HeaderPrefix string // Prefix shown as "[prefix]" before the header.
 
 	// Trail to the field, element, or key the notice message is about.
 	Trail string
 
-	Rows []Row          // Context rows.
-	Meta map[string]any // Useful metadata.
+	Rows []Row          // Named lines rendered below the header.
+	Meta map[string]any // Data for callers; never rendered.
 	err  error          // Base error (default: [ErrNotice]).
 	prev *Notice        // Previous message in the chain.
 	next *Notice        // Next message in the chain.
@@ -94,9 +96,9 @@ func New(header string, args ...any) *Notice {
 // From returns err as a [Notice] (or creates one wrapping err). If a prefix
 // is provided, it is prepended to the header in "[prefix] ..." form.
 //
-// If err is a *Notice (not a notice wrapped in another error), it is returned
+// If err is a [Notice] (not a notice wrapped in another error), it is returned
 // with the prefix set on every notice of its chain. A nil error, including a
-// typed nil *Notice, returns nil. Otherwise a new notice with header
+// typed nil [Notice] pointer, returns nil. Otherwise a new notice with header
 // "assertion error" and an "error" row holding err's message is created, and
 // err is wrapped via [Notice.Wrap].
 func From(err error, prefix ...string) *Notice {
@@ -244,16 +246,18 @@ func (msg *Notice) Remove(name string) *Notice {
 
 // Is reports whether target is a notice in the chain, or any notice in the
 // chain has a base error matching target via [errors.Is]. This makes every
-// *Notice satisfy errors.Is(msg, ErrNotice) by default, and lets [Join]
-// chains match any of their notices and any wrapped cause on the chain.
+// [Notice] match [ErrNotice] by default, and lets [Join] chains match any of
+// their notices and any wrapped cause on the chain. When it returns false,
+// [errors.Is] also checks the receiver's base through [Notice.Unwrap], which
+// this method already did.
 func (msg *Notice) Is(target error) bool {
 	tgt, _ := target.(*Notice) //nolint:errorlint
 	head := msg.Head()
-	for m := head; m != nil; m = m.next {
-		if m == tgt {
+	for node := head; node != nil; node = node.next {
+		if node == tgt {
 			return true
 		}
-		if m.err != nil && isErr(m.err, target, head) {
+		if isErr(node.err, target, head) {
 			return true
 		}
 	}
@@ -417,13 +421,14 @@ func (msg *Notice) longest() int {
 	return maxLen
 }
 
-// Chain links msg after prev in the chain (mutates both) and returns msg.
+// Chain links the notice after prev in the chain (mutates both) and returns
+// the notice.
 //
 // After the call: prev.Next() returns the notice and its Prev() returns prev.
 // The notice is detached from any previous predecessor first, so re-joining
 // cannot leave stale prev/next pointers; the notice and its successors move
-// together. Self-links, and links to one of msg's own successors (which
-// would form a cycle), are ignored.
+// together. Self-links, and links to one of the notice's own successors
+// (which would form a cycle), are ignored.
 // Use [Join] for a safer way to build chains from multiple values.
 func (msg *Notice) Chain(prev *Notice) *Notice {
 	if msg == nil || prev == nil || msg == prev {
@@ -448,8 +453,6 @@ func (msg *Notice) Chain(prev *Notice) *Notice {
 }
 
 // Head returns the first notice in the chain (or self if it is the head).
-//
-// Follows the prev pointers to the start of the linked list.
 func (msg *Notice) Head() *Notice {
 	for msg.prev != nil {
 		msg = msg.prev
@@ -513,7 +516,7 @@ func Join(ers ...error) error {
 			}
 			continue
 		}
-		// Head so a multi-notice operand keeps every node when appended.
+		// Start from the operand's head so every node is kept.
 		head := nxt.Head()
 		if inChain(head, tail) {
 			continue // The operand is already on the chain.
@@ -532,8 +535,8 @@ func Join(ers ...error) error {
 
 // inChain reports whether node is reachable from head through next links.
 func inChain(head, node *Notice) bool {
-	for m := head; m != nil; m = m.next {
-		if m == node {
+	for msg := head; msg != nil; msg = msg.next {
+		if msg == node {
 			return true
 		}
 	}
@@ -542,7 +545,7 @@ func inChain(head, node *Notice) bool {
 
 // TrailCmp compares two notices by their Trail strings.
 // Returns -1 if x < y, 0 if equal, +1 if x > y.
-// Suitable for use with [SortNotices] or slices.SortFunc.
+// Suitable for use with [SortNotices] or [slices.SortFunc].
 func TrailCmp(x, y *Notice) int {
 	if x.Trail < y.Trail {
 		return -1

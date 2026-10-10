@@ -46,7 +46,7 @@ func Test_Indent(t *testing.T) {
 		affirm.Equal(t, want, have)
 	})
 
-	t.Run("empty lines are not indented", func(t *testing.T) {
+	t.Run("empty lines", func(t *testing.T) {
 		// --- When ---
 		have := Indent(1, ' ', "abc\ndef\n\nghi")
 
