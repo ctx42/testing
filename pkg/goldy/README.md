@@ -28,7 +28,7 @@ fits into the broader layered architecture.
 
 The goldy package provides two main functions:
 - `goldy.Open` – reads the content of an existing golden file,
-- `goldy.Create` – creates a new golden file.
+- `goldy.Create` – starts a new golden file; `Save` writes it to disk.
 
 ### Opening Golden Files
 

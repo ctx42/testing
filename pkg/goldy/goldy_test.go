@@ -313,18 +313,53 @@ func Test_Create(t *testing.T) {
 		affirm.Equal(t, false, tspy.Failed())
 		affirm.Equal(t, "", have.comment)
 		affirm.Equal(t, true, core.Same(tspy, have.t))
-		affirm.Equal(t, 0, len(must.Value(os.ReadFile(pth))))
+		_, err := os.Stat(pth)
+		affirm.Equal(t, true, os.IsNotExist(err))
 	})
 
-	t.Run("error - cannot create the file", func(t *testing.T) {
+	t.Run("does not truncate an existing file", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		pth := filepath.Join(t.TempDir(), "existing.gld")
+		must.Nil(os.WriteFile(pth, []byte("keep"), 0o600))
+
+		// --- When ---
+		have := Create(tspy, pth)
+
+		// --- Then ---
+		affirm.NotNil(t, have)
+		affirm.Equal(t, "keep", string(must.Value(os.ReadFile(pth))))
+	})
+
+	t.Run("error - directory does not exist", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
-		pth := filepath.Join(t.TempDir(), "not-existing-dir", "empty.gld")
+		dir := filepath.Join(t.TempDir(), "not-existing-dir")
+		pth := filepath.Join(dir, "empty.gld")
 		wMsg := "" +
-			"error creating file: open " + pth +
+			"error creating file: stat " + dir +
 			": no such file or directory"
 		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
+
+		// --- When ---
+		msg := affirm.Panic(t, func() { Create(tspy, pth) })
+
+		// --- Then ---
+		affirm.Equal(t, tester.FailNowMsg, *msg)
+	})
+
+	t.Run("error - parent is not a directory", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectFatal()
+		dir := filepath.Join(t.TempDir(), "file")
+		must.Nil(os.WriteFile(dir, nil, 0o600))
+		pth := filepath.Join(dir, "empty.gld")
+		tspy.ExpectLogEqual("error creating file: %s is not a directory", dir)
 		tspy.Close()
 
 		// --- When ---
@@ -462,7 +497,8 @@ func Test_Goldy_Save(t *testing.T) {
 		gld.Save()
 
 		// --- Then ---
-		affirm.Equal(t, 0, len(must.Value(os.ReadFile(pth))))
+		_, err := os.Stat(pth)
+		affirm.Equal(t, true, os.IsNotExist(err))
 	})
 
 	t.Run("when not a template", func(t *testing.T) {

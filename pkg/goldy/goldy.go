@@ -20,6 +20,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"text/template"
@@ -127,19 +128,22 @@ func Open(t tester.T, pth string, opts ...func(*Goldy)) *Goldy {
 	return gld
 }
 
-// Create creates a new [Goldy] instance representing an empty golden file.
-//
-// The file is created (or truncated) at the given path.
+// Create creates a new [Goldy] instance representing an empty golden file
+// at the given path. The file is written only by [Goldy.Save]; Create checks
+// that the parent directory exists and fails the test when it does not.
 func Create(t tester.T, pth string) *Goldy {
 	t.Helper()
 
-	// G304: path comes from test code calling golden file helpers.
-	fil, err := os.Create(pth) //nolint:gosec
+	dir := filepath.Dir(pth)
+	inf, err := os.Stat(dir)
 	if err != nil {
 		t.Fatalf("error creating file: %v", err)
 		return nil
 	}
-	defer func() { _ = fil.Close() }()
+	if !inf.IsDir() {
+		t.Fatalf("error creating file: %s is not a directory", dir)
+		return nil
+	}
 
 	return &Goldy{
 		pth:     pth,
