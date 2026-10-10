@@ -592,6 +592,11 @@ func (spy *Spy) IgnoreLogs() *Spy {
 // The msg is formatted with [fmt.Sprintf] only when args are given, so
 // without args it is used verbatim. An empty msg is recorded like any other.
 // Panics if [Spy.IgnoreLogs] was already called.
+//
+// Most strategies match all logged messages joined with "\n", as does a
+// single [Equal] or [EqualFold] expectation. With several of those, the n-th
+// matches the n-th logged message; when every expectation uses them, extra
+// messages fail the test.
 func (spy *Spy) ExpectLog(matcher Strategy, msg string, args ...any) *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()

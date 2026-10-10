@@ -279,6 +279,17 @@ Or using convenience methods:
 
 which call `ExpectLog` with given matching strategy.
 
+Expectations are matched against the logged messages as follows:
+
+- Contains, NotContains, Regexp and their case-insensitive variants match
+  all logged messages joined with `"\n"`.
+- A single `Equal` (or `EqualFold`) expectation matches the joined messages
+  too, so it must spell out every logged line.
+- With several `Equal` expectations, the n-th one matches the n-th logged
+  message. Other strategies do not take a position, so log the messages
+  they cover after the ones matched by `Equal`. When every expectation uses
+  `Equal`, a message beyond the expected ones fails the test.
+
 By default, if the HUT logged anything, and it was not examined the test will be 
 failed. To change this behaviour use `Spy.IgnoreLogs` method. 
 
