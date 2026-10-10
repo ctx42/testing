@@ -16,19 +16,16 @@ import (
 
 const expMsg = "expected same:\n  want: %v\n  have: %v"
 
-func Test_IsNil_tabular_ZENValues(t *testing.T) {
+func Test_IsNil_tabular(t *testing.T) {
 	for _, tc := range testcases.ZENValues() {
 		t.Run("Nil "+tc.Desc, func(t *testing.T) {
 			// --- When ---
-			hNil := IsNil(tc.Val)
+			have := IsNil(tc.Val)
 
 			// --- Then ---
-			if tc.IsNil && !hNil {
-				msg := "expected nil value:\n  have: %#v"
-				t.Errorf(msg, hNil)
-			}
-			if !tc.IsNil && hNil {
-				t.Errorf("expected not-nil value:\n  have: %#v", hNil)
+			if tc.IsNil != have {
+				format := "expected IsNil to return %v for %#v"
+				t.Errorf(format, tc.IsNil, tc.Val)
 			}
 		})
 	}
@@ -168,8 +165,13 @@ func Test_Same_tabular(t *testing.T) {
 	}{
 		{"ptr same", ptr0, ptr0, true},
 		{"ptr not same", ptr0, ptr1, false},
-		{"ptr different types not same", &testcases.TPtr{}, &testcases.TVal{}, false},
-		{"prt nil both", nil, nil, false},
+		{
+			"ptr different types not same",
+			&testcases.TPtr{},
+			&testcases.TVal{},
+			false,
+		},
+		{"ptr nil both", nil, nil, false},
 
 		{"itf ptr same", itfPtr0, itfPtr0, true},
 		{"itf ptr not same", itfPtr0, itfPtr1, false},
@@ -216,16 +218,16 @@ func Test_Same_tabular(t *testing.T) {
 		{"map nil different type both", mNil0, mNil1, false},
 		{"map nil same type both", mA, mB, true},
 
-		{"chanel same", c0, c0, true},
-		{"chanel not the same", c0, c1, false},
-		{"chanel nil want", nil, c1, false},
-		{"chanel nil var want", cNil0, c1, false},
-		{"chanel nil have", c0, nil, false},
-		{"chanel nil var have", c0, cNil0, false},
-		{"chanel nil both", nil, nil, false},
-		{"chanel nil var both", cNil0, cNil0, true},
-		{"chanel nil different type both", cNil0, cNilA, false},
-		{"chanel nil same type both", cA, cB, true},
+		{"chan same", c0, c0, true},
+		{"chan not the same", c0, c1, false},
+		{"chan nil want", nil, c1, false},
+		{"chan nil var want", cNil0, c1, false},
+		{"chan nil have", c0, nil, false},
+		{"chan nil var have", c0, cNil0, false},
+		{"chan nil both", nil, nil, false},
+		{"chan nil var both", cNil0, cNil0, true},
+		{"chan nil different type both", cNil0, cNilA, false},
+		{"chan nil same type both", cA, cB, true},
 	}
 
 	wMsg := "expected same:\n  want: %t\n  have: %t"
@@ -279,19 +281,32 @@ func Test_Pointer_tabular(t *testing.T) {
 
 //nolint:cyclop
 func Test_Value(t *testing.T) {
+	t.Run("zero reflect value", func(t *testing.T) {
+		// --- When ---
+		hVal, hOK := Value(reflect.Value{})
+
+		// --- Then ---
+		if hVal != nil {
+			t.Error("expected nil value")
+		}
+		if !hOK {
+			t.Error("expected true (zero reflect.Value is treated as nil)")
+		}
+	})
+
 	t.Run("struct by pointer - with exported fields", func(t *testing.T) {
 		// --- Given ---
 		ps := &testcases.TIntStr{Int: 42, Str: "abc"}
 		val := reflect.ValueOf(ps)
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		have := haveVal.(*testcases.TIntStr)
+		have := hVal.(*testcases.TIntStr)
 		if !reflect.DeepEqual(have, &testcases.TIntStr{Int: 42, Str: "abc"}) {
 			t.Errorf("expected correct field value")
 		}
@@ -303,13 +318,13 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(ps).Elem().FieldByName("Int")
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		have := haveVal.(int)
+		have := hVal.(int)
 		if have != 42 {
 			t.Errorf("expected correct field value")
 		}
@@ -321,16 +336,16 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(add)
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		if haveVal == nil {
+		if hVal == nil {
 			t.Error("expected non-nil value")
 		}
-		fn, ok := haveVal.(func(int, int) int)
+		fn, ok := hVal.(func(int, int) int)
 		if !ok {
 			t.Errorf("unexpected type")
 		}
@@ -346,13 +361,13 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(s).Index(0).Index(0)
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		if haveVal.(string) != "str" {
+		if hVal.(string) != "str" {
 			t.Errorf("expected correct field value")
 		}
 	})
@@ -363,13 +378,13 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(prv).FieldByName("vInt")
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		if haveVal.(int) != 42 {
+		if hVal.(int) != 42 {
 			t.Errorf("expected correct field value")
 		}
 	})
@@ -380,14 +395,14 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(prv).Field(0)
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		if have, ok := haveVal.(time.Duration); !ok || have != 42 {
-			t.Errorf(expMsg, time.Duration(42), haveVal)
+		if have, ok := hVal.(time.Duration); !ok || have != 42 {
+			t.Errorf(expMsg, time.Duration(42), hVal)
 		}
 	})
 
@@ -397,13 +412,13 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(prv).FieldByName("ptr")
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		have := haveVal.(*testcases.TVal)
+		have := hVal.(*testcases.TVal)
 		if have.Val != "abc" {
 			t.Errorf("expected correct field value")
 		}
@@ -415,13 +430,13 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(prv).FieldByName("sInt")
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		have := haveVal.([]int)
+		have := hVal.([]int)
 		if !reflect.DeepEqual(have, []int{1, 2, 3}) {
 			t.Errorf("expected correct field value")
 		}
@@ -433,13 +448,13 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(prv).FieldByName("aInt")
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		have := haveVal.([2]int)
+		have := hVal.([2]int)
 		if !reflect.DeepEqual(have, [...]int{1, 2}) {
 			t.Errorf("expected correct field value")
 		}
@@ -451,13 +466,13 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(prv).FieldByName("vMap")
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		have := haveVal.(map[int]int)
+		have := hVal.(map[int]int)
 		if !reflect.DeepEqual(have, map[int]int{1: 11, 2: 22}) {
 			t.Errorf("expected correct field value")
 		}
@@ -470,13 +485,13 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(prv).FieldByName("tim")
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		if !haveVal.(time.Time).Equal(tim) {
+		if !hVal.(time.Time).Equal(tim) {
 			t.Errorf("expected correct field value")
 		}
 	})
@@ -488,13 +503,13 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(prv).FieldByName("fn")
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		if Same(haveVal, fn) != true {
+		if Same(hVal, fn) != true {
 			t.Errorf("expected correct field value")
 		}
 	})
@@ -506,13 +521,13 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(prv).FieldByName("ch")
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		if Same(haveVal, ch) != true {
+		if Same(hVal, ch) != true {
 			t.Errorf("expected correct field value")
 		}
 	})
@@ -523,19 +538,19 @@ func Test_Value(t *testing.T) {
 		val := reflect.ValueOf(itf)
 
 		// --- When ---
-		haveVal, haveOK := Value(val)
+		hVal, hOK := Value(val)
 
 		// --- Then ---
-		if !haveOK {
+		if !hOK {
 			t.Error("expected success")
 		}
-		if Same(haveVal, itf) != true {
+		if Same(hVal, itf) != true {
 			t.Errorf("expected correct field value")
 		}
 	})
 }
 
-func Test_Value_tabular_success(t *testing.T) {
+func Test_Value_success_tabular(t *testing.T) {
 	chn := make(chan int)
 	m := make(map[string]int)
 	ptr := &testcases.TPtr{}
@@ -543,8 +558,8 @@ func Test_Value_tabular_success(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		in      any
-		wantVal any
+		in   any
+		wVal any
 	}{
 		{"nil", nil, nil},
 		{"bool - true", true, true},
@@ -581,13 +596,13 @@ func Test_Value_tabular_success(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			haveVal, haveOK := Value(reflect.ValueOf(tc.in))
+			hVal, hOK := Value(reflect.ValueOf(tc.in))
 
 			// --- Then ---
-			if !reflect.DeepEqual(tc.wantVal, haveVal) {
-				t.Errorf(expMsg, tc.wantVal, haveVal)
+			if !reflect.DeepEqual(tc.wVal, hVal) {
+				t.Errorf(expMsg, tc.wVal, hVal)
 			}
-			if !haveOK {
+			if !hOK {
 				t.Error("expected true")
 			}
 		})
@@ -654,34 +669,16 @@ func Test_Value_unexported_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have, haveOK := Value(tc.in)
+			have, hOK := Value(tc.in)
 
 			// --- Then ---
-			if !haveOK {
+			if !hOK {
 				t.Error("expected true")
 			}
 			if !reflect.DeepEqual(tc.want, have) {
 				t.Errorf(expMsg, tc.want, have)
 			}
 		})
-	}
-}
-
-func Test_Value_zeroReflectValue(t *testing.T) {
-	// --- Given ---
-	// Passing the zero reflect.Value{} directly exercises the invalid value
-	// path at the top of Value.
-	zero := reflect.Value{}
-
-	// --- When ---
-	haveVal, haveOK := Value(zero)
-
-	// --- Then ---
-	if haveVal != nil {
-		t.Error("expected nil value")
-	}
-	if !haveOK {
-		t.Error("expected true (zero reflect.Value is treated as nil)")
 	}
 }
 
@@ -693,9 +690,9 @@ func Test_ValueSimple_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		in      any
-		wantVal any
-		wantOK  bool
+		in   any
+		wVal any
+		wOK  bool
 	}{
 		{"bool - false", false, false, true},
 		{"bool - true", true, true, true},
@@ -729,14 +726,14 @@ func Test_ValueSimple_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			haveVal, haveOK := ValueSimple(reflect.ValueOf(tc.in))
+			hVal, hOK := ValueSimple(reflect.ValueOf(tc.in))
 
 			// --- Then ---
-			if tc.wantVal != haveVal {
-				t.Errorf(expMsg, tc.wantVal, haveVal)
+			if tc.wVal != hVal {
+				t.Errorf(expMsg, tc.wVal, hVal)
 			}
-			if tc.wantOK != haveOK {
-				t.Errorf(expMsg, tc.wantOK, haveOK)
+			if tc.wOK != hOK {
+				t.Errorf(expMsg, tc.wOK, hOK)
 			}
 		})
 	}

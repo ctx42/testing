@@ -20,20 +20,20 @@ func IsNil(have any) bool {
 		return true
 	}
 	val := reflect.ValueOf(have)
-	kind := val.Kind()
-	switch kind {
-	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map:
+	switch val.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer,
+		reflect.Slice, reflect.UnsafePointer:
+
 		return val.IsNil()
-	case reflect.Pointer, reflect.Slice, reflect.UnsafePointer:
-		return val.IsNil()
+
 	default:
 		return false
 	}
 }
 
-// WillPanic returns not empty stack trace if the passed function panicked when
-// executed and the value that was passed to panic. When a function does not
-// panic, it returns nil and empty stack.
+// WillPanic returns the value passed to panic and a non-empty stack trace if
+// fn panicked when executed. When fn does not panic, it returns nil and an
+// empty stack.
 func WillPanic(fn func()) (val any, stack string) {
 	defer func() {
 		if val = recover(); val != nil {
@@ -41,14 +41,16 @@ func WillPanic(fn func()) (val any, stack string) {
 		}
 	}()
 
-	fn() // Call the target function
+	fn()
 	return
 }
 
 // Same returns true when two generic pointers point to the same memory.
 //
-// It works with pointers to objects, slices, maps and functions. For arrays,
-// it always returns false.
+// It works with pointers to objects, slices, maps, channels and functions.
+// Functions are the same when they have the same code. For arrays, and for
+// untyped nil arguments, it always returns false; typed nil values of the
+// same type are the same.
 //
 //nolint:cyclop
 func Same(want, have any) bool {
@@ -75,7 +77,7 @@ func Same(want, have any) bool {
 		return same(wVal, hVal)
 	}
 
-	if wVal.Kind() != reflect.Pointer || hVal.Kind() != reflect.Pointer {
+	if wKnd != reflect.Pointer || hKnd != reflect.Pointer {
 		return false
 	}
 
@@ -88,8 +90,8 @@ func Same(want, have any) bool {
 	return want == have
 }
 
-// sameFunc returns true when arguments represent values for functions or
-// methods of the same type.
+// sameFunc returns true when arguments are functions of the same type with
+// the same code (or both without a name, e.g. nil).
 func sameFunc(want, have reflect.Value) bool {
 	if !want.IsValid() || !have.IsValid() {
 		return false
@@ -102,12 +104,7 @@ func sameFunc(want, have reflect.Value) bool {
 	fn0pc := runtime.FuncForPC(want.Pointer())
 	fn1pc := runtime.FuncForPC(have.Pointer())
 
-	wName := fn0pc.Name()
-	hName := fn1pc.Name()
-	if wName == "" && hName == "" {
-		return want.Type().AssignableTo(have.Type())
-	}
-	return wName == hName
+	return fn0pc.Name() == fn1pc.Name()
 }
 
 // same returns true if values represent pointers to the same memory.

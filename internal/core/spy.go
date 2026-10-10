@@ -10,10 +10,10 @@ import (
 )
 
 // T defines an interface capturing a subset of [testing.TB] methods, used to
-// test helper functions that accept `*testing.T` and provide reusable assertions
-// for test cases. Implemented by [Spy], it allows verification of interactions
-// between test helpers and `*testing.T` behavior without causing actual test
-// errors or failures.
+// test helper functions that accept `*testing.T` and provide reusable
+// assertions for test cases. Implemented by [Spy], it allows verification of
+// interactions between test helpers and `*testing.T` behavior without causing
+// actual test errors or failures.
 type T interface {
 	Error(args ...any)
 	Errorf(format string, args ...any)
@@ -23,10 +23,13 @@ type T interface {
 	Helper()
 }
 
+var _ T = (*Spy)(nil)
+
 // Spy is a testing utility that captures and tracks calls to error and failure
 // reporting methods, used to mock `*testing.T` when testing helper functions.
-// It logs calls to Error, Errorf, Fatal, and Fatalf, allowing verification of
-// test behavior without causing actual test failures.
+// It logs calls to [Spy.Error], [Spy.Errorf], [Spy.Fatal], and [Spy.Fatalf],
+// allowing verification of test behavior without causing actual test
+// failures.
 //
 // Spy is not safe for concurrent use.
 type Spy struct {
@@ -37,11 +40,11 @@ type Spy struct {
 }
 
 // FailNowMsg is the panic message used by [Spy.Fatal] and [Spy.Fatalf] so
-// helpers stop after a fatal path, matching [tester.Spy]. Real [testing.TB]
+// helpers stop after a fatal path, matching tester.Spy. Real [testing.TB]
 // uses runtime.Goexit rather than this string.
 const FailNowMsg = "FailNow was called directly"
 
-// NewSpy returns new instance of [Spy].
+// NewSpy returns a new instance of [Spy].
 func NewSpy() *Spy { return &Spy{} }
 
 // Capture turns on the collection of messages when Error, Errorf, Fatal, and
