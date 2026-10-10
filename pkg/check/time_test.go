@@ -152,6 +152,22 @@ func Test_Time(t *testing.T) {
 }
 
 func Test_Exact(t *testing.T) {
+	t.Run("error - same instant numeric offsets", func(t *testing.T) {
+		// --- Given ---
+		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.FixedZone("", 3600))
+		have := time.Date(2000, 1, 2, 4, 4, 5, 0, time.FixedZone("", 7200))
+
+		// --- When ---
+		err := Exact(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected timezones to be equal:\n" +
+			"  want: +01:00\n" +
+			"  have: +02:00"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("exactly", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
@@ -1198,8 +1214,10 @@ func Test_getTime(t *testing.T) {
 		affirm.Equal(t, true, have.IsZero())
 		affirm.Equal(t, "true", haveStr)
 		affirm.Equal(t, "", haveRep)
-		wMsg := "failed to parse time:\n" +
-			"  cause: not supported time type"
+		wMsg := "" +
+			"failed to parse time:\n" +
+			"  cause: not supported time type\n" +
+			"   type: bool"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.Equal(t, true, errors.Is(err, ErrTimeType))
 	})
@@ -1388,8 +1406,10 @@ func Test_getZone(t *testing.T) {
 		affirm.Nil(t, have)
 		affirm.Equal(t, "123", haveStr)
 		affirm.Equal(t, "", haveRep)
-		wMsg := "failed to parse timezone:\n" +
-			"  cause: not supported timezone type"
+		wMsg := "" +
+			"failed to parse timezone:\n" +
+			"  cause: not supported timezone type\n" +
+			"   type: int"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.Equal(t, true, errors.Is(err, ErrZoneType))
 	})
@@ -1419,7 +1439,8 @@ func Test_getDur(t *testing.T) {
 		affirm.Equal(t, "", haveRep)
 		wMsg := "" +
 			"failed to parse duration:\n" +
-			"  cause: not supported duration type"
+			"  cause: not supported duration type\n" +
+			"   type: bool"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.Equal(t, true, errors.Is(err, ErrDurType))
 	})
@@ -1438,7 +1459,8 @@ func Test_getDur(t *testing.T) {
 		wMsg := "" +
 			"failed to parse duration:\n" +
 			"  trail: type.field\n" +
-			"  cause: not supported duration type"
+			"  cause: not supported duration type\n" +
+			"   type: bool"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.Equal(t, true, errors.Is(err, ErrDurType))
 	})

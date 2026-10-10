@@ -212,6 +212,31 @@ func Test_SmallerOrEqual(t *testing.T) {
 }
 
 func Test_Delta(t *testing.T) {
+	t.Run("error - integers beyond float64 precision", func(t *testing.T) {
+		// --- When ---
+		err := Delta(int64(1<<60), 0, int64(1<<60+1))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected numbers to be within the given delta:\n" +
+			"        want: 1152921504606846976\n" +
+			"        have: 1152921504606846977\n" +
+			"  want delta: 0\n" +
+			"  have delta: 1"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - negative delta", func(t *testing.T) {
+		// --- When ---
+		err := Delta(1, -1, 1)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected non-negative delta:\n" +
+			"  delta: -1"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("success - delta less than expected", func(t *testing.T) {
 		// --- When ---
 		err := Delta(42.0, 0.11, 41.9)
@@ -323,6 +348,25 @@ func Test_DeltaSlice(t *testing.T) {
 }
 
 func Test_Epsilon(t *testing.T) {
+	t.Run("error - integers beyond float64 precision", func(t *testing.T) {
+		// --- When ---
+		err := Epsilon(int64(1<<60), 0, int64(1<<60+1))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+	})
+
+	t.Run("error - negative epsilon", func(t *testing.T) {
+		// --- When ---
+		err := Epsilon(1, -1, 1)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected non-negative epsilon:\n" +
+			"  epsilon: -1"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("success - epsilon less then expected", func(t *testing.T) {
 		// --- When ---
 		err := Epsilon(42.0, 0.11, 41.9)

@@ -4,7 +4,10 @@
 package check
 
 import (
+	"bytes"
 	"encoding/json"
+	"math/big"
+	"strconv"
 
 	"github.com/ctx42/testing/pkg/notice"
 )
@@ -22,16 +25,16 @@ type Text interface {
 //
 //	check.JSON(`{"hello": "world"}`, `{"foo": "bar"}`)
 func JSON[W, H Text](want W, have H, opts ...any) error {
-	var wantItf, haveItf any
-
 	ops := DefaultOptions(opts...)
-	if err := json.Unmarshal(toBytes(want), &wantItf); err != nil {
+	wantItf, err := unmarshalJSON(toBytes(want))
+	if err != nil {
 		msg := notice.New("did not expect the unmarshalling error").
 			Append("argument", "want").
 			Append("error", "%s", err)
 		return AddRows(ops, msg)
 	}
-	if err := json.Unmarshal(toBytes(have), &haveItf); err != nil {
+	haveItf, err := unmarshalJSON(toBytes(have))
+	if err != nil {
 		msg := notice.New("did not expect the unmarshalling error").
 			Append("argument", "have").
 			Append("error", "%s", err)
@@ -47,6 +50,56 @@ func JSON[W, H Text](want W, have H, opts ...any) error {
 		return AddRows(ops, msg)
 	}
 	return nil
+}
+
+// unmarshalJSON decodes data keeping numbers as [json.Number] in canonical
+// form (see [canonicalJSON]), so integers too large for float64 are compared
+// exactly.
+func unmarshalJSON(data []byte) (any, error) {
+	var val any
+	if err := json.Unmarshal(data, &val); err != nil {
+		return nil, err
+	}
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.UseNumber()
+	if err := dec.Decode(&val); err != nil {
+		return nil, err
+	}
+	return canonicalJSON(val), nil
+}
+
+// canonicalJSON rewrites every [json.Number] in val so equal numbers have
+// equal text: integral values as exact integers ("1.0" and "1e2" become "1"
+// and "100"), others as the shortest float64 representation.
+func canonicalJSON(val any) any {
+	switch v := val.(type) {
+	case map[string]any:
+		for key, elem := range v {
+			v[key] = canonicalJSON(elem)
+		}
+		return v
+
+	case []any:
+		for i, elem := range v {
+			v[i] = canonicalJSON(elem)
+		}
+		return v
+
+	case json.Number:
+		flt, err := strconv.ParseFloat(string(v), 64)
+		if err != nil {
+			return v
+		}
+		// The float64 is finite here, so the exponent is bounded.
+		rat, ok := new(big.Rat).SetString(string(v))
+		if ok && rat.IsInt() {
+			return json.Number(rat.Num().String())
+		}
+		return json.Number(strconv.FormatFloat(flt, 'g', -1, 64))
+
+	default:
+		return val
+	}
 }
 
 // toBytes converts a string or []byte value to []byte.

@@ -138,7 +138,22 @@ func Exact(want, have any, opts ...any) error {
 		return AddRows(ops, msg)
 	}
 
-	return Zone(wTim.Location(), hTim.Location(), opts...)
+	if err := Zone(wTim.Location(), hTim.Location(), opts...); err != nil {
+		return err
+	}
+
+	// Zones with equal names (e.g. the unnamed zones time.Parse creates for
+	// numeric offsets) can still differ in offset.
+	_, wOff := wTim.Zone()
+	_, hOff := hTim.Zone()
+	if wOff != hOff {
+		ops := DefaultOptions(opts...)
+		msg := notice.New("expected timezones to be equal").
+			Want("%s", wTim.Format("-07:00")).
+			Have("%s", hTim.Format("-07:00"))
+		return AddRows(ops, msg)
+	}
+	return nil
 }
 
 // Before checks that "date" is before "mark".
@@ -483,6 +498,7 @@ func getTime(tim any, opts ...any) (time.Time, string, timeRep, error) {
 		str := fmt.Sprintf("%v", val)
 		msg := notice.New("failed to parse time").
 			Append("cause", "%s", ErrTimeType).
+			Append("type", "%T", val).
 			Wrap(ErrTimeType)
 		return time.Time{}, str, "", AddRows(ops, msg)
 	}
@@ -524,6 +540,7 @@ func getZone(zone any, opts ...any) (*time.Location, string, zoneRep, error) {
 		ops := DefaultOptions(opts...)
 		msg := notice.New("failed to parse timezone").
 			Append("cause", "%s", ErrZoneType).
+			Append("type", "%T", val).
 			Wrap(ErrZoneType)
 		return nil, str, "", AddRows(ops, msg)
 	}
@@ -565,6 +582,7 @@ func getDur(dur any, opts ...any) (time.Duration, string, durRep, error) {
 		ops := DefaultOptions(opts...)
 		msg := notice.New("failed to parse duration").
 			Append("cause", "%s", ErrDurType).
+			Append("type", "%T", val).
 			Wrap(ErrDurType)
 		return 0, str, "", AddRows(ops, msg)
 	}

@@ -380,7 +380,10 @@ func Test_Within(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
-		wMsg := "[want] failed to parse time:\n  cause: not supported time type"
+		wMsg := "" +
+			"[want] failed to parse time:\n" +
+			"  cause: not supported time type\n" +
+			"   type: bool"
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -397,7 +400,10 @@ func Test_Within(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFail()
-		wMsg := "[have] failed to parse time:\n  cause: not supported time type"
+		wMsg := "" +
+			"[have] failed to parse time:\n" +
+			"  cause: not supported time type\n" +
+			"   type: bool"
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 

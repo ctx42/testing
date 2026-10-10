@@ -73,7 +73,9 @@ func SameType[T any](want T, have any, opts ...any) (T, error) {
 	wTyp := reflect.TypeOf(want)
 	hTyp := reflect.TypeOf(have)
 	if wTyp == hTyp {
-		return have.(T), nil // nolint: forcetypeassert
+		// The assertion fails only for nil interface values, giving zero T.
+		val, _ := have.(T)
+		return val, nil
 	}
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected same types").Want("%T", want).Have("%T", have)
@@ -129,14 +131,17 @@ func Type(target, src any, opts ...any) error {
 // Fields checks that a struct (or pointer to struct) "s" has exactly "want"
 // number of fields.
 func Fields(want int, s any, opts ...any) error {
-	sVal := reflect.Indirect(reflect.ValueOf(s))
+	sTyp := reflect.TypeOf(s)
+	if sTyp != nil && sTyp.Kind() == reflect.Pointer {
+		sTyp = sTyp.Elem()
+	}
 	ops := DefaultOptions(opts...)
-	if sVal.Kind() != reflect.Struct {
+	if sTyp == nil || sTyp.Kind() != reflect.Struct {
 		msg := notice.New("expected struct type").Append("got type", "%T", s)
 		return AddRows(ops, msg)
 	}
 
-	have := sVal.Type().NumField()
+	have := sTyp.NumField()
 	if want == have {
 		return nil
 	}

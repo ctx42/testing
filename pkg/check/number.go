@@ -6,6 +6,8 @@ package check
 import (
 	"fmt"
 	"math"
+	"math/big"
+	"reflect"
 	"strconv"
 
 	"github.com/ctx42/testing/internal/constraints"
@@ -81,20 +83,28 @@ func Delta[T, E constraints.Number](
 	opts ...any,
 ) error {
 
-	fWant := float64(want)
-	fHave := float64(have)
+	ops := DefaultOptions(opts...)
 	fwDelta := float64(delta)
-	fhDelta := math.Abs(fWant - fHave)
-	if fwDelta >= fhDelta {
+	if fwDelta < 0 {
+		msg := notice.New("expected non-negative delta").
+			Append("delta", "%s", formatFloat(fwDelta))
+		return AddRows(ops, msg)
+	}
+
+	wantFmt, haveFmt, hDeltaFmt, pass := deltaInt(want, have, fwDelta)
+	if wantFmt == "" {
+		fWant := float64(want)
+		fHave := float64(have)
+		fhDelta := math.Abs(fWant - fHave)
+		pass = fwDelta >= fhDelta
+		wantFmt, haveFmt = formatFloat(fWant), formatFloat(fHave)
+		hDeltaFmt = formatFloat(fhDelta)
+	}
+	if pass {
 		return nil
 	}
 
-	ops := DefaultOptions(opts...)
-
-	wantFmt := strconv.FormatFloat(fWant, 'f', -1, 64)
-	haveFmt := strconv.FormatFloat(fHave, 'f', -1, 64)
-	wDeltaFmt := strconv.FormatFloat(fwDelta, 'f', -1, 64)
-	hDeltaFmt := strconv.FormatFloat(fhDelta, 'f', -1, 64)
+	wDeltaFmt := formatFloat(fwDelta)
 	msg := notice.New("expected numbers to be within the given delta").
 		Want("%s", wantFmt).
 		Have("%s", haveFmt).
@@ -152,29 +162,37 @@ func Epsilon[T, E constraints.Number](
 	opts ...any,
 ) error {
 
-	fWant := float64(want)
-	fHave := float64(have)
+	ops := DefaultOptions(opts...)
 	fwEpsilon := float64(epsilon)
-	var fhEpsilon float64
-	if fWant == 0 {
-		// Relative error is undefined at zero; both zero is a match.
-		if fHave == 0 {
-			return nil
-		}
-		fhEpsilon = math.Inf(1)
-	} else {
-		fhEpsilon = math.Abs(fWant-fHave) / math.Abs(fWant)
+	if fwEpsilon < 0 {
+		msg := notice.New("expected non-negative epsilon").
+			Append("epsilon", "%s", formatFloat(fwEpsilon))
+		return AddRows(ops, msg)
 	}
-	if fwEpsilon >= fhEpsilon {
+
+	wantFmt, haveFmt, hEpsilonFmt, pass := epsilonInt(want, have, fwEpsilon)
+	if wantFmt == "" {
+		fWant := float64(want)
+		fHave := float64(have)
+		var fhEpsilon float64
+		if fWant == 0 {
+			// Relative error is undefined at zero; both zero is a match.
+			fhEpsilon = math.Inf(1)
+			if fHave == 0 {
+				fhEpsilon = 0
+			}
+		} else {
+			fhEpsilon = math.Abs(fWant-fHave) / math.Abs(fWant)
+		}
+		pass = fwEpsilon >= fhEpsilon
+		wantFmt, haveFmt = formatFloat(fWant), formatFloat(fHave)
+		hEpsilonFmt = formatFloat(fhEpsilon)
+	}
+	if pass {
 		return nil
 	}
 
-	ops := DefaultOptions(opts...)
-
-	wantFmt := strconv.FormatFloat(fWant, 'f', -1, 64)
-	haveFmt := strconv.FormatFloat(fHave, 'f', -1, 64)
-	wEpsilonFmt := strconv.FormatFloat(fwEpsilon, 'f', -1, 64)
-	hEpsilonFmt := strconv.FormatFloat(fhEpsilon, 'f', -1, 64)
+	wEpsilonFmt := formatFloat(fwEpsilon)
 	msg := notice.New("expected numbers to be within the given epsilon").
 		Want("%s", wantFmt).
 		Have("%s", haveFmt).
@@ -324,4 +342,76 @@ func NotDecreasing[T constraints.Ordered](seq []T, opts ...any) error {
 	msg := notice.New("expected a not decreasing sequence").
 		Append("mode", "%s", mode)
 	return AddRows(ops, msg)
+}
+
+// formatFloat formats f with the minimal number of digits.
+func formatFloat(f float64) string {
+	return strconv.FormatFloat(f, 'f', -1, 64)
+}
+
+// intAbsDiff returns |a-b| computed exactly when T is an integer type, and
+// false for floating-point types.
+func intAbsDiff[T constraints.Number](a, b T) (*big.Int, bool) {
+	aVal, bVal := reflect.ValueOf(a), reflect.ValueOf(b)
+	var aInt, bInt big.Int
+	switch aVal.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		aInt.SetInt64(aVal.Int())
+		bInt.SetInt64(bVal.Int())
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32,
+		reflect.Uint64, reflect.Uintptr:
+		aInt.SetUint64(aVal.Uint())
+		bInt.SetUint64(bVal.Uint())
+
+	default:
+		return nil, false
+	}
+	diff := new(big.Int).Sub(&aInt, &bInt)
+	return diff.Abs(diff), true
+}
+
+// deltaInt checks |want-have| <= delta exactly for integer types. It returns
+// the formatted want, have and difference, and whether the check passed. For
+// floating-point types, or a NaN delta, the formatted values are empty.
+func deltaInt[T constraints.Number](
+	want, have T,
+	delta float64,
+) (string, string, string, bool) {
+
+	diff, ok := intAbsDiff(want, have)
+	if !ok || math.IsNaN(delta) {
+		return "", "", "", false
+	}
+	pass := big.NewFloat(delta).Cmp(new(big.Float).SetInt(diff)) >= 0
+	return fmt.Sprint(want), fmt.Sprint(have), diff.String(), pass
+}
+
+// epsilonInt checks |want-have|/|want| <= epsilon exactly for integer types.
+// It returns the formatted want, have and relative error, and whether the
+// check passed. For floating-point types, or a NaN epsilon, the formatted
+// values are empty.
+func epsilonInt[T constraints.Number](
+	want, have T,
+	epsilon float64,
+) (string, string, string, bool) {
+
+	diff, ok := intAbsDiff(want, have)
+	if !ok || math.IsNaN(epsilon) {
+		return "", "", "", false
+	}
+	wAbs, _ := intAbsDiff(want, 0)
+	wantFmt, haveFmt := fmt.Sprint(want), fmt.Sprint(have)
+	if wAbs.Sign() == 0 {
+		// Relative error is undefined at zero; both zero is a match.
+		if diff.Sign() == 0 {
+			return wantFmt, haveFmt, "0", true
+		}
+		return wantFmt, haveFmt, formatFloat(math.Inf(1)), false
+	}
+	rel := new(big.Float).SetPrec(256).SetInt(diff)
+	rel.Quo(rel, new(big.Float).SetPrec(256).SetInt(wAbs))
+	pass := big.NewFloat(epsilon).Cmp(rel) >= 0
+	relFlt, _ := rel.Float64()
+	return wantFmt, haveFmt, formatFloat(relFlt), pass
 }

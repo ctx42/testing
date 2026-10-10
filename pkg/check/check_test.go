@@ -116,6 +116,15 @@ func Test_Count_error_tabular(t *testing.T) {
 }
 
 func Test_SameType(t *testing.T) {
+	t.Run("nil interface values", func(t *testing.T) {
+		// --- When ---
+		have, err := SameType[error](nil, nil)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.Nil(t, have)
+	})
+
 	t.Run("additional message rows added", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
@@ -397,6 +406,17 @@ func Test_Type(t *testing.T) {
 }
 
 func Test_Fields(t *testing.T) {
+	t.Run("nil pointer to struct", func(t *testing.T) {
+		// --- Given ---
+		var s *struct{ A, B int }
+
+		// --- When ---
+		err := Fields(2, s)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
 	t.Run("zero fields", func(t *testing.T) {
 		// --- Given ---
 		s := struct{}{}
