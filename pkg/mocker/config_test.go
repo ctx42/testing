@@ -105,6 +105,22 @@ func Test_WithTesterAlias(t *testing.T) {
 }
 
 func Test_newConfig(t *testing.T) {
+	t.Run("error - invalid tester alias", func(t *testing.T) {
+		// --- Given ---
+		opts := []Option{
+			WithSrc("testdata/cases"),
+			WithTgt("testdata/golden"),
+			WithTesterAlias("."),
+		}
+
+		// --- When ---
+		have, err := newConfig("Case00", opts...)
+
+		// --- Then ---
+		assert.ErrorEqual(t, `invalid tester alias: "."`, err)
+		assert.Zero(t, have)
+	})
+
 	t.Run("without options", func(t *testing.T) {
 		// --- Given ---
 		wd := must.Value(os.Getwd())
@@ -269,6 +285,19 @@ func Test_newConfig(t *testing.T) {
 }
 
 func Test_Config_create(t *testing.T) {
+	t.Run("error - relative target path", func(t *testing.T) {
+		// --- Given ---
+		cfg := Config{tgtFilename: "relative.go"}
+
+		// --- When ---
+		have, err := cfg.create()
+
+		// --- Then ---
+		wMsg := "target file path is not absolute: relative.go"
+		assert.ErrorEqual(t, wMsg, err)
+		assert.Nil(t, have.tgtOut)
+	})
+
 	t.Run("buffer already set", func(t *testing.T) {
 		// --- Given ---
 		buf := &bytes.Buffer{}

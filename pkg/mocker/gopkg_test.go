@@ -492,6 +492,20 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 }
 
 func Test_gopkg_parse(t *testing.T) {
+	t.Run("error - parse error is not cached", func(t *testing.T) {
+		// --- Given ---
+		dir := filepath.Join(must.Value(os.Getwd()), "testdata/broken")
+		pkg := &gopkg{pkgDir: dir}
+		_ = pkg.parse()
+
+		// --- When ---
+		err := pkg.parse()
+
+		// --- Then ---
+		assert.ErrorIs(t, ErrAstParse, err)
+		assert.Nil(t, pkg.files)
+	})
+
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/ignored")
@@ -502,9 +516,8 @@ func Test_gopkg_parse(t *testing.T) {
 
 		// --- Then ---
 		assert.NoError(t, err)
-		assert.Len(t, 2, pkg.files)
+		assert.Len(t, 1, pkg.files)
 		assert.Equal(t, filepath.Join(dir, "pkg.go"), pkg.files[0].path)
-		assert.Equal(t, filepath.Join(dir, "with_main.go"), pkg.files[1].path)
 	})
 
 	t.Run("parses files only once", func(t *testing.T) {
@@ -512,12 +525,16 @@ func Test_gopkg_parse(t *testing.T) {
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/ignored")
 		pkg := &gopkg{pkgDir: dir}
 
+		must.Nil(pkg.parse())
+		first := pkg.files[0]
+
 		// --- When ---
-		must.Nil(pkg.parse())
-		must.Nil(pkg.parse())
+		err := pkg.parse()
 
 		// --- Then ---
-		assert.Len(t, 2, pkg.files)
+		assert.NoError(t, err)
+		assert.Len(t, 1, pkg.files)
+		assert.Same(t, first, pkg.files[0])
 	})
 
 	t.Run("error - unknown directory", func(t *testing.T) {
@@ -878,6 +895,33 @@ func Test_gopkg_genImport_tabular(t *testing.T) {
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)
+		})
+	}
+}
+
+func Test_modSubPath_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		mod  string
+		pkg  string
+		sub  string
+		isIn bool
+	}{
+		{"module root", "example.com/foo", "example.com/foo", ".", true},
+		{"sub package", "example.com/foo", "example.com/foo/x/y", "x/y", true},
+		{"name prefix", "example.com/foo", "example.com/foobar/x", "", false},
+		{"other module", "example.com/foo", "example.com/bar", "", false},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have, ok := modSubPath(tc.mod, tc.pkg)
+
+			// --- Then ---
+			assert.Equal(t, tc.sub, have)
+			assert.Equal(t, tc.isIn, ok)
 		})
 	}
 }

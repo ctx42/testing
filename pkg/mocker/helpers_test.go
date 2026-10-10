@@ -408,6 +408,7 @@ func Test_toLowerSnakeCase_tabular(t *testing.T) {
 		{"TestItf", "test_itf"},
 		{"test", "test"},
 		{"TEST", "test"},
+		{"ŻółwMock", "żółw_mock"},
 	}
 
 	for _, tc := range tt {
@@ -429,10 +430,7 @@ func Test_findSources(t *testing.T) {
 
 		// --- Then ---
 		assert.NoError(t, err)
-		want := []string{
-			filepath.Join(dir, "pkg.go"),
-			filepath.Join(dir, "with_main.go"),
-		}
+		want := []string{filepath.Join(dir, "pkg.go")}
 		assert.Equal(t, want, have)
 	})
 

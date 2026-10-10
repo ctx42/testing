@@ -34,3 +34,12 @@ type CaseAliasClash interface{ Dup(v pkga.D1) xa.A1 }
 
 // Interface embedded through an aliased import, using its local types.
 type CaseEmbedAliased interface{ xa.CaseA1 }
+
+// Empty struct type in a channel.
+type CaseEmptyStruct interface{ Done() <-chan struct{} }
+
+// Embedded predeclared error interface.
+type CaseEmbedError interface {
+	error
+	Code() int
+}

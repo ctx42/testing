@@ -6,6 +6,7 @@ package mocker
 import (
 	"bytes"
 	"fmt"
+	"go/build"
 	"os"
 	"path"
 	"path/filepath"
@@ -114,12 +115,12 @@ func sortImports(ips []*gopkg) []*gopkg {
 		}
 	}
 
-	apn := assumedPackageName
+	// Sorted by path, as goimports does.
 	sort.SliceStable(std, func(i, j int) bool {
-		return apn(std[i].pkgPath) < apn(std[j].pkgPath)
+		return std[i].pkgPath < std[j].pkgPath
 	})
 	sort.SliceStable(reg, func(i, j int) bool {
-		return apn(reg[i].pkgPath) < apn(reg[j].pkgPath)
+		return reg[i].pkgPath < reg[j].pkgPath
 	})
 
 	if len(reg) > 0 {
@@ -316,9 +317,8 @@ func toLowerSnakeCase(camel string) string {
 	const upper = 2
 
 	var prev int
-	for i := 0; i < len(camel); i++ {
+	for _, r := range camel {
 		curr := lower
-		r := rune(camel[i])
 		if unicode.IsUpper(r) {
 			curr = upper
 		}
@@ -355,6 +355,11 @@ func findSources(dir string) ([]string, error) {
 			continue
 		}
 		if strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		// Skip files the build excludes: build constraints, GOOS and GOARCH
+		// file name suffixes, and names starting with "_" or ".".
+		if ok, err := build.Default.MatchFile(dir, name); err != nil || !ok {
 			continue
 		}
 		sources = append(sources, filepath.Join(dir, name))

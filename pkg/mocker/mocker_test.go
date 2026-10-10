@@ -25,6 +25,24 @@ func Test_New(t *testing.T) {
 }
 
 func Test_Mocker_Generate(t *testing.T) {
+	t.Run("zero value Mocker", func(t *testing.T) {
+		// --- Given ---
+		buf := &bytes.Buffer{}
+		opts := []Option{
+			WithSrc("testdata/cases"),
+			WithTgt("testdata/golden"),
+			WithTgtOutput(buf),
+		}
+		var mck Mocker
+
+		// --- When ---
+		err := mck.Generate("Case54", opts...)
+
+		// --- Then ---
+		assert.NoError(t, err)
+		assert.True(t, buf.Len() > 0)
+	})
+
 	t.Run("error - closing the output", func(t *testing.T) {
 		// --- Given ---
 		out := &failCloser{}
@@ -264,6 +282,8 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 		{"CaseArrayLen", "CaseArrayLen", "cases", "golden"},
 		{"CaseAliasClash", "CaseAliasClash", "cases", "golden"},
 		{"CaseEmbedAliased", "CaseEmbedAliased", "cases", "golden"},
+		{"CaseEmptyStruct", "CaseEmptyStruct", "cases", "golden"},
+		{"CaseEmbedError", "CaseEmbedError", "cases", "golden"},
 	}
 
 	for _, tc := range tt {

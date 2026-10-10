@@ -81,12 +81,14 @@ func (pkg *gopkg) resolve() error {
 	if pkg.resolved {
 		return nil
 	}
-	if err := pkg.getPkgInfo(); err == nil {
+	pkgErr := pkg.getPkgInfo()
+	if pkgErr == nil {
 		pkg.resolved = true
 		return nil
 	}
 	if err := pkg.getModInfo(); err != nil {
-		return err
+		// Keep the go list output, it often names the actual problem.
+		return errors.Join(pkgErr, err)
 	}
 	pkg.resolved = true
 	return nil
@@ -154,7 +156,7 @@ func (pkg *gopkg) getModInfo() (err error) {
 		Dir  string
 	}{}
 
-	var i int
+	var i, bestLen int
 	dec := json.NewDecoder(bytes.NewReader(out))
 	for dec.More() {
 		i++
@@ -178,31 +180,23 @@ func (pkg *gopkg) getModInfo() (err error) {
 					pkg.pkgDir = filepath.Join(mod.Dir, sub)
 					break
 				}
-			} else if strings.HasPrefix(pkg.pkgPath, pkg.modPath) {
-				if sub, err := filepath.Rel(mod.Path, pkg.pkgPath); err == nil {
-					pkg.pkgName = assumedPackageName(pkg.pkgPath)
-					pkg.pkgPath = filepath.Join(mod.Path, sub)
-					pkg.pkgDir = filepath.Join(mod.Dir, sub)
-					break
-				}
+			} else if sub, ok := modSubPath(mod.Path, pkg.pkgPath); ok {
+				pkg.pkgName = assumedPackageName(pkg.pkgPath)
+				pkg.pkgDir = filepath.Join(mod.Dir, filepath.FromSlash(sub))
+				break
 			}
 			continue
 		}
 
-		if mod.Path == pkg.pkgPath {
+		// Of nested modules, the longest module path containing the package
+		// is the one providing it.
+		if sub, ok := modSubPath(mod.Path, pkg.pkgPath); ok &&
+			len(mod.Path) > bestLen {
+
+			bestLen = len(mod.Path)
 			pkg.pkgName = assumedPackageName(pkg.pkgPath)
-			pkg.pkgDir = mod.Dir
-			break
+			pkg.pkgDir = filepath.Join(mod.Dir, filepath.FromSlash(sub))
 		}
-
-		if strings.HasPrefix(pkg.pkgPath, mod.Path+"/") {
-			if sub, err := filepath.Rel(mod.Path, pkg.pkgPath); err == nil {
-				pkg.pkgName = assumedPackageName(pkg.pkgPath)
-				pkg.pkgDir = filepath.Join(mod.Dir, sub)
-				break
-			}
-		}
-
 	}
 
 	if !pkg.isValid() {
@@ -224,15 +218,17 @@ func (pkg *gopkg) parse() error {
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrUnkPkg, err)
 	}
-	pkg.fset = token.NewFileSet()
-	pkg.files = make([]*file, 0, len(names))
+	// Set the fields only on success so a failed parse is not cached.
+	fset := token.NewFileSet()
+	files := make([]*file, 0, len(names))
 	for _, name := range names {
-		astFil, err := parser.ParseFile(pkg.fset, name, nil, 0)
+		astFil, err := parser.ParseFile(fset, name, nil, 0)
 		if err != nil {
 			return fmt.Errorf("%w: %w", ErrAstParse, err)
 		}
-		pkg.files = append(pkg.files, &file{path: name, ast: astFil})
+		files = append(files, &file{path: name, ast: astFil})
 	}
+	pkg.fset, pkg.files = fset, files
 	return nil
 }
 
@@ -336,4 +332,16 @@ func (pkg *gopkg) genImport() string {
 		code = pkg.alias + " " + code
 	}
 	return code
+}
+
+// modSubPath returns the path of the package pkgPath inside the module
+// modPath, using slashes, and true when the module contains the package.
+func modSubPath(modPath, pkgPath string) (string, bool) {
+	if pkgPath == modPath {
+		return ".", true
+	}
+	if sub, ok := strings.CutPrefix(pkgPath, modPath+"/"); ok {
+		return sub, true
+	}
+	return "", false
 }

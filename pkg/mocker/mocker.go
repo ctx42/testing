@@ -65,8 +65,9 @@ var (
 
 // Mocker is the main type for generating interface mocks.
 //
-// Use [New] to create an instance, then call [Generate] (or configure via
-// options) to produce mock code for one or more interfaces.
+// Use [New] to create an instance, then call [Mocker.Generate] (or configure
+// via options) to produce mock code for one or more interfaces. A Mocker
+// caches resolved packages and is not safe for concurrent use.
 //
 // Most users can use the package-level [Generate] convenience function.
 type Mocker struct {
@@ -82,6 +83,9 @@ func New() *Mocker { return &Mocker{res: &resolver{}} }
 // See the package [README] and [examples_test.go] for detailed usage and
 // configuration options.
 func (mck *Mocker) Generate(name string, opts ...Option) error {
+	if mck.res == nil {
+		mck.res = &resolver{} // Zero value Mocker.
+	}
 	cfg, err := newConfig(name, opts...)
 	if err != nil {
 		return err
@@ -93,7 +97,7 @@ func (mck *Mocker) Generate(name string, opts ...Option) error {
 		return err
 	}
 	if len(itf.methods) == 0 {
-		return ErrNoMethods
+		return fmt.Errorf("%w: %s", ErrNoMethods, name)
 	}
 
 	buf := bytes.NewBuffer(make([]byte, 0, 10*1024))
@@ -203,6 +207,11 @@ func (mck *Mocker) parseItf(cfg Config, fld *ast.Field) ([]*method, error) {
 
 		cfg.srcName = v.Name
 		itf, err := mck.run(cfg)
+		if errors.Is(err, ErrUnkType) && v.Name == "error" {
+			// The predeclared error interface.
+			ret := argument{typ: "string"}
+			return []*method{{name: "Error", rets: []argument{ret}}}, nil
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -450,8 +459,14 @@ func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 		if v.Methods != nil && len(v.Methods.List) == 0 {
 			return expression{value: "any"}, nil
 		}
+
+	case *ast.StructType:
+		if v.Fields == nil || len(v.Fields.List) == 0 {
+			return expression{value: "struct{}"}, nil
+		}
 	}
-	return expression{}, ErrAstParse
+	format := "%w: unsupported type expression %T"
+	return expression{}, fmt.Errorf(format, ErrAstParse, e)
 }
 
 // genConstructor generates code for the mock constructor.

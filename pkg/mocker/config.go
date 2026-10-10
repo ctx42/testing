@@ -5,7 +5,9 @@ package mocker
 
 import (
 	"errors"
+	"fmt"
 	"go/ast"
+	"go/token"
 	"io"
 	"os"
 	"path/filepath"
@@ -51,8 +53,10 @@ func WithTgtOutput(w io.Writer) Option {
 	return func(cfg *Config) { cfg.tgtOut = w }
 }
 
-// WithTesterAlias sets a custom alias for the testing/tester import in the
-// generated file. Defaults to "_tester".
+// WithTesterAlias sets the alias for the tester import in the generated file.
+// An empty alias selects "_tester". Without this option the import is not
+// aliased and the package name "tester" is used. The alias must be a valid
+// identifier other than "_".
 func WithTesterAlias(alias string) Option {
 	if alias == "" {
 		alias = "_tester"
@@ -118,6 +122,12 @@ func newConfig(name string, opts ...Option) (Config, error) {
 		cfg.tgtName = cfg.srcName + "Mock"
 	}
 
+	if alias := cfg.testerAlias; alias != "" &&
+		(!token.IsIdentifier(alias) || alias == "_") {
+
+		return Config{}, fmt.Errorf("invalid tester alias: %q", alias)
+	}
+
 	if cfg.tgtOut != nil {
 		if cfg.tgtFilename != "" {
 			msg := "cannot use both WithTgtOutput and WithTgtFilename options"
@@ -145,8 +155,12 @@ func newConfig(name string, opts ...Option) (Config, error) {
 // Call only after the mock source is fully generated so a prior failure cannot
 // wipe an existing file.
 func (cfg Config) create() (Config, error) {
-	if cfg.tgtOut != nil || !filepath.IsAbs(cfg.tgtFilename) {
+	if cfg.tgtOut != nil {
 		return cfg, nil
+	}
+	if !filepath.IsAbs(cfg.tgtFilename) {
+		format := "target file path is not absolute: %s"
+		return cfg, fmt.Errorf(format, cfg.tgtFilename)
 	}
 	fName := cfg.tgtFilename
 	fMode := os.O_RDWR | os.O_CREATE | os.O_TRUNC
