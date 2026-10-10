@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ctx42/testing/internal/tstmod"
@@ -56,7 +57,7 @@ func Test_Mocker_Generate(t *testing.T) {
 		err := New().Generate("Case00", opts...)
 
 		// --- Then ---
-		assert.ErrorEqual(t, "close failed", err)
+		assert.ErrorEqual(t, "Case00: writing the mock: close failed", err)
 		assert.True(t, out.Len() > 0)
 	})
 
@@ -114,6 +115,41 @@ func Test_Mocker_Generate(t *testing.T) {
 		assert.ErrorEqual(t, "interface name is required for mocking", err)
 	})
 
+	t.Run("error - source package not found", func(t *testing.T) {
+		// --- Given ---
+		opts := []Option{
+			WithTgtOutput(&bytes.Buffer{}), // Do not create the output file.
+			WithSrc("example.com/does/not/exist"),
+		}
+		mck := New()
+
+		// --- When ---
+		err := mck.Generate("Itf", opts...)
+
+		// --- Then ---
+		assert.ErrorIs(t, ErrUnkPkg, err)
+		wMsg := "Itf: source package example.com/does/not/exist: "
+		assert.True(t, strings.HasPrefix(err.Error(), wMsg))
+	})
+
+	t.Run("error - target package not found", func(t *testing.T) {
+		// --- Given ---
+		opts := []Option{
+			WithTgtOutput(&bytes.Buffer{}), // Do not create the output file.
+			WithSrc("testdata/cases"),
+			WithTgt("example.com/does/not/exist"),
+		}
+		mck := New()
+
+		// --- When ---
+		err := mck.Generate("Case00", opts...)
+
+		// --- Then ---
+		assert.ErrorIs(t, ErrUnkPkg, err)
+		wMsg := "Case00: target package example.com/does/not/exist: "
+		assert.True(t, strings.HasPrefix(err.Error(), wMsg))
+	})
+
 	t.Run("error - unknown interface", func(t *testing.T) {
 		// --- Given ---
 		opts := []Option{
@@ -126,6 +162,10 @@ func Test_Mocker_Generate(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkType, err)
+		wMsg := "" +
+			"Unknown: type not found: Unknown in " +
+			"github.com/ctx42/testing/pkg/mocker"
+		assert.ErrorEqual(t, wMsg, err)
 	})
 
 	t.Run("error - not an interface", func(t *testing.T) {

@@ -79,11 +79,24 @@ type Mocker struct {
 func New() *Mocker { return &Mocker{res: &resolver{}} }
 
 // Generate creates a mock implementation for the specified interface name and
-// writes it to the configured output.
+// writes it to the configured output. Returned errors start with the
+// interface name and wrap the package's sentinel errors.
 //
 // See the package [README] and [examples_test.go] for detailed usage and
 // configuration options.
 func (mck *Mocker) Generate(name string, opts ...Option) error {
+	if err := mck.generate(name, opts...); err != nil {
+		if name == "" {
+			return err
+		}
+		return fmt.Errorf("%s: %w", name, err)
+	}
+	return nil
+}
+
+// generate implements [Mocker.Generate] without naming the interface in the
+// returned errors.
+func (mck *Mocker) generate(name string, opts ...Option) error {
 	if mck.res == nil {
 		mck.res = &resolver{} // Zero value Mocker.
 	}
@@ -98,7 +111,7 @@ func (mck *Mocker) Generate(name string, opts ...Option) error {
 		return err
 	}
 	if len(itf.methods) == 0 {
-		return fmt.Errorf("%w: %s", ErrNoMethods, name)
+		return ErrNoMethods
 	}
 
 	buf := bytes.NewBuffer(make([]byte, 0, 10*1024))
@@ -136,7 +149,10 @@ func (mck *Mocker) Generate(name string, opts ...Option) error {
 		// A failed close may mean the written data never reached the file.
 		err = errors.Join(err, c.Close())
 	}
-	return err
+	if err != nil {
+		return fmt.Errorf("writing the mock: %w", err)
+	}
+	return nil
 }
 
 // run runs mocker for a given configuration without generating code for the

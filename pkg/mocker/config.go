@@ -114,14 +114,16 @@ func newConfig(name string, opts ...Option) (Config, error) {
 	srcWd, cfg.srcDirOrImp = detectDirOrImp(wd, cfg.srcDirOrImp)
 	cfg.srcPkg = newPkg(srcWd, cfg.srcDirOrImp)
 	if err = cfg.srcPkg.resolve(); err != nil {
-		return Config{}, err
+		const format = "source package %s: %w"
+		return Config{}, fmt.Errorf(format, cfg.srcDirOrImp, err)
 	}
 
 	var tgtWd string
 	tgtWd, cfg.tgtDirOrImp = detectDirOrImp(wd, cfg.tgtDirOrImp)
 	cfg.tgtPkg = newPkg(tgtWd, cfg.tgtDirOrImp)
 	if err = cfg.tgtPkg.resolve(); err != nil {
-		return Config{}, err
+		const format = "target package %s: %w"
+		return Config{}, fmt.Errorf(format, cfg.tgtDirOrImp, err)
 	}
 
 	if cfg.tgtName == "" {

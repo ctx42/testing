@@ -250,7 +250,7 @@ func (pkg *gopkg) findType(name string) (*file, *ast.TypeSpec, error) {
 			return fil, typ, nil
 		}
 	}
-	return nil, nil, fmt.Errorf("%w: %s", ErrUnkType, name)
+	return nil, nil, fmt.Errorf("%w: %s in %s", ErrUnkType, name, pkg.id())
 }
 
 // findItf locates an interface type declaration named `name` in the package.
