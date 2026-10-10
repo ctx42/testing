@@ -160,9 +160,13 @@ func (call *Call) Panic(value any) *Call {
 // exactly once. Mutually exclusive with [Call.Optional].
 func (call *Call) Once() *Call { return call.Times(1) }
 
-// Times sets the exact number of times this expectation must be met.
+// Times sets the exact number of times this expectation must be met. Zero
+// means any number of times, at least once. Panics when i is negative.
 // Mutually exclusive with [Call.Optional].
 func (call *Call) Times(i int) *Call {
+	if i < 0 {
+		panic("Times must be greater or equal to zero")
+	}
 	if call.optional {
 		panic("cannot use Optional and Times at the same time")
 	}

@@ -284,6 +284,18 @@ func Test_Call_Times(t *testing.T) {
 		wMsg := "cannot use Optional and Times at the same time"
 		assert.Equal(t, wMsg, *msg)
 	})
+
+	t.Run("panics when negative", func(t *testing.T) {
+		// --- Given ---
+		call := newCall("Zero")
+
+		// --- When ---
+		msg := assert.PanicMsg(t, func() { call.Times(-1) })
+
+		// --- Then ---
+		assert.NotNil(t, msg)
+		assert.Equal(t, "Times must be greater or equal to zero", *msg)
+	})
 }
 
 func Test_Call_Until(t *testing.T) {

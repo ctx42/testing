@@ -1134,7 +1134,7 @@ func Test_Mock_find(t *testing.T) {
 
 		mck := NewMock(tspy)
 		mck.On("Zero", 0).Return("zero")
-		mck.On("One", 1).Times(-1).Return("one")
+		mck.On("One", 1).Once().Return("one").addCall()
 		want := mck.On("One", 1).Return("two")
 
 		// --- When ---
