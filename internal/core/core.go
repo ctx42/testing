@@ -149,12 +149,12 @@ func Value(val reflect.Value) (any, bool) {
 		return nil, true
 	}
 
-	if v, ok := ValueSimple(val); ok {
-		return v, true
-	}
-
 	if val.CanInterface() {
 		return val.Interface(), true
+	}
+
+	if v, ok := ValueSimple(val); ok {
+		return reflect.ValueOf(v).Convert(val.Type()).Interface(), true
 	}
 
 	if val.CanAddr() {

@@ -348,6 +348,23 @@ func Test_Value(t *testing.T) {
 		}
 	})
 
+	t.Run("struct by value - private named simple field", func(t *testing.T) {
+		// --- Given ---
+		prv := struct{ dur time.Duration }{dur: 42}
+		val := reflect.ValueOf(prv).Field(0)
+
+		// --- When ---
+		haveVal, haveOK := Value(val)
+
+		// --- Then ---
+		if !haveOK {
+			t.Error("expected success")
+		}
+		if have, ok := haveVal.(time.Duration); !ok || have != 42 {
+			t.Errorf(expMsg, time.Duration(42), haveVal)
+		}
+	})
+
 	t.Run("struct by value - private pointer field", func(t *testing.T) {
 		// --- Given ---
 		prv := testcases.NewTPrv().SetPtr(&testcases.TVal{Val: "abc"})
@@ -527,6 +544,9 @@ func Test_Value_tabular_success(t *testing.T) {
 		{"slice", []int{1, 2, 3}, []int{1, 2, 3}},
 		{"string", "abc", "abc"},
 		{"struct", testcases.TPtr{}, testcases.TPtr{}},
+		{"named int", testcases.TIntType(42), testcases.TIntType(42)},
+		{"named string", testcases.TStrType("abc"), testcases.TStrType("abc")},
+		{"duration", time.Duration(42), time.Duration(42)},
 
 		{"uintptr", uintptr(42), uintptr(42)},
 		{"unsafe pointer", unsafe.Pointer(ptr), unsafe.Pointer(ptr)},

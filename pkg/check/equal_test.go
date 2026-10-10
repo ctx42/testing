@@ -293,6 +293,23 @@ func Test_Equal_custom_type_checkers(t *testing.T) {
 		affirm.Equal(t, "custom checker", err.Error())
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
+
+	t.Run("custom checker gets named simple type", func(t *testing.T) {
+		// --- Given ---
+		var types []string
+		chk := func(want, have any, _ ...any) error {
+			types = append(types, fmt.Sprintf("%T %T", want, have))
+			return nil
+		}
+		opt := WithTypeChecker(time.Duration(0), chk)
+
+		// --- When ---
+		err := Equal(time.Second, time.Minute, opt)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"time.Duration time.Duration"}, types)
+	})
 }
 
 func Test_Equal_kind_Ptr(t *testing.T) {
