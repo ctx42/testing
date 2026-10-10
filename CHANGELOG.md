@@ -1,3 +1,83 @@
+## v0.57.0 (Sat, 10 Oct 2026 13:54:57 UTC)
+- fix(core): return pointee address from Pointer.
+- fix(core): keep named simple types in Value.
+- fix(core): extract unexported values without copying memory.
+- fix(core): match testing.TB newline handling in Spy.
+- fix(check): stop Equal recursion and option leaks.
+- fix(check): compare JSON numbers, zones and integers exactly.
+- fix(check): keep options on error paths and reject bad targets.
+- docs: fix custom checker examples comparing the wrong values.
+- fix(notice): keep chains acyclic and Is bounded.
+- fix(dump): bound reference cycles and stabilise output.
+- fix(dump): guard the dumper registry and print unexported values.
+- fix(check): guard the type checker registry.
+- fix(tester): isolate spy tests and match testing.TB cleanups.
+- fix(goldy): fail fast and read golden files robustly.
+- fix(mock): match missing arguments and count calls safely.
+- fix(mocker): generate compilable mocks for more interfaces.
+- fix(mocker): resolve packages and sources more reliably.
+- docs(assert): document fatal assertions and nil handling.
+- fix(affirm): fail fatally in Panic and report both types.
+- fix: correct must, test fixtures and examples.
+- test: make weak tests able to fail.
+- docs: document exported test types.
+- style: normalize nolint directives and add SPDX headers.
+- style: tidy examples, must, tstmod and affirm.
+- style: tidy goldy.
+- style: tidy testcases.
+- style: tidy core.
+- style: tidy notice.
+- style: tidy tester.
+- style: tidy dump.
+- style: tidy mock.
+- style: tidy mocker.
+- style: tidy assert.
+- style: tidy check.
+- fix(core)!: compare Same by function value and slice bounds.
+- fix(check): report NoFileExist and NoDirExist as path must not exist.
+- docs(check): document ChannelWillClose nil and drained values.
+- fix(check)!: follow symlinks in file and directory existence checks.
+- refactor(check,dump)!: stop logging type checker and dumper registration.
+- feat(notice)!: match chain notices in Notice.Is.
+- fix(notice)!: render rows without arguments verbatim.
+- fix(tester)!: reject invalid Spy counts and record empty log expectations.
+- fix(goldy)!: defer golden file writes in Create to Save.
+- fix(mock)!: panic on a negative Call.Times count.
+- fix(mock)!: skip expectations with unmet prerequisites when matching.
+- fix(mock)!: copy meta maps in MetaSetAll and MetaAll.
+- feat(assert)!: accept any in ErrorRegexp, Wait and Zone.
+- fix(assert)!: stop the test when ErrorAs fails.
+- feat(dump): add WithDurationFormat, DefaultTabWidth and DefaultFlatStrings.
+- test: stop Wait count windows flaking and cover nil notice meta.
+- fix(mock): render arguments with dumpers registered after init.
+- fix(mocker): skip imports that fail to resolve when finding a package.
+- docs(tester): document how log expectations match messages.
+- fix(check,dump)!: reject nil types when registering checkers and dumpers.
+- style(tester): drop the asterisk from an IgnoreLogs subtest name.
+- fix(mocker): reject generic interfaces with a clear error.
+- fix(mocker)!: mock interfaces declared as aliases or defined types.
+- fix(mocker): say which interface and package an error is about.
+- style(affirm): state the failure contract once and tighten tests.
+- style(core): link Spy godoc and name test values consistently.
+- style(must): build test inputs in Given and fix godoc wording.
+- style(tstmod): test every helper and make goSum a variant method.
+- style(examples): use the public assert package throughout.
+- style(notice): document chain matching and tidy notice tests.
+- style(dump): tidy printer godoc, test order and test data.
+- style(testcases): assert interfaces and describe cases accurately.
+- style(goldy): name Create's check and test the line helpers.
+- style(assert): drop repeated godoc and tidy test arrangement.
+- fix(tester): fail on an empty log message when none is expected.
+- style(tester): tidy spy godoc, test names and helpers.
+- fix(mocker): report source files whose build constraints fail to parse.
+- style(mocker): tidy generator helpers and tighten their tests.
+- style(check): fix godoc, drop dead code and tighten check tests.
+- style(mock): tidy matcher and call godoc and mock tests.
+- test(mock): finish the test style pass.
+- docs(mock): link symbols and state Until and After precedence.
+- docs(mocker): match generator godoc examples to the generated code.
+- test(tester): check every Spy field New initializes.
+
 ## v0.56.0 (Wed, 15 Jul 2026 19:43:33 UTC)
 - ci(workflows): rename go.yml to test.yml.
 - fix(mocker): open target only after mock is generated.
