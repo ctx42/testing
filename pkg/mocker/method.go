@@ -15,14 +15,18 @@ type method struct {
 	rets []argument // Zero or more method return values.
 }
 
-// generate generates code representing the method.
+// generate generates the start of the method's code: the signature, the
+// Helper call, the call to Called, and the check of the returns count.
 //
 // Example:
 //
 //	func (_mck *CaseMock) Method13(tim mt.Time) error {
-//		_rets := _mck.Called(tim)
-//		return _rets.Error(0)
-//	}
+//		_mck.t.Helper()
+//		_args := []any{tim}
+//		_rets := _mck.Called(_args...)
+//		if len(_rets) != 1 {
+//			_mck.t.Fatal("the number of mocked method returns does not match")
+//		}
 func (met *method) generate(recType string) string {
 	code := met.genSig(recType, true)
 	code += " {\n\t_mck.t.Helper()\n"
@@ -228,8 +232,8 @@ func (met *method) genOnSig(typ string) string {
 // Examples:
 //
 //	_args := []any{a}
-//	for _, _arg := range b {
-//	  _args = append(_args, _arg)
+//	for _, _elem := range b {
+//		_args = append(_args, _elem)
 //	}
 func (met *method) genArgSlice() string {
 	code := "\tvar _args []any\n"
@@ -261,10 +265,10 @@ func (met *method) genArgSlice() string {
 //
 // Example:
 //
-//	 _args := []any{a, b}
-//	 for _, _arg := range c {
-//	     _args = append(_args, _arg)
-//	 }
+//	_args := []any{a, b}
+//	for _, _elem := range c {
+//		_args = append(_args, _elem)
+//	}
 //	_rets := _mck.Called(_args...)
 func (met *method) genCalled() string {
 	code := met.genArgSlice()
@@ -294,10 +298,17 @@ func (met *method) genRetCheck() string {
 // Example:
 //
 //	var _r0 pkg.Tx
-//	if _r := _rets.Get(0); _r != nil {
+//	if _rFn, _ok := _rets.Get(0).(func() pkg.Tx); _ok {
+//		_r0 = _rFn()
+//	} else if _r := _rets.Get(0); _r != nil {
 //		_r0 = _r.(pkg.Tx)
 //	}
-//	_r1 := _rets.Error(1)
+//	var _r1 error
+//	if _rFn, _ok := _rets.Get(1).(func() error); _ok {
+//		_r1 = _rFn()
+//	} else if _r := _rets.Get(1); _r != nil {
+//		_r1 = _r.(error)
+//	}
 func (met *method) genReturnBody(indent int) string {
 	if len(met.rets) == 0 {
 		return ""
@@ -317,7 +328,7 @@ func (met *method) genReturnBody(indent int) string {
 //	var _r0 pkg.Tx
 //	if _rFn, _ok := _rets.Get(0).(func(pkg.Tx) pkg.Tx); _ok {
 //		_r0 = _rFn(a)
-//	} else if _r := _rets.Get(0).(pkg.Tx); _r != nil {
+//	} else if _r := _rets.Get(0); _r != nil {
 //		_r0 = _r.(pkg.Tx)
 //	}
 func (met *method) genSingleRet(idx int, ret argument, indent int) []string {
@@ -356,8 +367,8 @@ func (met *method) genSingleRet(idx int, ret argument, indent int) []string {
 //
 // Example:
 //
-//	return _rets.Error(0)
-//	return _rets.Int(0), _rets.Error(1)
+//	return _r0
+//	return _r0, _r1
 func (met *method) genReturn() string {
 	if len(met.rets) == 0 {
 		return ""
