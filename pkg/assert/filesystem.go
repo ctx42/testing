@@ -8,7 +8,8 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 )
 
-// FileExist asserts that "pth" points to an existing file.
+// FileExist asserts that "pth" points to an existing file. Symbolic links
+// are followed.
 //
 // See [check.FileExist] for the error-returning form.
 func FileExist(t tester.T, pth string, opts ...any) bool {
@@ -21,7 +22,7 @@ func FileExist(t tester.T, pth string, opts ...any) bool {
 }
 
 // NoFileExist asserts that nothing exists at "pth". A directory at "pth"
-// fails the assertion too.
+// fails the assertion too. Symbolic links are followed.
 //
 // See [check.NoFileExist] for the error-returning form.
 func NoFileExist(t tester.T, pth string, opts ...any) bool {
@@ -51,7 +52,9 @@ func FileContain[T check.Content](
 	return true
 }
 
-// DirExist asserts that "pth" points to an existing directory.
+// DirExist asserts that "pth" points to an existing directory. Symbolic
+// links are followed.
+//
 // See [check.DirExist].
 func DirExist(t tester.T, pth string, opts ...any) bool {
 	t.Helper()
@@ -63,7 +66,8 @@ func DirExist(t tester.T, pth string, opts ...any) bool {
 }
 
 // NoDirExist asserts that nothing exists at "pth". A file at "pth" fails the
-// assertion too.
+// assertion too. Symbolic links are followed.
+//
 // See [check.NoDirExist].
 func NoDirExist(t tester.T, pth string, opts ...any) bool {
 	t.Helper()

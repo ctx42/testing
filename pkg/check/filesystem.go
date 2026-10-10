@@ -10,11 +10,12 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// FileExist checks that "pth" points to an existing file.
+// FileExist checks that "pth" points to an existing file. Symbolic links are
+// followed.
 //
 // See assert.FileExist for the assertion wrapper.
 func FileExist(pth string, opts ...any) error {
-	inf, err := os.Lstat(pth)
+	inf, err := os.Stat(pth)
 	if err != nil {
 		ops := DefaultOptions(opts...)
 		if os.IsNotExist(err) {
@@ -23,7 +24,7 @@ func FileExist(pth string, opts ...any) error {
 			return AddRows(ops, msg)
 
 		}
-		msg := notice.New("expected os.Lstat to succeed").
+		msg := notice.New("expected os.Stat to succeed").
 			Append("path", "%s", pth).
 			Append("error", "%s", err)
 		return AddRows(ops, msg)
@@ -38,7 +39,7 @@ func FileExist(pth string, opts ...any) error {
 }
 
 // NoFileExist checks that nothing exists at "pth". A directory at "pth" fails
-// the check too.
+// the check too. Symbolic links are followed, so a dangling link passes.
 //
 // See assert.NoFileExist for the assertion wrapper.
 func NoFileExist(pth string, opts ...any) error {
@@ -73,10 +74,12 @@ func FileContain[T Content](want T, pth string, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// DirExist checks that "pth" points to an existing directory.
+// DirExist checks that "pth" points to an existing directory. Symbolic links
+// are followed.
+//
 // See assert.DirExist.
 func DirExist(pth string, opts ...any) error {
-	inf, err := os.Lstat(pth)
+	inf, err := os.Stat(pth)
 	if err != nil {
 		if os.IsNotExist(err) {
 			ops := DefaultOptions(opts...)
@@ -86,7 +89,7 @@ func DirExist(pth string, opts ...any) error {
 		}
 
 		ops := DefaultOptions(opts...)
-		msg := notice.New("expected os.Lstat to succeed").
+		msg := notice.New("expected os.Stat to succeed").
 			Append("path", "%s", pth).
 			Append("error", "%s", err)
 		return AddRows(ops, msg)
@@ -101,7 +104,7 @@ func DirExist(pth string, opts ...any) error {
 }
 
 // NoDirExist checks that nothing exists at "pth". A file at "pth" fails the
-// check too.
+// check too. Symbolic links are followed, so a dangling link passes.
 //
 // See assert.NoDirExist.
 func NoDirExist(pth string, opts ...any) error {
@@ -110,13 +113,13 @@ func NoDirExist(pth string, opts ...any) error {
 
 // noPathExist checks that nothing exists at "pth".
 func noPathExist(pth string, opts ...any) error {
-	_, err := os.Lstat(pth)
+	_, err := os.Stat(pth)
 	if os.IsNotExist(err) {
 		return nil
 	}
 	ops := DefaultOptions(opts...)
 	if err != nil {
-		msg := notice.New("expected os.Lstat to succeed").
+		msg := notice.New("expected os.Stat to succeed").
 			Append("path", "%s", pth).
 			Append("error", "%s", err)
 		return AddRows(ops, msg)

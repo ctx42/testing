@@ -4,6 +4,8 @@
 package check
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
@@ -49,6 +51,32 @@ func Test_FileExist(t *testing.T) {
 			"   path: testdata/dir"
 		affirm.Equal(t, wMsg, err.Error())
 	})
+
+	t.Run("symlink to a file", func(t *testing.T) {
+		// --- Given ---
+		lnk := symlink(t, "testdata/file.txt")
+
+		// --- When ---
+		err := FileExist(lnk)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - symlink to a directory", func(t *testing.T) {
+		// --- Given ---
+		lnk := symlink(t, "testdata/dir")
+
+		// --- When ---
+		err := FileExist(lnk)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected path to be an existing file:\n" +
+			"  path: " + lnk
+		affirm.Equal(t, wMsg, err.Error())
+	})
 }
 
 func Test_NoFileExist(t *testing.T) {
@@ -86,6 +114,17 @@ func Test_NoFileExist(t *testing.T) {
 			"  trail: type.field\n" +
 			"   path: testdata/dir"
 		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("dangling symlink", func(t *testing.T) {
+		// --- Given ---
+		lnk := symlink(t, "testdata/not_existing.txt")
+
+		// --- When ---
+		err := NoFileExist(lnk)
+
+		// --- Then ---
+		affirm.Nil(t, err)
 	})
 }
 
@@ -207,6 +246,32 @@ func Test_DirExist(t *testing.T) {
 			"   path: testdata/file.txt"
 		affirm.Equal(t, wMsg, err.Error())
 	})
+
+	t.Run("symlink to a directory", func(t *testing.T) {
+		// --- Given ---
+		lnk := symlink(t, "testdata/dir")
+
+		// --- When ---
+		err := DirExist(lnk)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - symlink to a file", func(t *testing.T) {
+		// --- Given ---
+		lnk := symlink(t, "testdata/file.txt")
+
+		// --- When ---
+		err := DirExist(lnk)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected the path to be an existing directory:\n" +
+			"  path: " + lnk
+		affirm.Equal(t, wMsg, err.Error())
+	})
 }
 
 func Test_NoDirExist(t *testing.T) {
@@ -249,4 +314,30 @@ func Test_NoDirExist(t *testing.T) {
 			"   path: testdata/file.txt"
 		affirm.Equal(t, wMsg, err.Error())
 	})
+
+	t.Run("dangling symlink", func(t *testing.T) {
+		// --- Given ---
+		lnk := symlink(t, "testdata/not_existing_dir")
+
+		// --- When ---
+		err := NoDirExist(lnk)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+}
+
+// symlink creates a symbolic link to "target" in a temporary directory and
+// returns the link path.
+func symlink(t *testing.T, target string) string {
+	t.Helper()
+	abs, err := filepath.Abs(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lnk := filepath.Join(t.TempDir(), "link")
+	if err = os.Symlink(abs, lnk); err != nil {
+		t.Fatal(err)
+	}
+	return lnk
 }
