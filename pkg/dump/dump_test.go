@@ -62,6 +62,26 @@ func Test_RegisterTypeDumper(t *testing.T) {
 		affirm.Equal(t, "", buf.String())
 	})
 
+	t.Run("concurrent with New", func(t *testing.T) {
+		// --- Given ---
+		type custom struct{}
+		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
+		done := make(chan struct{})
+		go func() {
+			defer close(done)
+			for range 100 {
+				_ = New()
+			}
+		}()
+
+		// --- When ---
+		RegisterTypeDumper(custom{}, dmp)
+
+		// --- Then ---
+		<-done
+		affirm.Equal(t, 1, len(typeDumpers))
+	})
+
 	t.Run("panics if the checker is nil", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
@@ -232,9 +252,35 @@ func Test_WithDumper(t *testing.T) {
 		wMsg := "Overwriting the global type dumper for: dump.custom\n"
 		affirm.Equal(t, wMsg, buf.String())
 	})
+
+	t.Run("nil dumper removes the custom dumper", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithDumper(123, cDpr))
+
+		// --- When ---
+		WithDumper(123, nil)(&dmp)
+
+		// --- Then ---
+		_, ok := dmp.Dumpers[reflect.TypeFor[int]()]
+		affirm.Equal(t, false, ok)
+		affirm.Equal(t, "123", dmp.Any(123))
+	})
+
+	t.Run("zero value Dump", func(t *testing.T) {
+		// --- Given ---
+		dmp := &Dump{}
+
+		// --- When ---
+		WithDumper(123, cDpr)(dmp)
+
+		// --- Then ---
+		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[int]()])
+		affirm.Equal(t, true, wChk)
+	})
 }
 
 func Test_New(t *testing.T) {
+	t.Setenv("___", "___")
 	t.Run("no options", func(t *testing.T) {
 		// --- When ---
 		have := New()
@@ -383,7 +429,7 @@ func dumpValueTestCases() []struct {
 			"private field",
 			New(WithFlat, WithCompact, WithPtrAddr),
 			notExp,
-			"{err:<dump-cannot-print>}",
+			`{err:"not-exported"}`,
 		},
 	}
 }
@@ -777,6 +823,7 @@ func Test_Dump_Diff_tabular(t *testing.T) {
 }
 
 func Test_Dump_forDiff(t *testing.T) {
+	t.Setenv("___", "___")
 	t.Run("changes Flat and Compact configuration", func(t *testing.T) {
 		// --- Given ---
 		val := reflect.ValueOf([]int{1, 2, 3})

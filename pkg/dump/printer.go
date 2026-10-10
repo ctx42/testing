@@ -51,10 +51,9 @@ func (prn Printer) Tab(n int) Printer {
 	if prn.dmp.Flat {
 		return prn
 	}
-	if n < 0 {
-		n = 0
+	if width := n * prn.dmp.TabWidth; width > 0 {
+		prn.buf.Write(bytes.Repeat([]byte{' '}, width))
 	}
-	prn.buf.Write(bytes.Repeat([]byte{' '}, n*prn.dmp.TabWidth))
 	return prn
 }
 

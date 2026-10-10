@@ -24,7 +24,7 @@ func Test_ZoneDumper(t *testing.T) {
 		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
 
-	t.Run("unexported field cannot interface", func(t *testing.T) {
+	t.Run("unexported field", func(t *testing.T) {
 		// --- Given ---
 		type hold struct{ zone time.Location }
 		val := reflect.ValueOf(hold{zone: *testcases.WAW}).Field(0)
@@ -33,7 +33,7 @@ func Test_ZoneDumper(t *testing.T) {
 		have := ZoneDumper(New(), 0, val)
 
 		// --- Then ---
-		affirm.Equal(t, ValCannotPrint, have)
+		affirm.Equal(t, `"Europe/Warsaw"`, have)
 	})
 }
 

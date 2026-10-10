@@ -124,7 +124,7 @@ func Test_TimeDumperFmt(t *testing.T) {
 		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
 
-	t.Run("unexported field cannot interface", func(t *testing.T) {
+	t.Run("unexported field", func(t *testing.T) {
 		// --- Given ---
 		type hold struct{ when time.Time }
 		val := reflect.ValueOf(hold{
@@ -136,7 +136,7 @@ func Test_TimeDumperFmt(t *testing.T) {
 		have := dumper(New(), 0, val)
 
 		// --- Then ---
-		affirm.Equal(t, ValCannotPrint, have)
+		affirm.Equal(t, "\"2000-01-02\"", have)
 	})
 }
 
@@ -203,7 +203,7 @@ func Test_TimeDumperUnix(t *testing.T) {
 		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
 
-	t.Run("unexported field cannot interface", func(t *testing.T) {
+	t.Run("unexported field", func(t *testing.T) {
 		// --- Given ---
 		type hold struct{ when time.Time }
 		val := reflect.ValueOf(hold{
@@ -214,7 +214,7 @@ func Test_TimeDumperUnix(t *testing.T) {
 		have := TimeDumperUnix(New(), 0, val)
 
 		// --- Then ---
-		affirm.Equal(t, ValCannotPrint, have)
+		affirm.Equal(t, "946778645", have)
 	})
 }
 
@@ -314,7 +314,7 @@ func Test_TimeDumperDate(t *testing.T) {
 		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
 
-	t.Run("unexported field cannot interface", func(t *testing.T) {
+	t.Run("unexported field", func(t *testing.T) {
 		// --- Given ---
 		type hold struct{ when time.Time }
 		val := reflect.ValueOf(hold{
@@ -325,6 +325,9 @@ func Test_TimeDumperDate(t *testing.T) {
 		have := TimeDumperDate(New(), 0, val)
 
 		// --- Then ---
-		affirm.Equal(t, ValCannotPrint, have)
+		want := "" +
+			"time.Date(2000, time.January, 2, 3, 4, 5, 0, " +
+			"time.Location(\"Europe/Warsaw\"))"
+		affirm.Equal(t, want, have)
 	})
 }

@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/ctx42/testing/internal/core"
 )
 
 // Special format values for [time.Time] accepted by [WithTimeFormat],
@@ -43,11 +45,7 @@ func GetTimeDumper(format string) Dumper {
 // the value is not a time.Time.
 func TimeDumperFmt(format string) Dumper {
 	return func(dmp Dump, lvl int, val reflect.Value) string {
-		if !val.CanInterface() {
-			prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
-			return prn.Write(ValCannotPrint).String()
-		}
-		tim, ok := val.Interface().(time.Time)
+		tim, ok := timeValue(val)
 		if !ok {
 			prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
 			return prn.Write(ValErrUsage).String()
@@ -61,11 +59,7 @@ func TimeDumperFmt(format string) Dumper {
 // returns its string representation as a Unix timestamp. Returns [valErrUsage]
 // ("<dump-usage-error>") string if the type cannot be matched.
 func TimeDumperUnix(dmp Dump, lvl int, val reflect.Value) string {
-	if !val.CanInterface() {
-		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
-		return prn.Write(ValCannotPrint).String()
-	}
-	ts, ok := val.Interface().(time.Time)
+	ts, ok := timeValue(val)
 	if !ok {
 		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
 		return prn.Write(ValErrUsage).String()
@@ -78,11 +72,7 @@ func TimeDumperUnix(dmp Dump, lvl int, val reflect.Value) string {
 // returns its representation using [time.Time.GoString] method. Returns
 // [valErrUsage] ("<dump-usage-error>") string if the type cannot be matched.
 func TimeDumperDate(dmp Dump, lvl int, val reflect.Value) string {
-	if !val.CanInterface() {
-		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
-		return prn.Write(ValCannotPrint).String()
-	}
-	ts, ok := val.Interface().(time.Time)
+	ts, ok := timeValue(val)
 	if !ok {
 		prn := NewPrinter(dmp).Tab(dmp.Indent + lvl)
 		return prn.Write(ValErrUsage).String()
@@ -93,4 +83,12 @@ func TimeDumperDate(dmp Dump, lvl int, val reflect.Value) string {
 	}
 	prn := NewPrinter(dmp)
 	return prn.Tab(dmp.Indent + lvl).Write(str).String()
+}
+
+// timeValue returns the [time.Time] held by val, including values of
+// unexported struct fields.
+func timeValue(val reflect.Value) (time.Time, bool) {
+	itf, _ := core.Value(val)
+	tim, ok := itf.(time.Time)
+	return tim, ok
 }

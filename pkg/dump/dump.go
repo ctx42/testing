@@ -41,8 +41,10 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/internal/diff"
 )
 
@@ -134,20 +136,25 @@ var (
 type Dumper func(dmp Dump, level int, val reflect.Value) string
 
 // typeDumpers holds globally registered custom dumpers (see
-// [RegisterTypeDumper]).
-var typeDumpers map[reflect.Type]Dumper
+// [RegisterTypeDumper]), guarded by typeDumpersMx.
+var (
+	typeDumpers   map[reflect.Type]Dumper
+	typeDumpersMx sync.RWMutex
+)
 
 // RegisterTypeDumper registers a custom [Dumper] that will be used for
 // all values of the given type by default (across all [New] calls that
 // do not override it with [WithDumper]).
 //
-// It panics if a dumper for the same type is already registered.
-// The registration is logged at debug level for visibility into
-// overrides.
+// It panics if a dumper for the same type is already registered. The
+// registration is logged to stderr for visibility into overrides. It is safe
+// to call concurrently with [New].
 func RegisterTypeDumper(typ any, dmp Dumper) {
 	if dmp == nil {
 		panic("cannot register a nil type dumper")
 	}
+	typeDumpersMx.Lock()
+	defer typeDumpersMx.Unlock()
 	if typeDumpers == nil {
 		typeDumpers = make(map[reflect.Type]Dumper)
 	}
@@ -166,9 +173,9 @@ type Option func(*Dump)
 // WithFlat makes the dumper render values on a single line (no newlines).
 func WithFlat(dmp *Dump) { dmp.Flat = true }
 
-// WithFlatStrings sets the threshold (number of newlines) above which
-// strings are forced to multiline rendering even under [WithFlat].
-// Zero disables the feature.
+// WithFlatStrings sets the length (in bytes) above which a string containing
+// newlines is rendered as a multiline block instead of a quoted string.
+// [WithFlat] takes precedence. Zero disables the feature.
 func WithFlatStrings(n int) Option {
 	return func(dmp *Dump) { dmp.FlatStrings = n }
 }
@@ -180,7 +187,8 @@ func WithCompact(dmp *Dump) { dmp.Compact = true }
 // rendered as multiline blocks.
 func WithAlwaysMultiline(dmp *Dump) { dmp.AlwaysMultiline = true }
 
-// WithPtrAddr includes pointer addresses in the output (normally hidden).
+// WithPtrAddr includes the addresses of channels, functions, uintptr and
+// unsafe pointers in the output (normally hidden).
 func WithPtrAddr(dmp *Dump) { dmp.PtrAddr = true }
 
 // WithNoPrivate suppresses printing of unexported struct fields.
@@ -188,20 +196,32 @@ func WithNoPrivate(dmp *Dump) { dmp.PrintPrivate = false }
 
 // WithTimeFormat sets the format used for [time.Time] values. In addition
 // to standard Go layouts, the special values [TimeAsUnix] and [TimeAsGoString]
-// are supported. See [Dump.TimeFormat].
+// are supported. See [Dump.TimeFormat]. A [time.Time] dumper registered with
+// [RegisterTypeDumper] takes precedence.
 func WithTimeFormat(format string) Option {
 	return func(dmp *Dump) { dmp.TimeFormat = format }
 }
 
 // WithDumper registers a per-instance custom [Dumper] for the given type.
 // It overrides any globally registered dumper for that type (see
-// [RegisterTypeDumper]).
+// [RegisterTypeDumper]). A nil dumper removes the custom dumper, so values of
+// the type are rendered by the default rules.
 func WithDumper(typ any, dumper Dumper) Option {
 	return func(dmp *Dump) {
 		rt := reflect.TypeOf(typ)
-		if _, ok := typeDumpers[rt]; ok {
+		typeDumpersMx.RLock()
+		_, global := typeDumpers[rt]
+		typeDumpersMx.RUnlock()
+		if global {
 			format := "Overwriting the global type dumper for: %s"
 			_ = globLog.Output(2, fmt.Sprintf(format, rt))
+		}
+		if dumper == nil {
+			delete(dmp.Dumpers, rt)
+			return
+		}
+		if dmp.Dumpers == nil {
+			dmp.Dumpers = make(map[reflect.Type]Dumper)
 		}
 		dmp.Dumpers[rt] = dumper
 	}
@@ -243,11 +263,14 @@ type Dump struct {
 
 	// TimeFormat controls formatting of [time.Time]. In addition to standard
 	// Go layouts, the special values [TimeAsUnix], [TimeAsGoString], and
-	// [TimeAsRFC3339] are recognized. Default: [time.RFC3339Nano].
+	// [TimeAsRFC3339] are recognized. Default: [time.RFC3339Nano]. [New]
+	// reads it to build the time dumper; changing it afterwards has no
+	// effect.
 	TimeFormat string
 
 	// DurationFormat controls formatting of [time.Duration]. Special values:
-	// [DurAsString] (default) and [DurAsSeconds].
+	// [DurAsString] (default) and [DurAsSeconds]. [New] reads it to build
+	// the duration dumper; changing it afterwards has no effect.
 	DurationFormat string
 
 	// PtrAddr shows pointer addresses (normally hidden for readability).
@@ -297,7 +320,7 @@ func New(opts ...Option) Dump {
 		PrintType:    true,
 		PrintPrivate: true,
 		UseAny:       true,
-		Dumpers:      maps.Clone(typeDumpers),
+		Dumpers:      cloneTypeDumpers(),
 		MaxDepth:     Depth,
 		Indent:       Indent,
 		TabWidth:     TabWidth,
@@ -321,6 +344,13 @@ func New(opts ...Option) Dump {
 		dmp.Dumpers[typDur] = GetDurDumper(dmp.DurationFormat)
 	}
 	return dmp
+}
+
+// cloneTypeDumpers returns a copy of the globally registered dumpers.
+func cloneTypeDumpers() map[reflect.Type]Dumper {
+	typeDumpersMx.RLock()
+	defer typeDumpersMx.RUnlock()
+	return maps.Clone(typeDumpers)
 }
 
 // Any returns a string representation of val using default configuration.
@@ -425,7 +455,7 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 		dmp.hops = 0
 	}
 	if knd != reflect.Invalid {
-		if fn, ok := dmp.Dumpers[val.Type()]; ok {
+		if fn := dmp.Dumpers[val.Type()]; fn != nil {
 			return fn(dmp, lvl, val), knd
 		}
 	}
@@ -436,11 +466,10 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 		if typ == typError || typ.String() == "*errors.errorString" {
 			str = ValNil
 			if !val.IsNil() && !isNilPointerElem(val) {
-				if val.CanInterface() {
+				str = ValCannotPrint
+				if itf, ok := core.Value(val); ok {
 					// The %q verb recovers from a panicking Error method.
-					str = fmt.Sprintf("%q", val.Interface())
-				} else {
-					str = ValCannotPrint
+					str = fmt.Sprintf("%q", itf)
 				}
 			}
 			prn := NewPrinter(dmp)

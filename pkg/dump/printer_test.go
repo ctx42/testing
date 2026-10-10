@@ -126,6 +126,17 @@ func Test_Printer_Comma(t *testing.T) {
 }
 
 func Test_Printer_Tab(t *testing.T) {
+	t.Run("negative tab width", func(t *testing.T) {
+		// --- Given ---
+		dmp := Dump{TabWidth: -1}
+
+		// --- When ---
+		have := NewPrinter(dmp).Tab(2)
+
+		// --- Then ---
+		affirm.Equal(t, "", have.String())
+	})
+
 	t.Run("default and positive n", func(t *testing.T) {
 		// --- Given ---
 		dmp := Dump{Flat: false, TabWidth: 2}
