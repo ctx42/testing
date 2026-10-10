@@ -256,28 +256,54 @@ func (pkg *gopkg) findType(name string) (*file, *ast.TypeSpec, error) {
 // findItf locates an interface type declaration named `name` in the package.
 // It returns the containing file, the interface's AST node, and nil error if
 // the named type is a non-generic interface.
-func (pkg *gopkg) findItf(name string) (*file, *ast.InterfaceType, error) {
+//
+// A type declared as an alias or a defined type of another type is returned
+// as an interface embedding that type, and the third result is true; the
+// caller reports the type as not an interface when the embedding fails.
+func (pkg *gopkg) findItf(
+	name string,
+) (*file, *ast.InterfaceType, bool, error) {
+
 	fil, typ, err := pkg.findType(name)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
 	}
-	itf, ok := typ.Type.(*ast.InterfaceType)
-	if !ok {
-		const format = "%w: %s is not an interface"
-		return nil, nil, fmt.Errorf(format, ErrUnkItf, name)
+	generic := typ.TypeParams.NumFields() > 0
+	switch v := typ.Type.(type) {
+	case *ast.InterfaceType:
+		if generic {
+			return nil, nil, false, errGeneric(name)
+		}
+		return fil, v, false, nil
+
+	case *ast.Ident, *ast.SelectorExpr, *ast.IndexExpr, *ast.IndexListExpr:
+		if generic {
+			return nil, nil, false, errGeneric(name)
+		}
+		fls := &ast.FieldList{List: []*ast.Field{{Type: v}}}
+		return fil, &ast.InterfaceType{Methods: fls}, true, nil
 	}
-	if typ.TypeParams.NumFields() > 0 {
-		return nil, nil, errGeneric(name)
-	}
-	return fil, itf, nil
+	return nil, nil, false, errNotItf(name)
+}
+
+// errNotItf returns the error for a named type that is not an interface.
+func errNotItf(name string) error {
+	return fmt.Errorf("%w: %s is not an interface", ErrUnkItf, name)
 }
 
 // errGeneric returns the error for a generic interface, which mocker does
 // not support.
-func errGeneric(name string) error {
-	const format = "%w: generic interface %s is not supported"
-	return fmt.Errorf(format, ErrUnkItf, name)
+func errGeneric(name string) error { return &genericError{name: name} }
+
+// genericError reports a generic interface. It wraps [ErrUnkItf].
+type genericError struct{ name string }
+
+func (e *genericError) Error() string {
+	const format = "%s: generic interface %s is not supported"
+	return fmt.Sprintf(format, ErrUnkItf, e.name)
 }
+
+func (e *genericError) Unwrap() error { return ErrUnkItf }
 
 // isValid returns true if the package has all the required fields set.
 func (pkg *gopkg) isValid() bool {

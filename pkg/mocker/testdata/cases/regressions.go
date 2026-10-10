@@ -2,6 +2,8 @@ package cases
 
 import (
 	"crypto/sha256"
+	"fmt"
+	"io"
 	"net/url"
 
 	xa "github.com/ctx42/testing/pkg/mocker/testdata/pkga"
@@ -43,3 +45,12 @@ type CaseEmbedError interface {
 	error
 	Code() int
 }
+
+// Interface declared as a defined type of a local interface.
+type CaseItfDefined CaseOkParam
+
+// Interface declared as an alias of an imported interface.
+type CaseItfAliasImp = io.Reader
+
+// Interface declared as a defined type of an imported interface.
+type CaseItfDefinedImp fmt.Stringer

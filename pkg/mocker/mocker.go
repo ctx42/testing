@@ -142,7 +142,7 @@ func (mck *Mocker) Generate(name string, opts ...Option) error {
 // run runs mocker for a given configuration without generating code for the
 // mock.
 func (mck *Mocker) run(cfg Config) (*goitf, error) {
-	fil, astItf, err := cfg.srcPkg.findItf(cfg.srcName)
+	fil, astItf, named, err := cfg.srcPkg.findItf(cfg.srcName)
 	if err != nil {
 		return nil, err
 	}
@@ -151,6 +151,10 @@ func (mck *Mocker) run(cfg Config) (*goitf, error) {
 
 	mts, err := mck.methods(cfg)
 	if err != nil {
+		var gErr *genericError
+		if named && errors.Is(err, ErrUnkItf) && !errors.As(err, &gErr) {
+			return nil, fmt.Errorf("%w: %w", errNotItf(cfg.srcName), err)
+		}
 		return nil, err
 	}
 	itf := &goitf{
@@ -212,6 +216,9 @@ func (mck *Mocker) parseItf(cfg Config, fld *ast.Field) ([]*method, error) {
 			// The predeclared error interface.
 			ret := argument{typ: "string"}
 			return []*method{{name: "Error", rets: []argument{ret}}}, nil
+		}
+		if errors.Is(err, ErrUnkType) && v.Name == "any" {
+			return nil, nil // The predeclared empty interface.
 		}
 		if err != nil {
 			return nil, err

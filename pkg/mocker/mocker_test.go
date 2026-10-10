@@ -187,8 +187,8 @@ func Test_Mocker_Generate(t *testing.T) {
 		err := mck.Generate("EmptyAny", opts...)
 
 		// --- Then ---
-		assert.ErrorIs(t, ErrUnkItf, err)
-		assert.ErrorContain(t, "EmptyAny is not an interface", err)
+		assert.ErrorIs(t, ErrNoMethods, err)
+		assert.ErrorContain(t, "EmptyAny", err)
 	})
 
 	t.Run("error - generic interface", func(t *testing.T) {
@@ -318,6 +318,11 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 		{"CaseEmbedAliased", "CaseEmbedAliased", "cases", "golden"},
 		{"CaseEmptyStruct", "CaseEmptyStruct", "cases", "golden"},
 		{"CaseEmbedError", "CaseEmbedError", "cases", "golden"},
+		{"ItfAliasLocal", "ItfAliasLocal", "cases", "golden"},
+		{"ItfAlias", "ItfAlias", "cases", "golden"},
+		{"CaseItfDefined", "CaseItfDefined", "cases", "golden"},
+		{"CaseItfAliasImp", "CaseItfAliasImp", "cases", "golden"},
+		{"CaseItfDefinedImp", "CaseItfDefinedImp", "cases", "golden"},
 	}
 
 	for _, tc := range tt {

@@ -6,6 +6,7 @@ package mocker
 import (
 	"go/scanner"
 	"go/token"
+	"go/types"
 	"os"
 	"path/filepath"
 	"testing"
@@ -614,40 +615,65 @@ func Test_gopkg_findItf(t *testing.T) {
 		pkg := &gopkg{pkgDir: dir}
 
 		// --- When ---
-		hFil, hItf, err := pkg.findItf("Case00")
+		hFil, hItf, hNamed, err := pkg.findItf("Case00")
 
 		// --- Then ---
 		assert.NoError(t, err)
 		assert.Equal(t, filepath.Join(dir, "cases.go"), hFil.path)
 		assert.NotNil(t, hItf)
+		assert.False(t, hNamed)
 	})
 
-	t.Run("error - type alias from the same package", func(t *testing.T) {
+	t.Run("type alias from the same package", func(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/cases")
 		pkg := &gopkg{pkgDir: dir}
 
 		// --- When ---
-		hFil, hItf, err := pkg.findItf("ItfAliasLocal")
+		hFil, hItf, hNamed, err := pkg.findItf("ItfAliasLocal")
 
 		// --- Then ---
-		assert.ErrorIs(t, ErrUnkItf, err)
-		assert.Nil(t, hFil)
-		assert.Nil(t, hItf)
+		assert.NoError(t, err)
+		assert.Equal(t, filepath.Join(dir, "embed.go"), hFil.path)
+		assert.Len(t, 1, hItf.Methods.List)
+		assert.Equal(t, "ItfB", types.ExprString(hItf.Methods.List[0].Type))
+		assert.True(t, hNamed)
 	})
 
-	t.Run("error - type alias from the other package", func(t *testing.T) {
+	t.Run("type alias from the other package", func(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/cases")
 		pkg := &gopkg{pkgDir: dir}
 
 		// --- When ---
-		hFil, hItf, err := pkg.findItf("ItfAlias")
+		hFil, hItf, hNamed, err := pkg.findItf("ItfAlias")
+
+		// --- Then ---
+		assert.NoError(t, err)
+		assert.Equal(t, filepath.Join(dir, "embed.go"), hFil.path)
+		assert.Len(t, 1, hItf.Methods.List)
+		wTyp := "pkga.CaseA0"
+		assert.Equal(t, wTyp, types.ExprString(hItf.Methods.List[0].Type))
+		assert.True(t, hNamed)
+	})
+
+	t.Run("error - generic interface", func(t *testing.T) {
+		// --- Given ---
+		dir := filepath.Join(must.Value(os.Getwd()), "testdata/cases")
+		pkg := &gopkg{pkgDir: dir}
+
+		// --- When ---
+		hFil, hItf, hNamed, err := pkg.findItf("Generic")
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkItf, err)
+		wMsg := "" +
+			"interface not found: " +
+			"generic interface Generic is not supported"
+		assert.ErrorEqual(t, wMsg, err)
 		assert.Nil(t, hFil)
 		assert.Nil(t, hItf)
+		assert.False(t, hNamed)
 	})
 
 	t.Run("error - parsing package", func(t *testing.T) {
@@ -656,13 +682,14 @@ func Test_gopkg_findItf(t *testing.T) {
 		pkg := &gopkg{pkgDir: dir}
 
 		// --- When ---
-		hFil, hItf, err := pkg.findItf("Unknown")
+		hFil, hItf, hNamed, err := pkg.findItf("Unknown")
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkPkg, err)
 		assert.ErrorContain(t, dir, err)
 		assert.Nil(t, hFil)
 		assert.Nil(t, hItf)
+		assert.False(t, hNamed)
 	})
 
 	t.Run("error - when type is not an interface", func(t *testing.T) {
@@ -671,13 +698,14 @@ func Test_gopkg_findItf(t *testing.T) {
 		pkg := &gopkg{pkgDir: dir}
 
 		// --- When ---
-		hFil, hItf, err := pkg.findItf("Concrete")
+		hFil, hItf, hNamed, err := pkg.findItf("Concrete")
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkItf, err)
 		assert.ErrorContain(t, "Concrete", err)
 		assert.Nil(t, hFil)
 		assert.Nil(t, hItf)
+		assert.False(t, hNamed)
 	})
 
 	t.Run("error - unknown type", func(t *testing.T) {
@@ -686,13 +714,14 @@ func Test_gopkg_findItf(t *testing.T) {
 		pkg := &gopkg{pkgDir: dir}
 
 		// --- When ---
-		hFil, hItf, err := pkg.findItf("Unknown")
+		hFil, hItf, hNamed, err := pkg.findItf("Unknown")
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkType, err)
 		assert.ErrorContain(t, "Unknown", err)
 		assert.Nil(t, hFil)
 		assert.Nil(t, hItf)
+		assert.False(t, hNamed)
 	})
 }
 
