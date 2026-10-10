@@ -96,13 +96,13 @@ func Test_valToString_tabular(t *testing.T) {
 		{"int8", int8(8), "8"},
 		{"int16", int16(16), "16"},
 		{"int32", int32(32), "32"},
-		{"int64", int32(64), "64"},
+		{"int64", int64(64), "64"},
 
-		{"uint", 1, "1"},
+		{"uint", uint(1), "1"},
 		{"uint8", uint8(8), "8"},
 		{"uint16", uint16(16), "16"},
 		{"uint32", uint32(32), "32"},
-		{"uint64", uint32(64), "64"},
+		{"uint64", uint64(64), "64"},
 
 		{"uintptr", uintptr(123), "123"},
 

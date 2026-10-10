@@ -261,6 +261,7 @@ func Test_newConfig(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkPkg, err)
+		assert.ErrorContain(t, "!!!", err)
 	})
 
 	t.Run("error - invalid target", func(t *testing.T) {
@@ -269,6 +270,7 @@ func Test_newConfig(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkPkg, err)
+		assert.ErrorContain(t, "!!!", err)
 	})
 
 	t.Run("error - cannot set filename and output", func(t *testing.T) {
@@ -316,7 +318,7 @@ func Test_Config_create(t *testing.T) {
 		assert.Same(t, buf, hCfg.tgtOut)
 	})
 
-	t.Run("path is not absolute", func(t *testing.T) {
+	t.Run("buffer set with relative filename", func(t *testing.T) {
 		// --- Given ---
 		buf := &bytes.Buffer{}
 		cfg := &Config{
@@ -336,6 +338,7 @@ func Test_Config_create(t *testing.T) {
 	t.Run("file created", func(t *testing.T) {
 		// --- Given ---
 		pth := filepath.Join(t.TempDir(), "_target_.go")
+		must.Nil(os.WriteFile(pth, []byte("existing longer content"), 0o600))
 		cfg := &Config{
 			tgtFilename: pth,
 			tgtPkg: &gopkg{
@@ -352,8 +355,8 @@ func Test_Config_create(t *testing.T) {
 		assert.FileExist(t, pth)
 		assert.NotNil(t, hCfg.tgtOut)
 		assert.SameType(t, &os.File{}, hCfg.tgtOut)
-		// File is opened empty; Generate writes the full body after create.
-		assert.FileContain(t, "", pth)
+		// The existing file is truncated; Generate writes the body after.
+		assert.Equal(t, int64(0), must.Value(os.Stat(pth)).Size())
 		_ = hCfg.tgtOut.(*os.File).Close()
 	})
 

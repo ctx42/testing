@@ -285,10 +285,11 @@ func Test_gopkg_getModInfo(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkPkg, err)
+		assert.ErrorContain(t, "no such file or directory", err)
 	})
 
 	t.Run("error - directory is not part of a go module", func(t *testing.T) {
-		// --- When ---
+		// --- Given ---
 		pkg := &gopkg{wd: t.TempDir()}
 
 		// --- When ---
@@ -296,6 +297,7 @@ func Test_gopkg_getModInfo(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkPkg, err)
+		assert.ErrorContain(t, "go.mod file not found", err)
 	})
 
 	t.Run("error - unknown module", func(t *testing.T) {
@@ -777,22 +779,47 @@ func Test_gopkg_equal_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		path string
-		dir  string
-		want bool
+		pkg   *gopkg
+		other *gopkg
+		want  bool
 	}{
-		{"both empty", "", "", false},
-		{"import path equal", "example.com/mod", "example.com/mod", true},
-		{"dir path equal", "/dir", "/dir", true},
+		{"both empty", &gopkg{}, &gopkg{}, false},
+		{
+			"import path equal",
+			&gopkg{pkgPath: "example.com/mod"},
+			&gopkg{pkgPath: "example.com/mod"},
+			true,
+		},
+		{
+			"dir path equal",
+			&gopkg{pkgDir: "/dir"},
+			&gopkg{pkgDir: "/dir"},
+			true,
+		},
+		{
+			"import path differs",
+			&gopkg{pkgPath: "example.com/mod"},
+			&gopkg{pkgPath: "example.com/other"},
+			false,
+		},
+		{
+			"dir path differs",
+			&gopkg{pkgDir: "/dir"},
+			&gopkg{pkgDir: "/x"},
+			false,
+		},
+		{
+			"path differs dir equal",
+			&gopkg{pkgPath: "example.com/a", pkgDir: "/dir"},
+			&gopkg{pkgPath: "example.com/b", pkgDir: "/dir"},
+			true,
+		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
-			// --- Given ---
-			pkg := &gopkg{pkgPath: tc.path, pkgDir: tc.dir}
-
 			// --- When ---
-			have := pkg.equal(pkg)
+			have := tc.pkg.equal(tc.other)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)

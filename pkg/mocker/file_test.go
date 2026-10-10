@@ -175,9 +175,10 @@ func Test_file_parseDecls(t *testing.T) {
 			},
 		}
 
+		fil.parseDecls()
+		fil.ast.Decls = nil
+
 		// --- When ---
-		fil.parseDecls()
-		fil.parseDecls()
 		fil.parseDecls()
 
 		// --- Then ---
@@ -260,10 +261,7 @@ func Test_file_findPackage(t *testing.T) {
 		res := &resolver{}
 		fil := &file{
 			pks: []*gopkg{
-				{
-					pkgName: "abc",
-					pkgPath: "github.com/ctx42/testing/pkg/mocker/abc",
-				},
+				{pkgName: "xyz", resolved: true},
 			},
 		}
 
@@ -271,7 +269,7 @@ func Test_file_findPackage(t *testing.T) {
 		have, err := fil.findPackage(res, "abc")
 
 		// --- Then ---
-		assert.ErrorIs(t, ErrUnkPkg, err)
+		assert.Equal(t, true, err == ErrUnkPkg) // nolint: errorlint
 		assert.Nil(t, have)
 	})
 }

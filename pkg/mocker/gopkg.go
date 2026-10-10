@@ -11,6 +11,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -199,10 +200,16 @@ func (pkg *gopkg) getModInfo() (err error) {
 		}
 	}
 
-	if !pkg.isValid() {
+	if !pkg.isValid() || !isDir(pkg.pkgDir) {
 		return fmt.Errorf("%w: %s", ErrUnkPkg, pkg.id())
 	}
 	return nil
+}
+
+// isDir reports whether pth is an existing directory.
+func isDir(pth string) bool {
+	inf, err := os.Stat(pth)
+	return err == nil && inf.IsDir()
 }
 
 // parse reads and processes source files (excluding test files) in the package.

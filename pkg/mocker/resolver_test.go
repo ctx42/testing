@@ -78,6 +78,8 @@ func Test_resolver(t *testing.T) {
 
 		// --- Then ---
 		assert.NoError(t, err)
+		assert.Len(t, 0, res.cache)
+		assert.Equal(t, "", pkg.pkgDir)
 	})
 
 	t.Run("error - package not found", func(t *testing.T) {
@@ -85,7 +87,7 @@ func Test_resolver(t *testing.T) {
 		res := &resolver{}
 		pkg := &gopkg{
 			pkgPath: "github.com/ctx42/testing/pkg/abc",
-			wd:      "/dir",
+			wd:      must.Value(os.Getwd()),
 		}
 
 		// --- When ---
@@ -93,5 +95,7 @@ func Test_resolver(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkPkg, err)
+		assert.ErrorContain(t, "github.com/ctx42/testing/pkg/abc", err)
+		assert.Len(t, 0, res.cache)
 	})
 }

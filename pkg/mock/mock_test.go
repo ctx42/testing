@@ -11,6 +11,7 @@ import (
 
 	"github.com/ctx42/testing/pkg/assert"
 	"github.com/ctx42/testing/pkg/goldy"
+	"github.com/ctx42/testing/pkg/notice"
 	"github.com/ctx42/testing/pkg/testcases"
 	"github.com/ctx42/testing/pkg/tester"
 )
@@ -957,6 +958,7 @@ func Test_Mock_Callable(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrNotFound, err)
+		assert.Equal(t, hNotFoundCall, notice.From(err).HeaderText)
 	})
 
 	t.Run("error - when not matching arguments given", func(t *testing.T) {
@@ -975,6 +977,7 @@ func Test_Mock_Callable(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrNotFound, err)
+		assert.Equal(t, hUnexpectedCall, notice.From(err).HeaderText)
 	})
 
 	t.Run("error - when called again", func(t *testing.T) {
