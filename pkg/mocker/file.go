@@ -66,7 +66,11 @@ func (fil *file) parseDecls() {
 // path or its alias. An import that fails to resolve is skipped; when no
 // import matches, the first resolution error is returned, or an [ErrUnkPkg]
 // error when every import resolved.
-func (fil *file) findPackage(res *resolver, pathOrAlias string) (*gopkg, error) {
+func (fil *file) findPackage(
+	res *resolver,
+	pathOrAlias string,
+) (*gopkg, error) {
+
 	fil.parseImports()
 	var resErr error
 	// An aliased import is referenced only by its alias, so match the import
@@ -92,8 +96,8 @@ func (fil *file) findPackage(res *resolver, pathOrAlias string) (*gopkg, error) 
 }
 
 // dotImports returns packages imported to the file with dot import. The
-// returned packages may not be validated for existence, you may need to call
-// gopkg.resolve method before using them based on the context you use them for.
+// returned packages may not be validated for existence; call gopkg.resolve
+// before using them where that matters.
 func (fil *file) dotImports() []*gopkg {
 	fil.parseImports()
 	return fil.dots
@@ -108,7 +112,7 @@ func (fil *file) findType(name string) *ast.TypeSpec {
 		for _, spec := range dec.Specs {
 			typ, ok := spec.(*ast.TypeSpec)
 			if !ok {
-				// Can never happen due to filter in the [file.parseDecls],
+				// Can never happen due to filter in the file.parseDecls,
 				// but it would look strange if we did not handle ok.
 				continue
 			}

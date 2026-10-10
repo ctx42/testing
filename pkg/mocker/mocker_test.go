@@ -32,6 +32,7 @@ func Test_Mocker_Generate(t *testing.T) {
 		opts := []Option{
 			WithSrc("testdata/cases"),
 			WithTgt("testdata/golden"),
+			WithTgtName("Case54"),
 			WithTgtOutput(buf),
 		}
 		var mck Mocker
@@ -41,7 +42,8 @@ func Test_Mocker_Generate(t *testing.T) {
 
 		// --- Then ---
 		assert.NoError(t, err)
-		assert.True(t, buf.Len() > 0)
+		want := goldy.Open(t, "testdata/golden/Case54.gld")
+		assert.Equal(t, want.String(), buf.String())
 	})
 
 	t.Run("error - closing the output", func(t *testing.T) {
@@ -50,6 +52,7 @@ func Test_Mocker_Generate(t *testing.T) {
 		opts := []Option{
 			WithSrc("testdata/cases"),
 			WithTgt("testdata/golden"),
+			WithTgtName("Case00"),
 			WithTgtOutput(out),
 		}
 
@@ -58,13 +61,13 @@ func Test_Mocker_Generate(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorEqual(t, "Case00: writing the mock: close failed", err)
-		assert.True(t, out.Len() > 0)
+		want := goldy.Open(t, "testdata/golden/Case00.gld")
+		assert.Equal(t, want.String(), out.String())
 	})
 
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		mod := tstmod.New(t, "v2")
-
 		opts := []Option{
 			WithSrc("testdata/cases"),
 			WithTgt(mod.Dir),
@@ -76,7 +79,6 @@ func Test_Mocker_Generate(t *testing.T) {
 
 		// --- Then ---
 		assert.NoError(t, err)
-
 		gld := goldy.Open(t, "testdata/generate_success.gld")
 		have := must.Value(os.ReadFile(mod.Path("case54_mock.go")))
 		assert.Equal(t, gld.String(), string(have))
@@ -85,7 +87,6 @@ func Test_Mocker_Generate(t *testing.T) {
 	t.Run("set tester alias", func(t *testing.T) {
 		// --- Given ---
 		mod := tstmod.New(t, "v2")
-
 		opts := []Option{
 			WithSrc("testdata/cases"),
 			WithTgt(mod.Dir),
@@ -98,7 +99,6 @@ func Test_Mocker_Generate(t *testing.T) {
 
 		// --- Then ---
 		assert.NoError(t, err)
-
 		gld := goldy.Open(t, "testdata/generate_success_tester_alias.gld")
 		have := must.Value(os.ReadFile(mod.Path("case54_mock.go")))
 		assert.Equal(t, gld.String(), string(have))
@@ -385,8 +385,6 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 
 			gfp := filepath.Join("testdata/golden", tc.testN+".gld")
 			want := goldy.Open(t, gfp)
-			//nolint:gocritic
-			// want.SetContent(buf.String()).Save()
 			assert.Equal(t, want.String(), buf.String())
 		})
 	}

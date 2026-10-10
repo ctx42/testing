@@ -8,9 +8,8 @@ type resolver struct {
 	cache []*gopkg
 }
 
-// resolve retrieves the package for the given "want" from the cache or finds
-// it using gopkg.resolve. It caches the result on a successful lookup and returns
-// the package and any error encountered.
+// resolve fills "want" from the cache or resolves it using gopkg.resolve,
+// caching it on success. It returns the resolution error, if any.
 func (res *resolver) resolve(want *gopkg) error {
 	if want.resolved {
 		return nil

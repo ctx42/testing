@@ -11,9 +11,8 @@ const (
 	testerImp = "github.com/ctx42/testing/pkg/tester"
 )
 
-// goitf represents an interface.
+// goitf represents an interface by its methods.
 type goitf struct {
-	name    string    // The interface name.
 	methods []*method // The interface methods.
 }
 
@@ -32,12 +31,12 @@ func (itf *goitf) find(name string) (*method, error) {
 func (itf *goitf) generate(recType string, onHelpers bool) string {
 	var code strings.Builder
 	for i, met := range itf.methods {
-		code.WriteString(met.generate(recType))
+		_, _ = code.WriteString(met.generate(recType))
 		if onHelpers {
-			code.WriteString("\n\n" + met.generateOn(recType))
+			_, _ = code.WriteString("\n\n" + met.generateOn(recType))
 		}
 		if i < len(itf.methods)-1 {
-			code.WriteString("\n\n")
+			_, _ = code.WriteString("\n\n")
 		}
 	}
 	return code.String()

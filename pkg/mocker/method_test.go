@@ -141,16 +141,8 @@ func Test_method_genArgs_tabular(t *testing.T) {
 		args []argument
 		want string
 	}{
-		{
-			"nil args",
-			nil,
-			"()",
-		},
-		{
-			"no args",
-			[]argument{},
-			"()",
-		},
+		{"nil args", nil, "()"},
+		{"no args", []argument{}, "()"},
 		{
 			"one named argument",
 			[]argument{
@@ -212,16 +204,8 @@ func Test_method_genAnyArgs_tabular(t *testing.T) {
 		args []argument
 		want string
 	}{
-		{
-			"nil args",
-			nil,
-			"()",
-		},
-		{
-			"no args",
-			[]argument{},
-			"()",
-		},
+		{"nil args", nil, "()"},
+		{"no args", []argument{}, "()"},
 		{
 			"one named argument",
 			[]argument{
@@ -283,16 +267,8 @@ func Test_method_argNames_tabular(t *testing.T) {
 		args []argument
 		want []string
 	}{
-		{
-			"nil args",
-			nil,
-			nil,
-		},
-		{
-			"no args",
-			[]argument{},
-			nil,
-		},
+		{"nil args", nil, nil},
+		{"no args", []argument{}, nil},
 		{
 			"one named argument",
 			[]argument{
@@ -314,14 +290,6 @@ func Test_method_argNames_tabular(t *testing.T) {
 				{name: "", typ: "int"},
 			},
 			[]string{"_a0"},
-		},
-		{
-			"two arguments without a name",
-			[]argument{
-				{name: "", typ: "int"},
-				{name: "", typ: "bool"},
-			},
-			[]string{"_a0", "_a1"},
 		},
 		{
 			"two arguments without a name",
@@ -362,16 +330,8 @@ func Test_method_genArgTypes_tabular(t *testing.T) {
 		args []argument
 		want string
 	}{
-		{
-			"nil args",
-			nil,
-			"()",
-		},
-		{
-			"no args",
-			[]argument{},
-			"()",
-		},
+		{"nil args", nil, "()"},
+		{"no args", []argument{}, "()"},
 		{
 			"one named argument",
 			[]argument{
@@ -683,11 +643,7 @@ func Test_method_genArgSlice_tabular(t *testing.T) {
 		args []argument
 		want string
 	}{
-		{
-			"no arguments",
-			nil,
-			"\tvar _args []any\n",
-		},
+		{"no arguments", nil, "\tvar _args []any\n"},
 		{
 			"one argument",
 			[]argument{
@@ -866,17 +822,14 @@ func Test_method_genRetCheck_tabular(t *testing.T) {
 		rets []argument
 		want string
 	}{
-		{
-			"no returns",
-			nil,
-			"",
-		},
+		{"no returns", nil, ""},
 		{
 			"one return",
 			[]argument{
 				{name: "", typ: "error"},
 			},
-			"\tif len(_rets) != 1 {\n" +
+			"" +
+				"\tif len(_rets) != 1 {\n" +
 				"\t\t_mck.t.Fatal(\"the number of mocked method " +
 				"returns does not match\")\n" +
 				"\t}\n",
@@ -887,7 +840,8 @@ func Test_method_genRetCheck_tabular(t *testing.T) {
 				{name: "", typ: "int"},
 				{name: "", typ: "error"},
 			},
-			"\tif len(_rets) != 2 {\n" +
+			"" +
+				"\tif len(_rets) != 2 {\n" +
 				"\t\t_mck.t.Fatal(\"the number of mocked method " +
 				"returns does not match\")\n" +
 				"\t}\n",
@@ -906,6 +860,37 @@ func Test_method_genRetCheck_tabular(t *testing.T) {
 			assert.Equal(t, tc.want, have)
 		})
 	}
+}
+
+func Test_method_genReturnBody(t *testing.T) {
+	t.Run("no returns", func(t *testing.T) {
+		// --- Given ---
+		met := &method{}
+
+		// --- When ---
+		have := met.genReturnBody(1)
+
+		// --- Then ---
+		assert.Equal(t, "", have)
+	})
+
+	t.Run("one return", func(t *testing.T) {
+		// --- Given ---
+		met := &method{rets: []argument{{typ: "int"}}}
+
+		// --- When ---
+		have := met.genReturnBody(1)
+
+		// --- Then ---
+		want := "" +
+			"\tvar _r0 int\n" +
+			"\tif _rFn, _ok := _rets.Get(0).(func() int); _ok {\n" +
+			"\t\t_r0 = _rFn()\n" +
+			"\t} else if _r := _rets.Get(0); _r != nil {\n" +
+			"\t\t_r0 = _r.(int)\n" +
+			"\t}"
+		assert.Equal(t, want, have)
+	})
 }
 
 func Test_method_genSingleRet_tabular(t *testing.T) {
@@ -985,12 +970,7 @@ func Test_method_genReturn_tabular(t *testing.T) {
 		rets []argument
 		want string
 	}{
-		{
-			"no returns",
-			nil,
-			nil,
-			"",
-		},
+		{"no returns", nil, nil, ""},
 		{
 			"one return",
 			nil,

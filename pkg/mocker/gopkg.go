@@ -11,39 +11,38 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 )
 
-// gopkg represents Go package.
+// gopkg represents a Go package.
 type gopkg struct {
 	// Alias used when generating code for the package import line.
 	alias string
 
-	// Is the package name as used in code (e.g., "http", "exec").
+	// The package name as used in code (e.g., "http", "exec").
 	pkgName string
 
-	// Is the package import path (e.g., "net/http", "os/exec").
+	// The package import path (e.g., "net/http", "os/exec").
 	pkgPath string
 
-	// Is the absolute path to the package source directory.
+	// The absolute path to the package source directory.
 	pkgDir string
 
-	// Is the name of the module containing the package, as used in code (e.g.,
+	// The name of the module containing the package, as used in code (e.g.,
 	// "http" for "net/http", "exec" for "os/exec").
 	modName string
 
-	// Is the full import path of the module containing the package (e.g.,
+	// The full import path of the module containing the package (e.g.,
 	// "net/http", "github.com/user/mod").
 	modPath string
 
-	// Is the absolute path to the root directory of the module containing the
+	// The absolute path to the root directory of the module containing the
 	// package.
 	modDir string
 
-	// Is the absolute path to the working directory in which the `go list`
+	// The absolute path to the working directory in which the `go list`
 	// command is executed.
 	wd string
 
@@ -206,12 +205,6 @@ func (pkg *gopkg) getModInfo() (err error) {
 	return nil
 }
 
-// isDir reports whether pth is an existing directory.
-func isDir(pth string) bool {
-	inf, err := os.Stat(pth)
-	return err == nil && inf.IsDir()
-}
-
 // parse reads and processes source files (excluding test files) in the package.
 // For efficiency, it parses files only once, even if called multiple times.
 func (pkg *gopkg) parse() error {
@@ -298,12 +291,12 @@ func errGeneric(name string) error { return &genericError{name: name} }
 // genericError reports a generic interface. It wraps [ErrUnkItf].
 type genericError struct{ name string }
 
-func (e *genericError) Error() string {
+func (gen *genericError) Error() string {
 	const format = "%s: generic interface %s is not supported"
-	return fmt.Sprintf(format, ErrUnkItf, e.name)
+	return fmt.Sprintf(format, ErrUnkItf, gen.name)
 }
 
-func (e *genericError) Unwrap() error { return ErrUnkItf }
+func (gen *genericError) Unwrap() error { return ErrUnkItf }
 
 // isValid returns true if the package has all the required fields set.
 func (pkg *gopkg) isValid() bool {
@@ -312,8 +305,8 @@ func (pkg *gopkg) isValid() bool {
 		pkg.wd != ""
 }
 
-// id returns package identification which is either import path or package
-// source directory. Used in errors to identify problematic package.
+// id returns the package identification, which is either the import path or the
+// package source directory. Used in errors to identify problematic package.
 func (pkg *gopkg) id() string {
 	if pkg.pkgPath != "" {
 		return pkg.pkgPath
@@ -350,7 +343,7 @@ func (pkg *gopkg) from(other *gopkg) {
 	pkg.fset = other.fset
 }
 
-// setAlias sets package [gopkg.alias] and [gopkg.pkgName] to given alias.
+// setAlias sets the package alias and pkgName to the given alias.
 func (pkg *gopkg) setAlias(alias string) {
 	pkg.alias = alias
 	if alias == "" {

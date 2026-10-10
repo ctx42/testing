@@ -70,7 +70,7 @@ func Test_addUniquePackage(t *testing.T) {
 		assert.Equal(t, want, have)
 	})
 
-	t.Run("add not exiting", func(t *testing.T) {
+	t.Run("add not existing", func(t *testing.T) {
 		// --- Given ---
 		imps := []*gopkg{
 			{pkgPath: "a0_path"},
@@ -88,7 +88,7 @@ func Test_addUniquePackage(t *testing.T) {
 		assert.Equal(t, want, have)
 	})
 
-	t.Run("add exiting simple", func(t *testing.T) {
+	t.Run("add existing simple", func(t *testing.T) {
 		// --- Given ---
 		imps := []*gopkg{
 			{pkgPath: "a0_path"},
@@ -105,7 +105,7 @@ func Test_addUniquePackage(t *testing.T) {
 		assert.Equal(t, want, have)
 	})
 
-	t.Run("add exiting many", func(t *testing.T) {
+	t.Run("add existing many", func(t *testing.T) {
 		// --- Given ---
 		imps := []*gopkg{
 			{pkgPath: "a0_path"},
@@ -244,21 +244,9 @@ func Test_genImports(t *testing.T) {
 	t.Run("imports", func(t *testing.T) {
 		// --- Given ---
 		imps := []*gopkg{
-			{
-				alias:   "",
-				pkgName: "fmt",
-				pkgPath: "fmt",
-			},
-			{
-				alias:   "",
-				pkgName: "os",
-				pkgPath: "os",
-			},
-			{
-				alias:   "tm",
-				pkgName: "time",
-				pkgPath: "time",
-			},
+			{alias: "", pkgName: "fmt", pkgPath: "fmt"},
+			{alias: "", pkgName: "os", pkgPath: "os"},
+			{alias: "tm", pkgName: "time", pkgPath: "time"},
 			{
 				alias:   ".",
 				pkgName: "pkgc",
@@ -285,11 +273,60 @@ func Test_genImports(t *testing.T) {
 	})
 }
 
+func Test_dedupeImports(t *testing.T) {
+	t.Run("keeps first import of a path", func(t *testing.T) {
+		// --- Given ---
+		pkg0 := &gopkg{pkgName: "mock", pkgPath: "example.com/mock"}
+		pkg1 := &gopkg{
+			alias:   "mk",
+			pkgName: "mk",
+			pkgPath: "example.com/mock",
+		}
+		met := &method{args: []argument{{typ: "mk.Mock", pks: []*gopkg{pkg1}}}}
+		imps := []*gopkg{pkg0, pkg1}
+		mts := []*method{met}
+
+		// --- When ---
+		have := dedupeImports(imps, mts)
+
+		// --- Then ---
+		assert.Equal(t, []*gopkg{pkg0}, have)
+		assert.Equal(t, "mock.Mock", met.args[0].typ)
+	})
+
+	t.Run("keeps imports without path", func(t *testing.T) {
+		// --- Given ---
+		imps := []*gopkg{{}, nil}
+
+		// --- When ---
+		have := dedupeImports(imps, nil)
+
+		// --- Then ---
+		assert.Len(t, 2, have)
+	})
+}
+
+func Test_renameShadowingArgs(t *testing.T) {
+	// --- Given ---
+	pkg := &gopkg{pkgName: "url", pkgPath: "net/url"}
+	met := &method{args: []argument{{name: "url"}, {name: "any"}, {name: "a"}}}
+	imps := []*gopkg{pkg, nil}
+	mts := []*method{met}
+
+	// --- When ---
+	renameShadowingArgs(imps, mts)
+
+	// --- Then ---
+	want := []argument{{name: ""}, {name: ""}, {name: "a"}}
+	assert.Equal(t, want, met.args)
+}
+
 func Test_resolveImportNameClashes(t *testing.T) {
 	t.Run("renames second package with same name", func(t *testing.T) {
 		// --- Given ---
 		a := &gopkg{pkgName: "foo", pkgPath: "example.com/a/foo"}
 		b := &gopkg{pkgName: "foo", pkgPath: "example.com/b/foo"}
+		imps := []*gopkg{a, b}
 		met := &method{
 			args: []argument{{
 				typ: "foo.T",
@@ -300,10 +337,10 @@ func Test_resolveImportNameClashes(t *testing.T) {
 				pks: []*gopkg{b},
 			}},
 		}
-		imps := []*gopkg{a, b}
+		mts := []*method{met}
 
 		// --- When ---
-		resolveImportNameClashes(imps, []*method{met})
+		resolveImportNameClashes(imps, mts)
 
 		// --- Then ---
 		assert.Equal(t, "foo", a.pkgName)
@@ -317,15 +354,17 @@ func Test_resolveImportNameClashes(t *testing.T) {
 		// --- Given ---
 		a := &gopkg{alias: "mt", pkgName: "time", pkgPath: "time"}
 		b := &gopkg{pkgName: "mt", pkgPath: "example.com/mt"}
+		imps := []*gopkg{a, b}
 		met := &method{
 			args: []argument{{
 				typ: "mt.Thing",
 				pks: []*gopkg{b},
 			}},
 		}
+		mts := []*method{met}
 
 		// --- When ---
-		resolveImportNameClashes([]*gopkg{a, b}, []*method{met})
+		resolveImportNameClashes(imps, mts)
 
 		// --- Then ---
 		assert.Equal(t, "mt", a.ident())
@@ -341,15 +380,17 @@ func Test_resolveImportNameClashes(t *testing.T) {
 			pkgPath: "github.com/ctx42/testing/pkg/mock",
 		}
 		user := &gopkg{pkgName: "mock", pkgPath: "example.com/other/mock"}
+		imps := []*gopkg{mck, user}
 		met := &method{
 			args: []argument{{
 				typ: "mock.Type",
 				pks: []*gopkg{user},
 			}},
 		}
+		mts := []*method{met}
 
 		// --- When ---
-		resolveImportNameClashes([]*gopkg{mck, user}, []*method{met})
+		resolveImportNameClashes(imps, mts)
 
 		// --- Then ---
 		assert.Equal(t, "mock", mck.pkgName)
@@ -362,9 +403,10 @@ func Test_resolveImportNameClashes(t *testing.T) {
 		// --- Given ---
 		a := &gopkg{pkgName: "a", pkgPath: "example.com/a"}
 		b := &gopkg{pkgName: "b", pkgPath: "example.com/b"}
+		imps := []*gopkg{a, b}
 
 		// --- When ---
-		resolveImportNameClashes([]*gopkg{a, b}, nil)
+		resolveImportNameClashes(imps, nil)
 
 		// --- Then ---
 		assert.Equal(t, "a", a.pkgName)
@@ -372,6 +414,39 @@ func Test_resolveImportNameClashes(t *testing.T) {
 		assert.Equal(t, "", a.alias)
 		assert.Equal(t, "", b.alias)
 	})
+}
+
+func Test_nextImportAlias(t *testing.T) {
+	// --- Given ---
+	used := map[string]*gopkg{"pkg": {}, "pkg2": {}}
+
+	// --- When ---
+	have := nextImportAlias("pkg", used)
+
+	// --- Then ---
+	assert.Equal(t, "pkg3", have)
+}
+
+func Test_rewriteTypePkgPrefix(t *testing.T) {
+	// --- Given ---
+	pkg := &gopkg{pkgName: "foo", pkgPath: "example.com/foo"}
+	other := &gopkg{pkgName: "bar", pkgPath: "example.com/bar"}
+	met := &method{
+		args: []argument{
+			{typ: "foo.T", pks: []*gopkg{pkg}},
+			{typ: "foo.T", pks: []*gopkg{other}},
+		},
+		rets: []argument{{typ: "[]foo.T", pks: []*gopkg{pkg}}},
+	}
+	mts := []*method{met, nil}
+
+	// --- When ---
+	rewriteTypePkgPrefix(mts, pkg, "foo", "foo2")
+
+	// --- Then ---
+	assert.Equal(t, "foo2.T", met.args[0].typ)
+	assert.Equal(t, "foo.T", met.args[1].typ)
+	assert.Equal(t, "[]foo2.T", met.rets[0].typ)
 }
 
 func Test_replacePkgPrefix_tabular(t *testing.T) {
@@ -405,20 +480,84 @@ func Test_replacePkgPrefix_tabular(t *testing.T) {
 	}
 }
 
-func Test_toLowerSnakeCase_tabular(t *testing.T) {
+func Test_isIdentRune_tabular(t *testing.T) {
 	tt := []struct {
-		in   string
-		want string
+		testN string
+
+		r    rune
+		want bool
 	}{
-		{"toLowerSnakeCase", "to_lower_snake_case"},
-		{"TestItf", "test_itf"},
-		{"test", "test"},
-		{"TEST", "test"},
-		{"ŻółwMock", "żółw_mock"},
+		{"underscore", '_', true},
+		{"letter", 'a', true},
+		{"digit", '7', true},
+		{"non-ASCII letter", 'ż', true},
+		{"dot", '.', false},
+		{"star", '*', false},
 	}
 
 	for _, tc := range tt {
-		t.Run(tc.in, func(t *testing.T) {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := isIdentRune(tc.r)
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
+}
+
+func Test_argUsesPkg(t *testing.T) {
+	t.Run("uses", func(t *testing.T) {
+		// --- Given ---
+		pkg := &gopkg{pkgPath: "example.com/foo"}
+		arg := &argument{pks: []*gopkg{{}, pkg}}
+
+		// --- When ---
+		have := argUsesPkg(arg, pkg)
+
+		// --- Then ---
+		assert.True(t, have)
+	})
+
+	t.Run("same import path", func(t *testing.T) {
+		// --- Given ---
+		arg := &argument{pks: []*gopkg{{pkgPath: "example.com/foo"}}}
+
+		// --- When ---
+		have := argUsesPkg(arg, &gopkg{pkgPath: "example.com/foo"})
+
+		// --- Then ---
+		assert.True(t, have)
+	})
+
+	t.Run("does not use", func(t *testing.T) {
+		// --- Given ---
+		arg := &argument{pks: []*gopkg{nil, {pkgPath: "example.com/bar"}}}
+
+		// --- When ---
+		have := argUsesPkg(arg, &gopkg{pkgPath: "example.com/foo"})
+
+		// --- Then ---
+		assert.False(t, have)
+	})
+}
+
+func Test_toLowerSnakeCase_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		in   string
+		want string
+	}{
+		{"camel case", "toLowerSnakeCase", "to_lower_snake_case"},
+		{"pascal case", "TestItf", "test_itf"},
+		{"lower case", "test", "test"},
+		{"upper case", "TEST", "test"},
+		{"non-ASCII", "ŻółwMock", "żółw_mock"},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
 			have := toLowerSnakeCase(tc.in)
 
@@ -430,8 +569,10 @@ func Test_toLowerSnakeCase_tabular(t *testing.T) {
 
 func Test_findSources(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		// --- When ---
+		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/ignored")
+
+		// --- When ---
 		have, err := findSources(dir)
 
 		// --- Then ---
@@ -441,8 +582,10 @@ func Test_findSources(t *testing.T) {
 	})
 
 	t.Run("does not recurse", func(t *testing.T) {
-		// --- When ---
+		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/pkga")
+
+		// --- When ---
 		have, err := findSources(dir)
 
 		// --- Then ---
@@ -452,8 +595,10 @@ func Test_findSources(t *testing.T) {
 	})
 
 	t.Run("does not return test files", func(t *testing.T) {
-		// --- When ---
+		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/pkgb")
+
+		// --- When ---
 		have, err := findSources(dir)
 
 		// --- Then ---
@@ -463,8 +608,10 @@ func Test_findSources(t *testing.T) {
 	})
 
 	t.Run("error - when the path is not a directory", func(t *testing.T) {
-		// --- When ---
+		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/pkga/helper.go")
+
+		// --- When ---
 		have, err := findSources(dir)
 
 		// --- Then ---
@@ -474,8 +621,10 @@ func Test_findSources(t *testing.T) {
 	})
 
 	t.Run("error - when directory doesnt exist", func(t *testing.T) {
-		// --- When ---
+		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/not-existing")
+
+		// --- When ---
 		have, err := findSources(dir)
 
 		// --- Then ---
@@ -560,8 +709,8 @@ func Test_detectDirOrImp_tabular(t *testing.T) {
 
 		wd       string
 		dirOrImp string
-		wantDir  string
-		wantImp  string
+		wDir     string
+		wImp     string
 	}{
 		{
 			"absolute path to a package",
@@ -598,62 +747,43 @@ func Test_detectDirOrImp_tabular(t *testing.T) {
 			wd,
 			"github.com/ctx42/testing/pkg/mocker/testdata/cases",
 		},
-		{
-			"empty import",
-			wd,
-			"",
-			wd,
-			"",
-		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
-			// --- Given ---
-
-			// --- When ---
-			haveDir, haveImp := detectDirOrImp(tc.wd, tc.dirOrImp)
-
-			// --- Then ---
-			assert.Equal(t, tc.wantDir, haveDir)
-			assert.Equal(t, tc.wantImp, haveImp)
-		})
-	}
-}
-
-func Test_nextImportAlias(t *testing.T) {
-	// --- Given ---
-	used := map[string]*gopkg{"pkg": {}, "pkg2": {}}
-
-	// --- When ---
-	have := nextImportAlias("pkg", used)
-
-	// --- Then ---
-	assert.Equal(t, "pkg3", have)
-}
-
-func Test_isIdentRune_tabular(t *testing.T) {
-	tt := []struct {
-		testN string
-
-		r    rune
-		want bool
-	}{
-		{"underscore", '_', true},
-		{"letter", 'a', true},
-		{"digit", '7', true},
-		{"non-ASCII letter", 'ż', true},
-		{"dot", '.', false},
-		{"star", '*', false},
+		{"empty import", wd, "", wd, ""},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := isIdentRune(tc.r)
+			hDir, hImp := detectDirOrImp(tc.wd, tc.dirOrImp)
 
 			// --- Then ---
-			assert.Equal(t, tc.want, have)
+			assert.Equal(t, tc.wDir, hDir)
+			assert.Equal(t, tc.wImp, hImp)
 		})
 	}
+}
+
+func Test_isDir(t *testing.T) {
+	t.Run("directory", func(t *testing.T) {
+		// --- When ---
+		have := isDir(t.TempDir())
+
+		// --- Then ---
+		assert.True(t, have)
+	})
+
+	t.Run("file", func(t *testing.T) {
+		// --- When ---
+		have := isDir("helpers.go")
+
+		// --- Then ---
+		assert.False(t, have)
+	})
+
+	t.Run("missing", func(t *testing.T) {
+		// --- When ---
+		have := isDir(filepath.Join(t.TempDir(), "missing"))
+
+		// --- Then ---
+		assert.False(t, have)
+	})
 }

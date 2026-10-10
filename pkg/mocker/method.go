@@ -70,14 +70,14 @@ func (met *method) genReceiver(typ string) string {
 //	(x int, y bool)
 func (met *method) genArgs() string {
 	var code strings.Builder
-	code.WriteString("(")
+	_, _ = code.WriteString("(")
 	for i, arg := range met.args {
 		if i > 0 {
-			code.WriteString(", ")
+			_, _ = code.WriteString(", ")
 		}
-		code.WriteString(arg.genName(i) + " " + arg.typ)
+		_, _ = code.WriteString(arg.genName(i) + " " + arg.typ)
 	}
-	code.WriteString(")")
+	_, _ = code.WriteString(")")
 	return code.String()
 }
 
@@ -93,18 +93,18 @@ func (met *method) genArgs() string {
 //	(x any, y any, z ...any)
 func (met *method) genAnyArgs() string {
 	var code strings.Builder
-	code.WriteString("(")
+	_, _ = code.WriteString("(")
 	for i, arg := range met.args {
 		if i > 0 {
-			code.WriteString(", ")
+			_, _ = code.WriteString(", ")
 		}
-		code.WriteString(arg.genName(i) + " ")
+		_, _ = code.WriteString(arg.genName(i) + " ")
 		if arg.isVariadic() {
-			code.WriteString("...")
+			_, _ = code.WriteString("...")
 		}
-		code.WriteString("any")
+		_, _ = code.WriteString("any")
 	}
-	code.WriteString(")")
+	_, _ = code.WriteString(")")
 	return code.String()
 }
 
@@ -156,14 +156,14 @@ func (met *method) genRets() string {
 	rc := len(met.rets)
 	for i, ret := range met.rets {
 		if rc > 1 && i == 0 {
-			code.WriteString("(")
+			_, _ = code.WriteString("(")
 		}
 		if i > 0 {
-			code.WriteString(", ")
+			_, _ = code.WriteString(", ")
 		}
-		code.WriteString(ret.typ)
+		_, _ = code.WriteString(ret.typ)
 		if rc > 1 && i == rc-1 {
-			code.WriteString(")")
+			_, _ = code.WriteString(")")
 		}
 	}
 	return code.String()
@@ -329,12 +329,8 @@ func (met *method) genSingleRet(idx int, ret argument, indent int) []string {
 
 	// Check if Get returns a function.
 	codeFnTyp := fmt.Sprintf("func%s %s", met.genArgTypes(), ret.typ)
-	code := fmt.Sprintf(
-		"%sif _rFn, _ok := _rets.Get(%d).(%s); _ok {",
-		ind,
-		idx,
-		codeFnTyp,
-	)
+	format := "%sif _rFn, _ok := _rets.Get(%d).(%s); _ok {"
+	code := fmt.Sprintf(format, ind, idx, codeFnTyp)
 	lines = append(lines, code)
 
 	// If function call.
@@ -373,7 +369,7 @@ func (met *method) genReturn() string {
 	return "\treturn " + strings.Join(code, ", ") + "\n"
 }
 
-// imports return a list of imports needed by the method's arguments and
+// imports returns a list of imports needed by the method's arguments and
 // returns.
 func (met *method) imports() []*gopkg {
 	var imps []*gopkg
@@ -386,7 +382,7 @@ func (met *method) imports() []*gopkg {
 	return imps
 }
 
-// variadic returns true when method has variadic arguments.
+// isVariadic returns true when the method has variadic arguments.
 func (met *method) isVariadic() bool {
 	for _, arg := range met.args {
 		if arg.isVariadic() {

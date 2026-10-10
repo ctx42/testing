@@ -161,7 +161,7 @@ func Test_file_parseDecls(t *testing.T) {
 
 		// --- Then ---
 		assert.Len(t, 1, fil.decls)
-		assert.Same(t, fil.decls[0], dec0)
+		assert.Same(t, dec0, fil.decls[0])
 	})
 
 	t.Run("parsing results are cached", func(t *testing.T) {
@@ -174,7 +174,6 @@ func Test_file_parseDecls(t *testing.T) {
 				},
 			},
 		}
-
 		fil.parseDecls()
 		fil.ast.Decls = nil
 
@@ -240,7 +239,8 @@ func Test_file_findPackage(t *testing.T) {
 
 		// --- Then ---
 		assert.NoError(t, err)
-		assert.Equal(t, &gopkg{alias: "a1", pkgName: "n1", resolved: true}, have)
+		want := &gopkg{alias: "a1", pkgName: "n1", resolved: true}
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("skips unrelated import failing to resolve", func(t *testing.T) {
@@ -308,7 +308,7 @@ func Test_file_findPackage(t *testing.T) {
 		have, err := fil.findPackage(res, "abc")
 
 		// --- Then ---
-		assert.Equal(t, true, err == ErrUnkPkg) //nolint:errorlint
+		assert.Same(t, ErrUnkPkg, err)
 		assert.Nil(t, have)
 	})
 }
@@ -354,7 +354,6 @@ func Test_file_findType(t *testing.T) {
 		// --- Given ---
 		typ0 := &ast.TypeSpec{Name: ast.NewIdent("MyType0")}
 		typ1 := &ast.TypeSpec{Name: ast.NewIdent("MyType1")}
-
 		fil := &file{
 			decls: []*ast.GenDecl{
 				{
@@ -383,7 +382,6 @@ func Test_file_findType(t *testing.T) {
 		// --- Given ---
 		typ0 := &ast.TypeSpec{Name: ast.NewIdent("MyType0")}
 		typ1 := &ast.TypeSpec{Name: ast.NewIdent("MyType1")}
-
 		fil := &file{
 			decls: []*ast.GenDecl{
 				{

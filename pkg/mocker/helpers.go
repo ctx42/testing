@@ -22,8 +22,8 @@ import (
 // element of the path that does not look like a major version and then picks
 // the valid identifier at the start of that element.
 //
-// Copied from golang.org/x/tools/internal/imports:
-// https://github.com/golang/tools/blob/a318c19ff2fd8d6aae74e36fe7e1a8b8afef3bf7/internal/imports/fix.go#L1233
+// Copied from golang.org/x/tools/internal/imports (fix.go, commit
+// a318c19ff2fd8d6aae74e36fe7e1a8b8afef3bf7).
 //
 // Example:
 //
@@ -105,12 +105,13 @@ next:
 //	"github.com/tst/pkgc"
 func sortImports(ips []*gopkg) []*gopkg {
 	var std, reg []*gopkg
-	for _, imp := range ips {
+	for _, pkg := range ips {
 		switch {
-		case !strings.Contains(imp.pkgPath, "."):
-			std = append(std, imp)
+		case !strings.Contains(pkg.pkgPath, "."):
+			std = append(std, pkg)
+
 		default:
-			reg = append(reg, imp)
+			reg = append(reg, pkg)
 		}
 	}
 
@@ -140,18 +141,18 @@ func genImports(imps []*gopkg) string {
 	ips := sortImports(imps)
 
 	buf := &bytes.Buffer{}
-	buf.WriteString("import (\n")
-	for i, imp := range ips {
-		str := imp.genImport()
+	_, _ = buf.WriteString("import (\n")
+	for i, pkg := range ips {
+		str := pkg.genImport()
 		if str == "" && i > 0 {
-			buf.WriteString("\n")
+			_, _ = buf.WriteString("\n")
 		} else {
-			buf.WriteString("\t")
-			buf.WriteString(str)
-			buf.WriteString("\n")
+			_, _ = buf.WriteString("\t")
+			_, _ = buf.WriteString(str)
+			_, _ = buf.WriteString("\n")
 		}
 	}
-	buf.WriteString(")")
+	_, _ = buf.WriteString(")")
 	return buf.String()
 }
 
@@ -185,9 +186,9 @@ func dedupeImports(imps []*gopkg, methods []*method) []*gopkg {
 // shadowing the package or the predeclared type in the method body.
 func renameShadowingArgs(imps []*gopkg, methods []*method) {
 	reserved := map[string]bool{"any": true}
-	for _, imp := range imps {
-		if imp != nil && imp.pkgPath != "" {
-			reserved[imp.ident()] = true
+	for _, pkg := range imps {
+		if pkg != nil && pkg.pkgPath != "" {
+			reserved[pkg.ident()] = true
 		}
 	}
 	for _, met := range methods {
@@ -265,18 +266,18 @@ func replacePkgPrefix(typ, old, neu string) string {
 	for i < len(typ) {
 		j := strings.Index(typ[i:], from)
 		if j < 0 {
-			b.WriteString(typ[i:])
+			_, _ = b.WriteString(typ[i:])
 			break
 		}
 		j += i
 		if j > 0 && isIdentRune(rune(typ[j-1])) {
 			// old is a suffix of a longer identifier (e.g. afoo vs foo).
-			b.WriteString(typ[i : j+len(from)])
+			_, _ = b.WriteString(typ[i : j+len(from)])
 			i = j + len(from)
 			continue
 		}
-		b.WriteString(typ[i:j])
-		b.WriteString(to)
+		_, _ = b.WriteString(typ[i:j])
+		_, _ = b.WriteString(to)
 		i = j + len(from)
 	}
 	return b.String()
@@ -410,4 +411,10 @@ func detectDirOrImp(wd, dirOrImp string) (string, string) {
 		}
 	}
 	return wd, dirOrImp
+}
+
+// isDir reports whether pth is an existing directory.
+func isDir(pth string) bool {
+	inf, err := os.Stat(pth)
+	return err == nil && inf.IsDir()
 }

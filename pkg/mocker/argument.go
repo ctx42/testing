@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// argument represents method's argument or return value.
+// argument represents a method's argument or return value.
 //
 // Examples:
 //

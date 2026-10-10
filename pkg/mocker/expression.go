@@ -12,5 +12,5 @@ package mocker
 //	map[*pkga.A1]func(b pkgb.B1) func(a pkga.A1) error
 type expression struct {
 	value string   // String representation of the expression.
-	pks   []*gopkg // Package pks needed by the expression.
+	pks   []*gopkg // Packages needed by the expression.
 }

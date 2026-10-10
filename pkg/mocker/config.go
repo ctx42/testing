@@ -85,16 +85,12 @@ type Config struct {
 }
 
 // newConfig creates a validated configuration for mocking the given
-// interface. Use the Option functions to customize source/target locations,
+// interface. Use the [Option] functions to customize source/target locations,
 // output destination, mock name, etc.
 //
 // This is an internal helper; users normally use [Generate] or
 // [Mocker.Generate] with options.
 func newConfig(name string, opts ...Option) (Config, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return Config{}, err
-	}
 	if name == "" {
 		return Config{}, errors.New("interface name is required for mocking")
 	}
@@ -108,6 +104,16 @@ func newConfig(name string, opts ...Option) (Config, error) {
 	if cfg.tgtOut != nil && cfg.tgtFilename != "" {
 		msg := "cannot use both WithTgtOutput and WithTgtFilename options"
 		return Config{}, errors.New(msg)
+	}
+	if alias := cfg.testerAlias; alias != "" &&
+		(!token.IsIdentifier(alias) || alias == "_") {
+
+		return Config{}, fmt.Errorf("invalid tester alias: %q", alias)
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return Config{}, err
 	}
 
 	var srcWd string
@@ -128,12 +134,6 @@ func newConfig(name string, opts ...Option) (Config, error) {
 
 	if cfg.tgtName == "" {
 		cfg.tgtName = cfg.srcName + "Mock"
-	}
-
-	if alias := cfg.testerAlias; alias != "" &&
-		(!token.IsIdentifier(alias) || alias == "_") {
-
-		return Config{}, fmt.Errorf("invalid tester alias: %q", alias)
 	}
 
 	if cfg.tgtOut == nil {

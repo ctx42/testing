@@ -5,6 +5,7 @@ package mocker
 
 import (
 	"bytes"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -57,6 +58,17 @@ func Test_WithTgtFilename(t *testing.T) {
 	assert.Equal(t, "file.go", cfg.tgtFilename)
 }
 
+func Test_WithTgtOnHelpers(t *testing.T) {
+	// --- Given ---
+	cfg := &Config{}
+
+	// --- When ---
+	WithTgtOnHelpers(cfg)
+
+	// --- Then ---
+	assert.True(t, cfg.onHelpers)
+}
+
 func Test_WithTgtOutput(t *testing.T) {
 	// --- Given ---
 	buf := &bytes.Buffer{}
@@ -67,17 +79,6 @@ func Test_WithTgtOutput(t *testing.T) {
 
 	// --- Then ---
 	assert.Same(t, buf, cfg.tgtOut)
-}
-
-func Test_WithTgtOnHelpers(t *testing.T) {
-	// --- Given ---
-	cfg := &Config{}
-
-	// --- When ---
-	WithTgtOnHelpers(cfg)
-
-	// --- Then ---
-	assert.True(t, cfg.onHelpers)
 }
 
 func Test_WithTesterAlias(t *testing.T) {
@@ -144,7 +145,6 @@ func Test_newConfig(t *testing.T) {
 		assert.Equal(t, wSrcImp, have.srcPkg)
 		assert.Nil(t, have.srcFile)
 		assert.Nil(t, have.srcItf)
-
 		assert.Equal(t, "TstItfMock", have.tgtName)
 		wTgtImp := &gopkg{
 			pkgName:  "mocker",
@@ -187,7 +187,6 @@ func Test_newConfig(t *testing.T) {
 		assert.Equal(t, wSrcImp, have.srcPkg)
 		assert.Nil(t, have.srcFile)
 		assert.Nil(t, have.srcItf)
-
 		assert.Equal(t, "Case00Mock", have.tgtName)
 		wTgtImp := &gopkg{
 			pkgName:  "mocker",
@@ -209,10 +208,9 @@ func Test_newConfig(t *testing.T) {
 	t.Run("with a custom target name", func(t *testing.T) {
 		// --- Given ---
 		wd := must.Value(os.Getwd())
-		opt := WithTgtName("MyMock")
 
 		// --- When ---
-		have, err := newConfig("TstItf", opt)
+		have, err := newConfig("TstItf", WithTgtName("MyMock"))
 
 		// --- Then ---
 		assert.NoError(t, err)
@@ -236,10 +234,9 @@ func Test_newConfig(t *testing.T) {
 	t.Run("with a custom target filename", func(t *testing.T) {
 		// --- Given ---
 		wd := must.Value(os.Getwd())
-		opt := WithTgtFilename("my_super_mock.go")
 
 		// --- When ---
-		have, err := newConfig("TstItf", opt)
+		have, err := newConfig("TstItf", WithTgtFilename("my_super_mock.go"))
 
 		// --- Then ---
 		assert.NoError(t, err)
@@ -261,7 +258,7 @@ func Test_newConfig(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkPkg, err)
-		assert.ErrorContain(t, "!!!", err)
+		assert.ErrorContain(t, "source package !!!", err)
 	})
 
 	t.Run("error - invalid target", func(t *testing.T) {
@@ -270,11 +267,11 @@ func Test_newConfig(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkPkg, err)
-		assert.ErrorContain(t, "!!!", err)
+		assert.ErrorContain(t, "target package !!!", err)
 	})
 
 	t.Run("error - cannot set filename and output", func(t *testing.T) {
-		// --- When ---
+		// --- Given ---
 		buf := &bytes.Buffer{}
 		opts := []Option{WithTgtFilename("file.go"), WithTgtOutput(buf)}
 
@@ -339,6 +336,7 @@ func Test_Config_create(t *testing.T) {
 		// --- Given ---
 		pth := filepath.Join(t.TempDir(), "_target_.go")
 		must.Nil(os.WriteFile(pth, []byte("existing longer content"), 0o600))
+
 		cfg := &Config{
 			tgtFilename: pth,
 			tgtPkg: &gopkg{
@@ -357,10 +355,11 @@ func Test_Config_create(t *testing.T) {
 		assert.SameType(t, &os.File{}, have.tgtOut)
 		// The existing file is truncated; Generate writes the body after.
 		assert.Equal(t, int64(0), must.Value(os.Stat(pth)).Size())
+
 		_ = have.tgtOut.(*os.File).Close()
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - missing target directory", func(t *testing.T) {
 		// --- Given ---
 		pth := filepath.Join(t.TempDir(), "dir", "_target_.go")
 		cfg := &Config{tgtFilename: pth}
@@ -369,7 +368,7 @@ func Test_Config_create(t *testing.T) {
 		have, err := cfg.create()
 
 		// --- Then ---
-		assert.ErrorContain(t, "no such file or directory", err)
+		assert.ErrorIs(t, fs.ErrNotExist, err)
 		assert.Nil(t, have.tgtOut)
 	})
 }

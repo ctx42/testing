@@ -65,7 +65,6 @@ func Test_goitf_generate(t *testing.T) {
 		// --- Given ---
 		gfp := "testdata/golden_goitf/simple.gld"
 		itf := goitf{
-			name: "MyItf",
 			methods: []*method{
 				{
 					name: "Method0",
@@ -84,7 +83,6 @@ func Test_goitf_generate(t *testing.T) {
 		// --- Given ---
 		gfp := "testdata/golden_goitf/methods_with_args.gld"
 		itf := goitf{
-			name: "MyItf",
 			methods: []*method{
 				{
 					name: "Method0",
@@ -113,7 +111,6 @@ func Test_goitf_generate(t *testing.T) {
 		// --- Given ---
 		gfp := "testdata/golden_goitf/simple_with_onh.gld"
 		itf := goitf{
-			name: "MyItf",
 			methods: []*method{
 				{
 					name: "Method0",

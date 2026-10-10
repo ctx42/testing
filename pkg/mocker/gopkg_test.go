@@ -7,6 +7,7 @@ import (
 	"go/scanner"
 	"go/token"
 	"go/types"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -122,8 +123,7 @@ func Test_gopkg_resolve_tabular(t *testing.T) {
 			},
 		},
 		{
-			"wd is the root of the v1 test module with " +
-				"the import path for its empty package",
+			"v1 module root with empty package path",
 			mod1.Dir,
 			"github.com/ctx42/tst-project/pkg/empty",
 			&gopkg{
@@ -156,7 +156,7 @@ func Test_gopkg_resolve_tabular(t *testing.T) {
 }
 
 func Test_gopkg_getPkgInfo(t *testing.T) {
-	t.Run("empty v1 package", func(t *testing.T) {
+	t.Run("error - empty v1 package", func(t *testing.T) {
 		// --- Given ---
 		mod := tstmod.New(t, "v1")
 		dir := filepath.Join(mod.Dir, "pkg/empty")
@@ -207,7 +207,7 @@ func Test_gopkg_getPkgInfo_tabular(t *testing.T) {
 			},
 		},
 		{
-			"the working directory may be set to anywhere in a module",
+			"wd anywhere in module",
 			&gopkg{wd: wd, pkgDir: filepath.Join(wd, "testdata/cases")},
 			&gopkg{
 				pkgName: "cases",
@@ -286,7 +286,7 @@ func Test_gopkg_getModInfo(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorIs(t, ErrUnkPkg, err)
-		assert.ErrorContain(t, "no such file or directory", err)
+		assert.ErrorIs(t, fs.ErrNotExist, err)
 	})
 
 	t.Run("error - not in a module", func(t *testing.T) {
@@ -302,7 +302,7 @@ func Test_gopkg_getModInfo(t *testing.T) {
 	})
 
 	t.Run("error - unknown module", func(t *testing.T) {
-		// --- When ---
+		// --- Given ---
 		pkg := &gopkg{pkgPath: "example.com/test"}
 
 		// --- When ---
@@ -450,7 +450,8 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			&gopkg{
 				pkgName: "first",
 				pkgPath: "github.com/ctx42/tst-b/pkg/mocker/first",
-				pkgDir:  mod1.ExternalDirs["github.com/ctx42/tst-b@v0.1.0"] + "/pkg/mocker/first",
+				pkgDir: mod1.ExternalDirs["github.com/ctx42/tst-b@v0.1.0"] +
+					"/pkg/mocker/first",
 				modName: "project",
 				modPath: "github.com/ctx42/tst-project",
 				modDir:  mod1.Dir,
@@ -466,7 +467,8 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			&gopkg{
 				pkgName: "first",
 				pkgPath: "github.com/ctx42/tst-b/pkg/mocker/first",
-				pkgDir:  mod2.ExternalDirs["github.com/ctx42/tst-b@v0.2.0"] + "/pkg/mocker/first",
+				pkgDir: mod2.ExternalDirs["github.com/ctx42/tst-b@v0.2.0"] +
+					"/pkg/mocker/first",
 				modName: "project",
 				modPath: "github.com/ctx42/tst-project",
 				modDir:  mod2.Dir,
@@ -520,7 +522,6 @@ func Test_gopkg_parse(t *testing.T) {
 		// --- Given ---
 		dir := filepath.Join(must.Value(os.Getwd()), "testdata/ignored")
 		pkg := &gopkg{pkgDir: dir}
-
 		must.Nil(pkg.parse())
 		first := pkg.files[0]
 
@@ -726,7 +727,7 @@ func Test_gopkg_findItf(t *testing.T) {
 }
 
 func Test_gopkg_isValid_tabular(t *testing.T) {
-	valild := func() *gopkg {
+	valid := func() *gopkg {
 		return &gopkg{
 			alias:   "",
 			pkgName: "pkgName",
@@ -758,7 +759,7 @@ func Test_gopkg_isValid_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- Given ---
-			pkg := valild()
+			pkg := valid()
 			tc.action(pkg)
 
 			// --- When ---
@@ -854,7 +855,6 @@ func Test_gopkg_from(t *testing.T) {
 		// --- Given ---
 		files := []*file{{}}
 		fset := &token.FileSet{}
-
 		from := &gopkg{
 			alias:    "alias",
 			pkgName:  "pkgName",
@@ -890,6 +890,7 @@ func Test_gopkg_from(t *testing.T) {
 		assert.Equal(t, want, to)
 		assert.Same(t, want.files, to.files)
 		assert.Same(t, want.fset, to.fset)
+
 		assert.Fields(t, 11, gopkg{})
 	})
 }
@@ -954,8 +955,8 @@ func Test_modSubPath_tabular(t *testing.T) {
 
 		mod  string
 		pkg  string
-		sub  string
-		isIn bool
+		wSub string
+		wOK  bool
 	}{
 		{"module root", "example.com/foo", "example.com/foo", ".", true},
 		{"sub package", "example.com/foo", "example.com/foo/x/y", "x/y", true},
@@ -966,11 +967,11 @@ func Test_modSubPath_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have, ok := modSubPath(tc.mod, tc.pkg)
+			hSub, hOK := modSubPath(tc.mod, tc.pkg)
 
 			// --- Then ---
-			assert.Equal(t, tc.sub, have)
-			assert.Equal(t, tc.isIn, ok)
+			assert.Equal(t, tc.wSub, hSub)
+			assert.Equal(t, tc.wOK, hOK)
 		})
 	}
 }
@@ -996,4 +997,23 @@ func Test_gopkg_ident_tabular(t *testing.T) {
 			assert.Equal(t, tc.want, have)
 		})
 	}
+}
+
+func Test_errNotItf(t *testing.T) {
+	// --- When ---
+	have := errNotItf("Name")
+
+	// --- Then ---
+	assert.ErrorIs(t, ErrUnkItf, have)
+	assert.ErrorEqual(t, "interface not found: Name is not an interface", have)
+}
+
+func Test_errGeneric(t *testing.T) {
+	// --- When ---
+	have := errGeneric("Name")
+
+	// --- Then ---
+	assert.ErrorIs(t, ErrUnkItf, have)
+	wMsg := "interface not found: generic interface Name is not supported"
+	assert.ErrorEqual(t, wMsg, have)
 }
