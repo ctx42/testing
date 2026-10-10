@@ -218,26 +218,23 @@ func Test_Same_tabular(t *testing.T) {
 }
 
 func Test_Pointer_tabular(t *testing.T) {
+	ptr := &struct{ Int int }{Int: 123}
 	s2 := []*testcases.TA{{TAp: &testcases.TA{Int: 42}}}
 
 	tt := []struct {
 		testN string
 
-		in  reflect.Value
-		nil bool
+		in   reflect.Value
+		want unsafe.Pointer
 	}{
-		{"nil", reflect.ValueOf(nil), true},
-		{"struct value", reflect.ValueOf(struct{}{}), true},
-		{"nil struct pointer", reflect.ValueOf((*testcases.TIntStr)(nil)), true},
+		{"nil", reflect.ValueOf(nil), nil},
+		{"struct value", reflect.ValueOf(struct{}{}), nil},
+		{"nil struct pointer", reflect.ValueOf((*testcases.TIntStr)(nil)), nil},
+		{"struct pointer", reflect.ValueOf(ptr), unsafe.Pointer(ptr)},
 		{
-			"struct pointer",
-			reflect.ValueOf(&struct{ Int int }{Int: 123}),
-			false,
-		},
-		{
-			"struct pointer",
+			"addressable struct pointer",
 			reflect.ValueOf(s2).Index(0),
-			false,
+			unsafe.Pointer(s2[0]),
 		},
 	}
 
@@ -247,11 +244,8 @@ func Test_Pointer_tabular(t *testing.T) {
 			have := Pointer(tc.in)
 
 			// --- Then ---
-			if tc.nil && have != nil {
-				t.Error("expected nil value")
-			}
-			if !tc.nil && have == nil {
-				t.Error("expected not-nil value")
+			if tc.want != have {
+				t.Errorf(expMsg, tc.want, have)
 			}
 		})
 	}

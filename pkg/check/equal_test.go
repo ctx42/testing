@@ -965,6 +965,27 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		// --- Then ---
 		affirm.Nil(t, err)
 	})
+
+	t.Run("error - first field pointer differs", func(t *testing.T) {
+		// --- Given ---
+		type node struct {
+			Next *node
+			Val  int
+		}
+		n0 := &node{Next: &node{Val: 1}}
+		n1 := &node{Next: &node{Val: 2}}
+
+		// --- When ---
+		err := Equal(n0, n1)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: node.Next.Val\n" +
+			"   want: 1\n" +
+			"   have: 2"
+		affirm.Equal(t, wMsg, err.Error())
+	})
 }
 
 func Test_Equal_kind_Slice_and_Array(t *testing.T) {

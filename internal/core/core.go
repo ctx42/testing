@@ -137,10 +137,6 @@ func Pointer(val reflect.Value) unsafe.Pointer {
 	if val.IsNil() {
 		return nil
 	}
-	if val.CanAddr() {
-		return unsafe.Pointer(val.UnsafeAddr())
-	}
-	// !CanAddr() is true here, so the next condition is always true.
 	return val.UnsafePointer()
 }
 
