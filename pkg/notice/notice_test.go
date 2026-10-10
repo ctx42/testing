@@ -5,6 +5,8 @@ package notice
 
 import (
 	"errors"
+	"fmt"
+	"io"
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
@@ -47,6 +49,40 @@ func Test_New(t *testing.T) {
 }
 
 func Test_From(t *testing.T) {
+	t.Run("typed nil notice", func(t *testing.T) {
+		// --- Given ---
+		var msg *Notice
+
+		// --- When ---
+		have := From(msg, "prefix")
+
+		// --- Then ---
+		affirm.Equal(t, true, have == nil)
+	})
+
+	t.Run("prefix is set on the whole chain", func(t *testing.T) {
+		// --- Given ---
+		msg0 := New("header0")
+		msg1 := New("header1")
+		_ = Join(msg0, msg1)
+
+		// --- When ---
+		have := From(msg0, "prefix")
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg0, have))
+		affirm.Equal(t, "prefix", msg0.HeaderPrefix)
+		affirm.Equal(t, "prefix", msg1.HeaderPrefix)
+	})
+
+	t.Run("not a notice keeps the error message", func(t *testing.T) {
+		// --- When ---
+		have := From(errors.New("boom"))
+
+		// --- Then ---
+		affirm.Equal(t, "assertion error:\n  error: boom", have.Error())
+	})
+
 	t.Run("without prefix", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header %s", "row").Append("first", "%d", 1)
@@ -152,7 +188,10 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, "assertion error", have.HeaderText)
 		affirm.Equal(t, "", have.HeaderPrefix)
 		affirm.Equal(t, "", have.Trail)
-		wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
+		wRows := []Row{
+			{Name: "error", Format: "%s", Args: []any{orig}},
+			{Name: "first", Format: "%d", Args: []any{1}},
+		}
 		affirm.DeepEqual(t, wRows, have.Rows)
 		affirm.Equal(t, true, errors.Is(have, orig))
 		affirm.Equal(t, false, errors.Is(have, ErrNotice))
@@ -170,7 +209,10 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, "assertion error", have.HeaderText)
 		affirm.Equal(t, "prefix", have.HeaderPrefix)
 		affirm.Equal(t, "", have.Trail)
-		wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
+		wRows := []Row{
+			{Name: "error", Format: "%s", Args: []any{orig}},
+			{Name: "first", Format: "%d", Args: []any{1}},
+		}
 		affirm.DeepEqual(t, wRows, have.Rows)
 		affirm.Equal(t, true, errors.Is(have, orig))
 		affirm.Equal(t, false, errors.Is(have, ErrNotice))
@@ -455,8 +497,10 @@ func Test_Notice_SetTrail(t *testing.T) {
 		_ = msg.SetTrail("")
 
 		// --- Then ---
+		affirm.Equal(t, "", msg.Trail)
 		wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
 		affirm.DeepEqual(t, wRows, msg.Rows)
+		affirm.Equal(t, "header:\n  first: 1", msg.Error())
 	})
 }
 
@@ -614,6 +658,19 @@ func Test_Notice_Remove(t *testing.T) {
 }
 
 func Test_Notice_Is(t *testing.T) {
+	t.Run("base error wrapping a chain notice", func(t *testing.T) {
+		// --- Given ---
+		msg := New("header")
+		joined := Join(msg, fmt.Errorf("context: %w", msg))
+
+		// --- When ---
+		have := errors.Is(joined, io.EOF)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, true, errors.Is(joined, ErrNotice))
+	})
+
 	t.Run("is", func(t *testing.T) {
 		// --- Given ---
 		msg := New("header")
@@ -978,6 +1035,22 @@ func Test_Notice_longest(t *testing.T) {
 }
 
 func Test_Notice_Chain(t *testing.T) {
+	t.Run("prev among successors is ignored", func(t *testing.T) {
+		// --- Given ---
+		msg0 := New("header0")
+		msg1 := New("header1")
+		msg2 := New("header2")
+		_ = Join(msg0, msg1, msg2)
+
+		// --- When ---
+		have := msg1.Chain(msg2)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg1, have))
+		affirm.DeepEqual(t, []*Notice{msg0, msg1, msg2}, msg0.All())
+		affirm.Nil(t, msg2.next)
+	})
+
 	t.Run("links two notices", func(t *testing.T) {
 		// --- Given ---
 		msg0 := New("header0").Want("%d", 42).Have("%d", 44)
@@ -1157,6 +1230,47 @@ func Test_Notice_All(t *testing.T) {
 }
 
 func Test_Join(t *testing.T) {
+	t.Run("same chain twice", func(t *testing.T) {
+		// --- Given ---
+		msg0 := New("header0")
+		msg1 := New("header1")
+		joined := Join(msg0, msg1)
+
+		// --- When ---
+		have := Join(joined, joined)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg1, have))
+		affirm.DeepEqual(t, []*Notice{msg0, msg1}, msg0.All())
+	})
+
+	t.Run("rejoin already joined notices", func(t *testing.T) {
+		// --- Given ---
+		msg0 := New("header0")
+		msg1 := New("header1")
+		msg2 := New("header2")
+		_ = Join(msg0, msg1, msg2)
+
+		// --- When ---
+		have := Join(msg0, msg1, msg2)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg2, have))
+		affirm.DeepEqual(t, []*Notice{msg0, msg1, msg2}, msg0.All())
+	})
+
+	t.Run("typed nil notice", func(t *testing.T) {
+		// --- Given ---
+		var msg0 *Notice
+		msg1 := New("header1")
+
+		// --- When ---
+		have := Join(msg0, msg1)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg1, have))
+	})
+
 	t.Run("empty slice", func(t *testing.T) {
 		// --- When ---
 		have := Join()
@@ -1170,7 +1284,7 @@ func Test_Join(t *testing.T) {
 		have := Join(nil)
 
 		// --- Then ---
-		affirm.Nil(t, have)
+		affirm.Equal(t, true, have == nil)
 	})
 
 	t.Run("multiple nil errors", func(t *testing.T) {
@@ -1178,8 +1292,7 @@ func Test_Join(t *testing.T) {
 		have := Join(nil, nil, nil)
 
 		// --- Then ---
-		isNil := core.IsNil(have)
-		affirm.Equal(t, true, isNil)
+		affirm.Equal(t, true, have == nil)
 	})
 
 	t.Run("join two errors", func(t *testing.T) {
@@ -1243,14 +1356,9 @@ func Benchmark_Notice_Error_Simple(b *testing.B) {
 }
 
 func Benchmark_Notice_Join_And_All(b *testing.B) {
-	msg0 := New("first")
-	msg1 := New("second")
-	msg2 := New("third")
-
 	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		joined := Join(msg0, msg1, msg2)
+	for b.Loop() {
+		joined := Join(New("first"), New("second"), New("third"))
 		if n, ok := errors.AsType[*Notice](joined); ok {
 			_ = n.All()
 		}

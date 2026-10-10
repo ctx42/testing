@@ -10,8 +10,8 @@ import (
 // Indent prepends n copies of rune r to each line in lns.
 // Single-line input is returned unchanged.
 func Indent(n int, r rune, lns string) string {
-	if lns == "" {
-		return ""
+	if lns == "" || n <= 0 {
+		return lns
 	}
 	rows := strings.Split(lns, "\n")
 	if len(rows) == 1 {
@@ -49,15 +49,19 @@ func TrailCmp(x, y *Notice) int {
 	return 0
 }
 
-// SortNotices sorts the chain starting at head in-place using cmp.
-// The cmp function must return -1 if a should precede b, 0 if equal,
-// or +1 if a should follow b.
+// SortNotices sorts, in place and stably, the chain head belongs to using
+// cmp. The cmp function returns a negative number if a should precede b,
+// zero if they are equal, or a positive number if a should follow b.
 //
-// It mutates prev/next pointers. If head is nil or has one node it is
-// returned unchanged. The returned value is the tail of the sorted chain
+// It mutates prev/next pointers. If head is nil or its chain has one node it
+// is returned unchanged. The returned value is the tail of the sorted chain
 // (useful for further [Join] or [Notice.Chain] calls).
 func SortNotices(head *Notice, cmp func(a, b *Notice) int) *Notice {
-	if head == nil || head.next == nil {
+	if head == nil {
+		return nil
+	}
+	head = head.Head()
+	if head.next == nil {
 		return head
 	}
 
@@ -75,16 +79,11 @@ func SortNotices(head *Notice, cmp func(a, b *Notice) int) *Notice {
 		found = nil
 		next := current.next
 
-	next:
 		for node := sorted; node != nil; node = node.next {
-			switch result := cmp(current, node); result {
-			case -1:
-				break next
-			case 0:
-				found = node
-			case 1:
-				found = node
+			if cmp(current, node) < 0 {
+				break
 			}
+			found = node
 		}
 
 		// Detach node.

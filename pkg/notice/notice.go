@@ -32,6 +32,7 @@ package notice
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"slices"
 	"strings"
 )
@@ -88,34 +89,36 @@ func New(header string, args ...any) *Notice {
 	return msg.SetHeader(header, args...)
 }
 
-// From extracts a [Notice] from err's error tree (or creates one wrapping err).
-// If a prefix is provided, it is prepended to the header in "[prefix] ..."
-// form.
+// From returns err as a [Notice] (or creates one wrapping err). If a prefix
+// is provided, it is prepended to the header in "[prefix] ..." form.
 //
-// If err is already a *Notice, it is returned (after optional prefixing).
-// Otherwise a new notice with header "assertion error" (or prefixed) is
-// created and the original err is wrapped via [Notice.Wrap].
+// If err is a *Notice (not a notice wrapped in another error), it is returned
+// with the prefix set on every notice of its chain. A nil error, including a
+// typed nil *Notice, returns nil. Otherwise a new notice with header
+// "assertion error" and an "error" row holding err's message is created, and
+// err is wrapped via [Notice.Wrap].
 func From(err error, prefix ...string) *Notice {
 	if err == nil {
 		return nil
 	}
+	var pref string
+	if len(prefix) > 0 {
+		pref = prefix[0]
+	}
 	//goland:noinspection GoTypeAssertionOnErrors
 	if e, ok := err.(*Notice); ok { // nolint: errorlint
-		if len(prefix) > 0 && prefix[0] != "" {
-			e.HeaderPrefix = prefix[0]
-			if e.prev != nil {
-				_ = From(e.prev, prefix[0])
+		if e == nil {
+			return nil
+		}
+		if pref != "" {
+			for m := e.Head(); m != nil; m = m.next {
+				m.HeaderPrefix = pref
 			}
 		}
 		return e
 	}
 
-	header := "assertion error"
-	pref := ""
-	if len(prefix) > 0 && prefix[0] != "" {
-		pref = prefix[0]
-	}
-	msg := New(header).Wrap(err)
+	msg := New("assertion error").Wrap(err).Append("error", "%s", err)
 	msg.HeaderPrefix = pref
 	return msg
 }
@@ -242,9 +245,46 @@ func (msg *Notice) Remove(name string) *Notice {
 // errors.Is(msg, ErrNotice) by default, and lets [Join] chains match any
 // wrapped cause on the chain.
 func (msg *Notice) Is(target error) bool {
-	for m := msg.Head(); m != nil; m = m.next {
-		if m.err != nil && errors.Is(m.err, target) {
+	head := msg.Head()
+	for m := head; m != nil; m = m.next {
+		if m.err != nil && isErr(m.err, target, head) {
 			return true
+		}
+	}
+	return false
+}
+
+// isErr reports whether err, or any error it wraps, matches target the way
+// [errors.Is] does, without descending into notices of the chain starting at
+// head: [Notice.Is] already walks them, and a base error wrapping a notice
+// of its own chain would otherwise recurse forever.
+func isErr(err, target error, head *Notice) bool {
+	comparable := target == nil || reflect.TypeOf(target).Comparable()
+	for err != nil {
+		//goland:noinspection GoTypeAssertionOnErrors
+		if n, ok := err.(*Notice); ok && n.Head() == head { // nolint: errorlint
+			return false
+		}
+		if comparable && err == target { // nolint: errorlint
+			return true
+		}
+		if x, ok := err.(interface{ Is(error) bool }); ok && x.Is(target) {
+			return true
+		}
+		switch x := err.(type) { // nolint: errorlint
+		case interface{ Unwrap() error }:
+			err = x.Unwrap()
+
+		case interface{ Unwrap() []error }:
+			for _, e := range x.Unwrap() {
+				if isErr(e, target, head) {
+					return true
+				}
+			}
+			return false
+
+		default:
+			return false
 		}
 	}
 	return false
@@ -374,11 +414,17 @@ func (msg *Notice) longest() int {
 // After the call: prev.Next() == msg and msg.Prev() == prev. The msg node is
 // detached from any previous predecessor first so re-joining cannot leave
 // stale prev/next pointers; msg and its successors (the msg…tail sublist)
-// move together. Self-links are ignored.
+// move together. Self-links, and links to one of msg's own successors (which
+// would form a cycle), are ignored.
 // Use [Join] for a safer way to build chains from multiple values.
 func (msg *Notice) Chain(prev *Notice) *Notice {
 	if msg == nil || prev == nil || msg == prev {
 		return msg
+	}
+	for m := msg.next; m != nil; m = m.next {
+		if m == prev {
+			return msg
+		}
 	}
 	// Detach msg…tail from any predecessor (keep successors).
 	if msg.prev != nil {
@@ -397,10 +443,10 @@ func (msg *Notice) Chain(prev *Notice) *Notice {
 //
 // Follows the prev pointers to the start of the linked list.
 func (msg *Notice) Head() *Notice {
-	if msg.prev == nil {
-		return msg
+	for msg.prev != nil {
+		msg = msg.prev
 	}
-	return msg.prev.Head()
+	return msg
 }
 
 // Next returns the following notice in the chain (nil if this is the last).
@@ -449,22 +495,23 @@ func Join(ers ...error) error {
 		return nil
 	}
 
-	var err *Notice
+	var err *Notice // Tail of the chain built so far.
 	for _, next := range ers {
-		if next == nil {
+		nxt := From(next)
+		if nxt == nil {
 			continue
 		}
-		// Head so a multi-notice operand keeps every node when appended.
-		ne := From(next).Head()
 		if err == nil {
-			err = ne
+			err = nxt
 			for err.next != nil {
 				err = err.next
 			}
 			continue
 		}
-		for err.next != nil {
-			err = err.next
+		// Head so a multi-notice operand keeps every node when appended.
+		ne := nxt.Head()
+		if inChain(ne, err) {
+			continue // The operand is already on the chain.
 		}
 		_ = ne.Chain(err)
 		err = ne
@@ -478,3 +525,12 @@ func Join(ers ...error) error {
 	return err
 }
 
+// inChain reports whether node is reachable from head through next links.
+func inChain(head, node *Notice) bool {
+	for m := head; m != nil; m = m.next {
+		if m == node {
+			return true
+		}
+	}
+	return false
+}

@@ -11,6 +11,14 @@ import (
 )
 
 func Test_Indent(t *testing.T) {
+	t.Run("negative count", func(t *testing.T) {
+		// --- When ---
+		have := Indent(-1, ' ', "a\nb")
+
+		// --- Then ---
+		affirm.Equal(t, "a\nb", have)
+	})
+
 	t.Run("empty", func(t *testing.T) {
 		// --- When ---
 		have := Indent(1, ' ', "")
@@ -135,6 +143,40 @@ func Test_Pad_tabular(t *testing.T) {
 }
 
 func Test_SortNotices(t *testing.T) {
+	t.Run("cmp returning any sign", func(t *testing.T) {
+		// --- Given ---
+		msgC := New("hdrC").SetTrail("ccc")
+		msgA := New("hdrA").SetTrail("a")
+		msgB := New("hdrB").SetTrail("bb")
+		_ = Join(msgA, msgC, msgB)
+		cmp := func(x, y *Notice) int { return len(x.Trail) - len(y.Trail) }
+
+		// --- When ---
+		have := SortNotices(msgA, cmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgC, have))
+		wFwd := "| hdrA (a) -> hdrB (bb) -> hdrC (ccc)"
+		affirm.Equal(t, wFwd, FWD(have.Head()))
+	})
+
+	t.Run("not a head node", func(t *testing.T) {
+		// --- Given ---
+		msgB := New("hdrB").SetTrail("B")
+		msgC := New("hdrC").SetTrail("C")
+		msgA := New("hdrA").SetTrail("A")
+		_ = Join(msgB, msgC, msgA)
+
+		// --- When ---
+		have := SortNotices(msgC, TrailCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgC, have))
+		wFwd := "| hdrA (A) -> hdrB (B) -> hdrC (C)"
+		affirm.Equal(t, wFwd, FWD(have.Head()))
+		affirm.Equal(t, "| hdrC (C) -> hdrB (B) -> hdrA (A)", REV(have))
+	})
+
 	t.Run("nil chain", func(t *testing.T) {
 		// --- Given ---
 		var head *Notice
