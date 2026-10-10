@@ -21,8 +21,8 @@ func True(t tester.T, have bool, opts ...any) bool {
 // False asserts that "have" is false using [check.False].
 func False(t tester.T, have bool, opts ...any) bool {
 	t.Helper()
-	if err := check.False(have, opts...); err != nil {
-		t.Error(err)
+	if e := check.False(have, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true

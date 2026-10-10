@@ -32,7 +32,7 @@ func NoError(t tester.T, err error, opts ...any) bool {
 	return true
 }
 
-// ErrorIs asserts whether any error in the "err" tree matches the "want"
+// ErrorIs asserts that any error in the "err" tree matches the "want"
 // target (via [errors.Is]).
 //
 // See [check.ErrorIs] for the error-returning form.

@@ -14,13 +14,14 @@ import (
 // See [check.Greater] for the error-returning form.
 func Greater[T constraints.Ordered](
 	t tester.T,
-	want, have T,
+	want T,
+	have T,
 	opts ...any,
 ) bool {
 
 	t.Helper()
-	if err := check.Greater(want, have, opts...); err != nil {
-		t.Error(err)
+	if e := check.Greater(want, have, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true
@@ -31,13 +32,14 @@ func Greater[T constraints.Ordered](
 // See [check.GreaterOrEqual] for the error-returning form.
 func GreaterOrEqual[T constraints.Ordered](
 	t tester.T,
-	want, have T,
+	want T,
+	have T,
 	opts ...any,
 ) bool {
 
 	t.Helper()
-	if err := check.GreaterOrEqual(want, have, opts...); err != nil {
-		t.Error(err)
+	if e := check.GreaterOrEqual(want, have, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true
@@ -48,13 +50,14 @@ func GreaterOrEqual[T constraints.Ordered](
 // See [check.Smaller] for the error-returning form.
 func Smaller[T constraints.Ordered](
 	t tester.T,
-	want, have T,
+	want T,
+	have T,
 	opts ...any,
 ) bool {
 
 	t.Helper()
-	if err := check.Smaller(want, have, opts...); err != nil {
-		t.Error(err)
+	if e := check.Smaller(want, have, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true
@@ -65,13 +68,14 @@ func Smaller[T constraints.Ordered](
 // See [check.SmallerOrEqual] for the error-returning form.
 func SmallerOrEqual[T constraints.Ordered](
 	t tester.T,
-	want, have T,
+	want T,
+	have T,
 	opts ...any,
 ) bool {
 
 	t.Helper()
-	if err := check.SmallerOrEqual(want, have, opts...); err != nil {
-		t.Error(err)
+	if e := check.SmallerOrEqual(want, have, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true
@@ -115,8 +119,8 @@ func DeltaSlice[T, E constraints.Number](
 ) bool {
 
 	t.Helper()
-	if err := check.DeltaSlice(want, delta, have, opts...); err != nil {
-		t.Error(err)
+	if e := check.DeltaSlice(want, delta, have, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true
@@ -160,8 +164,8 @@ func EpsilonSlice[T, E constraints.Number](
 ) bool {
 
 	t.Helper()
-	if err := check.EpsilonSlice(want, epsilon, have, opts...); err != nil {
-		t.Error(err)
+	if e := check.EpsilonSlice(want, epsilon, have, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true
@@ -172,8 +176,8 @@ func EpsilonSlice[T, E constraints.Number](
 // See [check.Increasing].
 func Increasing[T constraints.Ordered](t tester.T, seq []T, opts ...any) bool {
 	t.Helper()
-	if err := check.Increasing(seq, opts...); err != nil {
-		t.Error(err)
+	if e := check.Increasing(seq, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true
@@ -188,8 +192,8 @@ func NotIncreasing[T constraints.Ordered](
 ) bool {
 
 	t.Helper()
-	if err := check.NotIncreasing(seq, opts...); err != nil {
-		t.Error(err)
+	if e := check.NotIncreasing(seq, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true
@@ -200,8 +204,8 @@ func NotIncreasing[T constraints.Ordered](
 // See [check.Decreasing].
 func Decreasing[T constraints.Ordered](t tester.T, seq []T, opts ...any) bool {
 	t.Helper()
-	if err := check.Decreasing(seq, opts...); err != nil {
-		t.Error(err)
+	if e := check.Decreasing(seq, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true
@@ -216,8 +220,8 @@ func NotDecreasing[T constraints.Ordered](
 ) bool {
 
 	t.Helper()
-	if err := check.NotDecreasing(seq, opts...); err != nil {
-		t.Error(err)
+	if e := check.NotDecreasing(seq, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true

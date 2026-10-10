@@ -21,9 +21,9 @@ func Test_ChannelWillClose(t *testing.T) {
 
 		// --- When ---
 		go func() { have = ChannelWillClose(tspy, "1s", c); close(done) }()
+		close(c)
 
 		// --- Then ---
-		close(c)
 		<-done
 		affirm.Equal(t, true, have)
 	})
@@ -39,7 +39,7 @@ func Test_ChannelWillClose(t *testing.T) {
 		defer close(c)
 
 		// --- When ---
-		have := ChannelWillClose(tspy, "1s", c)
+		have := ChannelWillClose(tspy, "10ms", c)
 
 		// --- Then ---
 		tspy.Finish().AssertExpectations()
@@ -57,7 +57,7 @@ func Test_ChannelWillClose(t *testing.T) {
 		defer close(c)
 
 		// --- When ---
-		have := ChannelWillClose(tspy, "1s", c, check.WithTrail("type.field"))
+		have := ChannelWillClose(tspy, "10ms", c, check.WithTrail("type.field"))
 
 		// --- Then ---
 		tspy.Finish().AssertExpectations()

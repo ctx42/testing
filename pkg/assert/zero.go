@@ -24,8 +24,8 @@ func Zero(t tester.T, have any, opts ...any) bool {
 // [check.NotZero].
 func NotZero(t tester.T, have any, opts ...any) bool {
 	t.Helper()
-	if err := check.NotZero(have, opts...); err != nil {
-		t.Error(err)
+	if e := check.NotZero(have, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true

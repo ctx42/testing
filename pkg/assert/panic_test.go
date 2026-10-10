@@ -144,14 +144,11 @@ func Test_PanicMsg(t *testing.T) {
 		tspy := tester.New(t).Close()
 
 		// --- When ---
-		msg := PanicMsg(tspy, func() { panic("abc def ghi") })
+		have := PanicMsg(tspy, func() { panic("abc def ghi") })
 
 		// --- Then ---
-		if msg == nil {
-			t.Error("expected PanicMsg to return non-nil value")
-			return
-		}
-		affirm.Equal(t, "abc def ghi", *msg)
+		affirm.NotNil(t, have)
+		affirm.Equal(t, "abc def ghi", *have)
 	})
 
 	t.Run("error - fails", func(t *testing.T) {
@@ -162,12 +159,10 @@ func Test_PanicMsg(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		msg := PanicMsg(tspy, func() {})
+		have := PanicMsg(tspy, func() {})
 
 		// --- Then ---
-		if msg != nil {
-			t.Error("expected PanicMsg to return nil value")
-		}
+		affirm.Nil(t, have)
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
@@ -178,11 +173,9 @@ func Test_PanicMsg(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		msg := PanicMsg(tspy, func() {}, check.WithTrail("type.field"))
+		have := PanicMsg(tspy, func() {}, check.WithTrail("type.field"))
 
 		// --- Then ---
-		if msg != nil {
-			t.Error("expected PanicMsg to return nil value")
-		}
+		affirm.Nil(t, have)
 	})
 }

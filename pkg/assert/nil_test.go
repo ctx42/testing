@@ -81,13 +81,16 @@ func Test_NotNil(t *testing.T) {
 	t.Run("error - with option", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
-		tspy.ExpectFail()
+		tspy.ExpectFatal()
 		tspy.ExpectLogContain("  trail: type.field")
 		tspy.Close()
 
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		affirm.Panic(t, func() { NotNil(tspy, nil, opt) })
+		have := affirm.Panic(t, func() { NotNil(tspy, nil, opt) })
+
+		// --- Then ---
+		affirm.Equal(t, tester.FailNowMsg, *have)
 	})
 }

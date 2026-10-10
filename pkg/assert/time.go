@@ -10,7 +10,7 @@ import (
 
 // Time asserts that "want" and "have" represent the same instant in time.
 //
-// See [check.Time] for supported representations and [check] package
+// See [check.Time] for supported representations and the [check] package
 // documentation for option handling.
 func Time(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()

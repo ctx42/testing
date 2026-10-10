@@ -10,10 +10,6 @@ import (
 )
 
 // Len asserts that "have" has "want" length using [check.Len].
-//
-// See the Design section in the root README for the layered assert/check/notice
-// architecture. Errors are built with [notice] and can be customized with
-// options from [check] and dump.
 func Len(t tester.T, want int, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Len(want, have, opts...); e != nil {
@@ -140,7 +136,8 @@ func SliceSubset[T comparable](t tester.T, want, have []T, opts ...any) bool {
 // additional keys. See [check.MapSubset].
 func MapSubset[K comparable, V any](
 	t tester.T,
-	want, have map[K]V,
+	want map[K]V,
+	have map[K]V,
 	opts ...any,
 ) bool {
 
@@ -156,7 +153,8 @@ func MapSubset[K comparable, V any](
 // map in "have". See [check.MapsSubset].
 func MapsSubset[K comparable, V any](
 	t tester.T,
-	want, have []map[K]V,
+	want []map[K]V,
+	have []map[K]V,
 	opts ...any,
 ) bool {
 

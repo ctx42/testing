@@ -22,8 +22,8 @@ func ChannelWillClose[C any](
 ) bool {
 
 	t.Helper()
-	if err := check.ChannelWillClose(within, c, opts...); err != nil {
-		t.Error(err)
+	if e := check.ChannelWillClose(within, c, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true

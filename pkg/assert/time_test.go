@@ -27,7 +27,6 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
-		affirm.Equal(t, true, wantT.Equal(haveT))
 	})
 
 	t.Run("error - fails", func(t *testing.T) {
@@ -45,7 +44,6 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
-		affirm.Equal(t, false, wantT.Equal(haveT))
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
@@ -63,7 +61,6 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
-		affirm.Equal(t, false, wantT.Equal(haveT))
 	})
 }
 
@@ -71,15 +68,14 @@ func Test_Exact(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
-
-		// --- When ---
 		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		haveT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+
+		// --- When ---
 		have := Exact(tspy, wantT, haveT)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
-		affirm.Equal(t, true, wantT.Equal(haveT))
 	})
 
 	t.Run("error - fails", func(t *testing.T) {
@@ -97,7 +93,6 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
-		affirm.Equal(t, false, wantT.Equal(haveT))
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
@@ -115,7 +110,6 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
-		affirm.Equal(t, false, wantT.Equal(haveT))
 	})
 }
 
@@ -125,8 +119,8 @@ func Test_Before(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		have := Before(tspy, mark, date)
@@ -142,8 +136,8 @@ func Test_Before(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		have := Before(tspy, mark, date)
@@ -159,8 +153,8 @@ func Test_Before(t *testing.T) {
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		have := Before(tspy, mark, date, check.WithTrail("type.field"))
@@ -175,8 +169,8 @@ func Test_After(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 
 		// --- When ---
 		have := After(tspy, mark, date)
@@ -192,8 +186,8 @@ func Test_After(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		have := After(tspy, mark, date)
@@ -209,8 +203,8 @@ func Test_After(t *testing.T) {
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		have := After(tspy, mark, date, check.WithTrail("type.field"))
@@ -225,8 +219,8 @@ func Test_BeforeOrEqual(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		have := BeforeOrEqual(tspy, mark, date)
@@ -239,8 +233,8 @@ func Test_BeforeOrEqual(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 4, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 4, 0, time.UTC)
 
 		// --- When ---
 		have := BeforeOrEqual(tspy, mark, date)
@@ -256,8 +250,8 @@ func Test_BeforeOrEqual(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 
 		// --- When ---
 		have := BeforeOrEqual(tspy, mark, date)
@@ -273,8 +267,8 @@ func Test_BeforeOrEqual(t *testing.T) {
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 
 		// --- When ---
 		have := BeforeOrEqual(tspy, mark, date, check.WithTrail("type.field"))
@@ -289,8 +283,8 @@ func Test_AfterOrEqual(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		have := AfterOrEqual(tspy, mark, date)
@@ -303,8 +297,8 @@ func Test_AfterOrEqual(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		date := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		have := AfterOrEqual(tspy, mark, date)
@@ -320,8 +314,8 @@ func Test_AfterOrEqual(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		have := AfterOrEqual(tspy, mark, date)
@@ -337,8 +331,8 @@ func Test_AfterOrEqual(t *testing.T) {
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		have := AfterOrEqual(tspy, mark, date, check.WithTrail("type.field"))
@@ -371,7 +365,7 @@ func Test_Within(t *testing.T) {
 		tspy.Close()
 
 		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		haveT := time.Date(2000, 1, 2, 3, 4, 6, int(500*time.Millisecond), time.UTC)
+		haveT := time.Date(2000, 1, 2, 3, 4, 6, 500_000_000, time.UTC)
 
 		// --- When ---
 		have := Within(tspy, wantT, "1s", haveT)
@@ -388,7 +382,7 @@ func Test_Within(t *testing.T) {
 		tspy.Close()
 
 		wantT := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		haveT := time.Date(2000, 1, 2, 3, 4, 6, int(500*time.Millisecond), time.UTC)
+		haveT := time.Date(2000, 1, 2, 3, 4, 6, 500_000_000, time.UTC)
 
 		// --- When ---
 		have := Within(tspy, wantT, "1s", haveT, check.WithTrail("type.field"))

@@ -14,8 +14,8 @@ import (
 // ([check.WithTrail], [check.WithTypeChecker], dump options, etc.).
 func Equal(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
-	if err := check.Equal(want, have, opts...); err != nil {
-		t.Error(err)
+	if e := check.Equal(want, have, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true
@@ -24,8 +24,8 @@ func Equal(t tester.T, want, have any, opts ...any) bool {
 // NotEqual asserts that want and have are not equal using [check.NotEqual].
 func NotEqual(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
-	if err := check.NotEqual(want, have, opts...); err != nil {
-		t.Error(err)
+	if e := check.NotEqual(want, have, opts...); e != nil {
+		t.Error(e)
 		return false
 	}
 	return true

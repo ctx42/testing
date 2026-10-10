@@ -35,7 +35,8 @@ func NoFileExist(t tester.T, pth string, opts ...any) bool {
 }
 
 // FileContain asserts that the file at "pth" contains "want" (after reading
-// it in full). Uses [check.FileContain] internally.
+// it in full).
+//
 // See [check.FileContain].
 func FileContain[T check.Content](
 	t tester.T,

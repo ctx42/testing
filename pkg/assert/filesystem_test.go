@@ -30,10 +30,8 @@ func Test_FileExist(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		opt := check.WithTrail("type.field")
-
 		// --- When ---
-		have := FileExist(tspy, "testdata/not_existing.txt", opt)
+		have := FileExist(tspy, "testdata/not_existing.txt")
 
 		// --- Then ---
 		affirm.Equal(t, false, have)

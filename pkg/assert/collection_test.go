@@ -256,10 +256,9 @@ func Test_HasKey(t *testing.T) {
 		tspy.Close()
 
 		val := map[string]int{"A": 1, "B": 2, "C": 3}
-		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		hVal, hHas := HasKey(tspy, "X", val, opt)
+		hVal, hHas := HasKey(tspy, "X", val, check.WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, 0, hVal)

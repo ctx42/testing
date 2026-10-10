@@ -60,11 +60,11 @@ func Test_SameType(t *testing.T) {
 		tspy := tester.New(t).Close()
 
 		// --- When ---
-		have, success := SameType(tspy, true, true)
+		hVal, hOK := SameType(tspy, true, true)
 
 		// --- Then ---
-		affirm.Equal(t, true, have)
-		affirm.Equal(t, true, success)
+		affirm.Equal(t, true, hVal)
+		affirm.Equal(t, true, hOK)
 	})
 
 	t.Run("error - fails", func(t *testing.T) {

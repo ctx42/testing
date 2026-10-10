@@ -15,14 +15,14 @@ import (
 // the same way it does compile the regular binaries, then this binary is run,
 // and as every other binary can take flags.
 //
-// Below are flags used to trigger specific behaviours when test binary is run.
+// Below are flags used to trigger specific behaviours when the test binary is
+// run.
 //
-// If any of the flags are used the test binary does not run tests.
+// If any of the flags are used, the test binary does not run tests.
 var (
-	// exitCodeFlag represents compiled test binary flag, when set to value
-	// greater or equal to 0 it will exit with that code without running tests.
-	// If any of the above flags are set the binary will print values and then
-	// exit.
+	// exitCodeFlag represents the compiled test binary flag; when set to a
+	// value greater than or equal to 0, the binary exits with that code
+	// without running tests.
 	exitCodeFlag int
 )
 

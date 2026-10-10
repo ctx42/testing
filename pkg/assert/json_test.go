@@ -16,11 +16,8 @@ func Test_JSON(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		wJSON := ` {"hello": "world"} `
-		hJSON := `{"hello": "world"}`
-
 		// --- When ---
-		have := JSON(tspy, wJSON, hJSON)
+		have := JSON(tspy, ` {"hello": "world"} `, `{"hello": "world"}`)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -33,11 +30,8 @@ func Test_JSON(t *testing.T) {
 		tspy.IgnoreLogs()
 		tspy.Close()
 
-		wJSON := ` {"hello": "world"} `
-		hJSON := `{"hello": "ms"}`
-
 		// --- When ---
-		have := JSON(tspy, wJSON, hJSON)
+		have := JSON(tspy, ` {"hello": "world"} `, `{"hello": "ms"}`)
 
 		// --- Then ---
 		affirm.Equal(t, false, have)
@@ -47,11 +41,8 @@ func Test_JSON(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		wJSON := []byte(` {"hello": "world"} `)
-		hJSON := `{"hello": "world"}`
-
 		// --- When ---
-		have := JSON(tspy, wJSON, hJSON)
+		have := JSON(tspy, []byte(` {"hello": "world"} `), `{"hello": "world"}`)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -61,11 +52,8 @@ func Test_JSON(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		wJSON := ` {"hello": "world"} `
-		hJSON := []byte(`{"hello": "world"}`)
-
 		// --- When ---
-		have := JSON(tspy, wJSON, hJSON)
+		have := JSON(tspy, ` {"hello": "world"} `, []byte(`{"hello": "world"}`))
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
@@ -75,11 +63,10 @@ func Test_JSON(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t).Close()
 
-		wJSON := []byte(` {"hello": "world"} `)
 		hJSON := []byte(`{"hello": "world"}`)
 
 		// --- When ---
-		have := JSON(tspy, wJSON, hJSON)
+		have := JSON(tspy, []byte(` {"hello": "world"} `), hJSON)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)
