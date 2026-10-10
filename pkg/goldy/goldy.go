@@ -5,14 +5,13 @@
 //
 // It loads files that contain an optional comment section followed by
 // the [Marker] separator and the expected content. The loaded content
-// can be used directly with [assert.Equal] or [check.Equal] (often via
+// can be compared with the assert and check packages (often via
 // [Goldy.String] / [Goldy.Bytes] or after template expansion with [WithData]).
 //
 // Golden files are typically stored under testdata/ and committed.
-// The package integrates with [tester.T] for failure reporting.
+// Failures are reported through [tester.T].
 //
-// See the package [README] and examples for typical usage with
-// [github.com/ctx42/testing/pkg/assert] and [github.com/ctx42/testing/pkg/check].
+// See the package README and examples for typical usage.
 package goldy
 
 import (
@@ -41,7 +40,8 @@ func WithData(data map[string]any) func(*Goldy) {
 // bom is the UTF-8 byte order mark.
 var bom = []byte("\xef\xbb\xbf")
 
-// Goldy represents a golden file.
+// Goldy represents a golden file. Build it with [Open] or [Create]; the zero
+// value is not usable.
 //
 // Example golden file:
 //
@@ -155,7 +155,7 @@ func (gld *Goldy) String() string { return string(gld.content) }
 func (gld *Goldy) Bytes() []byte { return slices.Clone(gld.content) }
 
 // SetComment sets the comment section for the golden file.
-// Implements fluent interface.
+// It implements a fluent interface.
 func (gld *Goldy) SetComment(comment string) *Goldy {
 	gld.comment = comment
 	return gld
@@ -164,7 +164,7 @@ func (gld *Goldy) SetComment(comment string) *Goldy {
 // SetContent sets the golden file content. When data was provided via
 // [WithData], the content is treated as a text template.
 //
-// Implements fluent interface.
+// It implements a fluent interface.
 func (gld *Goldy) SetContent(content string) *Goldy {
 	gld.content = []byte(content)
 	if gld.isTpl {
@@ -201,7 +201,7 @@ func (gld *Goldy) Save() {
 	} else {
 		buf.Write(gld.content)
 	}
-	if err := os.WriteFile(gld.pth, buf.Bytes(), 0600); err != nil {
+	if err := os.WriteFile(gld.pth, buf.Bytes(), 0o600); err != nil {
 		gld.t.Errorf("error writing golden file (%s): %v", gld.pth, err)
 	}
 }

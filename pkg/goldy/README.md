@@ -61,8 +61,6 @@ It's customary for golden files to have `.gld` extension.
 
 <!-- gmdoceg:ExampleCreate -->
 ```go
-tspy := tester.New(t)
-
 dir, err := os.MkdirTemp("", "example-create-*")
 if err != nil {
 	panic(err)
@@ -70,7 +68,7 @@ if err != nil {
 defer func() { _ = os.RemoveAll(dir) }()
 pth := filepath.Join(dir, "example.gld")
 
-gld := goldy.Create(tspy, pth)
+gld := goldy.Create(&testing.T{}, pth)
 gld.SetComment("Multi\nline\ncontent")
 gld.SetContent("Content #1.\nContent #2.")
 gld.Save()
@@ -160,7 +158,7 @@ failed. This ensures clear feedback for debugging.
 Example:
 
 ```go
-gld := gold.Open(t, "test.gld")
+gld := goldy.Open(t, "test.gld")
 gld.SetComment("Mock for TestInterface")
 gld.SetContent("type TestInterface struct {...}")
 gld.Save()

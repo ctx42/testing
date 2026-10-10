@@ -238,7 +238,8 @@ func Test_Open(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
-		wMsg := "error opening file: open testdata/not-existing.txt: " +
+		wMsg := "" +
+			"error opening file: open testdata/not-existing.txt: " +
 			"no such file or directory"
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
@@ -294,24 +295,6 @@ func Test_Open(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, tester.FailNowMsg, *msg)
 	})
-
-	t.Run("error - golden file not found", func(t *testing.T) {
-		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectFatal()
-		wMsg := "error opening file: open testdata/does_not_exist.gld: " +
-			"no such file or directory"
-		tspy.ExpectLogEqual(wMsg)
-		tspy.Close()
-
-		// --- When ---
-		msg := affirm.Panic(t, func() {
-			Open(tspy, "testdata/does_not_exist.gld")
-		})
-
-		// --- Then ---
-		affirm.Equal(t, tester.FailNowMsg, *msg)
-	})
 }
 
 func Test_Create(t *testing.T) {
@@ -330,10 +313,7 @@ func Test_Create(t *testing.T) {
 		affirm.Equal(t, false, tspy.Failed())
 		affirm.Equal(t, "", have.comment)
 		affirm.Equal(t, true, core.Same(tspy, have.t))
-
-		content, err := os.ReadFile(pth)
-		affirm.Nil(t, err)
-		affirm.Equal(t, 0, len(content))
+		affirm.Equal(t, 0, len(must.Value(os.ReadFile(pth))))
 	})
 
 	t.Run("error - cannot create the file", func(t *testing.T) {
@@ -341,7 +321,8 @@ func Test_Create(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
 		pth := filepath.Join(t.TempDir(), "not-existing-dir", "empty.gld")
-		wMsg := "error creating file: open " + pth +
+		wMsg := "" +
+			"error creating file: open " + pth +
 			": no such file or directory"
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
@@ -489,7 +470,7 @@ func Test_Goldy_Save(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.Close()
 
-		pth := filepath.Join(t.TempDir(), "/golden.gld")
+		pth := filepath.Join(t.TempDir(), "golden.gld")
 		gld := &Goldy{
 			pth:     pth,
 			comment: "Comment 1.\nComment 2.\n",
@@ -512,7 +493,7 @@ func Test_Goldy_Save(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.Close()
 
-		pth := filepath.Join(t.TempDir(), "/golden.gld")
+		pth := filepath.Join(t.TempDir(), "golden.gld")
 		gld := &Goldy{
 			pth:     pth,
 			comment: "comment\n",
@@ -538,7 +519,7 @@ func Test_Goldy_Save(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.Close()
 
-		pth := filepath.Join(t.TempDir(), "/golden.gld")
+		pth := filepath.Join(t.TempDir(), "golden.gld")
 		gld := &Goldy{
 			pth:     pth,
 			comment: "Comment 1.\nComment 2.",
@@ -560,7 +541,7 @@ func Test_Goldy_Save(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
-		pth := filepath.Join(t.TempDir(), "sub-dir", "/golden.gld")
+		pth := filepath.Join(t.TempDir(), "sub-dir", "golden.gld")
 		wMsg := "error writing golden file (" + pth + "): open " + pth +
 			": no such file or directory"
 		tspy.ExpectLogEqual(wMsg)
@@ -589,11 +570,9 @@ func Benchmark_Goldy_Open_Small(b *testing.B) {
 	}
 
 	b.ReportAllocs()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		g := Open(b, pth)
-		_ = g.Bytes()
+	for b.Loop() {
+		gld := Open(b, pth)
+		_ = gld.Bytes()
 	}
 }
 
@@ -608,11 +587,9 @@ func Benchmark_Goldy_Open_WithTemplate(b *testing.B) {
 	data := map[string]any{"Name": "World"}
 
 	b.ReportAllocs()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		g := Open(b, pth, WithData(data))
-		_ = g.Bytes()
+	for b.Loop() {
+		gld := Open(b, pth, WithData(data))
+		_ = gld.Bytes()
 	}
 }
 
@@ -621,15 +598,13 @@ func Benchmark_Goldy_Save(b *testing.B) {
 	pth := filepath.Join(dir, "out.gld")
 
 	b.ReportAllocs()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		g := &Goldy{
+	for b.Loop() {
+		gld := &Goldy{
 			pth:     pth,
 			comment: "Benchmark comment\n",
 			content: []byte("benchmark content line\n"),
 			t:       b,
 		}
-		g.Save()
+		gld.Save()
 	}
 }

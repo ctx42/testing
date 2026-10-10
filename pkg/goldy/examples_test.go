@@ -49,12 +49,11 @@ func ExampleCreate() {
 }
 
 func ExampleOpen_withData() {
-	tspy := &testing.T{}
-
 	// Open supports Go text/template expansion via WithData.
 	data := map[string]any{"first": 1}
+	opt := goldy.WithData(data)
 
-	gld := goldy.Open(tspy, "testdata/test_tpl.gld", goldy.WithData(data))
+	gld := goldy.Open(&testing.T{}, "testdata/test_tpl.gld", opt)
 
 	fmt.Println(gld.String())
 	// Output:
