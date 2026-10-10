@@ -924,7 +924,7 @@ func Test_method_genSingleRet_tabular(t *testing.T) {
 			0,
 			[]string{
 				"var _r1 int",
-				"if _rFn, ok := _rets.Get(1).(func() int); ok {",
+				"if _rFn, _ok := _rets.Get(1).(func() int); _ok {",
 				"\t_r1 = _rFn()",
 				"} else if _r := _rets.Get(1); _r != nil {",
 				"\t_r1 = _r.(int)",
@@ -940,7 +940,7 @@ func Test_method_genSingleRet_tabular(t *testing.T) {
 			0,
 			[]string{
 				"var _r1 int",
-				"if _rFn, ok := _rets.Get(1).(func(int) int); ok {",
+				"if _rFn, _ok := _rets.Get(1).(func(int) int); _ok {",
 				"\t_r1 = _rFn(a)",
 				"} else if _r := _rets.Get(1); _r != nil {",
 				"\t_r1 = _r.(int)",
@@ -954,7 +954,7 @@ func Test_method_genSingleRet_tabular(t *testing.T) {
 			0,
 			[]string{
 				"var _r1 any",
-				"if _rFn, ok := _rets.Get(1).(func() any); ok {",
+				"if _rFn, _ok := _rets.Get(1).(func() any); _ok {",
 				"\t_r1 = _rFn()",
 				"} else if _r := _rets.Get(1); _r != nil {",
 				"\t_r1 = _r",

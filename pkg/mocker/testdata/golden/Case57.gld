@@ -29,7 +29,7 @@ func (_mck *Case57) Method57() cases.ParamOne[int] {
 	}
 
 	var _r0 cases.ParamOne[int]
-	if _rFn, ok := _rets.Get(0).(func() cases.ParamOne[int]); ok {
+	if _rFn, _ok := _rets.Get(0).(func() cases.ParamOne[int]); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(cases.ParamOne[int])

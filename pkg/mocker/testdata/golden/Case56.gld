@@ -31,7 +31,7 @@ func (_mck *Case56) Method56(a string, b float64, c ...int) error {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func(string, float64, ...int) error); ok {
+	if _rFn, _ok := _rets.Get(0).(func(string, float64, ...int) error); _ok {
 		_r0 = _rFn(a, b, c...)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)

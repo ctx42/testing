@@ -80,7 +80,7 @@ func (_mck *Massive) Method07() error {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func() error); ok {
+	if _rFn, _ok := _rets.Get(0).(func() error); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)
@@ -97,7 +97,7 @@ func (_mck *Massive) Method08() error {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func() error); ok {
+	if _rFn, _ok := _rets.Get(0).(func() error); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)
@@ -114,13 +114,13 @@ func (_mck *Massive) Method09() (error, error) {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func() error); ok {
+	if _rFn, _ok := _rets.Get(0).(func() error); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)
 	}
 	var _r1 error
-	if _rFn, ok := _rets.Get(1).(func() error); ok {
+	if _rFn, _ok := _rets.Get(1).(func() error); _ok {
 		_r1 = _rFn()
 	} else if _r := _rets.Get(1); _r != nil {
 		_r1 = _r.(error)
@@ -137,13 +137,13 @@ func (_mck *Massive) Method10() (int, error) {
 	}
 
 	var _r0 int
-	if _rFn, ok := _rets.Get(0).(func() int); ok {
+	if _rFn, _ok := _rets.Get(0).(func() int); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(int)
 	}
 	var _r1 error
-	if _rFn, ok := _rets.Get(1).(func() error); ok {
+	if _rFn, _ok := _rets.Get(1).(func() error); _ok {
 		_r1 = _rFn()
 	} else if _r := _rets.Get(1); _r != nil {
 		_r1 = _r.(error)
@@ -175,7 +175,7 @@ func (_mck *Massive) Method13(tim mt.Time) error {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func(mt.Time) error); ok {
+	if _rFn, _ok := _rets.Get(0).(func(mt.Time) error); _ok {
 		_r0 = _rFn(tim)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)
@@ -210,7 +210,7 @@ func (_mck *Massive) Method17() cases.Concrete {
 	}
 
 	var _r0 cases.Concrete
-	if _rFn, ok := _rets.Get(0).(func() cases.Concrete); ok {
+	if _rFn, _ok := _rets.Get(0).(func() cases.Concrete); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(cases.Concrete)
@@ -227,7 +227,7 @@ func (_mck *Massive) Method18() *cases.Concrete {
 	}
 
 	var _r0 *cases.Concrete
-	if _rFn, ok := _rets.Get(0).(func() *cases.Concrete); ok {
+	if _rFn, _ok := _rets.Get(0).(func() *cases.Concrete); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(*cases.Concrete)
@@ -244,7 +244,7 @@ func (_mck *Massive) Method19() pkga.A1 {
 	}
 
 	var _r0 pkga.A1
-	if _rFn, ok := _rets.Get(0).(func() pkga.A1); ok {
+	if _rFn, _ok := _rets.Get(0).(func() pkga.A1); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(pkga.A1)
@@ -261,7 +261,7 @@ func (_mck *Massive) Method20() *pkga.A1 {
 	}
 
 	var _r0 *pkga.A1
-	if _rFn, ok := _rets.Get(0).(func() *pkga.A1); ok {
+	if _rFn, _ok := _rets.Get(0).(func() *pkga.A1); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(*pkga.A1)
@@ -278,7 +278,7 @@ func (_mck *Massive) Method21(a fmt.Stringer) fs.File {
 	}
 
 	var _r0 fs.File
-	if _rFn, ok := _rets.Get(0).(func(fmt.Stringer) fs.File); ok {
+	if _rFn, _ok := _rets.Get(0).(func(fmt.Stringer) fs.File); _ok {
 		_r0 = _rFn(a)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(fs.File)
@@ -310,7 +310,7 @@ func (_mck *Massive) Method24(a ...cases.Concrete) int {
 	}
 
 	var _r0 int
-	if _rFn, ok := _rets.Get(0).(func(...cases.Concrete) int); ok {
+	if _rFn, _ok := _rets.Get(0).(func(...cases.Concrete) int); _ok {
 		_r0 = _rFn(a...)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(int)
@@ -462,7 +462,7 @@ func (_mck *Massive) Method46(a map[*pkga.A1]*pkgb.B1, b pkgc.C1) *pkgd.D1 {
 	}
 
 	var _r0 *pkgd.D1
-	if _rFn, ok := _rets.Get(0).(func(map[*pkga.A1]*pkgb.B1, pkgc.C1) *pkgd.D1); ok {
+	if _rFn, _ok := _rets.Get(0).(func(map[*pkga.A1]*pkgb.B1, pkgc.C1) *pkgd.D1); _ok {
 		_r0 = _rFn(a, b)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(*pkgd.D1)
@@ -491,7 +491,7 @@ func (_mck *Massive) Method49(a <-chan *pkga.A1) chan<- int {
 	}
 
 	var _r0 chan<- int
-	if _rFn, ok := _rets.Get(0).(func(<-chan *pkga.A1) chan<- int); ok {
+	if _rFn, _ok := _rets.Get(0).(func(<-chan *pkga.A1) chan<- int); _ok {
 		_r0 = _rFn(a)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(chan<- int)
@@ -508,19 +508,19 @@ func (_mck *Massive) Method50(a int) (int, int, error) {
 	}
 
 	var _r0 int
-	if _rFn, ok := _rets.Get(0).(func(int) int); ok {
+	if _rFn, _ok := _rets.Get(0).(func(int) int); _ok {
 		_r0 = _rFn(a)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(int)
 	}
 	var _r1 int
-	if _rFn, ok := _rets.Get(1).(func(int) int); ok {
+	if _rFn, _ok := _rets.Get(1).(func(int) int); _ok {
 		_r1 = _rFn(a)
 	} else if _r := _rets.Get(1); _r != nil {
 		_r1 = _r.(int)
 	}
 	var _r2 error
-	if _rFn, ok := _rets.Get(2).(func(int) error); ok {
+	if _rFn, _ok := _rets.Get(2).(func(int) error); _ok {
 		_r2 = _rFn(a)
 	} else if _r := _rets.Get(2); _r != nil {
 		_r2 = _r.(error)
@@ -537,7 +537,7 @@ func (_mck *Massive) Method51(e pkge.E1) error {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func(pkge.E1) error); ok {
+	if _rFn, _ok := _rets.Get(0).(func(pkge.E1) error); _ok {
 		_r0 = _rFn(e)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)
@@ -554,13 +554,13 @@ func (_mck *Massive) Method52(a cases.Concrete, b mt.Time, c int) (*cases.Concre
 	}
 
 	var _r0 *cases.Concrete
-	if _rFn, ok := _rets.Get(0).(func(cases.Concrete, mt.Time, int) *cases.Concrete); ok {
+	if _rFn, _ok := _rets.Get(0).(func(cases.Concrete, mt.Time, int) *cases.Concrete); _ok {
 		_r0 = _rFn(a, b, c)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(*cases.Concrete)
 	}
 	var _r1 error
-	if _rFn, ok := _rets.Get(1).(func(cases.Concrete, mt.Time, int) error); ok {
+	if _rFn, _ok := _rets.Get(1).(func(cases.Concrete, mt.Time, int) error); _ok {
 		_r1 = _rFn(a, b, c)
 	} else if _r := _rets.Get(1); _r != nil {
 		_r1 = _r.(error)
@@ -577,25 +577,25 @@ func (_mck *Massive) Method53(a int, b bool) (int, bool, string, error) {
 	}
 
 	var _r0 int
-	if _rFn, ok := _rets.Get(0).(func(int, bool) int); ok {
+	if _rFn, _ok := _rets.Get(0).(func(int, bool) int); _ok {
 		_r0 = _rFn(a, b)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(int)
 	}
 	var _r1 bool
-	if _rFn, ok := _rets.Get(1).(func(int, bool) bool); ok {
+	if _rFn, _ok := _rets.Get(1).(func(int, bool) bool); _ok {
 		_r1 = _rFn(a, b)
 	} else if _r := _rets.Get(1); _r != nil {
 		_r1 = _r.(bool)
 	}
 	var _r2 string
-	if _rFn, ok := _rets.Get(2).(func(int, bool) string); ok {
+	if _rFn, _ok := _rets.Get(2).(func(int, bool) string); _ok {
 		_r2 = _rFn(a, b)
 	} else if _r := _rets.Get(2); _r != nil {
 		_r2 = _r.(string)
 	}
 	var _r3 error
-	if _rFn, ok := _rets.Get(3).(func(int, bool) error); ok {
+	if _rFn, _ok := _rets.Get(3).(func(int, bool) error); _ok {
 		_r3 = _rFn(a, b)
 	} else if _r := _rets.Get(3); _r != nil {
 		_r3 = _r.(error)
@@ -618,7 +618,7 @@ func (_mck *Massive) Method55() *cases.Other {
 	}
 
 	var _r0 *cases.Other
-	if _rFn, ok := _rets.Get(0).(func() *cases.Other); ok {
+	if _rFn, _ok := _rets.Get(0).(func() *cases.Other); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(*cases.Other)
@@ -638,7 +638,7 @@ func (_mck *Massive) Method56(a string, b float64, c ...int) error {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func(string, float64, ...int) error); ok {
+	if _rFn, _ok := _rets.Get(0).(func(string, float64, ...int) error); _ok {
 		_r0 = _rFn(a, b, c...)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)
@@ -655,7 +655,7 @@ func (_mck *Massive) Method57() cases.ParamOne[int] {
 	}
 
 	var _r0 cases.ParamOne[int]
-	if _rFn, ok := _rets.Get(0).(func() cases.ParamOne[int]); ok {
+	if _rFn, _ok := _rets.Get(0).(func() cases.ParamOne[int]); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(cases.ParamOne[int])
@@ -672,7 +672,7 @@ func (_mck *Massive) Method58() cases.ParamTwo[int, *cases.Concrete] {
 	}
 
 	var _r0 cases.ParamTwo[int, *cases.Concrete]
-	if _rFn, ok := _rets.Get(0).(func() cases.ParamTwo[int, *cases.Concrete]); ok {
+	if _rFn, _ok := _rets.Get(0).(func() cases.ParamTwo[int, *cases.Concrete]); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(cases.ParamTwo[int, *cases.Concrete])

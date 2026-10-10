@@ -66,13 +66,17 @@ func (fil *file) parseDecls() {
 // path or its alias. It returns an [ErrUnkPkg] error if no matching import is
 // found.
 func (fil *file) findPackage(res *resolver, pathOrAlias string) (*gopkg, error) {
-	var err error
 	fil.parseImports()
+	// An aliased import is referenced only by its alias, so match the import
+	// identity, not the package name.
 	for _, pkg := range fil.pks {
-		if err = res.resolve(pkg); err != nil {
+		if pkg.alias != "" && pkg.alias != pathOrAlias {
+			continue
+		}
+		if err := res.resolve(pkg); err != nil {
 			return nil, err
 		}
-		if pkg.pkgName == pathOrAlias || pkg.alias == pathOrAlias {
+		if importIdent(pkg) == pathOrAlias {
 			return pkg, nil
 		}
 	}

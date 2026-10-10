@@ -28,19 +28,19 @@ func (_mck *Case50) Method50(a int) (int, int, error) {
 	}
 
 	var _r0 int
-	if _rFn, ok := _rets.Get(0).(func(int) int); ok {
+	if _rFn, _ok := _rets.Get(0).(func(int) int); _ok {
 		_r0 = _rFn(a)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(int)
 	}
 	var _r1 int
-	if _rFn, ok := _rets.Get(1).(func(int) int); ok {
+	if _rFn, _ok := _rets.Get(1).(func(int) int); _ok {
 		_r1 = _rFn(a)
 	} else if _r := _rets.Get(1); _r != nil {
 		_r1 = _r.(int)
 	}
 	var _r2 error
-	if _rFn, ok := _rets.Get(2).(func(int) error); ok {
+	if _rFn, _ok := _rets.Get(2).(func(int) error); _ok {
 		_r2 = _rFn(a)
 	} else if _r := _rets.Get(2); _r != nil {
 		_r2 = _r.(error)

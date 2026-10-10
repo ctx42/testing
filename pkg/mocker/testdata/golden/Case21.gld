@@ -31,7 +31,7 @@ func (_mck *Case21) Method21(a fmt.Stringer) fs.File {
 	}
 
 	var _r0 fs.File
-	if _rFn, ok := _rets.Get(0).(func(fmt.Stringer) fs.File); ok {
+	if _rFn, _ok := _rets.Get(0).(func(fmt.Stringer) fs.File); _ok {
 		_r0 = _rFn(a)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(fs.File)

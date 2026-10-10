@@ -28,25 +28,25 @@ func (_mck *Case53) Method53(a int, b bool) (int, bool, string, error) {
 	}
 
 	var _r0 int
-	if _rFn, ok := _rets.Get(0).(func(int, bool) int); ok {
+	if _rFn, _ok := _rets.Get(0).(func(int, bool) int); _ok {
 		_r0 = _rFn(a, b)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(int)
 	}
 	var _r1 bool
-	if _rFn, ok := _rets.Get(1).(func(int, bool) bool); ok {
+	if _rFn, _ok := _rets.Get(1).(func(int, bool) bool); _ok {
 		_r1 = _rFn(a, b)
 	} else if _r := _rets.Get(1); _r != nil {
 		_r1 = _r.(bool)
 	}
 	var _r2 string
-	if _rFn, ok := _rets.Get(2).(func(int, bool) string); ok {
+	if _rFn, _ok := _rets.Get(2).(func(int, bool) string); _ok {
 		_r2 = _rFn(a, b)
 	} else if _r := _rets.Get(2); _r != nil {
 		_r2 = _r.(string)
 	}
 	var _r3 error
-	if _rFn, ok := _rets.Get(3).(func(int, bool) error); ok {
+	if _rFn, _ok := _rets.Get(3).(func(int, bool) error); _ok {
 		_r3 = _rFn(a, b)
 	} else if _r := _rets.Get(3); _r != nil {
 		_r3 = _r.(error)

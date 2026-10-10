@@ -315,7 +315,7 @@ func (met *method) genReturnBody(indent int) string {
 // Example:
 //
 //	var _r0 pkg.Tx
-//	if _rFn, ok := _rets.Get(0).(func(pkg.Tx) pkg.Tx); ok {
+//	if _rFn, _ok := _rets.Get(0).(func(pkg.Tx) pkg.Tx); _ok {
 //		_r0 = _rFn(a)
 //	} else if _r := _rets.Get(0).(pkg.Tx); _r != nil {
 //		_r0 = _r.(pkg.Tx)
@@ -330,7 +330,7 @@ func (met *method) genSingleRet(idx int, ret argument, indent int) []string {
 	// Check if Get returns a function.
 	codeFnTyp := fmt.Sprintf("func%s %s", met.genArgTypes(), ret.typ)
 	code := fmt.Sprintf(
-		"%sif _rFn, ok := _rets.Get(%d).(%s); ok {",
+		"%sif _rFn, _ok := _rets.Get(%d).(%s); _ok {",
 		ind,
 		idx,
 		codeFnTyp,

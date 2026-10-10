@@ -155,6 +155,50 @@ func genImports(imps []*gopkg) string {
 	return buf.String()
 }
 
+// dedupeImports returns imps without repeated import paths, keeping the
+// first import of each path. Types using a dropped import are rewritten to
+// the identity of the kept one, for example when the interface itself uses
+// the mock or tester package the generated code imports.
+func dedupeImports(imps []*gopkg, methods []*method) []*gopkg {
+	kept := make(map[string]*gopkg, len(imps))
+	out := make([]*gopkg, 0, len(imps))
+	for _, imp := range imps {
+		if imp == nil || imp.pkgPath == "" {
+			out = append(out, imp)
+			continue
+		}
+		prev, ok := kept[imp.pkgPath]
+		if !ok {
+			kept[imp.pkgPath] = imp
+			out = append(out, imp)
+			continue
+		}
+		if old, neu := importIdent(imp), importIdent(prev); old != neu {
+			rewriteTypePkgPrefix(methods, imp, old, neu)
+		}
+	}
+	return out
+}
+
+// renameShadowingArgs clears the names of method arguments equal to an
+// import identity or "any", so the generated code names them _aN instead of
+// shadowing the package or the predeclared type in the method body.
+func renameShadowingArgs(imps []*gopkg, methods []*method) {
+	reserved := map[string]bool{"any": true}
+	for _, imp := range imps {
+		if imp != nil && imp.pkgPath != "" {
+			reserved[importIdent(imp)] = true
+		}
+	}
+	for _, met := range methods {
+		for i := range met.args {
+			if reserved[met.args[i].name] {
+				met.args[i].name = ""
+			}
+		}
+	}
+}
+
 // resolveImportNameClashes assigns stable aliases when two imports share an
 // import identity (alias if set, otherwise package name), and rewrites method
 // type strings that used the old identity.

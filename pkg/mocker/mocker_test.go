@@ -5,6 +5,7 @@ package mocker
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -24,6 +25,23 @@ func Test_New(t *testing.T) {
 }
 
 func Test_Mocker_Generate(t *testing.T) {
+	t.Run("error - closing the output", func(t *testing.T) {
+		// --- Given ---
+		out := &failCloser{}
+		opts := []Option{
+			WithSrc("testdata/cases"),
+			WithTgt("testdata/golden"),
+			WithTgtOutput(out),
+		}
+
+		// --- When ---
+		err := New().Generate("Case00", opts...)
+
+		// --- Then ---
+		assert.ErrorEqual(t, "close failed", err)
+		assert.True(t, out.Len() > 0)
+	})
+
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		mod := tstmod.New(t, "v2")
@@ -240,6 +258,12 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 		{"Embedder", "Embedder", "cases", "golden"},
 		{"EmptyEmbed", "EmptyEmbed", "cases", "golden"},
 		{"Massive", "Massive", "cases", "golden"},
+		{"CaseOkParam", "CaseOkParam", "cases", "golden"},
+		{"CaseImportParam", "CaseImportParam", "cases", "golden"},
+		{"CaseTesterParam", "CaseTesterParam", "cases", "golden"},
+		{"CaseArrayLen", "CaseArrayLen", "cases", "golden"},
+		{"CaseAliasClash", "CaseAliasClash", "cases", "golden"},
+		{"CaseEmbedAliased", "CaseEmbedAliased", "cases", "golden"},
 	}
 
 	for _, tc := range tt {
@@ -268,3 +292,8 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 		})
 	}
 }
+
+// failCloser is a buffer whose Close always fails.
+type failCloser struct{ bytes.Buffer }
+
+func (*failCloser) Close() error { return errors.New("close failed") }

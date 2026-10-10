@@ -32,7 +32,7 @@ func (_mck *Case46) Method46(a map[*pkga.A1]*pkgb.B1, b pkgc.C1) *pkgd.D1 {
 	}
 
 	var _r0 *pkgd.D1
-	if _rFn, ok := _rets.Get(0).(func(map[*pkga.A1]*pkgb.B1, pkgc.C1) *pkgd.D1); ok {
+	if _rFn, _ok := _rets.Get(0).(func(map[*pkga.A1]*pkgb.B1, pkgc.C1) *pkgd.D1); _ok {
 		_r0 = _rFn(a, b)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(*pkgd.D1)

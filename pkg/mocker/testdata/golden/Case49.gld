@@ -29,7 +29,7 @@ func (_mck *Case49) Method49(a <-chan *pkga.A1) chan<- int {
 	}
 
 	var _r0 chan<- int
-	if _rFn, ok := _rets.Get(0).(func(<-chan *pkga.A1) chan<- int); ok {
+	if _rFn, _ok := _rets.Get(0).(func(<-chan *pkga.A1) chan<- int); _ok {
 		_r0 = _rFn(a)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(chan<- int)

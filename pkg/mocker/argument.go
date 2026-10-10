@@ -42,7 +42,7 @@ func (arg argument) genName(idx int) string {
 // produce invalid Go if kept as-is.
 func isGenLocal(name string) bool {
 	switch name {
-	case "_mck", "_args", "_arg", "_rets", "_r", "_rFn", "_elem":
+	case "_mck", "_args", "_arg", "_rets", "_r", "_rFn", "_ok", "_elem":
 		return true
 	}
 	if len(name) < 3 || name[0] != '_' {

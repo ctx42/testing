@@ -31,13 +31,13 @@ func (_mck *Case52) Method52(a cases.Concrete, b mt.Time, c int) (*cases.Concret
 	}
 
 	var _r0 *cases.Concrete
-	if _rFn, ok := _rets.Get(0).(func(cases.Concrete, mt.Time, int) *cases.Concrete); ok {
+	if _rFn, _ok := _rets.Get(0).(func(cases.Concrete, mt.Time, int) *cases.Concrete); _ok {
 		_r0 = _rFn(a, b, c)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(*cases.Concrete)
 	}
 	var _r1 error
-	if _rFn, ok := _rets.Get(1).(func(cases.Concrete, mt.Time, int) error); ok {
+	if _rFn, _ok := _rets.Get(1).(func(cases.Concrete, mt.Time, int) error); _ok {
 		_r1 = _rFn(a, b, c)
 	} else if _r := _rets.Get(1); _r != nil {
 		_r1 = _r.(error)

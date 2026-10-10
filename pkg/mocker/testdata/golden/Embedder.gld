@@ -34,7 +34,7 @@ func (_mck *Embedder) Method1() error {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func() error); ok {
+	if _rFn, _ok := _rets.Get(0).(func() error); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)
@@ -57,7 +57,7 @@ func (_mck *Embedder) Close() error {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func() error); ok {
+	if _rFn, _ok := _rets.Get(0).(func() error); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)
@@ -74,7 +74,7 @@ func (_mck *Embedder) AAA() string {
 	}
 
 	var _r0 string
-	if _rFn, ok := _rets.Get(0).(func() string); ok {
+	if _rFn, _ok := _rets.Get(0).(func() string); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(string)

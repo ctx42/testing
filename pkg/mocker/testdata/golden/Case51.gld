@@ -29,7 +29,7 @@ func (_mck *Case51) Method51(e pkge.E1) error {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func(pkge.E1) error); ok {
+	if _rFn, _ok := _rets.Get(0).(func(pkge.E1) error); _ok {
 		_r0 = _rFn(e)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)

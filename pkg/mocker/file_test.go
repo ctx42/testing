@@ -192,7 +192,7 @@ func Test_file_findPackage(t *testing.T) {
 		fil := &file{
 			pks: []*gopkg{
 				{alias: "a0", pkgName: "n0", resolved: true},
-				{alias: "a1", pkgName: "n1", resolved: true},
+				{pkgName: "n1", resolved: true},
 				{alias: "a2", pkgName: "n2", resolved: true},
 			},
 		}
@@ -202,7 +202,25 @@ func Test_file_findPackage(t *testing.T) {
 
 		// --- Then ---
 		assert.NoError(t, err)
-		assert.Equal(t, &gopkg{alias: "a1", pkgName: "n1", resolved: true}, have)
+		assert.Equal(t, &gopkg{pkgName: "n1", resolved: true}, have)
+	})
+
+	t.Run("error - aliased import by package name", func(t *testing.T) {
+		// --- Given ---
+		res := &resolver{}
+		fil := &file{
+			pks: []*gopkg{
+				{alias: "a1", pkgName: "n1", resolved: true},
+				{pkgName: "n2", resolved: true},
+			},
+		}
+
+		// --- When ---
+		have, err := fil.findPackage(res, "n1")
+
+		// --- Then ---
+		assert.ErrorIs(t, ErrUnkPkg, err)
+		assert.Nil(t, have)
 	})
 
 	t.Run("find by alias", func(t *testing.T) {

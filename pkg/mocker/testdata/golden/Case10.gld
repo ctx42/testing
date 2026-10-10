@@ -28,13 +28,13 @@ func (_mck *Case10) Method10() (int, error) {
 	}
 
 	var _r0 int
-	if _rFn, ok := _rets.Get(0).(func() int); ok {
+	if _rFn, _ok := _rets.Get(0).(func() int); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(int)
 	}
 	var _r1 error
-	if _rFn, ok := _rets.Get(1).(func() error); ok {
+	if _rFn, _ok := _rets.Get(1).(func() error); _ok {
 		_r1 = _rFn()
 	} else if _r := _rets.Get(1); _r != nil {
 		_r1 = _r.(error)

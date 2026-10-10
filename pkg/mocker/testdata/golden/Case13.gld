@@ -30,7 +30,7 @@ func (_mck *Case13) Method13(tim mt.Time) error {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func(mt.Time) error); ok {
+	if _rFn, _ok := _rets.Get(0).(func(mt.Time) error); _ok {
 		_r0 = _rFn(tim)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)

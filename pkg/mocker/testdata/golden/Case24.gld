@@ -32,7 +32,7 @@ func (_mck *Case24) Method24(a ...cases.Concrete) int {
 	}
 
 	var _r0 int
-	if _rFn, ok := _rets.Get(0).(func(...cases.Concrete) int); ok {
+	if _rFn, _ok := _rets.Get(0).(func(...cases.Concrete) int); _ok {
 		_r0 = _rFn(a...)
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(int)

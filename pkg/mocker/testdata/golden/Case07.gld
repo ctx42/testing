@@ -28,7 +28,7 @@ func (_mck *Case07) Method07() error {
 	}
 
 	var _r0 error
-	if _rFn, ok := _rets.Get(0).(func() error); ok {
+	if _rFn, _ok := _rets.Get(0).(func() error); _ok {
 		_r0 = _rFn()
 	} else if _r := _rets.Get(0); _r != nil {
 		_r0 = _r.(error)

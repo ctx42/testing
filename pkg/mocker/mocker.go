@@ -108,7 +108,9 @@ func (mck *Mocker) Generate(name string, opts ...Option) error {
 	// Runtime mock/tester imports first so clash resolution renames user
 	// imports instead of the hardcoded mock.* / tester refs in the template.
 	imps := append([]*gopkg{mckImp, tstImp}, itf.imports()...)
+	imps = dedupeImports(imps, itf.methods)
 	resolveImportNameClashes(imps, itf.methods)
+	renameShadowingArgs(imps, itf.methods)
 
 	buf.WriteString(genImports(imps))
 	buf.WriteString("\n\n")
@@ -124,13 +126,12 @@ func (mck *Mocker) Generate(name string, opts ...Option) error {
 	if err != nil {
 		return err
 	}
+	_, err = buf.WriteTo(cfg.tgtOut)
 	if c, ok := cfg.tgtOut.(io.Closer); ok {
-		defer func() { _ = c.Close() }()
+		// A failed close may mean the written data never reached the file.
+		err = errors.Join(err, c.Close())
 	}
-	if _, err = buf.WriteTo(cfg.tgtOut); err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // run runs mocker for a given configuration without generating code for the
@@ -282,7 +283,7 @@ func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 		if _, _, err := cfg.srcPkg.findType(v.Name); err == nil {
 			exp := expression{}
 			if cfg.srcPkg.pkgPath != cfg.tgtPkg.pkgPath {
-				exp.value = cfg.srcPkg.pkgName + "." + v.Name
+				exp.value = importIdent(cfg.srcPkg) + "." + v.Name
 				exp.pks = append(exp.pks, cfg.srcPkg)
 			} else {
 				exp.value = v.Name
@@ -366,13 +367,13 @@ func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 		if err != nil {
 			return expression{}, err
 		}
-		sb := "[]"
+		exp := expression{value: "[]"}
 		if v.Len != nil {
-			val := v.Len.(*ast.BasicLit).Value // nolint: forcetypeassert
-			sb = "[" + val + "]"
+			if exp, err = mck.parseArrayLen(cfg, v.Len); err != nil {
+				return expression{}, err
+			}
 		}
-		exp := expression{}
-		exp.value = sb + got.value
+		exp.value += got.value
 		exp.pks = append(exp.pks, got.pks...)
 		return exp, nil
 
@@ -460,4 +461,43 @@ func (mck *Mocker) genConstructor(typeName, testerName string) string {
 		"\treturn &%[1]s{Mock: mock.NewMock(t), t: t}\n" +
 		"}"
 	return fmt.Sprintf(format, typeName, testerName)
+}
+
+// parseArrayLen parses an array length expression, returning the "[len]"
+// prefix of the array type and the packages it needs: an integer literal,
+// a constant of the source package, or a constant of an imported package.
+func (mck *Mocker) parseArrayLen(cfg Config, e ast.Expr) (expression, error) {
+	switch v := e.(type) {
+	case *ast.BasicLit:
+		return expression{value: "[" + v.Value + "]"}, nil
+
+	case *ast.Ident:
+		if cfg.srcPkg.pkgPath == cfg.tgtPkg.pkgPath {
+			return expression{value: "[" + v.Name + "]"}, nil
+		}
+		if !ast.IsExported(v.Name) {
+			format := "%w: unexported array length constant %s"
+			return expression{}, fmt.Errorf(format, ErrAstParse, v.Name)
+		}
+		name := importIdent(cfg.srcPkg) + "." + v.Name
+		exp := expression{value: "[" + name + "]"}
+		exp.pks = append(exp.pks, cfg.srcPkg)
+		return exp, nil
+
+	case *ast.SelectorExpr:
+		x, ok := v.X.(*ast.Ident)
+		if !ok {
+			break
+		}
+		pkg, err := cfg.srcFile.findPackage(mck.res, x.Name)
+		if err != nil {
+			return expression{}, err
+		}
+		name := importIdent(pkg) + "." + v.Sel.Name
+		exp := expression{value: "[" + name + "]"}
+		exp.pks = append(exp.pks, pkg)
+		return exp, nil
+	}
+	format := "%w: unsupported array length %T"
+	return expression{}, fmt.Errorf(format, ErrAstParse, e)
 }
