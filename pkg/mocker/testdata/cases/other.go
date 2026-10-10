@@ -25,3 +25,9 @@ type ParamTwo[A any, B any] struct {
 	DataA A
 	DataB B
 }
+
+// Generic represents an interface with a type parameter.
+type Generic[T any] interface{ Get() T }
+
+// EmbedGeneric represents an interface embedding an instantiated generic one.
+type EmbedGeneric interface{ Generic[int] }

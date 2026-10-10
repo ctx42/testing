@@ -255,16 +255,28 @@ func (pkg *gopkg) findType(name string) (*file, *ast.TypeSpec, error) {
 
 // findItf locates an interface type declaration named `name` in the package.
 // It returns the containing file, the interface's AST node, and nil error if
-// the named type is an interface.
+// the named type is a non-generic interface.
 func (pkg *gopkg) findItf(name string) (*file, *ast.InterfaceType, error) {
 	fil, typ, err := pkg.findType(name)
 	if err != nil {
 		return nil, nil, err
 	}
-	if itf, ok := typ.Type.(*ast.InterfaceType); ok {
-		return fil, itf, nil
+	itf, ok := typ.Type.(*ast.InterfaceType)
+	if !ok {
+		const format = "%w: %s is not an interface"
+		return nil, nil, fmt.Errorf(format, ErrUnkItf, name)
 	}
-	return nil, nil, fmt.Errorf("%w: %s is not an interface", ErrUnkItf, name)
+	if typ.TypeParams.NumFields() > 0 {
+		return nil, nil, errGeneric(name)
+	}
+	return fil, itf, nil
+}
+
+// errGeneric returns the error for a generic interface, which mocker does
+// not support.
+func errGeneric(name string) error {
+	const format = "%w: generic interface %s is not supported"
+	return fmt.Errorf(format, ErrUnkItf, name)
 }
 
 // isValid returns true if the package has all the required fields set.

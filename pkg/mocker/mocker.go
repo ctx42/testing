@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
+	"go/types"
 	"io"
 	"strings"
 )
@@ -232,6 +233,13 @@ func (mck *Mocker) parseItf(cfg Config, fld *ast.Field) ([]*method, error) {
 			return nil, err
 		}
 		return itf.methods, nil
+
+	// Embedded instantiated generic interface.
+	case *ast.IndexExpr:
+		return nil, errGeneric(types.ExprString(v.X))
+
+	case *ast.IndexListExpr:
+		return nil, errGeneric(types.ExprString(v.X))
 	}
 
 	return nil, fmt.Errorf("unexpected method field type: %T", fld.Type)

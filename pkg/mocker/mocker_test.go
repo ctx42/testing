@@ -190,6 +190,40 @@ func Test_Mocker_Generate(t *testing.T) {
 		assert.ErrorIs(t, ErrUnkItf, err)
 		assert.ErrorContain(t, "EmptyAny is not an interface", err)
 	})
+
+	t.Run("error - generic interface", func(t *testing.T) {
+		// --- Given ---
+		opts := []Option{
+			WithTgtOutput(&bytes.Buffer{}), // Do not create the output file.
+			WithSrc("testdata/cases"),
+		}
+		mck := New()
+
+		// --- When ---
+		err := mck.Generate("Generic", opts...)
+
+		// --- Then ---
+		assert.ErrorIs(t, ErrUnkItf, err)
+		wMsg := "generic interface Generic is not supported"
+		assert.ErrorContain(t, wMsg, err)
+	})
+
+	t.Run("error - embedded generic interface", func(t *testing.T) {
+		// --- Given ---
+		opts := []Option{
+			WithTgtOutput(&bytes.Buffer{}), // Do not create the output file.
+			WithSrc("testdata/cases"),
+		}
+		mck := New()
+
+		// --- When ---
+		err := mck.Generate("EmbedGeneric", opts...)
+
+		// --- Then ---
+		assert.ErrorIs(t, ErrUnkItf, err)
+		wMsg := "generic interface Generic is not supported"
+		assert.ErrorContain(t, wMsg, err)
+	})
 }
 
 func Test_Mocker_Generate_tabular(t *testing.T) {
