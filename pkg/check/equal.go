@@ -4,10 +4,11 @@
 package check
 
 import (
+	"cmp"
 	"fmt"
+	"maps"
 	"reflect"
 	"slices"
-	"sort"
 	"unsafe"
 
 	"github.com/ctx42/testing/internal/core"
@@ -22,9 +23,7 @@ import (
 // [dump] options.
 func Equal(want, have any, opts ...any) error {
 	ops := DefaultOptions(opts...)
-	if _, ok := ops.Dumper.Dumpers[typByte]; !ok {
-		ops.Dumper.Dumpers[typByte] = dumpByte
-	}
+	ops.Dumper = withByteDumper(ops.Dumper)
 	wVal := reflect.ValueOf(want)
 	hVal := reflect.ValueOf(have)
 	return deepEqual(wVal, hVal, make(map[visit]bool), WithOptions(ops))
@@ -112,7 +111,7 @@ func deepEqual(
 		if ops.CmpSimpleType {
 			wSmp, wOK := core.ValueSimple(wVal)
 			hSmp, hOK := core.ValueSimple(hVal)
-			if wOK && hOK {
+			if wOK && hOK && reflect.TypeOf(wSmp) == reflect.TypeOf(hSmp) {
 				wVal = reflect.ValueOf(wSmp)
 				hVal = reflect.ValueOf(hSmp)
 				return deepEqual(wVal, hVal, visited, WithOptions(ops))
@@ -124,15 +123,6 @@ func deepEqual(
 			Append("want type", "%s", wTyp).
 			Append("have type", "%s", hTyp)
 		return AddRows(ops, msg)
-	}
-
-	// Detect already compared reference values (cycle protection).
-	if wPtr, hPtr, ok := refPtrs(wVal, hVal); ok {
-		v := visit{wPtr, hPtr, wTyp}
-		if visited[v] {
-			return nil
-		}
-		visited[v] = true
 	}
 
 	var chk Checker
@@ -155,6 +145,17 @@ func deepEqual(
 			return AddRows(ops, msg)
 		}
 		return chk(wItf, hItf, WithOptions(ops))
+	}
+
+	// Detect already compared reference values (cycle protection). Visits are
+	// recorded only for the default recursion, so a value handled by a custom
+	// checker is still compared when reached through another trail.
+	if wPtr, hPtr, ok := refPtrs(wVal, hVal); ok {
+		v := visit{wPtr, hPtr, wTyp}
+		if visited[v] {
+			return nil
+		}
+		visited[v] = true
 	}
 
 	switch knd := wVal.Kind(); knd {
@@ -233,8 +234,12 @@ func deepEqual(
 		}
 
 		keys := wVal.MapKeys()
-		sort.Slice(keys, func(i, j int) bool {
-			return valToString(keys[i]) < valToString(keys[j])
+		slices.SortFunc(keys, func(a, b reflect.Value) int {
+			if c := cmp.Compare(valToString(a), valToString(b)); c != 0 {
+				return c
+			}
+			// Keys rendering the same (struct, array) are ordered by dump.
+			return cmp.Compare(ops.Dumper.Value(a), ops.Dumper.Value(b))
 		})
 
 		var err error
@@ -478,9 +483,7 @@ func equalError(want, have any, opts ...any) *notice.Notice {
 	}
 
 	ops := DefaultOptions(opts...)
-	if _, ok := ops.Dumper.Dumpers[typByte]; !ok {
-		ops.Dumper.Dumpers[typByte] = dumpByte
-	}
+	ops.Dumper = withByteDumper(ops.Dumper)
 
 	msg := notice.New("expected values to be equal")
 	if wTyp != "" {
@@ -504,10 +507,7 @@ func equalError(want, have any, opts ...any) *notice.Notice {
 
 // dumpByte is a custom bumper for bytes.
 func dumpByte(dmp dump.Dump, lvl int, val reflect.Value) string {
-	if !val.CanInterface() {
-		return dump.ValCannotPrint
-	}
-	v := val.Interface().(byte) // nolint: forcetypeassert
+	v := byte(val.Uint())
 	var str string
 	if isPrintableChar(v) {
 		str = fmt.Sprintf("0x%02x ('%s')", v, string(v))
@@ -516,4 +516,20 @@ func dumpByte(dmp dump.Dump, lvl int, val reflect.Value) string {
 	}
 	prn := dump.NewPrinter(dmp)
 	return prn.Tab(dmp.Indent + lvl).Write(str).String()
+}
+
+// withByteDumper returns a copy of dmp using [dumpByte] for bytes unless a
+// byte dumper is already set. The copy has its own Dumpers map, so the
+// caller's options are never modified.
+func withByteDumper(dmp dump.Dump) dump.Dump {
+	if _, ok := dmp.Dumpers[typByte]; ok {
+		return dmp
+	}
+	dumpers := maps.Clone(dmp.Dumpers)
+	if dumpers == nil {
+		dumpers = make(map[reflect.Type]dump.Dumper, 1)
+	}
+	dumpers[typByte] = dumpByte
+	dmp.Dumpers = dumpers
+	return dmp
 }

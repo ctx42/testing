@@ -9,6 +9,7 @@ import (
 	"maps"
 	"os"
 	"reflect"
+	"slices"
 	"strconv"
 	"time"
 
@@ -159,6 +160,7 @@ func WithRecent(recent time.Duration) Option {
 // WithDumper is [Checker] option setting [dump.Config] options.
 func WithDumper(optsD ...dump.Option) Option {
 	return func(optsC Options) Options {
+		optsC.Dumper.Dumpers = maps.Clone(optsC.Dumper.Dumpers)
 		for _, opt := range optsD {
 			opt(&optsC.Dumper)
 		}
@@ -173,6 +175,7 @@ func WithDumper(optsD ...dump.Option) Option {
 // See the Design section in the root README for the customization model.
 func WithTypeChecker(typ any, chk Checker) Option {
 	return func(ops Options) Options {
+		ops.TypeCheckers = maps.Clone(ops.TypeCheckers)
 		if ops.TypeCheckers == nil {
 			ops.TypeCheckers = make(map[reflect.Type]Checker)
 		}
@@ -190,6 +193,7 @@ func WithTypeChecker(typ any, chk Checker) Option {
 // the current trail exactly matches the given string.
 func WithTrailChecker(trail string, chk Checker) Option {
 	return func(ops Options) Options {
+		ops.TrailCheckers = maps.Clone(ops.TrailCheckers)
 		if ops.TrailCheckers == nil {
 			ops.TrailCheckers = make(map[string]Checker)
 		}
@@ -201,7 +205,7 @@ func WithTrailChecker(trail string, chk Checker) Option {
 // WithSkipTrail is a [Checker] option setting trails to skip.
 func WithSkipTrail(skip ...string) Option {
 	return func(ops Options) Options {
-		ops.SkipTrails = append(ops.SkipTrails, skip...)
+		ops.SkipTrails = append(slices.Clip(ops.SkipTrails), skip...)
 		return ops
 	}
 }
@@ -400,17 +404,25 @@ func DefaultOptions(opts ...any) Options {
 	}
 
 	ops = ops.set(chkOpts)
-	if ops.TypeCheckers == nil {
-		ops.TypeCheckers = make(map[reflect.Type]Checker)
+	defaults := map[reflect.Type]Checker{
+		typTime:    Time,
+		typZonePtr: Zone,
+		typZone:    Zone,
 	}
-	if _, ok := ops.TypeCheckers[typTime]; !ok {
-		ops.TypeCheckers[typTime] = Time
-	}
-	if _, ok := ops.TypeCheckers[typZonePtr]; !ok {
-		ops.TypeCheckers[typZonePtr] = Zone
-	}
-	if _, ok := ops.TypeCheckers[typZone]; !ok {
-		ops.TypeCheckers[typZone] = Zone
+	var cloned bool
+	for typ, chk := range defaults {
+		if _, ok := ops.TypeCheckers[typ]; ok {
+			continue
+		}
+		if !cloned {
+			// Options passed by WithOptions share the map with the caller.
+			ops.TypeCheckers = maps.Clone(ops.TypeCheckers)
+			if ops.TypeCheckers == nil {
+				ops.TypeCheckers = make(map[reflect.Type]Checker, 3)
+			}
+			cloned = true
+		}
+		ops.TypeCheckers[typ] = chk
 	}
 	return ops
 }

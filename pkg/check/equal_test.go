@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 	"unsafe"
@@ -67,6 +68,59 @@ func Test_Equal(t *testing.T) {
 
 		// --- Then ---
 		affirm.Nil(t, err)
+	})
+
+	t.Run("error - WithCmpBaseTypes different base types", func(t *testing.T) {
+		// --- When ---
+		err := Equal(1, int64(1), WithCmpBaseTypes())
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  want type: int\n" +
+			"  have type: int64"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("does not modify options passed by WithOptions", func(t *testing.T) {
+		// --- Given ---
+		ops := DefaultOptions(WithTrailChecker("a", Exact))
+		src := DefaultOptions(WithOptions(ops))
+
+		// --- When ---
+		err := Equal(1, 1, WithOptions(src), WithTypeChecker(1, nil))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		_, ok := src.TypeCheckers[reflect.TypeOf(1)]
+		affirm.Equal(t, false, ok)
+		_, ok = src.Dumper.Dumpers[typByte]
+		affirm.Equal(t, false, ok)
+	})
+
+	t.Run("WithOptions with zero value options", func(t *testing.T) {
+		// --- When ---
+		err := Equal(1, 1, WithOptions(Options{}))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - map with interface keys", func(t *testing.T) {
+		// --- Given ---
+		want := map[any]int{"a": 1, "b": 2}
+		have := map[any]int{"a": 1, "b": 3}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: map[\"b\"]\n" +
+			"   want: 2\n" +
+			"   have: 3"
+		affirm.Equal(t, wMsg, err.Error())
 	})
 }
 
@@ -243,6 +297,45 @@ func Test_Equal_custom_trail_checkers(t *testing.T) {
 			"   have: Europe/Warsaw"
 		affirm.Equal(t, wMsg, err.Error())
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+}
+
+func Test_Equal_custom_checkers_aliased_pointers(t *testing.T) {
+	t.Run("error - trail checker does not hide aliases", func(t *testing.T) {
+		// --- Given ---
+		w, h := 1, 2
+		want := map[string]*int{"a": &w, "b": &w}
+		have := map[string]*int{"a": &h, "b": &h}
+		chk := func(_, _ any, _ ...any) error { return nil }
+
+		// --- When ---
+		err := Equal(want, have, WithTrailChecker(`map["a"]`, chk))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: map[\"b\"]\n" +
+			"   want: 1\n" +
+			"   have: 2"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("nested checker options do not leak to siblings", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ V int }
+		var calls int
+		chk := func(want, have any, opts ...any) error {
+			calls++
+			opts = append(opts, WithTypeChecker(T{}, nil))
+			return Equal(want, have, opts...)
+		}
+
+		// --- When ---
+		err := Equal([]T{{1}, {2}}, []T{{1}, {2}}, WithTypeChecker(T{}, chk))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.Equal(t, 2, calls)
 	})
 }
 
@@ -1179,6 +1272,50 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 }
 
 func Test_Equal_kind_Map(t *testing.T) {
+	t.Run("error - struct keys are reported in order", func(t *testing.T) {
+		// --- Given ---
+		type K struct{ A int }
+		want := map[K]int{{1}: 1, {2}: 2, {3}: 3}
+		have := map[K]int{{1}: 10, {2}: 20, {3}: 30}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"multiple expectations violated:\n" +
+			"  error: expected values to be equal\n" +
+			"  trail: map[check.K]\n" +
+			"   want: 1\n" +
+			"   have: 10\n" +
+			"      ---\n" +
+			"  error: expected values to be equal\n" +
+			"  trail: map[check.K]\n" +
+			"   want: 2\n" +
+			"   have: 20\n" +
+			"      ---\n" +
+			"  error: expected values to be equal\n" +
+			"  trail: map[check.K]\n" +
+			"   want: 3\n" +
+			"   have: 30"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - unexported byte slice is dumped", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ b []byte }
+		want := T{b: []byte{1}}
+		have := T{b: []byte{1, 2}}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		hasCannotPrint := strings.Contains(err.Error(), dump.ValCannotPrint)
+		affirm.Equal(t, false, hasCannotPrint)
+	})
+
 	t.Run("equal map", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
@@ -1983,17 +2120,16 @@ func Test_dumpByte(t *testing.T) {
 		affirm.Equal(t, "      0x01", have)
 	})
 
-	t.Run("uses indent and level", func(t *testing.T) {
+	t.Run("unexported field", func(t *testing.T) {
 		// --- Given ---
-		dmp := dump.New(dump.WithIndent(2))
-		val := reflect.ValueOf(reflect.TypeFor[int]()).Elem()
-		val = val.Field(0).Field(4)
+		dmp := dump.New()
+		val := reflect.ValueOf(struct{ b byte }{b: 'a'}).Field(0)
 
 		// --- When ---
-		have := dumpByte(dmp, 1, val)
+		have := dumpByte(dmp, 0, val)
 
 		// --- Then ---
-		affirm.Equal(t, dump.ValCannotPrint, have)
+		affirm.Equal(t, "0x61 ('a')", have)
 	})
 }
 

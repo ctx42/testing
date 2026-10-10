@@ -56,6 +56,30 @@ func Test_isPrintableChar(t *testing.T) {
 	}
 }
 
+func Test_valToString(t *testing.T) {
+	t.Run("interface map key", func(t *testing.T) {
+		// --- Given ---
+		key := reflect.ValueOf(map[any]int{"a": 1}).MapKeys()[0]
+
+		// --- When ---
+		have := valToString(key)
+
+		// --- Then ---
+		affirm.Equal(t, `"a"`, have)
+	})
+
+	t.Run("nil interface map key", func(t *testing.T) {
+		// --- Given ---
+		key := reflect.ValueOf(map[any]int{nil: 1}).MapKeys()[0]
+
+		// --- When ---
+		have := valToString(key)
+
+		// --- Then ---
+		affirm.Equal(t, "nil", have)
+	})
+}
+
 func Test_valToString_tabular(t *testing.T) {
 	var itf, nilItf testcases.TItf
 	itf = testcases.TVal{}
@@ -95,7 +119,7 @@ func Test_valToString_tabular(t *testing.T) {
 		{"non-nil pointer", ptr, "*testcases.TPtr"},
 
 		{"complex64", complex(float32(1.0), float32(2.0)), "(1+2i)"},
-		{"complex128", complex(3.0, 4.0), "(3+4i)"},
+		{"complex128", complex(1.000000001, 2), "(1.000000001+2i)"},
 		{"array", [...]int{1, 2, 3}, "<array>"},
 		{"chan", make(chan int), "<invalid>"},
 		{"func", func() {}, "<invalid>"},

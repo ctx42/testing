@@ -81,10 +81,16 @@ func valToString(key reflect.Value) string {
 		return strconv.FormatComplex(key.Complex(), 'f', -1, 64)
 
 	case reflect.Complex128:
-		return strconv.FormatComplex(key.Complex(), 'f', -1, 64)
+		return strconv.FormatComplex(key.Complex(), 'f', -1, 128)
 
 	case reflect.Array:
 		return "<array>"
+
+	case reflect.Interface:
+		if key.IsNil() {
+			return dump.ValNil
+		}
+		return valToString(key.Elem())
 
 	case reflect.UnsafePointer:
 		return fmt.Sprintf("<%p>", key.UnsafePointer())
