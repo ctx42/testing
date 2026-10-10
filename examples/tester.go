@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// Package examples contains demonstrations of advanced usage patterns.
 package examples
 
 import (
@@ -11,7 +10,7 @@ import (
 // IsOdd is an example test helper that demonstrates using [tester.T].
 // It asserts that "have" is an odd number.
 //
-// See [tester_test.go] for how to test this helper using [tester.Spy].
+// See tester_test.go for how to test this helper using [tester.Spy].
 func IsOdd(t tester.T, have int) bool {
 	t.Helper()
 	if have%2 == 0 {

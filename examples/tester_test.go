@@ -12,33 +12,32 @@ import (
 func Test_IsOdd(t *testing.T) {
 	t.Run("error - is not an odd number", func(t *testing.T) {
 		// --- Given ---
-
-		// Set up the spy with expectations
+		// Set up the spy with expectations.
 		tspy := tester.New(t)
 		tspy.ExpectError()                              // Expect an error.
 		tspy.ExpectLogEqual("expected %d to be odd", 2) // Expect log.
 		tspy.Close()                                    // No more expectations.
 
 		// --- When ---
-		success := IsOdd(tspy, 2) // Run the helper.
+		have := IsOdd(tspy, 2) // Run the helper.
 
 		// --- Then ---
-		if success { // Verify the outcome.
+		if have { // Verify the outcome.
 			t.Error("expected success to be false")
 		}
 		tspy.AssertExpectations() // Ensure all expectations were met.
 	})
 
 	t.Run("is an odd number", func(t *testing.T) {
-		// Given
+		// --- Given ---
 		tspy := tester.New(t)
 		tspy.Close()
 
-		// When
-		success := IsOdd(tspy, 3)
+		// --- When ---
+		have := IsOdd(tspy, 3)
 
-		// Then
-		if !success {
+		// --- Then ---
+		if !have {
 			t.Error("expected success to be true")
 		}
 

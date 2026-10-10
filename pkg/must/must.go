@@ -7,12 +7,8 @@
 // boilerplate in test setup and assertions, making test code more
 // concise while keeping failures explicit.
 //
-// The helpers integrate naturally with [tester.T] and the assertion
-// packages when writing test fixtures or one-off checks that must
-// succeed.
-//
-// See the package [README] for motivation and patterns. See
-// [examples_test.go] for executable demonstrations.
+// See the package README for motivation and patterns, and examples_test.go
+// for executable demonstrations.
 //
 // Key entry points:
 //   - [Value] / [Values] — return values or panic on error
@@ -26,9 +22,6 @@ import (
 )
 
 // Value returns val if err is nil; otherwise it panics with err.
-//
-// Generic equivalent of the common "must succeed" pattern for single-value
-// + error results.
 func Value[T any](val T, err error) T {
 	if err != nil {
 		panic(err)
@@ -37,8 +30,6 @@ func Value[T any](val T, err error) T {
 }
 
 // Values returns val0 and val1 if err is nil; otherwise it panics with err.
-//
-// Useful for functions that return two values plus an error.
 func Values[T, TT any](val0 T, val1 TT, err error) (T, TT) {
 	if err != nil {
 		panic(err)
@@ -46,8 +37,7 @@ func Values[T, TT any](val0 T, val1 TT, err error) (T, TT) {
 	return val0, val1
 }
 
-// Nil panics with err if err is not nil. The simplest form for asserting
-// that an operation produced no error.
+// Nil panics with err if err is not nil.
 func Nil(err error) {
 	if err != nil {
 		panic(err)
@@ -82,8 +72,8 @@ func Single[T any](s []T, err error) T {
 	return v
 }
 
-// errExpSingle is an error returned when [single] receives a slice with more
-// than one element and nil err.
+// errExpSingle is the error single returns, wrapped, when it receives a slice
+// with more than one element and nil err.
 var errExpSingle = errors.New("expected a single result")
 
 // single returns the first element in the slice or T's zero value if the slice

@@ -34,7 +34,7 @@ func ExampleSingle() {
 		return []Row{{"a"}}, nil
 	}
 
-	// Will panic if a database returned more than one error.
+	// Panics if the query returned more than one row.
 	have := must.Single(query())
 
 	fmt.Println(have)

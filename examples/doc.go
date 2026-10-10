@@ -6,11 +6,11 @@
 //
 // The examples in this package show how to:
 //
-//   - Build custom assertion helpers on top of [assert] and [check] (see
-//     [custom_assertions_test.go]).
-//   - Write testable test helpers using [tester.T] and [tester.Spy] (see
-//     [tester.go] and [tester_test.go]).
-//   - Create and use mocks with the [mock] package (see [mock_test.go]).
+//   - Build custom assertion helpers on top of the assert and check packages
+//     (see custom_assertions_test.go).
+//   - Write testable test helpers using tester.T and tester.Spy (see
+//     tester.go and tester_test.go).
+//   - Create and use mocks with the mock package (see mock_test.go).
 //
 // These files are intended as reference implementations rather than
 // executable godoc examples.

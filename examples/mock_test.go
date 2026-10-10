@@ -3,6 +3,7 @@
 
 // This file demonstrates basic usage of the mock package to create
 // interface mocks for testing.
+
 package examples
 
 import (
@@ -46,8 +47,8 @@ func (mck *AdderMock) Add(a, b float64) float64 {
 	return rets.Get(0).(float64)
 }
 
-// Test_Adder_Add demonstrates using AdderMock in a test.
-func Test_Adder_Add(t *testing.T) {
+// Test_AdderMock_Add demonstrates using AdderMock in a test.
+func Test_AdderMock_Add(t *testing.T) {
 	// --- Given ---
 	mck := NewAdderMock(t) // Create the mock.
 	mck.

@@ -84,7 +84,8 @@ func NotNil(t core.T, have any) bool {
 	if have != nil {
 		typ = fmt.Sprintf("  type: %T\n", have)
 	}
-	const format = "expected non-nil value:\n" +
+	const format = "" +
+		"expected non-nil value:\n" +
 		"%s" +
 		"  have: nil"
 	t.Fatalf(format, typ)

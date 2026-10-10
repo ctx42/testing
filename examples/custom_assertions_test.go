@@ -9,11 +9,10 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
+	"github.com/ctx42/testing/pkg/assert"
 	"github.com/ctx42/testing/pkg/check"
 	"github.com/ctx42/testing/pkg/testcases"
 	"github.com/ctx42/testing/pkg/tester"
-
-	"github.com/ctx42/testing/pkg/assert"
 )
 
 func AssertTA(t tester.T, want, have *testcases.TA, opts ...any) bool {
@@ -55,8 +54,8 @@ func Test_AssertTA(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.Close()
 
-		w := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2, Str: "b"}}
-		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2, Str: "b"}}
+		w := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2}}
+		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2}}
 
 		// --- When ---
 		have := AssertTA(tspy, w, h)
@@ -65,7 +64,7 @@ func Test_AssertTA(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
-	t.Run("not equal field", func(t *testing.T) {
+	t.Run("error - not equal nested field", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -77,8 +76,8 @@ func Test_AssertTA(t *testing.T) {
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
-		w := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2, Str: "b"}}
-		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 3, Str: "b"}}
+		w := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2}}
+		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 3}}
 
 		// --- When ---
 		have := AssertTA(tspy, w, h)
@@ -87,7 +86,7 @@ func Test_AssertTA(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("not equal duration", func(t *testing.T) {
+	t.Run("error - not equal duration", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectError()
@@ -109,7 +108,7 @@ func Test_AssertTA(t *testing.T) {
 		affirm.Equal(t, false, have)
 	})
 
-	t.Run("both want and have are nil", func(t *testing.T) {
+	t.Run("error - both nil", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
