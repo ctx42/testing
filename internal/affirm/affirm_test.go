@@ -11,6 +11,9 @@ import (
 	"github.com/ctx42/testing/internal/core"
 )
 
+// expMsg is the message for a failed test assertion.
+const expMsg = "expected values to be equal:\n  want: %q\n  have: %q"
+
 func Test_Equal(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
@@ -150,7 +153,6 @@ func Test_NotNil(t *testing.T) {
 }
 
 func Test_Panic(t *testing.T) {
-	const expMsg = "expected values to be equal:\n  want: %q\n  have: %q"
 
 	t.Run("string message", func(t *testing.T) {
 		// --- Given ---
@@ -219,17 +221,108 @@ func Test_Panic(t *testing.T) {
 
 	t.Run("error - function does not panic", func(t *testing.T) {
 		// --- Given ---
+		tspy := core.NewSpy().Capture()
+
+		// --- When ---
+		val, _ := core.WillPanic(func() { Panic(tspy, func() {}) })
+
+		// --- Then ---
+		if val != core.FailNowMsg {
+			t.Errorf(expMsg, core.FailNowMsg, val)
+		}
+		if !tspy.TriggeredFailure {
+			t.Error("expected fatal failure")
+		}
+		if want, have := "expected fn to panic\n", tspy.Log(); want != have {
+			t.Errorf(expMsg, want, have)
+		}
+	})
+
+	t.Run("error - nil function", func(t *testing.T) {
+		// --- Given ---
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := Panic(tspy, func() {})
+		val, _ := core.WillPanic(func() { Panic(tspy, nil) })
 
 		// --- Then ---
-		if !tspy.Failed() {
-			t.Error("expected failed test")
+		if val != core.FailNowMsg {
+			t.Errorf(expMsg, core.FailNowMsg, val)
 		}
-		if have != nil {
-			t.Errorf(expMsg, "", *have)
+		if !tspy.TriggeredFailure {
+			t.Error("expected fatal failure")
 		}
 	})
+}
+
+func Test_Equal_uncomparable(t *testing.T) {
+	// --- Given ---
+	tspy := core.NewSpy().Capture()
+
+	// --- When ---
+	have := Equal[any](tspy, []int{1}, []int{1})
+
+	// --- Then ---
+	if have {
+		t.Error("expected false")
+	}
+	want := "" +
+		"expected comparable values:\n" +
+		"  want: ([]int) []int{1}\n" +
+		"  have: ([]int) []int{1}\n"
+	if want != tspy.Log() {
+		t.Errorf(expMsg, want, tspy.Log())
+	}
+}
+
+func Test_messages_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		fn   func(t core.T) bool
+		want string
+	}{
+		{
+			"Equal",
+			func(t core.T) bool { return Equal(t, int64(1), int64(2)) },
+			"" +
+				"expected values to be equal:\n" +
+				"  want: (int64) 1\n" +
+				"  have: (int64) 2\n",
+		},
+		{
+			"DeepEqual",
+			func(t core.T) bool { return DeepEqual(t, int64(1), 1) },
+			"" +
+				"expected values to be equal:\n" +
+				"  want: (int64) 1\n" +
+				"  have: (int) 1\n",
+		},
+		{
+			"Nil",
+			func(t core.T) bool { return Nil(t, 1) },
+			"expected nil value:\n  have: (int) 1\n",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- Given ---
+			tspy := core.NewSpy().Capture()
+
+			// --- When ---
+			have := tc.fn(tspy)
+
+			// --- Then ---
+			if have {
+				t.Error("expected false")
+			}
+			if !tspy.HelperCalled {
+				t.Error("expected Helper to be called")
+			}
+			if tc.want != tspy.Log() {
+				t.Errorf(expMsg, tc.want, tspy.Log())
+			}
+		})
+	}
 }
