@@ -17,24 +17,24 @@ import (
 
 func Test_newCall(t *testing.T) {
 	// --- When ---
-	call := newCall("Method", "arg0", "arg1")
+	have := newCall("Method", "arg0", "arg1")
 
 	// --- Then ---
-	assert.Nil(t, call.Stack)
-	assert.Nil(t, call.parent)
-	assert.Equal(t, "Method", call.Method)
-	assert.Equal(t, Arguments{"arg0", "arg1"}, call.args)
-	assert.False(t, call.argsAny)
-	assert.Len(t, 0, call.returns)
-	assert.Equal(t, 0, call.wantCalls)
-	assert.Equal(t, 0, call.haveCalls)
-	assert.False(t, call.optional)
-	assert.Nil(t, call.until)
-	assert.Duration(t, 0, call.after)
-	assert.Nil(t, call.alter)
-	assert.Nil(t, call.panic)
-	assert.Nil(t, call.requires)
-	assert.False(t, call.proxy.IsValid())
+	assert.Nil(t, have.Stack)
+	assert.Nil(t, have.parent)
+	assert.Equal(t, "Method", have.Method)
+	assert.Equal(t, Arguments{"arg0", "arg1"}, have.args)
+	assert.False(t, have.argsAny)
+	assert.Len(t, 0, have.returns)
+	assert.Equal(t, 0, have.wantCalls)
+	assert.Equal(t, 0, have.haveCalls)
+	assert.False(t, have.optional)
+	assert.Nil(t, have.until)
+	assert.Duration(t, 0, have.after)
+	assert.Nil(t, have.alter)
+	assert.Nil(t, have.panic)
+	assert.Nil(t, have.requires)
+	assert.False(t, have.proxy.IsValid())
 }
 
 func Test_newProxy(t *testing.T) {
@@ -44,24 +44,24 @@ func Test_newProxy(t *testing.T) {
 		met := reflect.ValueOf(ptr.AAA)
 
 		// --- When ---
-		call := newProxy(met)
+		have := newProxy(met)
 
 		// --- Then ---
-		assert.Nil(t, call.Stack)
-		assert.Nil(t, call.parent)
-		assert.Equal(t, "AAA", call.Method)
-		assert.Nil(t, call.args)
-		assert.False(t, call.argsAny)
-		assert.Len(t, 0, call.returns)
-		assert.Equal(t, 0, call.wantCalls)
-		assert.Equal(t, 0, call.haveCalls)
-		assert.False(t, call.optional)
-		assert.Nil(t, call.until)
-		assert.Duration(t, 0, call.after)
-		assert.Nil(t, call.alter)
-		assert.Nil(t, call.panic)
-		assert.Nil(t, call.requires)
-		assert.Same(t, met.Interface(), call.proxy.Interface())
+		assert.Nil(t, have.Stack)
+		assert.Nil(t, have.parent)
+		assert.Equal(t, "AAA", have.Method)
+		assert.Nil(t, have.args)
+		assert.False(t, have.argsAny)
+		assert.Len(t, 0, have.returns)
+		assert.Equal(t, 0, have.wantCalls)
+		assert.Equal(t, 0, have.haveCalls)
+		assert.False(t, have.optional)
+		assert.Nil(t, have.until)
+		assert.Duration(t, 0, have.after)
+		assert.Nil(t, have.alter)
+		assert.Nil(t, have.panic)
+		assert.Nil(t, have.requires)
+		assert.Same(t, met.Interface(), have.proxy.Interface())
 	})
 
 	t.Run("variadic", func(t *testing.T) {
@@ -70,24 +70,24 @@ func Test_newProxy(t *testing.T) {
 		met := reflect.ValueOf(ptr.Variadic)
 
 		// --- When ---
-		call := newProxy(met)
+		have := newProxy(met)
 
 		// --- Then ---
-		assert.Nil(t, call.Stack)
-		assert.Nil(t, call.parent)
-		assert.Equal(t, "Variadic", call.Method)
-		assert.Nil(t, call.args)
-		assert.False(t, call.argsAny)
-		assert.Len(t, 0, call.returns)
-		assert.Equal(t, 0, call.wantCalls)
-		assert.Equal(t, 0, call.haveCalls)
-		assert.False(t, call.optional)
-		assert.Nil(t, call.until)
-		assert.Duration(t, 0, call.after)
-		assert.Nil(t, call.alter)
-		assert.Nil(t, call.panic)
-		assert.Nil(t, call.requires)
-		assert.Same(t, met.Interface(), call.proxy.Interface())
+		assert.Nil(t, have.Stack)
+		assert.Nil(t, have.parent)
+		assert.Equal(t, "Variadic", have.Method)
+		assert.Nil(t, have.args)
+		assert.False(t, have.argsAny)
+		assert.Len(t, 0, have.returns)
+		assert.Equal(t, 0, have.wantCalls)
+		assert.Equal(t, 0, have.haveCalls)
+		assert.False(t, have.optional)
+		assert.Nil(t, have.until)
+		assert.Duration(t, 0, have.after)
+		assert.Nil(t, have.alter)
+		assert.Nil(t, have.panic)
+		assert.Nil(t, have.requires)
+		assert.Same(t, met.Interface(), have.proxy.Interface())
 	})
 
 	t.Run("custom name", func(t *testing.T) {
@@ -96,10 +96,10 @@ func Test_newProxy(t *testing.T) {
 		met := reflect.ValueOf(ptr.Variadic)
 
 		// --- When ---
-		call := newProxy(met, "MyName")
+		have := newProxy(met, "MyName")
 
 		// --- Then ---
-		assert.Equal(t, "MyName", call.Method)
+		assert.Equal(t, "MyName", have.Method)
 	})
 }
 
@@ -144,15 +144,15 @@ func Test_Call_With(t *testing.T) {
 		assert.Equal(t, Arguments{"a", "b"}, have.args)
 	})
 
-	t.Run("panics if not proxied call", func(t *testing.T) {
+	t.Run("error - not proxied call", func(t *testing.T) {
 		// --- Given ---
 		call := newCall("Zero")
 
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { call.With("a", "b") })
+		have := assert.PanicMsg(t, func() { call.With("a", "b") })
 
 		// --- Then ---
-		assert.Contain(t, "cannot set arguments on non-proxy calls", *msg)
+		assert.Contain(t, "cannot set arguments on non-proxy calls", *have)
 	})
 }
 
@@ -193,7 +193,7 @@ func Test_Call_Return(t *testing.T) {
 		assert.Nil(t, have.returns)
 	})
 
-	t.Run("panics if proxy call", func(t *testing.T) {
+	t.Run("error - proxy call", func(t *testing.T) {
 		// --- Given ---
 		ptr := &testcases.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.AAA)
@@ -233,7 +233,7 @@ func Test_Call_Panic(t *testing.T) {
 		assert.ErrorIs(t, have.panic.(error), ErrTst)
 	})
 
-	t.Run("panics if proxy call", func(t *testing.T) {
+	t.Run("error - proxy call", func(t *testing.T) {
 		// --- Given ---
 		ptr := &testcases.TPtr{Val: "c"}
 		prx := reflect.ValueOf(ptr.AAA)
@@ -272,29 +272,29 @@ func Test_Call_Times(t *testing.T) {
 		assert.Equal(t, 3, have.wantCalls)
 	})
 
-	t.Run("panics when used with Optional", func(t *testing.T) {
+	t.Run("error - used with Optional", func(t *testing.T) {
 		// --- Given ---
 		call := newCall("Zero").Optional()
 
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { call.Times(3) })
+		have := assert.PanicMsg(t, func() { call.Times(3) })
 
 		// --- Then ---
-		assert.NotNil(t, msg)
+		assert.NotNil(t, have)
 		wMsg := "cannot use Optional and Times at the same time"
-		assert.Equal(t, wMsg, *msg)
+		assert.Equal(t, wMsg, *have)
 	})
 
-	t.Run("panics when negative", func(t *testing.T) {
+	t.Run("error - negative", func(t *testing.T) {
 		// --- Given ---
 		call := newCall("Zero")
 
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { call.Times(-1) })
+		have := assert.PanicMsg(t, func() { call.Times(-1) })
 
 		// --- Then ---
-		assert.NotNil(t, msg)
-		assert.Equal(t, "Times must be greater or equal to zero", *msg)
+		assert.NotNil(t, have)
+		assert.Equal(t, "Times must be greater or equal to zero", *have)
 	})
 }
 
@@ -354,17 +354,17 @@ func Test_Call_Optional(t *testing.T) {
 		assert.True(t, have.optional)
 	})
 
-	t.Run("panics when used with Times", func(t *testing.T) {
+	t.Run("error - used with Times", func(t *testing.T) {
 		// --- Given ---
 		call := newCall("Zero").Times(3)
 
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { call.Optional() })
+		have := assert.PanicMsg(t, func() { call.Optional() })
 
 		// --- Then ---
-		assert.NotNil(t, msg)
+		assert.NotNil(t, have)
 		wMsg := "cannot use Optional and Times at the same time"
-		assert.Equal(t, wMsg, *msg)
+		assert.Equal(t, wMsg, *have)
 	})
 }
 
@@ -388,13 +388,13 @@ func Test_Call_Requires(t *testing.T) {
 		assert.Same(t, call11, have.requires[1])
 	})
 
-	t.Run("panics when nil is one of the arguments", func(t *testing.T) {
+	t.Run("error - nil is one of the arguments", func(t *testing.T) {
 		// --- Given ---
 		call := newCall("Zero")
 
 		// --- Then ---
-		msg := assert.PanicMsg(t, func() { call.Requires(nil) })
-		assert.Contain(t, "nil instance", *msg)
+		have := assert.PanicMsg(t, func() { call.Requires(nil) })
+		assert.Contain(t, "nil instance", *have)
 	})
 }
 
@@ -414,28 +414,28 @@ func Test_Call_CanCall_tabular(t *testing.T) {
 		{"called fewer times than expected not optional", 2, 0, false, nil},
 		{"called fewer times than expected optional", 2, 0, true, nil},
 		{
-			"called requested number of times not optional",
+			"error - called requested number of times not optional",
 			1,
 			1,
 			false,
 			ErrTooManyCalls,
 		},
 		{
-			"called requested number of times optional",
+			"error - called requested number of times optional",
 			1,
 			1,
 			true,
 			ErrTooManyCalls,
 		},
 		{
-			"called more than requested number of times not optional",
+			"error - called more than requested number of times not optional",
 			1,
 			2,
 			false,
 			ErrTooManyCalls,
 		},
 		{
-			"called more than requested number of times optional",
+			"error - called more than requested number of times optional",
 			1,
 			2,
 			true,
@@ -480,7 +480,7 @@ func Test_Call_Satisfied(t *testing.T) {
 
 		// --- When ---
 		for range 100 {
-			mck.Call("Method")
+			_ = mck.Call("Method")
 		}
 
 		// --- Then ---
@@ -519,6 +519,62 @@ func Test_Call_Satisfied(t *testing.T) {
 	})
 }
 
+func Test_Call_satisfied(t *testing.T) {
+	t.Run("error - never called", func(t *testing.T) {
+		// --- Given ---
+		call := &Call{
+			cStack:    cStack{Method: "Method"},
+			wantCalls: 0,
+			optional:  false,
+			args:      []any{1},
+			returns:   []any{2},
+		}
+
+		// --- When ---
+		err := call.satisfied(0)
+
+		// --- Then ---
+		want := goldy.Open(t, "testdata/satisfied_never.gld")
+		assert.ErrorEqual(t, want.String(), err)
+	})
+
+	t.Run("error - too few calls", func(t *testing.T) {
+		// --- Given ---
+		call := &Call{
+			cStack:    cStack{Method: "Method"},
+			wantCalls: 2,
+			optional:  false,
+			args:      []any{1},
+			returns:   []any{2},
+		}
+
+		// --- When ---
+		err := call.satisfied(1)
+
+		// --- Then ---
+		want := goldy.Open(t, "testdata/satisfied_too_few.gld")
+		assert.ErrorEqual(t, want.String(), err)
+	})
+
+	t.Run("error - too many calls", func(t *testing.T) {
+		// --- Given ---
+		call := &Call{
+			cStack:    cStack{Method: "Method"},
+			wantCalls: 2,
+			optional:  false,
+			args:      []any{1},
+			returns:   []any{2},
+		}
+
+		// --- When ---
+		err := call.satisfied(3)
+
+		// --- Then ---
+		want := goldy.Open(t, "testdata/satisfied_too_many.gld")
+		assert.ErrorEqual(t, want.String(), err)
+	})
+}
+
 func Test_Call_satisfied_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
@@ -528,30 +584,42 @@ func Test_Call_satisfied_tabular(t *testing.T) {
 		optional  bool
 		err       error
 	}{
-		{"no max never called not optional", 0, 0, false, ErrNeverCalled},
+		{
+			"error - no max never called not optional",
+			0,
+			0,
+			false,
+			ErrNeverCalled,
+		},
 		{"no max never called optional", 0, 0, true, nil},
 		{"no max called not optional", 0, 1, false, nil},
-		{"no max called not optional", 0, 1, true, nil},
+		{"no max called optional", 0, 1, true, nil},
 		{"no max called multiple times optional", 0, 10, true, nil},
 		{"no max called multiple times not optional", 0, 10, false, nil},
 		{
-			"called fewer times than max not optional",
+			"error - called fewer times than max not optional",
 			2,
 			1,
 			false,
 			ErrTooFewCalls,
 		},
 		{"called fewer times than max optional", 2, 1, true, nil},
-		{"called requested number of times and optional", 5, 5, false, nil},
+		{"called requested number of times not optional", 5, 5, false, nil},
 		{"called requested number of times optional", 5, 5, true, nil},
 		{
-			"called more times than max not optional",
+			"error - called more times than max not optional",
 			1,
 			10,
 			false,
 			ErrTooManyCalls,
 		},
-		{"called more times than max optional", 1, 10, true, ErrTooManyCalls},
+		{
+			"error - called more times than max optional",
+			1,
+			10,
+			true,
+			ErrTooManyCalls,
+		},
 	}
 
 	for _, tc := range tt {
@@ -573,59 +641,107 @@ func Test_Call_satisfied_tabular(t *testing.T) {
 	}
 }
 
-func Test_Call_satisfied(t *testing.T) {
-	t.Run("not satisfied when method never called", func(t *testing.T) {
+func Test_Call_checkReq(t *testing.T) {
+	t.Run("no prerequisites", func(t *testing.T) {
 		// --- Given ---
-		call := &Call{
-			cStack:    cStack{Method: "Method"},
-			wantCalls: 0,
-			optional:  false,
-			args:      []any{1},
-			returns:   []any{2},
-		}
+		call := newCall("Method")
 
 		// --- When ---
-		err := call.satisfied(0)
+		have := call.checkReq(nil)
 
 		// --- Then ---
-		want := goldy.Open(t, "testdata/satisfied_never.gld")
-		assert.ErrorEqual(t, want.String(), err)
+		assert.NoError(t, have)
 	})
 
-	t.Run("not satisfied when the method is called too few times", func(t *testing.T) {
+	t.Run("satisfied prerequisites", func(t *testing.T) {
 		// --- Given ---
-		call := &Call{
-			cStack:    cStack{Method: "Method"},
-			wantCalls: 2,
-			optional:  false,
-			args:      []any{1},
-			returns:   []any{2},
-		}
+		pre0 := newCall("Pre0").satisfy()
+		pre1 := newCall("Pre1").satisfy()
+		call := newCall("Method").Requires(pre0, pre1)
 
 		// --- When ---
-		err := call.satisfied(1)
+		have := call.checkReq(nil)
 
 		// --- Then ---
-		want := goldy.Open(t, "testdata/satisfied_too_few.gld")
-		assert.ErrorEqual(t, want.String(), err)
+		assert.NoError(t, have)
 	})
 
-	t.Run("not satisfied when the method is called too many times", func(t *testing.T) {
+	t.Run("optional prerequisites are considered", func(t *testing.T) {
 		// --- Given ---
-		call := &Call{
-			cStack:    cStack{Method: "Method"},
-			wantCalls: 2,
-			optional:  false,
-			args:      []any{1},
-			returns:   []any{2},
-		}
+		pre0 := newCall("Pre0").Optional()
+		pre1 := newCall("Pre1").Optional()
+		call := newCall("Method").Requires(pre0, pre1)
 
 		// --- When ---
-		err := call.satisfied(3)
+		have := call.checkReq(nil)
 
 		// --- Then ---
-		want := goldy.Open(t, "testdata/satisfied_too_many.gld")
-		assert.ErrorEqual(t, want.String(), err)
+		assert.NoError(t, have)
+	})
+
+	t.Run("error - missing one from the same mock", func(t *testing.T) {
+		// --- Given ---
+		pre1 := newCall("Pre1", 1)
+		stk := []string{"line0", "line1", "line2"}
+		call := newCall("Method", "abc").Return(1, "abc").Requires(pre1)
+
+		// --- When ---
+		have := call.checkReq(stk)
+
+		// --- Then ---
+		want := goldy.Open(t, "testdata/check_req_mock_same.gld")
+		assert.ErrorEqual(t, want.String(), have)
+		assert.ErrorIs(t, ErrRequirements, have)
+	})
+
+	t.Run("error - missing one of many from the same mock", func(t *testing.T) {
+		// --- Given ---
+		pre0 := newCall("Pre0", 1).satisfy()
+		pre1 := newCall("Pre1", 1)
+		stk := []string{"line0", "line1", "line2"}
+		call := newCall("Method", "abc").Return(1, "abc").Requires(pre0, pre1)
+
+		// --- When ---
+		have := call.checkReq(stk)
+
+		// --- Then ---
+		want := goldy.Open(t, "testdata/check_req_mock_same.gld")
+		assert.ErrorEqual(t, want.String(), have)
+		assert.ErrorIs(t, ErrRequirements, have)
+	})
+
+	t.Run("error - missing many from the same mock", func(t *testing.T) {
+		// --- Given ---
+		pre0 := newCall("Pre0", 1)
+		pre1 := newCall("Pre1", 1)
+		stk := []string{"line0", "line1", "line2"}
+		call := newCall("Method", "abc").Return(1, "abc").Requires(pre0, pre1)
+
+		// --- When ---
+		have := call.checkReq(stk)
+
+		// --- Then ---
+		want := goldy.Open(t, "testdata/check_req_many.gld")
+		assert.ErrorEqual(t, want.String(), have)
+		assert.ErrorIs(t, ErrRequirements, have)
+	})
+
+	t.Run("error - missing from different mock", func(t *testing.T) {
+		// --- Given ---
+		mck0 := &Mock{}
+		pre01 := newCall("Pre01").withParent(mck0)
+
+		mck1 := &Mock{}
+		newCall("Pre11").withParent(mck1)
+		call := newCall("Method").Requires(pre01)
+
+		// --- When ---
+		have := call.checkReq(nil)
+
+		// --- Then ---
+		want := goldy.Open(t, "testdata/check_req_mock_other.gld")
+		assert.ErrorEqual(t, want.String(), have)
+		assert.ErrorIs(t, ErrRequirements, have)
 	})
 }
 
@@ -643,9 +759,9 @@ func Test_Call_call(t *testing.T) {
 
 	t.Run("with until", func(t *testing.T) {
 		// --- Given ---
+		now := time.Now()
 		ch := time.After(50 * time.Millisecond)
 		call := newCall("Zero").Until(ch)
-		now := time.Now()
 
 		// --- When ---
 		have := call.call()
@@ -815,7 +931,7 @@ func Test_Call_callProxy(t *testing.T) {
 		assert.Equal(t, "v abc [1 2 3]", have[0])
 	})
 
-	t.Run("variadic proxy with multiple variadic arguments", func(t *testing.T) {
+	t.Run("variadic proxy with many variadic arguments", func(t *testing.T) {
 		// --- Given ---
 		ptr := &testcases.TPtr{Val: "v"}
 		prx := reflect.ValueOf(ptr.Variadic)
@@ -829,119 +945,15 @@ func Test_Call_callProxy(t *testing.T) {
 		assert.Equal(t, "v abc [1]", have[0])
 	})
 
-	t.Run("panics if proxy not defined", func(t *testing.T) {
+	t.Run("error - proxy not defined", func(t *testing.T) {
 		// --- Given ---
 		call := newCall("Method")
 
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { call.callProxy() })
+		have := assert.PanicMsg(t, func() { call.callProxy() })
 
 		// --- Then ---
-		assert.Equal(t, "proxy method not found", *msg)
-	})
-}
-
-func Test_Call_checkReq(t *testing.T) {
-	t.Run("no prerequisites", func(t *testing.T) {
-		// --- Given ---
-		call := newCall("Method")
-
-		// --- When ---
-		have := call.checkReq(nil)
-
-		// --- Then ---
-		assert.NoError(t, have)
-	})
-
-	t.Run("satisfied prerequisites", func(t *testing.T) {
-		// --- Given ---
-		pre0 := newCall("Pre0").satisfy()
-		pre1 := newCall("Pre1").satisfy()
-		call := newCall("Method").Requires(pre0, pre1)
-
-		// --- When ---
-		have := call.checkReq(nil)
-
-		// --- Then ---
-		assert.NoError(t, have)
-	})
-
-	t.Run("optional prerequisites are considered", func(t *testing.T) {
-		// --- Given ---
-		pre0 := newCall("Pre0").Optional()
-		pre1 := newCall("Pre1").Optional()
-		call := newCall("Method").Requires(pre0, pre1)
-
-		// --- When ---
-		have := call.checkReq(nil)
-
-		// --- Then ---
-		assert.NoError(t, have)
-	})
-
-	t.Run("error - missing one from the same mock", func(t *testing.T) {
-		// --- Given ---
-		pre1 := newCall("Pre1", 1)
-		stk := []string{"line0", "line1", "line2"}
-		call := newCall("Method", "abc").Return(1, "abc").Requires(pre1)
-
-		// --- When ---
-		have := call.checkReq(stk)
-
-		// --- Then ---
-		want := goldy.Open(t, "testdata/check_req_mock_same.gld")
-		assert.ErrorEqual(t, want.String(), have)
-		assert.ErrorIs(t, ErrRequirements, have)
-	})
-
-	t.Run("error - missing one of many from the same mock", func(t *testing.T) {
-		// --- Given ---
-		pre0 := newCall("Pre0", 1).satisfy()
-		pre1 := newCall("Pre1", 1)
-		stk := []string{"line0", "line1", "line2"}
-		call := newCall("Method", "abc").Return(1, "abc").Requires(pre0, pre1)
-
-		// --- When ---
-		have := call.checkReq(stk)
-
-		// --- Then ---
-		want := goldy.Open(t, "testdata/check_req_mock_same.gld")
-		assert.ErrorEqual(t, want.String(), have)
-		assert.ErrorIs(t, ErrRequirements, have)
-	})
-
-	t.Run("error - missing many from the same mock", func(t *testing.T) {
-		// --- Given ---
-		pre0 := newCall("Pre0", 1)
-		pre1 := newCall("Pre1", 1)
-		stk := []string{"line0", "line1", "line2"}
-		call := newCall("Method", "abc").Return(1, "abc").Requires(pre0, pre1)
-
-		// --- When ---
-		have := call.checkReq(stk)
-
-		// --- Then ---
-		want := goldy.Open(t, "testdata/check_req_many.gld")
-		assert.ErrorEqual(t, want.String(), have)
-		assert.ErrorIs(t, ErrRequirements, have)
-	})
-
-	t.Run("error - missing from different mock", func(t *testing.T) {
-		// --- Given ---
-		mck0 := &Mock{}
-		pre01 := newCall("Pre01").withParent(mck0)
-
-		mck1 := &Mock{}
-		newCall("Pre11").withParent(mck1)
-		call := newCall("Method").Requires(pre01)
-
-		// --- When ---
-		have := call.checkReq(nil)
-
-		// --- Then ---
-		want := goldy.Open(t, "testdata/check_req_mock_other.gld")
-		assert.ErrorEqual(t, want.String(), have)
-		assert.ErrorIs(t, ErrRequirements, have)
+		assert.Equal(t, "proxy method not found", *have)
 	})
 }
 
@@ -1011,7 +1023,7 @@ func Benchmark_Call_Return_Chain(b *testing.B) {
 	}
 }
 
-// Additional mock hot path benchmarks (expectation setup and basic satisfaction).
+// Mock hot path benchmarks (expectation setup and basic satisfaction).
 
 func Benchmark_Call_Satisfied_Many(b *testing.B) {
 	mck := &Mock{}
@@ -1023,49 +1035,5 @@ func Benchmark_Call_Satisfied_Many(b *testing.B) {
 		for j := 0; j < 100; j++ {
 			_ = call.Satisfied()
 		}
-	}
-}
-
-// Benchmark_Mock_RealisticMatching exercises the core matching hot path
-// (find + argument Diff + mix of exact/Any/MatchBy).
-func Benchmark_Mock_RealisticMatching(b *testing.B) {
-	dummyT := &testing.T{}
-	m := &Mock{t: dummyT}
-
-	// Set up a realistic mix of expectations (bypassing NewMock for speed in bench)
-	m.On("GetUser", 42).Return("alice", nil)
-	m.On("GetUser", Any).Return("bob", nil)
-	m.On("Process", MatchBy(func(x any) bool { return x != nil })).Return(true)
-
-	b.ReportAllocs()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		_ = m.Call("GetUser", 42)
-		_ = m.Call("GetUser", 99)
-		_ = m.Call("Process", "data")
-	}
-}
-
-// Benchmark_Mock_AssertExpectations exercises the full expectation
-// verification path on a mock with a moderate number of calls.
-func Benchmark_Mock_AssertExpectations(b *testing.B) {
-	dummyT := &testing.T{}
-	m := &Mock{t: dummyT}
-
-	for i := 0; i < 20; i++ {
-		m.On("Op", i).Return(i * 2).Once()
-	}
-
-	// Pre-satisfy them
-	for i := 0; i < 20; i++ {
-		_ = m.Call("Op", i)
-	}
-
-	b.ReportAllocs()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		_ = m.AssertExpectations()
 	}
 }

@@ -10,8 +10,6 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
-
-	"github.com/ctx42/testing/pkg/dump"
 )
 
 // callStack returns an array of strings containing the file and line number
@@ -19,7 +17,7 @@ import (
 // failed.
 //
 // Copied from testify (assertions.go):
-// https://github.com/stretchr/testify/blob/5ac6528bffc1ed7557980c3c563caf8308568446/assert/assertions.go#L214
+// github.com/stretchr/testify assert/assertions.go, commit 5ac6528.
 func callStack() []string {
 	var pc uintptr
 	var ok bool
@@ -77,7 +75,6 @@ func callStack() []string {
 // formatMethod returns formatted string representing the method and its input
 // and return arguments.
 func formatMethod(method string, args, rets Arguments) string {
-	var out []string
 	argsStr := args.String(-1)
 	retsStr := rets.String(-1)
 	if len(rets) > 1 {
@@ -86,29 +83,12 @@ func formatMethod(method string, args, rets Arguments) string {
 	if len(rets) > 0 {
 		retsStr = " " + retsStr
 	}
-	out = append(out, fmt.Sprintf("%s(%s)%s", method, argsStr, retsStr))
-	return strings.Join(out, "\n")
-}
-
-// formatArgs returns formatted multi-line string representing arguments. It
-// renders them with a default [dump.Dump] created per call, so dumpers
-// registered with [dump.RegisterTypeDumper] at any time are used.
-func formatArgs(args Arguments) string {
-	if len(args) == 0 {
-		return ""
-	}
-	dmp := dump.New()
-	var out []string
-	for idx, arg := range args {
-		out = append(out, fmt.Sprintf("%d: %s", idx, dmp.Any(arg)))
-	}
-	return strings.Join(out, "\n")
+	return fmt.Sprintf("%s(%s)%s", method, argsStr, retsStr)
 }
 
 // isTestName checks if the given name starts with the provided prefix (e.g.,
 // "Test", "Benchmark", or "Example") and is followed by an uppercase letter or
-// non-letter character, indicating it is a valid test function. It returns
-// true if the name matches this pattern; otherwise, it returns false.
+// non-letter character, indicating it is a valid test function.
 //
 // Copied from: go/src/cmd/go/internal/load/test.go:617
 func isTestName(name, prefix string) bool {
@@ -122,10 +102,10 @@ func isTestName(name, prefix string) bool {
 	return !unicode.IsLower(r)
 }
 
-// methodName returns method name.
+// methodName returns the method name of a method value.
 //
 // Copied from go-restful:
-// https://github.com/emicklei/go-restful/blob/1959514610d2124125005c8a6a3962d6cca32a16/route_builder.go#L375
+// github.com/emicklei/go-restful route_builder.go, commit 1959514.
 //
 // Example:
 //

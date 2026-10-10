@@ -12,8 +12,8 @@ type ExampleImpl struct {
 	*Mock
 }
 
-// NewExampleImpl returns new instance of ExampleImpl which uses
-// given Mock instance.
+// NewExampleImpl returns a new instance of ExampleImpl which uses the given
+// Mock instance.
 func NewExampleImpl(mck *Mock) *ExampleImpl {
 	return &ExampleImpl{Mock: mck}
 }
@@ -26,7 +26,7 @@ func (imp *ExampleImpl) MethodInts(a, b, c int) (int, error) {
 
 // MethodBool records the call and returns the configured values.
 func (imp *ExampleImpl) MethodBool(val bool) {
-	imp.Called(val)
+	_ = imp.Called(val)
 }
 
 // MethodPtr records the call and returns the configured values.
@@ -102,11 +102,13 @@ func (imp *ExampleImpl) MethodFuncType(fn ExampleFuncType) error {
 
 // -----------------------------------------------------------------------------
 
-// ExampleItf represents test interface.
+// ExampleItf represents a test interface.
 type ExampleItf interface{ HasRan() bool }
 
-// ExampleType represents test type implementing ExampleItf.
+// ExampleType represents a test type implementing ExampleItf.
 type ExampleType struct{ ran bool }
+
+var _ ExampleItf = (*ExampleType)(nil)
 
 // HasRan satisfies ExampleItf interface.
 func (et *ExampleType) HasRan() bool { return et.ran }

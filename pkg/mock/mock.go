@@ -9,15 +9,15 @@
 // lifecycle management and [github.com/ctx42/testing/pkg/notice] for rich,
 // structured failure messages.
 //
-// See the package [README] for the full expectation DSL, advanced usage
+// See the package README for the full expectation DSL, advanced usage
 // (proxying, custom matchers, altering arguments, etc.), and go:generate
-// patterns. See [examples/mock_test.go] (in the module root) for a complete
+// patterns. See examples/mock_test.go (in the module root) for a complete
 // working example.
 //
 // Key types and entry points:
 //   - [NewMock] and [Mock] — the core mock controller
 //   - [Mock.On], [Mock.OnAny], [Mock.Proxy] — define expectations
-//   - [Call] and its chain methods (Return, Times, Until, ...)
+//   - [Call] and its chain methods ([Call.Return], [Call.Times], ...)
 //   - [Arguments] — typed getters for return values and call recording
 //   - Matchers: [Any], [AnyString], [MatchBy], [MatchOfType], [MatchError], ...
 package mock
@@ -98,8 +98,6 @@ type Mock struct {
 	meta map[string]any
 
 	// When true, error log messages will contain stack traces.
-	// It is mostly useful during tests. I don't see any reason why someone
-	// would want to set it to false. Do you?
 	stack bool
 
 	// Set to true if mock is in a failed state.
@@ -148,7 +146,7 @@ func (mck *Mock) MetaAll() map[string]any {
 
 // On adds an expectation that the named method will be called with the
 // given arguments (or matchers). Returns a [Call] for further configuration
-// ([Return], [Times], [Until], etc.).
+// ([Call.Return], [Call.Times], [Call.Until], etc.).
 func (mck *Mock) On(method string, args ...any) *Call {
 	mck.t.Helper()
 	for _, arg := range args {
@@ -216,8 +214,8 @@ func (mck *Mock) Called(args ...any) Arguments {
 	return mck.Call(method, args...)
 }
 
-// called returns method name. The argument skip is the number of stack frames
-// to ascend, with 0 identifying the caller of Caller.
+// called returns the calling method name. The argument skip is the number of
+// stack frames to ascend, with 0 identifying the caller of Caller.
 func (mck *Mock) called(skip int) string {
 	pc, _, _, ok := runtime.Caller(skip)
 	if !ok {
@@ -365,9 +363,9 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 	var msg *notice.Notice
 
 	// Try to find a method that is most similar to the one we are processing.
-	if closest, diff := mck.closest(method, args...); closest != nil {
+	if call, diff := mck.closest(method, args...); call != nil {
 		// Similar method found.
-		desc := formatMethod(closest.Method, closest.args, closest.returns)
+		desc := formatMethod(call.Method, call.args, call.returns)
 		msg = notice.New(hUnexpectedCall).
 			Append("closest", "%s", desc).
 			Append("argument match", "\n%s", strings.Join(diff, "\n")).
@@ -378,7 +376,7 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 			Append("method", "%s", formatMethod(method, args, nil)).
 			Wrap(ErrNotFound)
 		if len(args) > 0 {
-			_ = msg.Append("with args", "\n%s", formatArgs(args))
+			_ = msg.Append("with args", "\n%s", Arguments(args).format())
 		}
 	}
 
@@ -388,7 +386,8 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 	return nil, msg
 }
 
-// closest returns expected call with the most similar (closest) arguments.
+// closest returns the expected call with the most similar (closest)
+// arguments.
 // It returns the found call and the argument difference between the provided
 // arguments and the found one. If the method is not found it will return nil
 func (mck *Mock) closest(method string, args ...any) (*Call, []string) {
@@ -428,12 +427,12 @@ func (mck *Mock) Unset(remove *Call) *Mock {
 
 	var found bool
 	var expected []*Call
-	for _, have := range mck.expected {
-		if remove == have {
+	for _, call := range mck.expected {
+		if remove == call {
 			found = true
 			continue
 		}
-		expected = append(expected, have)
+		expected = append(expected, call)
 	}
 	mck.expected = expected
 
@@ -451,12 +450,12 @@ func (mck *Mock) Unset(remove *Call) *Mock {
 }
 
 // AssertExpectations verifies that all non-optional expectations defined via
-// [Mock.On], [Mock.OnAny], etc. have been satisfied (correct call counts and
-// prerequisites). It may be called manually, but [NewMock] registers it as a
-// test cleanup so it runs automatically.
+// [Mock.On], [Mock.OnAny], etc. have been called the expected number of
+// times. It may be called manually, but [NewMock] registers it as a test
+// cleanup so it runs automatically.
 //
 // Returns true when all expectations are met. On failure it records the
-// problem via t.Error (or t.Fatal for unexpected calls) and returns false.
+// problem via t.Error and returns false.
 func (mck *Mock) AssertExpectations() bool {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
@@ -487,12 +486,17 @@ func (mck *Mock) AssertExpectations() bool {
 			why = fmt.Sprintf(format, call.haveCalls, hCls)
 		} else {
 			format := "expected %d %s received %d %s"
-			why = fmt.Sprintf(format, call.wantCalls, wCls, call.haveCalls, hCls)
+			why = fmt.Sprintf(
+				format,
+				call.wantCalls,
+				wCls,
+				call.haveCalls,
+				hCls,
+			)
 		}
 		whys = append(whys, why)
 	}
 	if len(names) == 0 {
-		mck.failed = false
 		return true
 	}
 	twoColumns(names, whys)

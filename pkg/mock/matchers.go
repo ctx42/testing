@@ -45,10 +45,10 @@ func MatchSame(want any) *Matcher {
 //
 //	MatchBy(func(req *http.Request) bool { return req.Host == "localhost" })
 func MatchBy(fn any) *Matcher {
-	mat := NewMatcher(fn, "")
+	am := NewMatcher(fn, "")
 	format := "[mock.MatchBy=func(%s) bool]"
-	mat.desc = fmt.Sprintf(format, mat.fn.Type().In(0))
-	return mat
+	am.desc = fmt.Sprintf(format, am.fn.Type().In(0))
+	return am
 }
 
 // MatchOfType returns a matcher that accepts only arguments whose
@@ -106,20 +106,22 @@ func MatchErrorContain(want string) *Matcher {
 // matches the error's Error() text exactly; when want is an error it uses
 // errors.Is. Any other type for want causes a panic at construction.
 func MatchError(want any) *Matcher {
-	var mby *Matcher
+	var am *Matcher
 	switch w := want.(type) {
 	case string:
-		mby = MatchBy(func(have error) bool {
+		am = MatchBy(func(have error) bool {
 			return have != nil && w == have.Error()
 		})
+
 	case error:
-		mby = MatchBy(func(have error) bool {
+		am = MatchBy(func(have error) bool {
 			return have != nil && errors.Is(have, w)
 		})
+
 	default:
 		panic("mock: MatchError: invalid type")
 	}
-	return mby
+	return am
 }
 
 // AnySlice returns a slice of length cnt filled with [Any] sentinels.

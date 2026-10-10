@@ -9,11 +9,9 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/ctx42/testing/pkg/assert"
-	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/testcases"
 )
 
@@ -37,14 +35,6 @@ func Test_callStack(t *testing.T) {
 			_, err := os.Stat(pth)
 			assert.NoError(t, err)
 		}
-	})
-
-	t.Run("closure names", func(t *testing.T) {
-		assert.True(t, isClosureName("func1"))
-		assert.True(t, isClosureName("2"))
-		assert.False(t, isClosureName("funcX"))
-		assert.False(t, isClosureName("func"))
-		assert.False(t, isClosureName("Method"))
 	})
 
 	// --- When ---
@@ -111,80 +101,32 @@ func Test_formatMethod_tabular(t *testing.T) {
 	}
 }
 
-func Test_formatArgs(t *testing.T) {
-	t.Run("uses dumpers registered after init", func(t *testing.T) {
-		// --- Given ---
-		t.Setenv("___", "___")
-		type custom struct{}
-		dmp := func(dump.Dump, int, reflect.Value) string { return "custom" }
-		registerOnce.Do(func() { dump.RegisterTypeDumper(custom{}, dmp) })
-
-		// --- When ---
-		have := formatArgs(Arguments{custom{}})
-
-		// --- Then ---
-		assert.Equal(t, "0: custom", have)
-	})
-}
-
-// registerOnce guards the global dumper registration in Test_formatArgs,
-// which panics when repeated (e.g. with -count).
-var registerOnce sync.Once
-
-func Test_formatArgs_tabular(t *testing.T) {
+func Test_isTestName_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		args Arguments
-		want string
-	}{
-		{"nil arguments", nil, ""},
-		{"single simple argument", []any{1}, "0: 1"},
-		{
-			"multiple simple arguments",
-			[]any{1, "abc", 2.2},
-			"" +
-				"0: 1\n" +
-				"1: \"abc\"\n" +
-				"2: 2.2",
-		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
-			// --- When ---
-			have := formatArgs(tc.args)
-
-			// --- Then ---
-			assert.Equal(t, tc.want, have)
-		})
-	}
-}
-
-func Test_isTestFunction_tabular(t *testing.T) {
-	tt := []struct {
 		name   string
 		prefix string
 		want   bool
 	}{
-		{"", "", true},
-		{"TestAbc", "Test", true},
-		{"Test_Abc", "Test", true},
-		{"Test_abc", "Test", true},
-		{"BenchmarkAbc", "Benchmark", true},
-		{"Benchmark_Abc", "Benchmark", true},
-		{"Benchmark_abc", "Benchmark", true},
-		{"ExampleAbc", "Example", true},
-		{"Example_Abc", "Example", true},
-		{"Example_abc", "Example", true},
-		{"Test", "Test", true},
-		{"Benchmark", "Benchmark", true},
-		{"Example", "Example", true},
-		{"TesticularCancer", "Test", false},
+		{"empty empty", "", "", true},
+		{"TestAbc Test", "TestAbc", "Test", true},
+		{"Test_Abc Test", "Test_Abc", "Test", true},
+		{"Test_abc Test", "Test_abc", "Test", true},
+		{"BenchmarkAbc Benchmark", "BenchmarkAbc", "Benchmark", true},
+		{"Benchmark_Abc Benchmark", "Benchmark_Abc", "Benchmark", true},
+		{"Benchmark_abc Benchmark", "Benchmark_abc", "Benchmark", true},
+		{"ExampleAbc Example", "ExampleAbc", "Example", true},
+		{"Example_Abc Example", "Example_Abc", "Example", true},
+		{"Example_abc Example", "Example_abc", "Example", true},
+		{"Test Test", "Test", "Test", true},
+		{"Benchmark Benchmark", "Benchmark", "Benchmark", true},
+		{"Example Example", "Example", "Example", true},
+		{"TesticularCancer Test", "TesticularCancer", "Test", false},
 	}
 
 	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.testN, func(t *testing.T) {
 			assert.Equal(t, tc.want, isTestName(tc.name, tc.prefix))
 		})
 	}
@@ -211,7 +153,7 @@ func Test_twoColumns_tabular(t *testing.T) {
 		want []string
 	}{
 		{
-			"1",
+			"three rows",
 			[]string{"aaa", "bb", "c"},
 			[]string{"111", "222", "333"},
 			[]string{

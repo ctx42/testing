@@ -14,14 +14,14 @@ type candidate struct {
 // other is better if more of its arguments match and the method name is the
 // same.
 func (can candidate) betterThan(other candidate) bool {
-	this := can.call
-	if this == nil {
+	call := can.call
+	if call == nil {
 		return false
 	}
 	if other.call == nil {
 		return true
 	}
-	if this.Method != other.call.Method {
+	if call.Method != other.call.Method {
 		return true
 	}
 	if can.diffCnt > other.diffCnt {

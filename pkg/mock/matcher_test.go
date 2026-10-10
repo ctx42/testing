@@ -21,16 +21,19 @@ func Test_NewMatcher(t *testing.T) {
 
 		// --- Then ---
 		assert.Equal(t, want, am.desc)
-		assert.True(t, am.fn.Call([]reflect.Value{reflect.ValueOf(42)})[0].Bool())
-		assert.False(t, am.fn.Call([]reflect.Value{reflect.ValueOf(44)})[0].Bool())
+		assert.True(t, am.Match(42))
+		assert.False(t, am.Match(44))
 	})
 
-	t.Run("panics", func(t *testing.T) {
+	t.Run("error - not returning bool", func(t *testing.T) {
 		// --- Given ---
 		fn := func(int) {}
 
+		// --- When ---
+		have := assert.PanicMsg(t, func() { NewMatcher(fn, "") })
+
 		// --- Then ---
-		assert.Panic(t, func() { NewMatcher(fn, "") })
+		assert.Contain(t, " does not return a bool", *have)
 	})
 }
 
@@ -82,7 +85,7 @@ func Test_Matcher_Match(t *testing.T) {
 		assert.False(t, have)
 	})
 
-	t.Run("panics if type cannot be nil", func(t *testing.T) {
+	t.Run("error - type cannot be nil", func(t *testing.T) {
 		// --- Given ---
 		fn := func(have int) bool { return have == 42 }
 		am := NewMatcher(fn, "mock.Custom")
@@ -214,13 +217,17 @@ func Test_matcherFunc_panic_tabular(t *testing.T) {
 		fn   any
 		want string
 	}{
-		{"1", 42, "mock: \"int\" is not a match function"},
+		{"error - not a function", 42, "mock: \"int\" is not a match function"},
 		{
-			"2",
+			"error - two arguments",
 			func(a, b int) bool { return false },
 			" does not take exactly one argument",
 		},
-		{"3", func(a int) {}, " does not return a bool"},
+		{
+			"error - not returning bool",
+			func(a int) {},
+			" does not return a bool",
+		},
 	}
 
 	for _, tc := range tt {

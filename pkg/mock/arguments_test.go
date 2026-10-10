@@ -6,9 +6,12 @@ package mock
 import (
 	"context"
 	"errors"
+	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/ctx42/testing/pkg/assert"
+	"github.com/ctx42/testing/pkg/dump"
 )
 
 func Test_Arguments_Get(t *testing.T) {
@@ -17,10 +20,10 @@ func Test_Arguments_Get(t *testing.T) {
 		args := Arguments{"str"}
 
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { args.Get(-1) })
+		have := assert.PanicMsg(t, func() { args.Get(-1) })
 
 		// --- Then ---
-		assert.Equal(t, "[mock] arguments: Get(-1) out of range 0 max", *msg)
+		assert.Equal(t, "[mock] arguments: Get(-1) out of range 0 max", *have)
 	})
 
 	t.Run("existing", func(t *testing.T) {
@@ -33,16 +36,16 @@ func Test_Arguments_Get(t *testing.T) {
 		assert.Equal(t, true, args.Get(2).(bool))
 	})
 
-	t.Run("panics for invalid index", func(t *testing.T) {
+	t.Run("error - invalid index", func(t *testing.T) {
 		// --- Given ---
 		var args = Arguments{"str", 42, true}
 
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { args.Get(100) })
+		have := assert.PanicMsg(t, func() { args.Get(100) })
 
 		// --- Then ---
 		want := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, want, *msg)
+		assert.Equal(t, want, *have)
 	})
 }
 
@@ -63,16 +66,16 @@ func Test_Arguments_Equal(t *testing.T) {
 		assert.False(t, args.Equal("wrong", 456, false))
 	})
 
-	t.Run("panics for invalid indexes", func(t *testing.T) {
+	t.Run("error - invalid indexes", func(t *testing.T) {
 		// --- Given ---
 		var args = Arguments{"str", 42, true}
 
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { args.Equal("str", 42) })
+		have := assert.PanicMsg(t, func() { args.Equal("str", 42) })
 
 		// --- Then ---
-		want := "[must] arguments: argument lengths do not match 3 != 2"
-		assert.Equal(t, want, *msg)
+		want := "[mock] arguments: argument lengths do not match 3 != 2"
+		assert.Equal(t, want, *have)
 	})
 }
 
@@ -104,7 +107,10 @@ func Test_Arguments_Diff(t *testing.T) {
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
-		assert.Contain(t, `(string="abc")`, have[0])
+		wMsg := "" +
+			"0: FAIL: (string=\"abc\") != " +
+			"(*context.cancelCtx=*context.cancelCtx)"
+		assert.Equal(t, wMsg, have[0])
 	})
 
 	t.Run("matches with no differences", func(t *testing.T) {
@@ -162,7 +168,7 @@ func Test_Arguments_Diff(t *testing.T) {
 		assert.Equal(t, want, have)
 	})
 
-	t.Run("more wnt any arguments", func(t *testing.T) {
+	t.Run("more want any arguments", func(t *testing.T) {
 		// --- Given ---
 		wantA := []any{Any, Any, Any, Any, Any}
 		haveA := []any{"A", "B", []any{"D", "E"}}
@@ -175,7 +181,9 @@ func Test_Arguments_Diff(t *testing.T) {
 		want := []string{
 			"0: PASS: (any=mock.Any) == (string=\"A\")",
 			"1: PASS: (any=mock.Any) == (string=\"B\")",
-			"2: PASS: (any=mock.Any) == ([]interface {}=[]interface {}{\"D\", \"E\"})",
+			"" +
+				"2: PASS: (any=mock.Any) == " +
+				"([]interface {}=[]interface {}{\"D\", \"E\"})",
 			"3: FAIL: (any=mock.Any) != (Missing)",
 			"4: FAIL: (any=mock.Any) != (Missing)",
 		}
@@ -445,7 +453,7 @@ func Test_Arguments_String(t *testing.T) {
 		assert.Equal(t, "str", have)
 	})
 
-	t.Run("panics for invalid index", func(t *testing.T) {
+	t.Run("error - invalid index", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -457,7 +465,7 @@ func Test_Arguments_String(t *testing.T) {
 		assert.Equal(t, want, *have)
 	})
 
-	t.Run("panics when argument cannot be cast to string", func(t *testing.T) {
+	t.Run("error - argument cannot be cast to string", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -482,7 +490,7 @@ func Test_Arguments_Int(t *testing.T) {
 		assert.Equal(t, 42, have)
 	})
 
-	t.Run("panics for invalid index", func(t *testing.T) {
+	t.Run("error - invalid index", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -494,7 +502,7 @@ func Test_Arguments_Int(t *testing.T) {
 		assert.Equal(t, want, *have)
 	})
 
-	t.Run("panics when argument cannot be cast to int", func(t *testing.T) {
+	t.Run("error - argument cannot be cast to int", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -519,7 +527,7 @@ func Test_Arguments_Float32(t *testing.T) {
 		assert.Equal(t, float32(3.14), have)
 	})
 
-	t.Run("panics for invalid index", func(t *testing.T) {
+	t.Run("error - invalid index", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", float32(3.14), true})
 
@@ -531,7 +539,7 @@ func Test_Arguments_Float32(t *testing.T) {
 		assert.Equal(t, want, *have)
 	})
 
-	t.Run("panics when argument cannot be cast to float32", func(t *testing.T) {
+	t.Run("error - argument cannot be cast to float32", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", float32(3.14), true})
 
@@ -556,7 +564,7 @@ func Test_Arguments_Float64(t *testing.T) {
 		assert.Equal(t, 3.14159, have)
 	})
 
-	t.Run("panics for invalid index", func(t *testing.T) {
+	t.Run("error - invalid index", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 3.14159, true})
 
@@ -568,7 +576,7 @@ func Test_Arguments_Float64(t *testing.T) {
 		assert.Equal(t, want, *have)
 	})
 
-	t.Run("panics when argument cannot be cast to float64", func(t *testing.T) {
+	t.Run("error - argument cannot be cast to float64", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 3.14159, true})
 
@@ -605,7 +613,7 @@ func Test_Arguments_Error(t *testing.T) {
 		assert.Nil(t, have)
 	})
 
-	t.Run("panics for invalid index", func(t *testing.T) {
+	t.Run("error - invalid index", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -617,16 +625,16 @@ func Test_Arguments_Error(t *testing.T) {
 		assert.Equal(t, want, *have)
 	})
 
-	t.Run("panics when argument cannot be cast to error", func(t *testing.T) {
+	t.Run("error - argument cannot be cast to error", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { _ = args.Error(2) })
+		have := assert.PanicMsg(t, func() { _ = args.Error(2) })
 
 		// --- Then ---
 		want := "[mock] arguments: Error(2) is of type \"bool\" not error"
-		assert.Equal(t, want, *msg)
+		assert.Equal(t, want, *have)
 	})
 }
 
@@ -642,7 +650,7 @@ func Test_Arguments_Bool(t *testing.T) {
 		assert.True(t, have)
 	})
 
-	t.Run("panics for invalid index", func(t *testing.T) {
+	t.Run("error - invalid index", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -654,7 +662,7 @@ func Test_Arguments_Bool(t *testing.T) {
 		assert.Equal(t, want, *have)
 	})
 
-	t.Run("panics when argument cannot be cast to bool", func(t *testing.T) {
+	t.Run("error - argument cannot be cast to bool", func(t *testing.T) {
 		// --- Given ---
 		args := Arguments([]any{"str", 42, true})
 
@@ -665,4 +673,55 @@ func Test_Arguments_Bool(t *testing.T) {
 		want := "[mock] arguments: Bool(1) is of type \"int\" not bool"
 		assert.Equal(t, want, *have)
 	})
+}
+
+func Test_Arguments_format(t *testing.T) {
+	t.Run("uses dumpers registered after init", func(t *testing.T) {
+		// --- Given ---
+		t.Setenv("___", "___")
+		type custom struct{}
+		dmp := func(dump.Dump, int, reflect.Value) string { return "custom" }
+		registerOnce.Do(func() { dump.RegisterTypeDumper(custom{}, dmp) })
+
+		// --- When ---
+		have := Arguments{custom{}}.format()
+
+		// --- Then ---
+		assert.Equal(t, "0: custom", have)
+	})
+}
+
+// registerOnce guards the global dumper registration in
+// Test_Arguments_format,
+// which panics when repeated (e.g. with -count).
+var registerOnce sync.Once
+
+func Test_Arguments_format_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		args Arguments
+		want string
+	}{
+		{"nil arguments", nil, ""},
+		{"single simple argument", []any{1}, "0: 1"},
+		{
+			"multiple simple arguments",
+			[]any{1, "abc", 2.2},
+			"" +
+				"0: 1\n" +
+				"1: \"abc\"\n" +
+				"2: 2.2",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := tc.args.format()
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
 }

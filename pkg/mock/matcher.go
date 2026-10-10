@@ -31,8 +31,9 @@ func NewMatcher(fn any, desc string) *Matcher {
 // diagnostic output when arguments fail to match).
 func (am *Matcher) Desc() string { return am.desc }
 
-// Match reports whether have satisfies the predicate. It panics if have has
-// the wrong dynamic type for the matcher function.
+// Match reports whether have satisfies the predicate. A have of the wrong
+// dynamic type does not match; a nil have panics when the matcher function
+// takes a type that cannot be nil.
 func (am *Matcher) Match(have any) bool {
 	expectType := am.fn.Type().In(0)
 

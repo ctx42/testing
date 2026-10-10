@@ -89,7 +89,7 @@ func Test_AnyCtx_tabular(t *testing.T) {
 		have any
 		want bool
 	}{
-		{"context", context.Background(), true},
+		{"context", t.Context(), true},
 		{"nil context", context.Context(nil), false},
 		{"nil any", nil, false},
 		{"wrong type", 123, false},
@@ -128,20 +128,20 @@ func Test_MatchSame(t *testing.T) {
 }
 
 func Test_MatchBy(t *testing.T) {
-	t.Run("panics if not a function", func(t *testing.T) {
+	t.Run("error - not a function", func(t *testing.T) {
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { MatchBy(42) })
+		have := assert.PanicMsg(t, func() { MatchBy(42) })
 
 		// --- Then ---
-		assert.Equal(t, `mock: "int" is not a match function`, *msg)
+		assert.Equal(t, `mock: "int" is not a match function`, *have)
 	})
 
-	t.Run("panics if nil", func(t *testing.T) {
+	t.Run("error - nil", func(t *testing.T) {
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { MatchBy(nil) })
+		have := assert.PanicMsg(t, func() { MatchBy(nil) })
 
 		// --- Then ---
-		assert.Equal(t, `mock: "<nil>" is not a match function`, *msg)
+		assert.Equal(t, `mock: "<nil>" is not a match function`, *have)
 	})
 
 	t.Run("construct", func(t *testing.T) {
@@ -153,17 +153,17 @@ func Test_MatchBy(t *testing.T) {
 		assert.False(t, MatchBy(fn).Match(44))
 	})
 
-	t.Run("panics if more than one argument", func(t *testing.T) {
+	t.Run("error - more than one argument", func(t *testing.T) {
 		// --- Given ---
 		fn := func(a, b int) bool { return true }
 
 		// --- Then ---
-		msg := assert.PanicMsg(t, func() { MatchBy(fn) })
-		assert.Contain(t, "mock: match function", *msg)
-		assert.Contain(t, "does not take exactly one argument", *msg)
+		have := assert.PanicMsg(t, func() { MatchBy(fn) })
+		assert.Contain(t, "mock: match function", *have)
+		assert.Contain(t, "does not take exactly one argument", *have)
 	})
 
-	t.Run("panics if not returning bool", func(t *testing.T) {
+	t.Run("error - not returning bool", func(t *testing.T) {
 		// --- Given ---
 		fn := func(have int) {}
 
@@ -173,9 +173,9 @@ func Test_MatchBy(t *testing.T) {
 		assert.Contain(t, "does not return a bool", *msg)
 	})
 
-	t.Run("panics if not function", func(t *testing.T) {
-		msg := assert.PanicMsg(t, func() { matcherFunc(42) })
-		assert.Equal(t, *msg, "mock: \"int\" is not a match function")
+	t.Run("error - not function", func(t *testing.T) {
+		have := assert.PanicMsg(t, func() { matcherFunc(42) })
+		assert.Equal(t, *have, "mock: \"int\" is not a match function")
 	})
 }
 
@@ -187,27 +187,27 @@ func Test_MatchBy_tabular(t *testing.T) {
 		want string
 	}{
 		{
-			"1",
+			"int",
 			func(have int) bool { return false },
 			"[mock.MatchBy=func(int) bool]",
 		},
 		{
-			"2",
+			"bool",
 			func(have bool) bool { return false },
 			"[mock.MatchBy=func(bool) bool]",
 		},
 		{
-			"3",
+			"interface",
 			func(have ExampleItf) bool { return false },
 			"[mock.MatchBy=func(mock.ExampleItf) bool]",
 		},
 		{
-			"4",
+			"struct",
 			func(have ExampleType) bool { return false },
 			"[mock.MatchBy=func(mock.ExampleType) bool]",
 		},
 		{
-			"5",
+			"struct pointer",
 			func(have *ExampleType) bool { return false },
 			"[mock.MatchBy=func(*mock.ExampleType) bool]",
 		},
@@ -232,16 +232,26 @@ func Test_MatchOfType_tabular(t *testing.T) {
 		have any
 		want bool
 	}{
-		{"1", "int", 42, true},
-		{"2", "int", "42", false},
-		{"3", "string", "str", true},
-		{"4", "string", 42, false},
-		{"5", "mock.ExampleItf", &ExampleType{}, false},
-		{"6", "*mock.ExampleType", &ExampleType{}, true},
-		{"7", "mock.ExampleType", ExampleType{}, true},
-		{"8", "*mock.ExampleType", ExampleType{}, false},
-		{"9", "mock.ExampleType", &ExampleType{}, false},
-		{"10", "mock.ExampleItf", ExampleItf(&ExampleType{}), false},
+		{"int", "int", 42, true},
+		{"int string value", "int", "42", false},
+		{"string", "string", "str", true},
+		{"string int value", "string", 42, false},
+		{"interface name", "mock.ExampleItf", &ExampleType{}, false},
+		{"struct pointer", "*mock.ExampleType", &ExampleType{}, true},
+		{"struct", "mock.ExampleType", ExampleType{}, true},
+		{
+			"struct pointer name and value",
+			"*mock.ExampleType",
+			ExampleType{},
+			false,
+		},
+		{"struct name and pointer", "mock.ExampleType", &ExampleType{}, false},
+		{
+			"interface value",
+			"mock.ExampleItf",
+			ExampleItf(&ExampleType{}),
+			false,
+		},
 		{"nil have", "int", nil, false},
 	}
 
@@ -263,10 +273,14 @@ func Test_MatchOfType_desc_tabular(t *testing.T) {
 		have string
 		want string
 	}{
-		{"1", "int", "[mock.MatchOfType=int]"},
-		{"2", "bool", "[mock.MatchOfType=bool]"},
-		{"3", "mock.ExampleType", "[mock.MatchOfType=mock.ExampleType]"},
-		{"4", "*mock.ExampleType", "[mock.MatchOfType=*mock.ExampleType]"},
+		{"int", "int", "[mock.MatchOfType=int]"},
+		{"bool", "bool", "[mock.MatchOfType=bool]"},
+		{"struct", "mock.ExampleType", "[mock.MatchOfType=mock.ExampleType]"},
+		{
+			"struct pointer",
+			"*mock.ExampleType",
+			"[mock.MatchOfType=*mock.ExampleType]",
+		},
 	}
 
 	for _, tc := range tt {
@@ -285,14 +299,22 @@ func Test_MatchType(t *testing.T) {
 		// --- Given ---
 		val0 := func() any { type T struct{}; return T{} }()
 		val1 := func() any { type T struct{}; return T{} }()
-		mat := MatchType(val0)
+		am := MatchType(val0)
 
 		// --- When ---
-		have := mat.Match(val1)
+		have := am.Match(val1)
 
 		// --- Then ---
 		assert.False(t, have)
-		assert.True(t, mat.Match(val0))
+		assert.True(t, am.Match(val0))
+	})
+
+	t.Run("error - nil type", func(t *testing.T) {
+		// --- When ---
+		have := assert.PanicMsg(t, func() { MatchType(nil) })
+
+		// --- Then ---
+		assert.Equal(t, "mock: MatchType: typ must not be nil", *have)
 	})
 }
 
@@ -304,18 +326,28 @@ func Test_MatchType_tabular(t *testing.T) {
 		have any
 		want bool
 	}{
-		{"1", 42, 44, true},
-		{"2", 42.0, 42, false},
-		{"3", "abc", "def", true},
-		{"4", "abc", 42, false},
-		{"5", true, true, true},
-		{"6", true, false, true},
-		{"7", &ExampleType{}, &ExampleType{}, true},
-		{"8", ExampleType{}, ExampleType{}, true},
-		{"9", ExampleType{}, &ExampleType{}, false},
-		{"10", &ExampleType{}, ExampleType{}, false},
-		{"11", &ExampleType{}, ExampleItf(&ExampleType{}), true},
-		{"12", ExampleItf(&ExampleType{}), &ExampleType{}, true},
+		{"same int", 42, 44, true},
+		{"float and int", 42.0, 42, false},
+		{"same string", "abc", "def", true},
+		{"string and int", "abc", 42, false},
+		{"same bool", true, true, true},
+		{"bool values", true, false, true},
+		{"struct pointers", &ExampleType{}, &ExampleType{}, true},
+		{"structs", ExampleType{}, ExampleType{}, true},
+		{"struct and pointer", ExampleType{}, &ExampleType{}, false},
+		{"pointer and struct", &ExampleType{}, ExampleType{}, false},
+		{
+			"pointer and interface",
+			&ExampleType{},
+			ExampleItf(&ExampleType{}),
+			true,
+		},
+		{
+			"interface and pointer",
+			ExampleItf(&ExampleType{}),
+			&ExampleType{},
+			true,
+		},
 		{"nil have", 42, nil, false},
 	}
 
@@ -337,10 +369,14 @@ func Test_MatchType_desc_tabular(t *testing.T) {
 		have any
 		want string
 	}{
-		{"1", 42, "[mock.MatchType=int]"},
-		{"2", true, "[mock.MatchType=bool]"},
-		{"3", ExampleType{}, "[mock.MatchType=mock.ExampleType]"},
-		{"4", &ExampleType{}, "[mock.MatchType=*mock.ExampleType]"},
+		{"int", 42, "[mock.MatchType=int]"},
+		{"bool", true, "[mock.MatchType=bool]"},
+		{"struct", ExampleType{}, "[mock.MatchType=mock.ExampleType]"},
+		{
+			"struct pointer",
+			&ExampleType{},
+			"[mock.MatchType=*mock.ExampleType]",
+		},
 	}
 
 	for _, tc := range tt {
@@ -362,8 +398,13 @@ func Test_MatchErrorContain_tabular(t *testing.T) {
 		have  error
 		match bool
 	}{
-		{"1", "long text", errors.New("some long text to match"), true},
-		{"2", "other text", errors.New("some long text to match"), false},
+		{"contains", "long text", errors.New("some long text to match"), true},
+		{
+			"does not contain",
+			"other text",
+			errors.New("some long text to match"),
+			false,
+		},
 	}
 
 	for _, tc := range tt {
@@ -375,6 +416,16 @@ func Test_MatchErrorContain_tabular(t *testing.T) {
 			assert.Equal(t, tc.match, have)
 		})
 	}
+}
+
+func Test_MatchError(t *testing.T) {
+	t.Run("error - invalid type", func(t *testing.T) {
+		// --- When ---
+		have := assert.PanicMsg(t, func() { MatchError(42) })
+
+		// --- Then ---
+		assert.Equal(t, "mock: MatchError: invalid type", *have)
+	})
 }
 
 func Test_MatchError_tabular(t *testing.T) {
@@ -394,7 +445,7 @@ func Test_MatchError_tabular(t *testing.T) {
 		{"no match error message", "other error", err0, false},
 
 		{"match error is", err0, err0, true},
-		{"no mach error is", err0, err1, false},
+		{"no match error is", err0, err1, false},
 		{"match wrapped error", err1, err3, true},
 		{"match wrapped error multi 0", err0, err4, true},
 		{"match wrapped error multi 1", err1, err4, true},
@@ -409,16 +460,6 @@ func Test_MatchError_tabular(t *testing.T) {
 			assert.Equal(t, tc.match, have)
 		})
 	}
-}
-
-func Test_MatchError(t *testing.T) {
-	t.Run("panics when invalid type", func(t *testing.T) {
-		// --- When ---
-		msg := assert.PanicMsg(t, func() { MatchError(42) })
-
-		// --- Then ---
-		assert.Equal(t, "mock: MatchError: invalid type", *msg)
-	})
 }
 
 func Test_AnySlice(t *testing.T) {

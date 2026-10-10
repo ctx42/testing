@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/notice"
 )
 
@@ -37,7 +38,7 @@ func (args Arguments) Equal(haves ...any) bool {
 	al := len(args)
 	hl := len(haves)
 	if al != hl {
-		mHeader := "[must] arguments: argument lengths do not match %d != %d"
+		mHeader := "[mock] arguments: argument lengths do not match %d != %d"
 		msg := notice.New(mHeader, al, hl)
 		panic(msg)
 	}
@@ -85,15 +86,13 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 			continue
 		}
 
-		if wantOK {
-			want = args[i]
-			if want == Any {
-				wantFmt = "(any=mock.Any)"
-			} else if _, ok := want.(context.Context); ok {
-				wantFmt = fmt.Sprintf("(%[1]T=%[1]T)", want)
-			} else {
-				wantFmt = fmt.Sprintf("(%[1]T=%#[1]v)", want)
-			}
+		want = args[i]
+		if want == Any {
+			wantFmt = "(any=mock.Any)"
+		} else if _, ok := want.(context.Context); ok {
+			wantFmt = fmt.Sprintf("(%[1]T=%[1]T)", want)
+		} else {
+			wantFmt = fmt.Sprintf("(%[1]T=%#[1]v)", want)
 		}
 
 		if am, ok := want.(*Matcher); ok {
@@ -110,8 +109,7 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 			}()
 
 			if match {
-				msg := "%d: PASS: %s == %s"
-				msg = fmt.Sprintf(msg, i, am.Desc(), haveFmt)
+				msg := fmt.Sprintf("%d: PASS: %s == %s", i, am.Desc(), haveFmt)
 				out = append(out, msg)
 				continue
 			}
@@ -129,7 +127,7 @@ func (args Arguments) Diff(vs []any) ([]string, int) {
 			continue
 		}
 
-		// Not match
+		// Not matched.
 		diffCnt++
 		msg := formatFail(i, wantFmt, haveFmt)
 		out = append(out, msg)
@@ -233,17 +231,33 @@ func formatFail(i int, left, right string) string {
 	return fmt.Sprintf("%d: FAIL: %s != %s", i, left, right)
 }
 
-// formatArg formats an expected argument for a [Arguments.Diff] line.
+// formatArg formats an expected argument for an [Arguments.Diff] line.
 func formatArg(want any) string {
 	switch val := want.(type) {
 	case *Matcher:
 		return val.Desc()
 	case context.Context:
 		return fmt.Sprintf("(%[1]T=%[1]T)", val)
+
 	default:
 		if want == Any {
 			return "(any=mock.Any)"
 		}
 		return fmt.Sprintf("(%[1]T=%#[1]v)", want)
 	}
+}
+
+// format returns a formatted multi-line string representing the arguments. It
+// renders them with a default [dump.Dump] created per call, so dumpers
+// registered with [dump.RegisterTypeDumper] at any time are used.
+func (args Arguments) format() string {
+	if len(args) == 0 {
+		return ""
+	}
+	dmp := dump.New()
+	var out []string
+	for idx, arg := range args {
+		out = append(out, fmt.Sprintf("%d: %s", idx, dmp.Any(arg)))
+	}
+	return strings.Join(out, "\n")
 }

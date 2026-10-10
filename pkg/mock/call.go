@@ -13,12 +13,12 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// stack represents a method call stack.
+// cStack represents a method call stack.
 type cStack struct {
 	// The name of the method that was or will be called.
 	Method string
 
-	// The call stack of the method. What kind of stack it is context-dependent.
+	// The call stack of the method; its kind depends on the context.
 	Stack []string
 }
 
@@ -112,7 +112,7 @@ func newProxy(proxy reflect.Value, name ...string) *Call {
 	return call
 }
 
-// withParent sets [Mock] instance the call belongs to.
+// withParent sets the [Mock] instance the call belongs to.
 func (call *Call) withParent(parent *Mock) *Call {
 	call.parent = parent
 	return call
@@ -221,8 +221,8 @@ func (call *Call) Requires(calls ...*Call) *Call {
 }
 
 // CanCall reports whether this expectation can be satisfied by one more call
-// right now. Returns nil if allowed, otherwise one of the Err* sentinels or
-// a richer [notice.Notice] explaining the violation.
+// right now. Returns nil if allowed, otherwise a [notice.Notice] wrapping one
+// of the Err* sentinels and explaining the violation.
 func (call *Call) CanCall() error {
 	err := call.satisfied(call.calls() + 1)
 	if err == nil ||
@@ -232,8 +232,9 @@ func (call *Call) CanCall() error {
 	return err
 }
 
-// Satisfied reports whether this expectation has been fully met (correct
-// call count + all prerequisites satisfied).
+// Satisfied reports whether this expectation has been called the expected
+// number of times. Prerequisites are checked separately, when the call is
+// matched.
 func (call *Call) Satisfied() bool {
 	return call.satisfied(call.calls()) == nil
 }
@@ -253,8 +254,8 @@ func (call *Call) addCall() {
 }
 
 // satisfied returns nil if the call requirements are satisfied. It takes
-// haveCalls instead of using instance field value, so it can be used to check
-// if it is ok to call it one more time see [Call.CanCall].
+// haveCalls instead of using the instance field value, so it can be used to
+// check if it is ok to call it one more time; see [Call.CanCall].
 func (call *Call) satisfied(haveCalls int) error {
 	if call.wantCalls == haveCalls && call.wantCalls != 0 {
 		return nil // Called requested number of times.
@@ -268,7 +269,7 @@ func (call *Call) satisfied(haveCalls int) error {
 			method := formatMethod(call.Method, call.args, call.returns)
 			return notice.New(hNeverCalled).
 				Append("method", "%s", method).
-				Append("expected args", "\n%s", formatArgs(call.args)).
+				Append("expected args", "\n%s", call.args.format()).
 				Wrap(ErrNeverCalled)
 		}
 		return nil // Can be called any number of times.
@@ -279,7 +280,7 @@ func (call *Call) satisfied(haveCalls int) error {
 		msg := notice.New(hTooManyCalls).
 			Append("method", "%s", method)
 		if len(call.args) > 0 {
-			_ = msg.Append("expected args", "\n%s", formatArgs(call.args))
+			_ = msg.Append("expected args", "\n%s", call.args.format())
 		}
 		return msg.Append("want calls", "%d", call.wantCalls).
 			Append("have calls", "%d", haveCalls).
@@ -293,7 +294,7 @@ func (call *Call) satisfied(haveCalls int) error {
 	method := formatMethod(call.Method, call.args, call.returns)
 	return notice.New(hTooFewCalls).
 		Append("method", "%s", method).
-		Append("expected args", "\n%s", formatArgs(call.args)).
+		Append("expected args", "\n%s", call.args.format()).
 		Append("want calls", "%d", call.wantCalls).
 		Append("have calls", "%d", haveCalls).
 		Wrap(ErrTooFewCalls)
@@ -318,11 +319,11 @@ func (call *Call) checkReq(cs []string) (err error) {
 
 		msg := notice.New(hUnexpectedCall).Append("method", "%s", method)
 		if len(call.args) > 0 {
-			_ = msg.Append("expected args", "\n%s", formatArgs(call.args))
+			_ = msg.Append("expected args", "\n%s", call.args.format())
 		}
 		_ = msg.Append("requires", "%s", requires)
 		if len(req.args) > 0 {
-			_ = msg.Append(" expected args", "\n%s", formatArgs(req.args))
+			_ = msg.Append(" expected args", "\n%s", req.args.format())
 		}
 		_ = msg.Append("from", "%s", parent).Wrap(ErrRequirements)
 		if len(cs) > 0 {
