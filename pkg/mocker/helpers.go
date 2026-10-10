@@ -349,7 +349,11 @@ func findSources(dir string) ([]string, error) {
 		}
 		// Skip files the build excludes: build constraints, GOOS and GOARCH
 		// file name suffixes, and names starting with "_" or ".".
-		if ok, err := build.Default.MatchFile(dir, name); err != nil || !ok {
+		ok, err := build.Default.MatchFile(dir, name)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", name, err)
+		}
+		if !ok {
 			continue
 		}
 		sources = append(sources, filepath.Join(dir, name))
