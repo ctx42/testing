@@ -64,7 +64,7 @@ func ErrorIsNot(t tester.T, want, err error, opts ...any) bool {
 func ErrorAs(t tester.T, want any, err error, opts ...any) bool {
 	t.Helper()
 	if e := check.ErrorAs(want, err, opts...); e != nil {
-		t.Error(e)
+		t.Fatal(e)
 		return false
 	}
 	return true

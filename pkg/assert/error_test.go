@@ -201,35 +201,37 @@ func Test_ErrorAs(t *testing.T) {
 	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
-		tspy.ExpectError()
+		tspy.ExpectFatal()
 		tspy.IgnoreLogs()
 		tspy.Close()
 
 		var target testcases.TVal
+		err := &testcases.TPtr{Val: "A"}
 
 		// --- When ---
-		have := ErrorAs(tspy, &target, &testcases.TPtr{Val: "A"})
+		msg := affirm.Panic(t, func() { ErrorAs(tspy, &target, err) })
 
 		// --- Then ---
-		affirm.Equal(t, false, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 		affirm.Equal(t, "", target.Val)
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
-		tspy.ExpectError()
+		tspy.ExpectFatal()
 		tspy.ExpectLogContain("  trail: type.field\n")
 		tspy.Close()
 
 		var target testcases.TVal
+		err := &testcases.TPtr{Val: "A"}
 		opt := check.WithTrail("type.field")
 
 		// --- When ---
-		have := ErrorAs(tspy, &target, &testcases.TPtr{Val: "A"}, opt)
+		msg := affirm.Panic(t, func() { ErrorAs(tspy, &target, err, opt) })
 
 		// --- Then ---
-		affirm.Equal(t, false, have)
+		affirm.Equal(t, tester.FailNowMsg, *msg)
 		affirm.Equal(t, "", target.Val)
 	})
 }
