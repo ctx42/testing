@@ -719,6 +719,29 @@ func Test_Notice_Is(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, true, have)
 	})
+
+	t.Run("matches a notice on the chain", func(t *testing.T) {
+		// --- Given ---
+		one := New("one")
+		joined := Join(one, New("two"))
+
+		// --- When ---
+		have := errors.Is(joined, one)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("does not match a notice off the chain", func(t *testing.T) {
+		// --- Given ---
+		joined := Join(New("one"), New("two"))
+
+		// --- When ---
+		have := errors.Is(joined, New("one"))
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
 }
 
 func Test_Notice_Error(t *testing.T) {

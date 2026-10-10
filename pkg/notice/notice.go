@@ -242,13 +242,17 @@ func (msg *Notice) Remove(name string) *Notice {
 	return msg
 }
 
-// Is reports whether any notice in the chain has a base error matching
-// target via [errors.Is]. This makes every *Notice satisfy
-// errors.Is(msg, ErrNotice) by default, and lets [Join] chains match any
-// wrapped cause on the chain.
+// Is reports whether target is a notice in the chain, or any notice in the
+// chain has a base error matching target via [errors.Is]. This makes every
+// *Notice satisfy errors.Is(msg, ErrNotice) by default, and lets [Join]
+// chains match any of their notices and any wrapped cause on the chain.
 func (msg *Notice) Is(target error) bool {
+	tgt, _ := target.(*Notice) //nolint:errorlint
 	head := msg.Head()
 	for m := head; m != nil; m = m.next {
+		if m == tgt {
+			return true
+		}
 		if m.err != nil && isErr(m.err, target, head) {
 			return true
 		}
