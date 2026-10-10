@@ -4,6 +4,7 @@
 package testcases
 
 import (
+	"math"
 	"time"
 )
 
@@ -22,8 +23,8 @@ type EqualCase struct {
 // EqualCases returns a large, battle-tested set of cases for verifying
 // custom equality logic.
 //
-// The collection covers primitives, structs (exported/unexported fields),
-// pointers, interfaces, slices, maps, channels, time values, and more.
+// The collection covers primitives, structs, pointers, values stored in
+// interfaces, slices, maps, channels, time values, and more.
 // It is the same data used inside this module to test check.Equal and
 // registered type checkers.
 //
@@ -174,12 +175,12 @@ func EqualCases() []EqualCase {
 			false,
 		},
 
-		{"itf val 00", itfVal0, itfVal0, true},
-		{"itf val 01", itfVal0, itfVal1, true},
-		{"itf ptr 00", itfPtr0, itfPtr0, true},
-		{"itf ptr 01", itfPtr0, itfPtr1, true},
-		{"itf ptr nil 00", itfPtr0, itfNil, false},
-		{"itf ptr nil 01", itfNil, itfPtr0, false},
+		{"TVal as TItf same", itfVal0, itfVal0, true},
+		{"TVal as TItf equal", itfVal0, itfVal1, true},
+		{"TPtr as TItf same", itfPtr0, itfPtr0, true},
+		{"TPtr as TItf equal", itfPtr0, itfPtr1, true},
+		{"TPtr as TItf and nil", itfPtr0, itfNil, false},
+		{"nil and TPtr as TItf", itfNil, itfPtr0, false},
 		{"val", TPtr{}, TPtr{}, true},
 		{"val with val", TPtr{Val: "A"}, TPtr{Val: "A"}, true},
 		{"ptr", &TPtr{}, &TPtr{}, true},
@@ -214,6 +215,8 @@ func EqualPrimitives() []EqualCase {
 
 		{"equal int", 42, 42, true},
 		{"not equal int", 42, 44, false},
+		{"equal uint", uint(42), uint(42), true},
+		{"not equal uint", uint(42), uint(44), false},
 		{"int and int64", 42, int64(42), false},
 		{"int and named int", 1, TIntType(1), false},
 
@@ -242,6 +245,8 @@ func EqualPrimitives() []EqualCase {
 		{"not equal float64", 42.0, 44.0, false},
 		{"equal float32", float32(42.0), float32(42.0), true},
 		{"not equal float32", float32(42.0), float32(44.0), false},
+		{"NaN float64", math.NaN(), math.NaN(), false},
+		{"negative zero float64", math.Copysign(0, -1), 0.0, true},
 		{
 			"equal complex64",
 			complex(float32(1.0), float32(2.0)),

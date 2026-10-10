@@ -3,7 +3,8 @@
 
 // Package testcases provides a rich, curated collection of test values and
 // cases designed specifically for people writing custom assertions or using
-// tester.Spy to test their own test helpers.
+// tester.Spy to test their own test helpers. Import it as
+// github.com/ctx42/testing/pkg/testcases.
 //
 // See the Design section in the root README for the overall layered
 // architecture and the recommended patterns for testing custom helpers with
@@ -36,7 +37,7 @@ import (
 	"time"
 )
 
-// WAW represents Europe/Warsaw timezone.
+// WAW is the Europe/Warsaw time zone location.
 var WAW *time.Location
 
 func init() {

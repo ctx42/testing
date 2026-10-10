@@ -106,14 +106,14 @@ func ZENValues() []ZENValue {
 			IsNil:   false,
 		},
 		{
-			Desc:    "nil interface 1",
+			Desc:    "nil TItf as any",
 			Val:     TItf(nil),
 			IsZero:  false,
 			IsEmpty: true,
 			IsNil:   true,
 		},
 		{
-			Desc:    "nil interface 2",
+			Desc:    "nil TItf variable as any",
 			Val:     nilItf,
 			IsZero:  false,
 			IsEmpty: true,
