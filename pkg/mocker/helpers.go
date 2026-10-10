@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -174,7 +173,7 @@ func dedupeImports(imps []*gopkg, methods []*method) []*gopkg {
 			out = append(out, imp)
 			continue
 		}
-		if old, neu := importIdent(imp), importIdent(prev); old != neu {
+		if old, neu := imp.ident(), prev.ident(); old != neu {
 			rewriteTypePkgPrefix(methods, imp, old, neu)
 		}
 	}
@@ -188,7 +187,7 @@ func renameShadowingArgs(imps []*gopkg, methods []*method) {
 	reserved := map[string]bool{"any": true}
 	for _, imp := range imps {
 		if imp != nil && imp.pkgPath != "" {
-			reserved[importIdent(imp)] = true
+			reserved[imp.ident()] = true
 		}
 	}
 	for _, met := range methods {
@@ -209,7 +208,7 @@ func resolveImportNameClashes(imps []*gopkg, methods []*method) {
 		if imp == nil || imp.pkgPath == "" {
 			continue
 		}
-		name := importIdent(imp)
+		name := imp.ident()
 		if existing, ok := used[name]; ok && existing.pkgPath != imp.pkgPath {
 			old := name
 			alias := nextImportAlias(old, used)
@@ -222,15 +221,6 @@ func resolveImportNameClashes(imps []*gopkg, methods []*method) {
 			used[name] = imp
 		}
 	}
-}
-
-// importIdent is the name used in generated import lines and type prefixes:
-// a non-dot alias if set, otherwise the package name.
-func importIdent(imp *gopkg) string {
-	if imp.alias != "" && imp.alias != "." {
-		return imp.alias
-	}
-	return imp.pkgName
 }
 
 // nextImportAlias returns base2, base3, … not present in used.
@@ -279,7 +269,7 @@ func replacePkgPrefix(typ, old, neu string) string {
 			break
 		}
 		j += i
-		if j > 0 && isIdentByte(typ[j-1]) {
+		if j > 0 && isIdentRune(rune(typ[j-1])) {
 			// old is a suffix of a longer identifier (e.g. afoo vs foo).
 			b.WriteString(typ[i : j+len(from)])
 			i = j + len(from)
@@ -292,12 +282,9 @@ func replacePkgPrefix(typ, old, neu string) string {
 	return b.String()
 }
 
-// isIdentByte reports whether c can appear in a Go identifier.
-func isIdentByte(c byte) bool {
-	return c == '_' ||
-		(c >= 'a' && c <= 'z') ||
-		(c >= 'A' && c <= 'Z') ||
-		(c >= '0' && c <= '9')
+// isIdentRune reports whether r can appear in a Go identifier.
+func isIdentRune(r rune) bool {
+	return r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r)
 }
 
 // argUsesPkg reports whether arg's package list includes pkg.
@@ -313,8 +300,11 @@ func argUsesPkg(arg *argument, pkg *gopkg) bool {
 // toLowerSnakeCase converts camel case to lowercase snake case.
 func toLowerSnakeCase(camel string) string {
 	var runes = make([]rune, 0, len(camel)+10)
-	const lower = 1
-	const upper = 2
+	// Letter cases.
+	const (
+		lower = iota + 1
+		upper
+	)
 
 	var prev int
 	for _, r := range camel {
@@ -379,24 +369,19 @@ func findMethod(mts []*method, name string) *method {
 	return nil
 }
 
-// builtin is a list of builtin types.
-var builtin = []string{
-	"any",
-	"bool",
-	"byte",
-	"error",
-	"rune",
-	"string",
-	"uintptr",
-	"float32", "float64",
-	"complex64", "complex128",
-	"int", "int8", "int16", "int32", "int64",
-	"uint", "uint8", "uint16", "uint32", "uint64",
-}
-
 // isBuiltin returns true if the provided type name is a Go builtin type.
 func isBuiltin(typ string) bool {
-	return slices.Contains(builtin, typ)
+	switch typ {
+	case "any", "bool", "byte", "error", "rune", "string", "uintptr",
+		"float32", "float64", "complex64", "complex128",
+		"int", "int8", "int16", "int32", "int64",
+		"uint", "uint8", "uint16", "uint32", "uint64":
+
+		return true
+
+	default:
+		return false
+	}
 }
 
 // detectDirOrImp detects if the provided string is a directory or an import

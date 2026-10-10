@@ -310,12 +310,12 @@ func Test_Config_create(t *testing.T) {
 		}
 
 		// --- When ---
-		hCfg, err := cfg.create()
+		have, err := cfg.create()
 
 		// --- Then ---
 		assert.NoError(t, err)
 		assert.NoFileExist(t, pth)
-		assert.Same(t, buf, hCfg.tgtOut)
+		assert.Same(t, buf, have.tgtOut)
 	})
 
 	t.Run("buffer set with relative filename", func(t *testing.T) {
@@ -327,12 +327,12 @@ func Test_Config_create(t *testing.T) {
 		}
 
 		// --- When ---
-		fCfg, err := cfg.create()
+		have, err := cfg.create()
 
 		// --- Then ---
 		assert.NoError(t, err)
 		assert.NoFileExist(t, "_target_.go")
-		assert.Same(t, buf, fCfg.tgtOut)
+		assert.Same(t, buf, have.tgtOut)
 	})
 
 	t.Run("file created", func(t *testing.T) {
@@ -348,16 +348,16 @@ func Test_Config_create(t *testing.T) {
 		}
 
 		// --- When ---
-		hCfg, err := cfg.create()
+		have, err := cfg.create()
 
 		// --- Then ---
 		assert.NoError(t, err)
 		assert.FileExist(t, pth)
-		assert.NotNil(t, hCfg.tgtOut)
-		assert.SameType(t, &os.File{}, hCfg.tgtOut)
+		assert.NotNil(t, have.tgtOut)
+		assert.SameType(t, &os.File{}, have.tgtOut)
 		// The existing file is truncated; Generate writes the body after.
 		assert.Equal(t, int64(0), must.Value(os.Stat(pth)).Size())
-		_ = hCfg.tgtOut.(*os.File).Close()
+		_ = have.tgtOut.(*os.File).Close()
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -366,10 +366,10 @@ func Test_Config_create(t *testing.T) {
 		cfg := &Config{tgtFilename: pth}
 
 		// --- When ---
-		hCfg, err := cfg.create()
+		have, err := cfg.create()
 
 		// --- Then ---
 		assert.ErrorContain(t, "no such file or directory", err)
-		assert.Nil(t, hCfg.tgtOut)
+		assert.Nil(t, have.tgtOut)
 	})
 }

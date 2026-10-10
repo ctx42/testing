@@ -75,7 +75,7 @@ func (met *method) genArgs() string {
 		if i > 0 {
 			code.WriteString(", ")
 		}
-		code.WriteString(arg.genArg(i))
+		code.WriteString(arg.genName(i) + " " + arg.typ)
 	}
 	code.WriteString(")")
 	return code.String()
@@ -161,7 +161,7 @@ func (met *method) genRets() string {
 		if i > 0 {
 			code.WriteString(", ")
 		}
-		code.WriteString(ret.getType())
+		code.WriteString(ret.typ)
 		if rc > 1 && i == rc-1 {
 			code.WriteString(")")
 		}

@@ -76,7 +76,7 @@ func (fil *file) findPackage(res *resolver, pathOrAlias string) (*gopkg, error) 
 		if err := res.resolve(pkg); err != nil {
 			return nil, err
 		}
-		if importIdent(pkg) == pathOrAlias {
+		if pkg.ident() == pathOrAlias {
 			return pkg, nil
 		}
 	}

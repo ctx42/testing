@@ -352,3 +352,12 @@ func modSubPath(modPath, pkgPath string) (string, bool) {
 	}
 	return "", false
 }
+
+// ident is the name used in generated import lines and type prefixes: a
+// non-dot alias if set, otherwise the package name.
+func (pkg *gopkg) ident() string {
+	if pkg.alias != "" && pkg.alias != "." {
+		return pkg.alias
+	}
+	return pkg.pkgName
+}

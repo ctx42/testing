@@ -12,7 +12,7 @@ import (
 	"github.com/ctx42/testing/pkg/must"
 )
 
-func Test_resolver(t *testing.T) {
+func Test_resolver_resolve(t *testing.T) {
 	t.Run("package already in the cache", func(t *testing.T) {
 		// --- Given ---
 		res := &resolver{

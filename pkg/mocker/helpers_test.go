@@ -43,7 +43,7 @@ func Test_assumedPackageName_tabular(t *testing.T) {
 	}
 }
 
-func Test_appendLoopCode(t *testing.T) {
+func Test_genAppendFromTo(t *testing.T) {
 	// --- When ---
 	have := genAppendFromTo("_args", "name")
 
@@ -328,7 +328,7 @@ func Test_resolveImportNameClashes(t *testing.T) {
 		resolveImportNameClashes([]*gopkg{a, b}, []*method{met})
 
 		// --- Then ---
-		assert.Equal(t, "mt", importIdent(a))
+		assert.Equal(t, "mt", a.ident())
 		assert.Equal(t, "mt2", b.pkgName)
 		assert.Equal(t, "mt2", b.alias)
 		assert.Equal(t, "mt2.Thing", met.args[0].typ)
@@ -383,7 +383,13 @@ func Test_replacePkgPrefix_tabular(t *testing.T) {
 		want  string
 	}{
 		{"simple", "foo.T", "foo", "foo2", "foo2.T"},
-		{"suffix name preserved", "map[afoo.T]foo.U", "foo", "foo2", "map[afoo.T]foo2.U"},
+		{
+			"suffix name preserved",
+			"map[afoo.T]foo.U",
+			"foo",
+			"foo2",
+			"map[afoo.T]foo2.U",
+		},
 		{"no match", "bar.T", "foo", "foo2", "bar.T"},
 		{"start of string", "foo.T", "foo", "x", "x.T"},
 	}
@@ -546,7 +552,7 @@ func Test_isBuiltin_tabular(t *testing.T) {
 	}
 }
 
-func Test_detectDitOrImp_tabular(t *testing.T) {
+func Test_detectDirOrImp_tabular(t *testing.T) {
 	wd := must.Value(os.Getwd())
 
 	tt := []struct {
@@ -611,6 +617,43 @@ func Test_detectDitOrImp_tabular(t *testing.T) {
 			// --- Then ---
 			assert.Equal(t, tc.wantDir, haveDir)
 			assert.Equal(t, tc.wantImp, haveImp)
+		})
+	}
+}
+
+func Test_nextImportAlias(t *testing.T) {
+	// --- Given ---
+	used := map[string]*gopkg{"pkg": {}, "pkg2": {}}
+
+	// --- When ---
+	have := nextImportAlias("pkg", used)
+
+	// --- Then ---
+	assert.Equal(t, "pkg3", have)
+}
+
+func Test_isIdentRune_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		r    rune
+		want bool
+	}{
+		{"underscore", '_', true},
+		{"letter", 'a', true},
+		{"digit", '7', true},
+		{"non-ASCII letter", 'ż', true},
+		{"dot", '.', false},
+		{"star", '*', false},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := isIdentRune(tc.r)
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
 		})
 	}
 }

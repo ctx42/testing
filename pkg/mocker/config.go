@@ -104,6 +104,12 @@ func newConfig(name string, opts ...Option) (Config, error) {
 		opt(&cfg)
 	}
 
+	// Check the options before running go list to resolve the packages.
+	if cfg.tgtOut != nil && cfg.tgtFilename != "" {
+		msg := "cannot use both WithTgtOutput and WithTgtFilename options"
+		return Config{}, errors.New(msg)
+	}
+
 	var srcWd string
 	srcWd, cfg.srcDirOrImp = detectDirOrImp(wd, cfg.srcDirOrImp)
 	cfg.srcPkg = newPkg(srcWd, cfg.srcDirOrImp)
@@ -128,12 +134,7 @@ func newConfig(name string, opts ...Option) (Config, error) {
 		return Config{}, fmt.Errorf("invalid tester alias: %q", alias)
 	}
 
-	if cfg.tgtOut != nil {
-		if cfg.tgtFilename != "" {
-			msg := "cannot use both WithTgtOutput and WithTgtFilename options"
-			return Config{}, errors.New(msg)
-		}
-	} else {
+	if cfg.tgtOut == nil {
 		if cfg.tgtFilename == "" {
 			var tmp string
 			if strings.HasSuffix(cfg.tgtName, "Mock") {
@@ -163,12 +164,12 @@ func (cfg Config) create() (Config, error) {
 		return cfg, fmt.Errorf(format, cfg.tgtFilename)
 	}
 	fName := cfg.tgtFilename
-	fMode := os.O_RDWR | os.O_CREATE | os.O_TRUNC
+	fMode := os.O_WRONLY | os.O_CREATE | os.O_TRUNC
 	// G304: output path comes from trusted mocker configuration.
-	file, err := os.OpenFile(fName, fMode, 0644) //nolint:gosec
+	out, err := os.OpenFile(fName, fMode, 0644) //nolint:gosec
 	if err != nil {
 		return cfg, err
 	}
-	cfg.tgtOut = file
+	cfg.tgtOut = out
 	return cfg, nil
 }

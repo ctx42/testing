@@ -155,7 +155,7 @@ func Test_gopkg_resolve_tabular(t *testing.T) {
 }
 
 func Test_gopkg_getPkgInfo(t *testing.T) {
-	t.Run("empty package from the v1 test module", func(t *testing.T) {
+	t.Run("empty v1 package", func(t *testing.T) {
 		// --- Given ---
 		mod := tstmod.New(t, "v1")
 		dir := filepath.Join(mod.Dir, "pkg/empty")
@@ -288,7 +288,7 @@ func Test_gopkg_getModInfo(t *testing.T) {
 		assert.ErrorContain(t, "no such file or directory", err)
 	})
 
-	t.Run("error - directory is not part of a go module", func(t *testing.T) {
+	t.Run("error - not in a module", func(t *testing.T) {
 		// --- Given ---
 		pkg := &gopkg{wd: t.TempDir()}
 
@@ -325,7 +325,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 		want *gopkg
 	}{
 		{
-			"wd is the current working directory without an import path",
+			"cwd without import path",
 			&gopkg{wd: wd},
 			&gopkg{
 				pkgName: "mocker",
@@ -338,7 +338,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			},
 		},
 		{
-			"wd is the root of the v1 test module without an import path",
+			"v1 module root without import path",
 			&gopkg{wd: mod1.Dir},
 			&gopkg{
 				pkgName: "project",
@@ -351,7 +351,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			},
 		},
 		{
-			"wd is a package in the v1 test module without an import path",
+			"v1 package without import path",
 			&gopkg{wd: filepath.Join(mod1.Dir, "pkg/mercury")},
 			&gopkg{
 				pkgName: "mercury",
@@ -364,8 +364,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			},
 		},
 		{
-			"wd is an empty directory in the v1 test module without " +
-				"an import path",
+			"v1 empty dir without import path",
 			&gopkg{wd: filepath.Join(mod1.Dir, "pkg/empty")},
 			&gopkg{
 				pkgName: "empty",
@@ -378,8 +377,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			},
 		},
 		{
-			"wd is an empty directory in the v1 test module with " +
-				"a matching import path",
+			"v1 empty dir with import path",
 			&gopkg{
 				wd:      filepath.Join(mod1.Dir, "pkg/empty"),
 				pkgPath: "github.com/ctx42/tst-project/pkg/empty",
@@ -395,8 +393,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			},
 		},
 		{
-			"wd is the root of the v1 test module with " +
-				"an import path for its empty package",
+			"v1 module root with empty package path",
 			&gopkg{
 				wd:      mod1.Dir,
 				pkgPath: "github.com/ctx42/tst-project/pkg/empty",
@@ -412,8 +409,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			},
 		},
 		{
-			"wd is the root of the v1 test module with " +
-				"an import path for the root of an external module",
+			"v1 module root with external module path",
 			&gopkg{
 				wd:      mod1.Dir,
 				pkgPath: "github.com/ctx42/tst-a",
@@ -429,8 +425,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			},
 		},
 		{
-			"wd is the root of the v2 test module with " +
-				"an import path for the root of an external module",
+			"v2 module root with external module path",
 			&gopkg{
 				wd:      mod2.Dir,
 				pkgPath: "github.com/ctx42/tst-a",
@@ -446,8 +441,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			},
 		},
 		{
-			"wd is the root of the v1 test module with " +
-				"an import path for a package of an external module",
+			"v1 module root with external package path",
 			&gopkg{
 				wd:      mod1.Dir,
 				pkgPath: "github.com/ctx42/tst-b/pkg/mocker/first",
@@ -463,8 +457,7 @@ func Test_gopkg_getModInfo_tabular(t *testing.T) {
 			},
 		},
 		{
-			"wd is the root of the v2 test module with " +
-				"an import path for a package of an external module",
+			"v2 module root with external package path",
 			&gopkg{
 				wd:      mod2.Dir,
 				pkgPath: "github.com/ctx42/tst-b/pkg/mocker/first",
@@ -703,7 +696,7 @@ func Test_gopkg_findItf(t *testing.T) {
 	})
 }
 
-func Test_gopkg_isValid(t *testing.T) {
+func Test_gopkg_isValid_tabular(t *testing.T) {
 	valild := func() *gopkg {
 		return &gopkg{
 			alias:   "",
@@ -949,6 +942,29 @@ func Test_modSubPath_tabular(t *testing.T) {
 			// --- Then ---
 			assert.Equal(t, tc.sub, have)
 			assert.Equal(t, tc.isIn, ok)
+		})
+	}
+}
+
+func Test_gopkg_ident_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		pkg  *gopkg
+		want string
+	}{
+		{"package name", &gopkg{pkgName: "name"}, "name"},
+		{"alias", &gopkg{pkgName: "name", alias: "nm"}, "nm"},
+		{"dot alias", &gopkg{pkgName: "name", alias: "."}, "name"},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := tc.pkg.ident()
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
 		})
 	}
 }

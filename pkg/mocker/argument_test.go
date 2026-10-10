@@ -81,101 +81,6 @@ func Test_argument_genName_tabular(t *testing.T) {
 	}
 }
 
-func Test_argument_genArg_tabular(t *testing.T) {
-	tt := []struct {
-		testN string
-
-		name  string
-		typ   string
-		index int
-		want  string
-	}{
-		{
-			"argument with a name",
-			"name",
-			"int",
-			0,
-			"name int",
-		},
-		{
-			"argument without a name",
-			"",
-			"int",
-			123,
-			"_a123 int",
-		},
-		{
-			"argument with underscore as a name",
-			"_",
-			"int",
-			2,
-			"_a2 int",
-		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
-			// --- Given ---
-			arg := argument{name: tc.name, typ: tc.typ}
-
-			// --- When ---
-			have := arg.genArg(tc.index)
-
-			// --- Then ---
-			assert.Equal(t, tc.want, have)
-		})
-	}
-}
-
-func Test_argument_getType_tabular(t *testing.T) {
-	tt := []struct {
-		testN string
-
-		name  string
-		typ   string
-		index int
-		want  string
-	}{
-		{
-			"argument with name",
-			"name",
-			"int",
-			0,
-			"int",
-		},
-		{
-			"argument without name",
-			"",
-			"int",
-			0,
-			"int",
-		},
-		{
-			"argument without name and non-zero index",
-			"",
-			"int",
-			123,
-			"int",
-		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
-			// --- Given ---
-			arg := argument{
-				name: tc.name,
-				typ:  tc.typ,
-			}
-
-			// --- When ---
-			have := arg.getType()
-
-			// --- Then ---
-			assert.Equal(t, tc.want, have)
-		})
-	}
-}
-
 func Test_argument_isVariadic_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
@@ -194,6 +99,34 @@ func Test_argument_isVariadic_tabular(t *testing.T) {
 
 			// --- When ---
 			have := arg.isVariadic()
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
+}
+
+func Test_isGenLocal_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		name string
+		want bool
+	}{
+		{"mock receiver", "_mck", true},
+		{"ok local", "_ok", true},
+		{"synthetic argument", "_a12", true},
+		{"return temp", "_r0", true},
+		{"short", "_a", false},
+		{"other letter", "_x1", false},
+		{"letters after prefix", "_ab", false},
+		{"user name", "name", false},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := isGenLocal(tc.name)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)

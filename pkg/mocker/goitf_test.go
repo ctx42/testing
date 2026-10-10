@@ -29,7 +29,7 @@ func Test_goitf_find(t *testing.T) {
 		assert.Equal(t, &method{name: "Method1"}, have)
 	})
 
-	t.Run("method not found", func(t *testing.T) {
+	t.Run("error - method not found", func(t *testing.T) {
 		// --- Given ---
 		itf := &goitf{
 			methods: []*method{

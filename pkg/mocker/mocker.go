@@ -292,7 +292,7 @@ func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 		if _, _, err := cfg.srcPkg.findType(v.Name); err == nil {
 			exp := expression{}
 			if cfg.srcPkg.pkgPath != cfg.tgtPkg.pkgPath {
-				exp.value = importIdent(cfg.srcPkg) + "." + v.Name
+				exp.value = cfg.srcPkg.ident() + "." + v.Name
 				exp.pks = append(exp.pks, cfg.srcPkg)
 			} else {
 				exp.value = v.Name
@@ -471,7 +471,8 @@ func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 
 // genConstructor generates code for the mock constructor.
 func (mck *Mocker) genConstructor(typeName, testerName string) string {
-	const format = "func New%[1]s(t %s.T) *%[1]s {\n" +
+	const format = "" +
+		"func New%[1]s(t %s.T) *%[1]s {\n" +
 		"\tt.Helper()\n" +
 		"\treturn &%[1]s{Mock: mock.NewMock(t), t: t}\n" +
 		"}"
@@ -494,7 +495,7 @@ func (mck *Mocker) parseArrayLen(cfg Config, e ast.Expr) (expression, error) {
 			format := "%w: unexported array length constant %s"
 			return expression{}, fmt.Errorf(format, ErrAstParse, v.Name)
 		}
-		name := importIdent(cfg.srcPkg) + "." + v.Name
+		name := cfg.srcPkg.ident() + "." + v.Name
 		exp := expression{value: "[" + name + "]"}
 		exp.pks = append(exp.pks, cfg.srcPkg)
 		return exp, nil
@@ -508,7 +509,7 @@ func (mck *Mocker) parseArrayLen(cfg Config, e ast.Expr) (expression, error) {
 		if err != nil {
 			return expression{}, err
 		}
-		name := importIdent(pkg) + "." + v.Sel.Name
+		name := pkg.ident() + "." + v.Sel.Name
 		exp := expression{value: "[" + name + "]"}
 		exp.pks = append(exp.pks, pkg)
 		return exp, nil
