@@ -24,15 +24,15 @@ func HexPtrDumper(dmp Dump, lvl int, val reflect.Value) string {
 	case reflect.Uint8:
 		str = fmt.Sprintf("0x%x", val.Uint())
 	case reflect.Uintptr:
-		if !dmp.PtrAddr {
-			return ValAddr
+		str = ValAddr
+		if dmp.PtrAddr {
+			str = fmt.Sprintf("<0x%x>", val.Uint())
 		}
-		str = fmt.Sprintf("<0x%x>", val.Uint())
 	case reflect.UnsafePointer:
-		if !dmp.PtrAddr {
-			return ValAddr
+		str = ValAddr
+		if dmp.PtrAddr {
+			str = fmt.Sprintf("<0x%x>", val.Pointer())
 		}
-		str = fmt.Sprintf("<0x%x>", val.Pointer())
 	default:
 		str = ValErrUsage
 	}

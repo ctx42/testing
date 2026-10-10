@@ -22,8 +22,7 @@ func ChanDumper(dmp Dump, lvl int, val reflect.Value) string {
 	case reflect.Chan:
 		ptrAddr := ValAddr
 		if dmp.PtrAddr {
-			ptr := reflect.ValueOf(val.Pointer())
-			ptrAddr = HexPtrDumper(dmp, lvl, ptr)
+			ptrAddr = fmt.Sprintf("<0x%x>", val.Pointer())
 		}
 		str = fmt.Sprintf("(%s)(%s)", val.Type(), ptrAddr)
 	default:

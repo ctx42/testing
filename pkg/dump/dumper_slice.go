@@ -14,10 +14,11 @@ import (
 func SliceDumper(dmp Dump, lvl int, val reflect.Value) string {
 	if val.Kind() != reflect.Slice {
 		prn := NewPrinter(dmp)
-		return prn.Write(ValErrUsage).String()
+		return prn.Tab(dmp.Indent + lvl).Write(ValErrUsage).String()
 	}
 	if val.IsNil() {
-		return ValNil
+		prn := NewPrinter(dmp)
+		return prn.Tab(dmp.Indent + lvl).Write(ValNil).String()
 	}
 	return ArrayDumper(dmp, lvl, val)
 }

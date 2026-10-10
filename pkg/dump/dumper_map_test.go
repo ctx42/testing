@@ -5,6 +5,7 @@ package dump
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
@@ -13,6 +14,56 @@ import (
 )
 
 func Test_MapDumper(t *testing.T) {
+	t.Run("interface keys are sorted", func(t *testing.T) {
+		// --- Given ---
+		val := map[any]int{"b": 2, "a": 1, 3: 3}
+
+		// --- When ---
+		have := MapDumper(New(), 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		want := "" +
+			"map[any]int{\n" +
+			"  3: 3,\n" +
+			"  \"a\": 1,\n" +
+			"  \"b\": 2,\n" +
+			"}"
+		affirm.Equal(t, want, have)
+	})
+
+	t.Run("values do not print their type", func(t *testing.T) {
+		// --- Given ---
+		val := map[string][]int{"a": {1}, "b": {2}}
+
+		// --- When ---
+		have := MapDumper(New(), 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		want := "" +
+			"map[string][]int{\n" +
+			"  \"a\": {\n" +
+			"    1,\n" +
+			"  },\n" +
+			"  \"b\": {\n" +
+			"    2,\n" +
+			"  },\n" +
+			"}"
+		affirm.Equal(t, want, have)
+	})
+
+	t.Run("value leading spaces are kept", func(t *testing.T) {
+		// --- Given ---
+		long := strings.Repeat("y", 210)
+		val := map[string]string{"k": "  x\n" + long}
+
+		// --- When ---
+		have := MapDumper(New(), 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		want := "map[string]string{\n  \"k\":   x\n" + long + ",\n}"
+		affirm.Equal(t, want, have)
+	})
+
 	t.Run("error - invalid type", func(t *testing.T) {
 		// --- Given ---
 		dmp := New(WithIndent(1))

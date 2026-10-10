@@ -31,7 +31,7 @@ func Test_SliceDumper(t *testing.T) {
 		have := SliceDumper(dmp, 2, reflect.ValueOf(123))
 
 		// --- Then ---
-		affirm.Equal(t, ValErrUsage, have)
+		affirm.Equal(t, "      "+ValErrUsage, have)
 	})
 }
 

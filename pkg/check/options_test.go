@@ -338,7 +338,7 @@ func Test_WithOptions(t *testing.T) {
 	affirm.Equal(t, true, reflect.DeepEqual(ops, have))
 
 	// When those fail, add fields above.
-	affirm.Equal(t, 15, reflect.ValueOf(have.Dumper).NumField())
+	affirm.Equal(t, 16, reflect.ValueOf(have.Dumper).NumField())
 	affirm.Equal(t, 16, reflect.ValueOf(have).NumField())
 }
 

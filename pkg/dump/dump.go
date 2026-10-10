@@ -126,8 +126,6 @@ var (
 	typError    = reflect.TypeFor[error]()
 )
 
-var nilVal = reflect.ValueOf(nil)
-
 // Dumper is the signature for custom value renderers.
 //
 // Receives the active [Dump] (for recursive calls), current nesting
@@ -283,6 +281,10 @@ type Dump struct {
 	// internal: mirrors FlatStrings for nested string fields inside structs
 	// when we want them forced flat.
 	flatStrings bool
+
+	// hops counts consecutive pointer and interface dereferences, which do
+	// not increase the nesting level, to stop on reference cycles.
+	hops int
 }
 
 // New creates a new [Dump] with sensible defaults, applies the provided
@@ -348,7 +350,7 @@ func (dmp Dump) DiffValue(wVal, hVal reflect.Value) (string, string, string) {
 		return wStr, hStr, ""
 	}
 
-	if wStr == ValNil || hStr == ValNil {
+	if strings.TrimSpace(wStr) == ValNil || strings.TrimSpace(hStr) == ValNil {
 		return wStr, hStr, ""
 	}
 
@@ -414,6 +416,14 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 	var str string // One or more lines representing passed value.
 
 	knd := val.Kind()
+	if knd == reflect.Pointer || knd == reflect.Interface {
+		// Dereferences keep the level; count them to stop on cycles.
+		if dmp.hops++; dmp.hops > dmp.MaxDepth {
+			return ValMaxNesting, reflect.Invalid
+		}
+	} else {
+		dmp.hops = 0
+	}
 	if knd != reflect.Invalid {
 		if fn, ok := dmp.Dumpers[val.Type()]; ok {
 			return fn(dmp, lvl, val), knd
@@ -425,10 +435,10 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 		// Special case for type: error.
 		if typ == typError || typ.String() == "*errors.errorString" {
 			str = ValNil
-			if !val.IsNil() {
+			if !val.IsNil() && !isNilPointerElem(val) {
 				if val.CanInterface() {
-					err := val.Interface().(error) // nolint: forcetypeassert
-					str = fmt.Sprintf("%q", err.Error())
+					// The %q verb recovers from a panicking Error method.
+					str = fmt.Sprintf("%q", val.Interface())
 				} else {
 					str = ValCannotPrint
 				}
@@ -440,10 +450,8 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 
 	switch knd {
 	case reflect.Invalid:
-		str = ValInvalid
-		if nilVal == val { // nolint: govet
-			str = ValNil
-		}
+		// Every invalid value is the zero Value: a nil interface or pointee.
+		str = NewPrinter(dmp).Tab(dmp.Indent + lvl).Write(ValNil).String()
 
 	case reflect.Bool, reflect.Int:
 		str = SimpleDumper(dmp, lvl, val)
@@ -486,7 +494,7 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 
 	case reflect.Pointer:
 		if val.IsNil() {
-			str = ValNil
+			str = NewPrinter(dmp).Tab(dmp.Indent + lvl).Write(ValNil).String()
 		} else {
 			str, knd = dmp.value(lvl, val.Elem())
 		}
@@ -505,4 +513,13 @@ func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 	}
 
 	return str, knd
+}
+
+// isNilPointerElem reports whether val is an interface holding a nil pointer.
+func isNilPointerElem(val reflect.Value) bool {
+	if val.Kind() != reflect.Interface {
+		return false
+	}
+	elem := val.Elem()
+	return elem.Kind() == reflect.Pointer && elem.IsNil()
 }

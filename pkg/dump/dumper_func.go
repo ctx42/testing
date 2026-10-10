@@ -22,8 +22,7 @@ func FuncDumper(dmp Dump, lvl int, val reflect.Value) string {
 	case reflect.Func:
 		ptrAddr := ValAddr
 		if dmp.PtrAddr {
-			ptr := reflect.ValueOf(val.Pointer())
-			ptrAddr = HexPtrDumper(dmp, lvl, ptr)
+			ptrAddr = fmt.Sprintf("<0x%x>", val.Pointer())
 		}
 		str = fmt.Sprintf("%s(%s)", ValFunc, ptrAddr)
 	default:

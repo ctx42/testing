@@ -417,6 +417,89 @@ func Test_Dump_Value_tabular(t *testing.T) {
 }
 
 func Test_Dump_Any(t *testing.T) {
+	t.Run("empty nested collections", func(t *testing.T) {
+		// --- Given ---
+		val := struct {
+			A []int
+			B struct{}
+		}{A: []int{}}
+
+		// --- When ---
+		have := New().Any(val)
+
+		// --- Then ---
+		affirm.Equal(t, "{\n  A: []int{},\n  B: {},\n}", have)
+	})
+
+	t.Run("flat with skipped last private field", func(t *testing.T) {
+		// --- Given ---
+		val := struct {
+			A int
+			b int
+		}{1, 2}
+
+		// --- When ---
+		have := New(WithFlat, WithNoPrivate).Any(val)
+
+		// --- Then ---
+		affirm.Equal(t, "{A: 1}", have)
+	})
+
+	t.Run("pointer address of nested chan", func(t *testing.T) {
+		// --- Given ---
+		val := []chan int{make(chan int)}
+
+		// --- When ---
+		have := New(WithPtrAddr).Any(val)
+
+		// --- Then ---
+		want := fmt.Sprintf("<0x%x>", reflect.ValueOf(val[0]).Pointer())
+		affirm.Equal(t, "[]chan int{\n  (chan int)("+want+"),\n}", have)
+	})
+
+	t.Run("nil slice element is indented", func(t *testing.T) {
+		// --- When ---
+		have := New().Any([]any{1, nil})
+
+		// --- Then ---
+		affirm.Equal(t, "[]any{\n  1,\n  nil,\n}", have)
+	})
+
+	t.Run("map type keeps spaces", func(t *testing.T) {
+		// --- Given ---
+		val := map[string]chan int{"a": nil}
+
+		// --- When ---
+		have := New().Any(val)
+
+		// --- Then ---
+		want := "map[string]chan int{\n  \"a\": (chan int)(<addr>),\n}"
+		affirm.Equal(t, want, have)
+	})
+
+	t.Run("pointer cycle", func(t *testing.T) {
+		// --- Given ---
+		var val any
+		val = &val
+
+		// --- When ---
+		have := New(WithMaxDepth(3)).Any(val)
+
+		// --- Then ---
+		affirm.Equal(t, ValMaxNesting, have)
+	})
+
+	t.Run("typed nil in error field", func(t *testing.T) {
+		// --- Given ---
+		val := struct{ E error }{E: (*testcases.TPtr)(nil)}
+
+		// --- When ---
+		have := New().Any(val)
+
+		// --- Then ---
+		affirm.Equal(t, "{\n  E: nil,\n}", have)
+	})
+
 	t.Run("nil interface value", func(t *testing.T) {
 		// --- Given ---
 		var itfNil testcases.TItf

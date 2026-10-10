@@ -5,7 +5,6 @@ package dump
 
 import (
 	"reflect"
-	"strings"
 )
 
 // ArrayDumper is a generic dumper for arrays. It expects val to represent one
@@ -26,11 +25,7 @@ func ArrayDumper(dmp Dump, lvl int, val reflect.Value) string {
 	}
 
 	if dmp.PrintType {
-		valTypStr := val.Type().String()
-		if dmp.UseAny {
-			valTypStr = strings.Replace(valTypStr, "interface {}", "any", 1)
-		}
-		prn.Write(valTypStr)
+		prn.Write(typeName(dmp, val.Type()))
 	}
 
 	num := val.Len()
@@ -44,7 +39,10 @@ func ArrayDumper(dmp Dump, lvl int, val reflect.Value) string {
 		prn.Write(sub)
 		prn.Comma(last).Sep(last).NL()
 	}
-	prn.Tab(dmp.Indent + lvl).Write("}")
+	if num > 0 {
+		prn.Tab(dmp.Indent + lvl)
+	}
+	prn.Write("}")
 
 	return prn.String()
 }

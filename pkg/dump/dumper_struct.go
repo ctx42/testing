@@ -26,6 +26,7 @@ func StructDumper(dmp Dump, lvl int, val reflect.Value) string {
 
 	num := val.NumField() // Total number of fields.
 	lastPrivate := false
+	var shown int // Number of fields printed.
 	prn.Write("{").NLI(num)
 
 	for i := range num {
@@ -39,6 +40,7 @@ func StructDumper(dmp Dump, lvl int, val reflect.Value) string {
 		}
 
 		// Field name.
+		shown++
 		prn.Tab(dmp.Indent + lvl + 1)
 		prn.Write(fld.Name)
 		prn.Write(":").Space()
@@ -46,16 +48,19 @@ func StructDumper(dmp Dump, lvl int, val reflect.Value) string {
 		// Field value.
 		dmp.PrintType = true
 		sub, _ := dmp.value(lvl+1, val.Field(i))
-		sub = strings.TrimLeft(sub, " \t")
+		sub = trimIndent(dmp, lvl+1, sub)
 
 		prn.Write(sub)
 		prn.Comma(last).Sep(last).NL()
 	}
 
 	if lastPrivate && dmp.Flat {
-		return strings.TrimRight(prn.String(), ",") + "}"
+		return strings.TrimRight(prn.String(), ", ") + "}"
 	}
-	prn.Tab(dmp.Indent + lvl).Write("}")
+	if shown > 0 {
+		prn.Tab(dmp.Indent + lvl)
+	}
+	prn.Write("}")
 
 	return prn.String()
 }
