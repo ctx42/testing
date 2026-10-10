@@ -10,10 +10,12 @@ import (
 )
 
 // ChannelWillClose checks that the channel will be closed within the given
-// duration.
-// See assert.ChannelWillClose.
+// duration. Values received before the channel closes are discarded, and a
+// nil channel is reported as closed.
 //
 // "within" may be a string, int, int64, or [time.Duration].
+//
+// See assert.ChannelWillClose.
 func ChannelWillClose[C any](within any, c <-chan C, opts ...any) error {
 	if c == nil {
 		return nil
