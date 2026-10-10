@@ -30,7 +30,7 @@ func Test_Equal(t *testing.T) {
 
 	t.Run("error - not equal", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy()
+		tspy := core.NewSpy().Capture()
 
 		// --- When ---
 		have := Equal(tspy, 42, 44)
@@ -41,6 +41,38 @@ func Test_Equal(t *testing.T) {
 		}
 		if !tspy.ReportedError {
 			t.Error("expected reported error")
+		}
+		if !tspy.HelperCalled {
+			t.Error("expected Helper to be called")
+		}
+		want := "" +
+			"expected values to be equal:\n" +
+			"  want: (int) 42\n" +
+			"  have: (int) 44\n"
+		if want != tspy.Log() {
+			t.Errorf(expMsg, want, tspy.Log())
+		}
+	})
+
+	t.Run("error - uncomparable", func(t *testing.T) {
+		// --- Given ---
+		tspy := core.NewSpy().Capture()
+		want := []int{1}
+		val := []int{1}
+
+		// --- When ---
+		have := Equal[any](tspy, want, val)
+
+		// --- Then ---
+		if have || !tspy.Failed() {
+			t.Error("expected failed test")
+		}
+		wMsg := "" +
+			"expected comparable values:\n" +
+			"  want: ([]int) []int{1}\n" +
+			"  have: ([]int) []int{1}\n"
+		if wMsg != tspy.Log() {
+			t.Errorf(expMsg, wMsg, tspy.Log())
 		}
 	})
 }
@@ -78,6 +110,29 @@ func Test_DeepEqual(t *testing.T) {
 			t.Error("expected reported error")
 		}
 	})
+
+	t.Run("error - different types", func(t *testing.T) {
+		// --- Given ---
+		tspy := core.NewSpy().Capture()
+
+		// --- When ---
+		have := DeepEqual(tspy, int64(1), 1)
+
+		// --- Then ---
+		if have || !tspy.Failed() {
+			t.Error("expected failed test")
+		}
+		if !tspy.HelperCalled {
+			t.Error("expected Helper to be called")
+		}
+		want := "" +
+			"expected values to be equal:\n" +
+			"  want: (int64) 1\n" +
+			"  have: (int) 1\n"
+		if want != tspy.Log() {
+			t.Errorf(expMsg, want, tspy.Log())
+		}
+	})
 }
 
 func Test_Nil(t *testing.T) {
@@ -96,10 +151,10 @@ func Test_Nil(t *testing.T) {
 
 	t.Run("error - not nil", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy()
+		tspy := core.NewSpy().Capture()
 
 		// --- When ---
-		have := Nil(tspy, errors.New("m0"))
+		have := Nil(tspy, 1)
 
 		// --- Then ---
 		if have || !tspy.Failed() {
@@ -107,6 +162,13 @@ func Test_Nil(t *testing.T) {
 		}
 		if !tspy.ReportedError {
 			t.Error("expected reported error")
+		}
+		if !tspy.HelperCalled {
+			t.Error("expected Helper to be called")
+		}
+		want := "expected nil value:\n  have: (int) 1\n"
+		if want != tspy.Log() {
+			t.Errorf(expMsg, want, tspy.Log())
 		}
 	})
 }
@@ -151,6 +213,24 @@ func Test_NotNil(t *testing.T) {
 		want := "expected non-nil value:\n  have: nil\n"
 		if tspy.Messages.String() != want {
 			t.Errorf("want log %q, have %q", want, tspy.Messages.String())
+		}
+	})
+
+	t.Run("error - typed nil", func(t *testing.T) {
+		// --- Given ---
+		tspy := core.NewSpy().Capture()
+		var ptr *int
+
+		// --- When ---
+		pan, _ := core.WillPanic(func() { _ = NotNil(tspy, ptr) })
+
+		// --- Then ---
+		if pan != core.FailNowMsg {
+			t.Errorf("want panic %q, have %#v", core.FailNowMsg, pan)
+		}
+		want := "expected non-nil value:\n  type: *int\n  have: nil\n"
+		if tspy.Log() != want {
+			t.Errorf(expMsg, want, tspy.Log())
 		}
 	})
 }
@@ -226,7 +306,7 @@ func Test_Panic(t *testing.T) {
 		tspy := core.NewSpy().Capture()
 
 		// --- When ---
-		val, _ := core.WillPanic(func() { Panic(tspy, func() {}) })
+		val, _ := core.WillPanic(func() { _ = Panic(tspy, func() {}) })
 
 		// --- Then ---
 		if val != core.FailNowMsg {
@@ -235,17 +315,17 @@ func Test_Panic(t *testing.T) {
 		if !tspy.TriggeredFailure {
 			t.Error("expected fatal failure")
 		}
-		if want, have := "expected fn to panic\n", tspy.Log(); want != have {
-			t.Errorf(expMsg, want, have)
+		if tspy.Log() != "expected fn to panic\n" {
+			t.Errorf(expMsg, "expected fn to panic\n", tspy.Log())
 		}
 	})
 
 	t.Run("error - nil function", func(t *testing.T) {
 		// --- Given ---
-		tspy := core.NewSpy()
+		tspy := core.NewSpy().Capture()
 
 		// --- When ---
-		val, _ := core.WillPanic(func() { Panic(tspy, nil) })
+		val, _ := core.WillPanic(func() { _ = Panic(tspy, nil) })
 
 		// --- Then ---
 		if val != core.FailNowMsg {
@@ -254,77 +334,8 @@ func Test_Panic(t *testing.T) {
 		if !tspy.TriggeredFailure {
 			t.Error("expected fatal failure")
 		}
+		if tspy.Log() != "expected non-nil fn\n" {
+			t.Errorf(expMsg, "expected non-nil fn\n", tspy.Log())
+		}
 	})
-}
-
-func Test_Equal_uncomparable(t *testing.T) {
-	// --- Given ---
-	tspy := core.NewSpy().Capture()
-
-	// --- When ---
-	have := Equal[any](tspy, []int{1}, []int{1})
-
-	// --- Then ---
-	if have {
-		t.Error("expected false")
-	}
-	want := "" +
-		"expected comparable values:\n" +
-		"  want: ([]int) []int{1}\n" +
-		"  have: ([]int) []int{1}\n"
-	if want != tspy.Log() {
-		t.Errorf(expMsg, want, tspy.Log())
-	}
-}
-
-func Test_messages_tabular(t *testing.T) {
-	tt := []struct {
-		testN string
-
-		fn   func(t core.T) bool
-		want string
-	}{
-		{
-			"Equal",
-			func(t core.T) bool { return Equal(t, int64(1), int64(2)) },
-			"" +
-				"expected values to be equal:\n" +
-				"  want: (int64) 1\n" +
-				"  have: (int64) 2\n",
-		},
-		{
-			"DeepEqual",
-			func(t core.T) bool { return DeepEqual(t, int64(1), 1) },
-			"" +
-				"expected values to be equal:\n" +
-				"  want: (int64) 1\n" +
-				"  have: (int) 1\n",
-		},
-		{
-			"Nil",
-			func(t core.T) bool { return Nil(t, 1) },
-			"expected nil value:\n  have: (int) 1\n",
-		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
-			// --- Given ---
-			tspy := core.NewSpy().Capture()
-
-			// --- When ---
-			have := tc.fn(tspy)
-
-			// --- Then ---
-			if have {
-				t.Error("expected false")
-			}
-			if !tspy.HelperCalled {
-				t.Error("expected Helper to be called")
-			}
-			if tc.want != tspy.Log() {
-				t.Errorf(expMsg, tc.want, tspy.Log())
-			}
-		})
-	}
 }

@@ -4,6 +4,10 @@
 // Package affirm is an internal package that provides simple affirmation
 // functions designed to improve readability and minimize boilerplate code in
 // test cases by offering concise, semantically meaningful functions.
+//
+// An affirmation returns true when it holds. Otherwise, it marks the test as
+// failed, writes a message to the test log, and returns false; [NotNil] and
+// [Panic] stop the test instead.
 package affirm
 
 import (
@@ -13,17 +17,15 @@ import (
 	"github.com/ctx42/testing/internal/core"
 )
 
-// expected defines the log message for failed affirmations.
+// expected is the log message of a failed equality affirmation.
 const expected = "" +
 	"expected values to be equal:\n" +
 	"  want: (%[1]T) %#[1]v\n" +
 	"  have: (%[2]T) %#[2]v"
 
-// Equal affirms two comparable values are equal using ==. Returns true if they
-// are, otherwise marks the test as failed, writes an error message to the test
-// log, and returns false. For interface type parameters, values whose dynamic
-// type is not comparable fail instead of panicking. As with ==, 0.0 equals
-// -0.0 and NaN never equals itself.
+// Equal affirms two comparable values are equal using ==. For interface type
+// parameters, values whose dynamic type is not comparable fail instead of
+// panicking. As with ==, 0.0 equals -0.0 and NaN never equals itself.
 func Equal[T comparable](t core.T, want, have T) bool {
 	t.Helper()
 	if !isComparable(want) || !isComparable(have) {
@@ -41,16 +43,9 @@ func Equal[T comparable](t core.T, want, have T) bool {
 	return true
 }
 
-// isComparable reports whether the dynamic value of v can be compared with ==.
-func isComparable(v any) bool {
-	val := reflect.ValueOf(v)
-	return !val.IsValid() || val.Comparable()
-}
-
 // DeepEqual affirms "want" and "have" are equal using [reflect.DeepEqual].
-// Returns true if it is, otherwise marks the test as failed, writes an error
-// message to the test log, and returns false. Pointers are compared by the
-// values they point to, not by identity; use [Equal] or [core.Same] for that.
+// Pointers are compared by the values they point to, not by identity; use
+// [Equal] or [core.Same] for that.
 func DeepEqual(t core.T, want, have any) bool {
 	t.Helper()
 	if !reflect.DeepEqual(want, have) {
@@ -61,23 +56,24 @@ func DeepEqual(t core.T, want, have any) bool {
 }
 
 // Nil affirms "have" is nil, including a nil pointer, slice, map, channel or
-// function stored in the interface (see [core.IsNil]). Returns true if it is,
-// otherwise marks the test as failed, writes an error message to the test log,
-// and returns false.
+// function stored in the interface (see [core.IsNil]).
 func Nil(t core.T, have any) bool {
 	t.Helper()
-	if is := core.IsNil(have); is {
+	if core.IsNil(have) {
 		return true
 	}
-	t.Errorf("expected nil value:\n  have: (%[1]T) %#[1]v", have)
+	const format = "" +
+		"expected nil value:\n" +
+		"  have: (%[1]T) %#[1]v"
+	t.Errorf(format, have)
 	return false
 }
 
-// NotNil affirms "have" is not nil (see [core.IsNil]). Returns true if it is
-// not, otherwise fails the test with Fatalf.
+// NotNil affirms "have" is not nil (see [core.IsNil]). When it is nil, it
+// fails the test with Fatalf.
 func NotNil(t core.T, have any) bool {
 	t.Helper()
-	if is := core.IsNil(have); !is {
+	if !core.IsNil(have) {
 		return true
 	}
 	var typ string
