@@ -11,7 +11,7 @@ import (
 // Matcher is used for custom argument matching in expectations.
 //
 // Users normally obtain instances via [MatchBy], [MatchOfType], [MatchError],
-// etc. rather than calling NewMatcher directly.
+// etc. rather than calling [NewMatcher] directly.
 type Matcher struct {
 	fn   reflect.Value // Matcher function.
 	desc string        // Matcher description.

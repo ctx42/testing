@@ -15,9 +15,10 @@ import (
 
 // Arguments holds a slice of method arguments or return values.
 //
-// It provides typed accessors (Get, String, Int, ...) that panic with rich
-// [notice.Notice] diagnostics on misuse, and Diff for detailed mismatch
-// reporting used by the expectation engine.
+// It provides typed accessors ([Arguments.Get], [Arguments.String],
+// [Arguments.Int], ...) that panic with rich [notice.Notice] diagnostics on
+// misuse, and [Arguments.Diff] for detailed mismatch reporting used by the
+// expectation engine.
 type Arguments []any
 
 // Get returns the value at the given index. It panics with a descriptive
@@ -32,7 +33,7 @@ func (args Arguments) Get(idx int) any {
 }
 
 // Equal reports whether the provided values match the arguments using
-// reflect.DeepEqual. It panics (with a [notice.Notice]) when the lengths
+// [reflect.DeepEqual]. It panics (with a [notice.Notice]) when the lengths
 // differ.
 func (args Arguments) Equal(haves ...any) bool {
 	al := len(args)

@@ -176,13 +176,15 @@ func (call *Call) Times(i int) *Call {
 
 // Until makes the mocked method block until the channel is closed or
 // receives a value. Useful for testing timeouts, cancellation, or ordering.
+// When set, it takes precedence over [Call.After].
 func (call *Call) Until(ch <-chan time.Time) *Call {
 	call.until = ch
 	return call
 }
 
 // After makes the mocked method sleep for the given duration before
-// returning (simpler fixed-delay alternative to [Call.Until]).
+// returning (simpler fixed-delay alternative to [Call.Until]). It is ignored
+// when [Call.Until] is set.
 func (call *Call) After(d time.Duration) *Call {
 	call.after = d
 	return call
@@ -197,7 +199,7 @@ func (call *Call) Alter(fn ...func(Arguments)) *Call {
 }
 
 // Optional marks the expectation as optional: zero or more calls are
-// acceptable and will not cause AssertExpectations to fail. Mutually
+// acceptable and will not cause [Mock.AssertExpectations] to fail. Mutually
 // exclusive with [Call.Times] / [Call.Once].
 func (call *Call) Optional() *Call {
 	if call.wantCalls > 0 {

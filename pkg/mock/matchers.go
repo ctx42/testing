@@ -22,13 +22,13 @@ var AnyInt = MatchOfType("int")
 // AnyBool matches any argument whose dynamic type is bool.
 var AnyBool = MatchOfType("bool")
 
-// AnyCtx matches any non-nil context.Context.
+// AnyCtx matches any non-nil [context.Context].
 var AnyCtx = MatchBy(func(ctx context.Context) bool {
 	return ctx != nil
 })
 
 // MatchSame returns a matcher that reports whether the argument is the same
-// pointer as want (using the same rules as [check.Same]).
+// pointer as want (using the same rules as check.Same).
 func MatchSame(want any) *Matcher {
 	return MatchBy(func(have any) bool { return core.Same(want, have) })
 }
@@ -37,9 +37,9 @@ func MatchSame(want any) *Matcher {
 // must have the signature func(T) bool for some type T; any other shape
 // causes a panic at construction time.
 //
-// MatchBy is the foundation for all custom matchers and for the predefined
-// ones (MatchOfType, MatchError, Any*, ...). The function runs while the mock
-// is locked, so it must not call the mock.
+// MatchBy is the foundation for all custom matchers and for the predefined ones
+// ([MatchOfType], [MatchError], Any*, ...). The function runs while the mock is
+// locked, so it must not call the mock.
 //
 // Example:
 //
