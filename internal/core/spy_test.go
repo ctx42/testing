@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// sameLogMsg test log message shown when messages arte not the same.
+// sameLogMsg is the test log message shown when messages are not the same.
 const sameLogMsg = "expected log to be the same:\n  want: %q\n  have: %q"
 
 func Test_NewSpy(t *testing.T) {
@@ -78,9 +78,9 @@ func Test_Spy_Error(t *testing.T) {
 	t.Run("with capture", func(t *testing.T) {
 		// --- Given ---
 		tspy := NewSpy().Capture()
+		tspy.Error("a", 1, 1.1)
 
 		// --- When ---
-		tspy.Error("a", 1, 1.1)
 		tspy.Error("b", 2, 2.2)
 
 		// --- Then ---
@@ -112,9 +112,9 @@ func Test_Spy_Errorf(t *testing.T) {
 	t.Run("with capture", func(t *testing.T) {
 		// --- Given ---
 		tspy := NewSpy().Capture()
+		tspy.Errorf("a%s", "bc")
 
 		// --- When ---
-		tspy.Errorf("a%s", "bc")
 		tspy.Errorf("x%s", "yz")
 
 		// --- Then ---
@@ -147,15 +147,15 @@ func Test_Spy_Fatal(t *testing.T) {
 		tspy := NewSpy()
 
 		// --- When ---
-		var pan any
+		var have any
 		func() {
-			defer func() { pan = recover() }()
+			defer func() { have = recover() }()
 			tspy.Fatal("a", 1, 1.1)
 		}()
 
 		// --- Then ---
-		if pan != FailNowMsg {
-			t.Errorf("want panic %q, have %#v", FailNowMsg, pan)
+		if have != FailNowMsg {
+			t.Errorf("want panic %q, have %#v", FailNowMsg, have)
 		}
 		if tspy.ReportedError {
 			t.Errorf("expected Spy.ReportedError to be false")
@@ -168,16 +168,10 @@ func Test_Spy_Fatal(t *testing.T) {
 	t.Run("with capture", func(t *testing.T) {
 		// --- Given ---
 		tspy := NewSpy().Capture()
+		_, _ = WillPanic(func() { tspy.Fatal("a", 1, 1.1) })
 
 		// --- When ---
-		func() {
-			defer func() { _ = recover() }()
-			tspy.Fatal("a", 1, 1.1)
-		}()
-		func() {
-			defer func() { _ = recover() }()
-			tspy.Fatal("b", 2, 2.2)
-		}()
+		_, _ = WillPanic(func() { tspy.Fatal("b", 2, 2.2) })
 
 		// --- Then ---
 		have := tspy.Messages.String()
@@ -194,15 +188,15 @@ func Test_Spy_Fatalf(t *testing.T) {
 		tspy := NewSpy()
 
 		// --- When ---
-		var pan any
+		var have any
 		func() {
-			defer func() { pan = recover() }()
+			defer func() { have = recover() }()
 			tspy.Fatalf("a%s", "bc")
 		}()
 
 		// --- Then ---
-		if pan != FailNowMsg {
-			t.Errorf("want panic %q, have %#v", FailNowMsg, pan)
+		if have != FailNowMsg {
+			t.Errorf("want panic %q, have %#v", FailNowMsg, have)
 		}
 		if tspy.ReportedError {
 			t.Errorf("expected Spy.ReportedError to be false")
@@ -215,16 +209,10 @@ func Test_Spy_Fatalf(t *testing.T) {
 	t.Run("with capture", func(t *testing.T) {
 		// --- Given ---
 		tspy := NewSpy().Capture()
+		_, _ = WillPanic(func() { tspy.Fatalf("a%s", "bc") })
 
 		// --- When ---
-		func() {
-			defer func() { _ = recover() }()
-			tspy.Fatalf("a%s", "bc")
-		}()
-		func() {
-			defer func() { _ = recover() }()
-			tspy.Fatalf("x%s", "yz")
-		}()
+		_, _ = WillPanic(func() { tspy.Fatalf("x%s", "yz") })
 
 		// --- Then ---
 		have := tspy.Messages.String()
@@ -306,7 +294,7 @@ func Test_Spy_Log(t *testing.T) {
 		}
 	})
 
-	t.Run("panic when log capture is not turned on", func(t *testing.T) {
+	t.Run("error - log capture not turned on", func(t *testing.T) {
 		// --- Given ---
 		tspy := NewSpy()
 		tspy.Errorf("a%s", "bc")

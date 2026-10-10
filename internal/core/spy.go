@@ -33,22 +33,23 @@ var _ T = (*Spy)(nil)
 //
 // Spy is not safe for concurrent use.
 type Spy struct {
-	HelperCalled     bool          // Tracks if Helper was called.
-	ReportedError    bool          // Tracks if Error or Errorf was called.
-	TriggeredFailure bool          // Tracks if Fatal or Fatalf was called.
+	HelperCalled     bool          // Tracks if [Spy.Helper] was called.
+	ReportedError    bool          // Tracks if [Spy.Error] or [Spy.Errorf] ran.
+	TriggeredFailure bool          // Tracks if [Spy.Fatal] or [Spy.Fatalf] ran.
 	Messages         *bytes.Buffer // Log messages if set.
 }
 
 // FailNowMsg is the panic message used by [Spy.Fatal] and [Spy.Fatalf] so
-// helpers stop after a fatal path, matching tester.Spy. Real [testing.TB]
-// uses runtime.Goexit rather than this string.
+// helpers stop after a fatal path, matching
+// [github.com/ctx42/testing/pkg/tester.Spy]. Real [testing.TB] uses
+// [runtime.Goexit] rather than this string.
 const FailNowMsg = "FailNow was called directly"
 
-// NewSpy returns a new instance of [Spy].
+// NewSpy returns a [Spy] with message capture off; see [Spy.Capture].
 func NewSpy() *Spy { return &Spy{} }
 
-// Capture turns on the collection of messages when Error, Errorf, Fatal, and
-// Fatalf are called.
+// Capture turns on the collection of messages when [Spy.Error],
+// [Spy.Errorf], [Spy.Fatal], and [Spy.Fatalf] are called.
 func (spy *Spy) Capture() *Spy {
 	spy.Messages = &bytes.Buffer{}
 	return spy
@@ -58,8 +59,8 @@ func (spy *Spy) Capture() *Spy {
 func (spy *Spy) Helper() { spy.HelperCalled = true }
 
 // Error records a non-fatal error with the provided arguments, appending them
-// as a space-separated message to Messages, followed by a newline. It sets
-// [Spy.ReportedError] to true.
+// as a space-separated message to [Spy.Messages], followed by a newline. It
+// sets [Spy.ReportedError] to true.
 func (spy *Spy) Error(args ...any) {
 	spy.ReportedError = true
 	if spy.Messages != nil {
@@ -68,8 +69,8 @@ func (spy *Spy) Error(args ...any) {
 }
 
 // Errorf records a non-fatal error using the provided format string and
-// arguments, appending the formatted message to Messages, followed by a
-// newline unless it already ends with one. It sets [Spy.ReportedError] to
+// arguments, appending the formatted message to [Spy.Messages], followed by
+// a newline unless it already ends with one. It sets [Spy.ReportedError] to
 // true.
 func (spy *Spy) Errorf(format string, args ...any) {
 	spy.ReportedError = true
@@ -77,9 +78,9 @@ func (spy *Spy) Errorf(format string, args ...any) {
 }
 
 // Fatal records a fatal error with the provided arguments, appending them as a
-// space-separated message to Messages, followed by a newline. It sets
+// space-separated message to [Spy.Messages], followed by a newline. It sets
 // [Spy.TriggeredFailure] to true and panics with [FailNowMsg]. Unlike
-// [testing.TB], which calls runtime.Goexit, the panic can be recovered by
+// [testing.TB], which calls [runtime.Goexit], the panic can be recovered by
 // the helper under test.
 func (spy *Spy) Fatal(args ...any) {
 	spy.TriggeredFailure = true
@@ -90,9 +91,9 @@ func (spy *Spy) Fatal(args ...any) {
 }
 
 // Fatalf records a fatal error using the provided format string and arguments,
-// appending the formatted message to Messages, followed by a newline unless
-// it already ends with one. It sets [Spy.TriggeredFailure] to true and panics
-// with [FailNowMsg].
+// appending the formatted message to [Spy.Messages], followed by a newline
+// unless it already ends with one. It sets [Spy.TriggeredFailure] to true and
+// panics with [FailNowMsg].
 func (spy *Spy) Fatalf(format string, args ...any) {
 	spy.TriggeredFailure = true
 	spy.logf(format, args...)
@@ -113,9 +114,9 @@ func (spy *Spy) logf(format string, args ...any) {
 }
 
 // Failed reports whether an error or failure has been recorded, returning true
-// if either ReportedError or TriggeredFailure is set. This mimics the behavior
-// of [testing.T.Failed], allowing tests to check the Spy's state without
-// modifying it.
+// if either [Spy.ReportedError] or [Spy.TriggeredFailure] is set. This mimics
+// the behavior of [testing.T.Failed], allowing tests to check the Spy's state
+// without modifying it.
 func (spy *Spy) Failed() bool {
 	return spy.ReportedError || spy.TriggeredFailure
 }

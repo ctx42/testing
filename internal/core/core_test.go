@@ -16,21 +16,6 @@ import (
 
 const expMsg = "expected same:\n  want: %v\n  have: %v"
 
-func Test_IsNil_tabular(t *testing.T) {
-	for _, tc := range testcases.ZENValues() {
-		t.Run("Nil "+tc.Desc, func(t *testing.T) {
-			// --- When ---
-			have := IsNil(tc.Val)
-
-			// --- Then ---
-			if tc.IsNil != have {
-				format := "expected IsNil to return %v for %#v"
-				t.Errorf(format, tc.IsNil, tc.Val)
-			}
-		})
-	}
-}
-
 func Test_IsNil(t *testing.T) {
 	t.Run("nil unsafe pointer", func(t *testing.T) {
 		// --- When ---
@@ -56,19 +41,34 @@ func Test_IsNil(t *testing.T) {
 	})
 }
 
+func Test_IsNil_tabular(t *testing.T) {
+	for _, tc := range testcases.ZENValues() {
+		t.Run("Nil "+tc.Desc, func(t *testing.T) {
+			// --- When ---
+			have := IsNil(tc.Val)
+
+			// --- Then ---
+			if tc.IsNil != have {
+				format := "expected IsNil to return %v for %#v"
+				t.Errorf(format, tc.IsNil, tc.Val)
+			}
+		})
+	}
+}
+
 func Test_WillPanic(t *testing.T) {
 	t.Run("panicked", func(t *testing.T) {
 		// --- Given ---
 		fn := func() { panic("panic") }
 
 		// --- When ---
-		val, stack := WillPanic(fn)
+		hVal, hStack := WillPanic(fn)
 
 		// --- Then ---
-		if val.(string) != "panic" {
+		if hVal.(string) != "panic" {
 			t.Error("expected WillPanic to return value 'panic'")
 		}
-		if stack == "" {
+		if hStack == "" {
 			t.Error("expected WillPanic to return stack trace")
 		}
 	})
@@ -78,13 +78,13 @@ func Test_WillPanic(t *testing.T) {
 		fn := func() { panic(nil) } //nolint:govet
 
 		// --- When ---
-		val, stack := WillPanic(fn)
+		hVal, hStack := WillPanic(fn)
 
 		// --- Then ---
-		if _, ok := val.(*runtime.PanicNilError); !ok {
-			t.Error("expected WillPanic to return value 'panic'")
+		if _, ok := hVal.(*runtime.PanicNilError); !ok {
+			t.Error("expected WillPanic to return *runtime.PanicNilError")
 		}
-		if stack == "" {
+		if hStack == "" {
 			t.Error("expected WillPanic to return stack trace")
 		}
 	})
@@ -94,13 +94,13 @@ func Test_WillPanic(t *testing.T) {
 		fn := func() {}
 
 		// --- When ---
-		val, stack := WillPanic(fn)
+		hVal, hStack := WillPanic(fn)
 
 		// --- Then ---
-		if val != nil {
-			t.Error("expected WillPanic to return an empty string")
+		if hVal != nil {
+			t.Error("expected WillPanic to return a nil value")
 		}
-		if stack != "" {
+		if hStack != "" {
 			t.Error("expected WillPanic to return an empty string")
 		}
 	})
@@ -224,9 +224,9 @@ func Test_Same_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		want any
-		have any
-		same bool
+		in0  any
+		in1  any
+		want bool
 	}{
 		{"ptr same", ptr0, ptr0, true},
 		{"ptr not same", ptr0, ptr1, false},
@@ -300,11 +300,11 @@ func Test_Same_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := Same(tc.want, tc.have)
+			have := Same(tc.in0, tc.in1)
 
 			// --- Then ---
-			if !reflect.DeepEqual(tc.same, have) {
-				t.Errorf(wMsg, have, tc.same)
+			if tc.want != have {
+				t.Errorf(wMsg, tc.want, have)
 			}
 		})
 	}
@@ -414,8 +414,9 @@ func Test_Value(t *testing.T) {
 		if !ok {
 			t.Errorf("unexpected type")
 		}
-		have := fn(1, 2)
-		if have != 3 {
+
+		sum := fn(1, 2)
+		if sum != 3 {
 			t.Errorf("expected correct field value")
 		}
 	})
@@ -624,7 +625,7 @@ func Test_Value_success_tabular(t *testing.T) {
 		testN string
 
 		in   any
-		wVal any
+		want any
 	}{
 		{"nil", nil, nil},
 		{"bool - true", true, true},
@@ -664,8 +665,8 @@ func Test_Value_success_tabular(t *testing.T) {
 			hVal, hOK := Value(reflect.ValueOf(tc.in))
 
 			// --- Then ---
-			if !reflect.DeepEqual(tc.wVal, hVal) {
-				t.Errorf(expMsg, tc.wVal, hVal)
+			if !reflect.DeepEqual(tc.want, hVal) {
+				t.Errorf(expMsg, tc.want, hVal)
 			}
 			if !hOK {
 				t.Error("expected true")
@@ -734,14 +735,14 @@ func Test_Value_unexported_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have, hOK := Value(tc.in)
+			hVal, hOK := Value(tc.in)
 
 			// --- Then ---
 			if !hOK {
 				t.Error("expected true")
 			}
-			if !reflect.DeepEqual(tc.want, have) {
-				t.Errorf(expMsg, tc.want, have)
+			if !reflect.DeepEqual(tc.want, hVal) {
+				t.Errorf(expMsg, tc.want, hVal)
 			}
 		})
 	}
@@ -771,21 +772,21 @@ func Test_ValueSimple_tabular(t *testing.T) {
 		{"uint16", uint16(42), uint16(42), true},
 		{"uint32", uint32(42), uint32(42), true},
 		{"uint64", uint64(42), uint64(42), true},
-		{"uintptr", uintptr(42), nil, false},
+		{"error - uintptr", uintptr(42), nil, false},
 		{"float32", float32(42), float32(42), true},
 		{"float64", float64(42), float64(42), true},
 		{"complex64", complex64(42), complex64(42), true},
 		{"complex128", complex128(42), complex128(42), true},
 
-		{"nil", nil, nil, false},
-		{"array", [...]int{1, 2, 3}, nil, false},
-		{"chan", chn, nil, false},
-		{"map", m, nil, false},
-		{"pointer", ptr, nil, false},
-		{"slice", []int{1, 2, 3}, nil, false},
+		{"error - nil", nil, nil, false},
+		{"error - array", [...]int{1, 2, 3}, nil, false},
+		{"error - chan", chn, nil, false},
+		{"error - map", m, nil, false},
+		{"error - pointer", ptr, nil, false},
+		{"error - slice", []int{1, 2, 3}, nil, false},
 		{"string", "abc", "abc", true},
-		{"struct", testcases.TPtr{}, nil, false},
-		{"unsafe pointer", unsafe.Pointer(ptr), nil, false},
+		{"error - struct", testcases.TPtr{}, nil, false},
+		{"error - unsafe pointer", unsafe.Pointer(ptr), nil, false},
 	}
 
 	for _, tc := range tt {
