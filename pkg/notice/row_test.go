@@ -40,9 +40,19 @@ func Test_Row_String_tabular(t *testing.T) {
 		want string
 	}{
 		{
-			"missing arguments",
+			"no arguments",
 			Row{Name: "name", Format: "%s"},
-			"%!s(MISSING)",
+			"%s",
+		},
+		{
+			"no arguments with literal percent",
+			Row{Name: "name", Format: "100%"},
+			"100%",
+		},
+		{
+			"missing arguments",
+			Row{Name: "name", Format: "%s %d", Args: []any{"a"}},
+			"a %!d(MISSING)",
 		},
 		{
 			"single argument",

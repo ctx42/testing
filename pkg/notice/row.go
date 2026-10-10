@@ -9,7 +9,8 @@ import (
 
 // Row is a single named context line in a [Notice].
 // It holds a name (e.g. "want", "have") plus a format string and args
-// that are rendered via [fmt.Sprintf] when [Row.String] is called.
+// that are rendered via [fmt.Sprintf] when [Row.String] is called. A row
+// without args renders its format verbatim.
 type Row struct {
 	Name   string
 	Format string
@@ -23,7 +24,13 @@ func NewRow(name, format string, args ...any) Row {
 }
 
 // String returns the formatted value using [fmt.Sprintf] on Format and Args.
-func (row Row) String() string { return fmt.Sprintf(row.Format, row.Args...) }
+// Without Args, it returns Format unchanged.
+func (row Row) String() string {
+	if len(row.Args) == 0 {
+		return row.Format
+	}
+	return fmt.Sprintf(row.Format, row.Args...)
+}
 
 // PadName left-pads the row Name with spaces to the given length.
 func (row Row) PadName(length int) string {
