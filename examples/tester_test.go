@@ -6,6 +6,7 @@ package examples
 import (
 	"testing"
 
+	"github.com/ctx42/testing/pkg/assert"
 	"github.com/ctx42/testing/pkg/tester"
 )
 
@@ -22,9 +23,7 @@ func Test_IsOdd(t *testing.T) {
 		have := IsOdd(tspy, 2) // Run the helper.
 
 		// --- Then ---
-		if have { // Verify the outcome.
-			t.Error("expected success to be false")
-		}
+		assert.False(t, have)     // Verify the outcome.
 		tspy.AssertExpectations() // Ensure all expectations were met.
 	})
 
@@ -37,10 +36,7 @@ func Test_IsOdd(t *testing.T) {
 		have := IsOdd(tspy, 3)
 
 		// --- Then ---
-		if !have {
-			t.Error("expected success to be true")
-		}
-
+		assert.True(t, have)
 		// The `tspy.AssertExpectations()` is called automatically.
 	})
 }

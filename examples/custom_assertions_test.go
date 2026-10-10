@@ -3,18 +3,20 @@
 
 // This file demonstrates how to write custom assertion helpers using
 // [assert], [check], and [tester.Spy] for testing the helpers themselves.
+
 package examples_test
 
 import (
 	"testing"
 
-	"github.com/ctx42/testing/internal/affirm"
 	"github.com/ctx42/testing/pkg/assert"
 	"github.com/ctx42/testing/pkg/check"
 	"github.com/ctx42/testing/pkg/testcases"
 	"github.com/ctx42/testing/pkg/tester"
 )
 
+// AssertTA asserts "want" and "have" are equal [testcases.TA] values, field by
+// field, reporting each mismatch with its trail.
 func AssertTA(t tester.T, want, have *testcases.TA, opts ...any) bool {
 	t.Helper()
 
@@ -61,7 +63,7 @@ func Test_AssertTA(t *testing.T) {
 		have := AssertTA(tspy, w, h)
 
 		// --- Then ---
-		affirm.Equal(t, true, have)
+		assert.True(t, have)
 	})
 
 	t.Run("error - not equal nested field", func(t *testing.T) {
@@ -83,7 +85,7 @@ func Test_AssertTA(t *testing.T) {
 		have := AssertTA(tspy, w, h)
 
 		// --- Then ---
-		affirm.Equal(t, false, have)
+		assert.False(t, have)
 	})
 
 	t.Run("error - not equal duration", func(t *testing.T) {
@@ -105,32 +107,30 @@ func Test_AssertTA(t *testing.T) {
 		have := AssertTA(tspy, w, h)
 
 		// --- Then ---
-		affirm.Equal(t, false, have)
+		assert.False(t, have)
 	})
 
 	t.Run("error - both nil", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
-		wMsg := "expected non-nil value:\n  trail: TA"
-		tspy.ExpectLogEqual(wMsg)
+		tspy.ExpectLogEqual("expected non-nil value:\n  trail: TA")
 		tspy.Close()
 
 		// --- When ---
-		affirm.Panic(t, func() { AssertTA(tspy, nil, nil) })
+		assert.Panic(t, func() { AssertTA(tspy, nil, nil) })
 	})
 
 	t.Run("error - have is nil", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectFatal()
-		wMsg := "expected non-nil value:\n  trail: TA"
-		tspy.ExpectLogEqual(wMsg)
+		tspy.ExpectLogEqual("expected non-nil value:\n  trail: TA")
 		tspy.Close()
 
 		w := &testcases.TA{Int: 1, Str: "a"}
 
 		// --- When ---
-		affirm.Panic(t, func() { AssertTA(tspy, w, nil) })
+		assert.Panic(t, func() { AssertTA(tspy, w, nil) })
 	})
 }

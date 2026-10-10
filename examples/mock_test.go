@@ -19,6 +19,8 @@ type Adder interface {
 	Add(a, b float64) float64
 }
 
+var _ Adder = (*AdderMock)(nil)
+
 // AdderMock implements the [Adder] interface. By convention, mock types are
 // named after the interface with a "Mock" suffix.
 type AdderMock struct {
@@ -47,7 +49,7 @@ func (mck *AdderMock) Add(a, b float64) float64 {
 	return rets.Get(0).(float64)
 }
 
-// Test_AdderMock_Add demonstrates using AdderMock in a test.
+// Test_AdderMock_Add demonstrates using [AdderMock] in a test.
 func Test_AdderMock_Add(t *testing.T) {
 	// --- Given ---
 	mck := NewAdderMock(t) // Create the mock.
