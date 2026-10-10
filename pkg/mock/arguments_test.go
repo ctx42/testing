@@ -28,47 +28,53 @@ func Test_Arguments_Get(t *testing.T) {
 
 	t.Run("existing", func(t *testing.T) {
 		// --- Given ---
-		var args = Arguments{"str", 42, true}
+		args := Arguments{"str", 42, true}
+
+		// --- When ---
+		have := []any{args.Get(0), args.Get(1), args.Get(2)}
 
 		// --- Then ---
-		assert.Equal(t, "str", args.Get(0).(string))
-		assert.Equal(t, 42, args.Get(1).(int))
-		assert.Equal(t, true, args.Get(2).(bool))
+		assert.Equal(t, []any{"str", 42, true}, have)
 	})
 
 	t.Run("error - invalid index", func(t *testing.T) {
 		// --- Given ---
-		var args = Arguments{"str", 42, true}
+		args := Arguments{"str", 42, true}
 
 		// --- When ---
 		have := assert.PanicMsg(t, func() { args.Get(100) })
 
 		// --- Then ---
-		want := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, want, *have)
+		assert.Equal(t, "[mock] arguments: Get(100) out of range 2 max", *have)
 	})
 }
 
 func Test_Arguments_Equal(t *testing.T) {
 	t.Run("match", func(t *testing.T) {
 		// --- Given ---
-		var args = Arguments{"str", 42, true}
+		args := Arguments{"str", 42, true}
+
+		// --- When ---
+		have := args.Equal("str", 42, true)
 
 		// --- Then ---
-		assert.True(t, args.Equal("str", 42, true))
+		assert.True(t, have)
 	})
 
 	t.Run("no match", func(t *testing.T) {
 		// --- Given ---
-		var args = Arguments{"str", 42, true}
+		args := Arguments{"str", 42, true}
+
+		// --- When ---
+		have := args.Equal("wrong", 456, false)
 
 		// --- Then ---
-		assert.False(t, args.Equal("wrong", 456, false))
+		assert.False(t, have)
 	})
 
 	t.Run("error - invalid indexes", func(t *testing.T) {
 		// --- Given ---
-		var args = Arguments{"str", 42, true}
+		args := Arguments{"str", 42, true}
 
 		// --- When ---
 		have := assert.PanicMsg(t, func() { args.Equal("str", 42) })
@@ -115,11 +121,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("matches with no differences", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{"str", 42, true}
-		haveA := []any{"str", 42, true}
+		args := Arguments{"str", 42, true}
+		vals := []any{"str", 42, true}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
@@ -133,11 +139,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("not matching two out of three", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{"str", 42, true}
-		haveA := []any{"str", 44, "false"}
+		args := Arguments{"str", 42, true}
+		vals := []any{"str", 44, "false"}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 2, cnt)
@@ -151,11 +157,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("more want arguments", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{"str", 42, true, "extra"}
-		haveA := []any{"str", 44, false}
+		args := Arguments{"str", 42, true, "extra"}
+		vals := []any{"str", 44, false}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 3, cnt)
@@ -170,11 +176,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("more want any arguments", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{Any, Any, Any, Any, Any}
-		haveA := []any{"A", "B", []any{"D", "E"}}
+		args := Arguments{Any, Any, Any, Any, Any}
+		vals := []any{"A", "B", []any{"D", "E"}}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 2, cnt)
@@ -192,11 +198,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("more have arguments", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{"str", 42, true}
-		haveA := []any{"str", 44, false, "extra"}
+		args := Arguments{"str", 42, true}
+		vals := []any{"str", 44, false, "extra"}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 3, cnt)
@@ -211,11 +217,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("matching with one have argument set to Any", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{"str", Any, true}
-		haveA := []any{"str", 42, true}
+		args := Arguments{"str", Any, true}
+		vals := []any{"str", 42, true}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
@@ -229,11 +235,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("matching with all have arguments set to Any", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{Any, Any, Any}
-		haveA := []any{"str", 42, true}
+		args := Arguments{Any, Any, Any}
+		vals := []any{"str", 42, true}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
@@ -248,11 +254,11 @@ func Test_Arguments_Diff(t *testing.T) {
 	t.Run("matching ArgumentMatcher", func(t *testing.T) {
 		// --- Given ---
 		mby := func(v int) bool { return v == 42 }
-		wantA := []any{"str", MatchBy(mby), true}
-		haveA := []any{"str", 42, true}
+		args := Arguments{"str", MatchBy(mby), true}
+		vals := []any{"str", 42, true}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
@@ -267,11 +273,11 @@ func Test_Arguments_Diff(t *testing.T) {
 	t.Run("not matching ArgumentMatcher - MatchBy", func(t *testing.T) {
 		// --- Given ---
 		mby := func(v int) bool { return v == 44 }
-		wantA := []any{"str", MatchBy(mby), true}
-		haveA := []any{"str", 42, true}
+		args := Arguments{"str", MatchBy(mby), true}
+		vals := []any{"str", 42, true}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
@@ -286,11 +292,11 @@ func Test_Arguments_Diff(t *testing.T) {
 	t.Run("panicking ArgumentMatcher - MatchBy", func(t *testing.T) {
 		// --- Given ---
 		mby := func(v int) bool { panic("abc") }
-		wantA := []any{"str", MatchBy(mby), true}
-		haveA := []any{"str", 42, true}
+		args := Arguments{"str", MatchBy(mby), true}
+		vals := []any{"str", 42, true}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
@@ -304,11 +310,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("matching MatchOfType", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{"str", MatchOfType("int"), true}
-		haveA := []any{"str", 42, true}
+		args := Arguments{"str", MatchOfType("int"), true}
+		vals := []any{"str", 42, true}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
@@ -322,11 +328,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("matching MatchOfType not matching other", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{"str", MatchOfType("int"), true}
-		haveA := []any{"str", 42, false}
+		args := Arguments{"str", MatchOfType("int"), true}
+		vals := []any{"str", 42, false}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
@@ -340,11 +346,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("not matching MatchOfType", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{"str", MatchOfType("string"), true}
-		haveA := []any{"str", 42, true}
+		args := Arguments{"str", MatchOfType("string"), true}
+		vals := []any{"str", 42, true}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
@@ -358,11 +364,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("matching MatchType", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{"str", MatchType(0), true}
-		haveA := []any{"str", 42, true}
+		args := Arguments{"str", MatchType(0), true}
+		vals := []any{"str", 42, true}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
@@ -376,11 +382,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("not matching MatchType", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{"str", MatchType(""), true}
-		haveA := []any{"str", 42, true}
+		args := Arguments{"str", MatchType(""), true}
+		vals := []any{"str", 42, true}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
@@ -394,11 +400,11 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("matching MatchType not matching other", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{"str", MatchType(0), true}
-		haveA := []any{"str", 42, false}
+		args := Arguments{"str", MatchType(0), true}
+		vals := []any{"str", 42, false}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 1, cnt)
@@ -412,16 +418,17 @@ func Test_Arguments_Diff(t *testing.T) {
 
 	t.Run("context arguments", func(t *testing.T) {
 		// --- Given ---
-		wantA := []any{context.Background(), 42, true}
-		haveA := []any{context.Background(), 42, true}
+		args := Arguments{context.Background(), 42, true}
+		vals := []any{context.Background(), 42, true}
 
 		// --- When ---
-		have, cnt := Arguments(wantA).Diff(haveA)
+		have, cnt := args.Diff(vals)
 
 		// --- Then ---
 		assert.Equal(t, 0, cnt)
 		want := []string{
-			"0: PASS: (context.backgroundCtx=context.backgroundCtx) == " +
+			"" +
+				"0: PASS: (context.backgroundCtx=context.backgroundCtx) == " +
 				"(context.backgroundCtx=context.backgroundCtx)",
 			`1: PASS: (int=42) == (int=42)`,
 			`2: PASS: (bool=true) == (bool=true)`,
@@ -461,8 +468,7 @@ func Test_Arguments_String(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.String(100) })
 
 		// --- Then ---
-		want := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, want, *have)
+		assert.Equal(t, "[mock] arguments: Get(100) out of range 2 max", *have)
 	})
 
 	t.Run("error - argument cannot be cast to string", func(t *testing.T) {
@@ -498,8 +504,7 @@ func Test_Arguments_Int(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Int(100) })
 
 		// --- Then ---
-		want := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, want, *have)
+		assert.Equal(t, "[mock] arguments: Get(100) out of range 2 max", *have)
 	})
 
 	t.Run("error - argument cannot be cast to int", func(t *testing.T) {
@@ -535,8 +540,7 @@ func Test_Arguments_Float32(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Float32(100) })
 
 		// --- Then ---
-		want := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, want, *have)
+		assert.Equal(t, "[mock] arguments: Get(100) out of range 2 max", *have)
 	})
 
 	t.Run("error - argument cannot be cast to float32", func(t *testing.T) {
@@ -572,8 +576,7 @@ func Test_Arguments_Float64(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Float64(100) })
 
 		// --- Then ---
-		want := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, want, *have)
+		assert.Equal(t, "[mock] arguments: Get(100) out of range 2 max", *have)
 	})
 
 	t.Run("error - argument cannot be cast to float64", func(t *testing.T) {
@@ -621,8 +624,7 @@ func Test_Arguments_Error(t *testing.T) {
 		have := assert.PanicMsg(t, func() { _ = args.Error(100) })
 
 		// --- Then ---
-		want := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, want, *have)
+		assert.Equal(t, "[mock] arguments: Get(100) out of range 2 max", *have)
 	})
 
 	t.Run("error - argument cannot be cast to error", func(t *testing.T) {
@@ -658,8 +660,7 @@ func Test_Arguments_Bool(t *testing.T) {
 		have := assert.PanicMsg(t, func() { args.Bool(100) })
 
 		// --- Then ---
-		want := "[mock] arguments: Get(100) out of range 2 max"
-		assert.Equal(t, want, *have)
+		assert.Equal(t, "[mock] arguments: Get(100) out of range 2 max", *have)
 	})
 
 	t.Run("error - argument cannot be cast to bool", func(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"errors"
 )
 
-// ExampleImpl is a test implementation of ExampleItf.
+// ExampleImpl is a test mock embedding [Mock], used by the package tests.
 type ExampleImpl struct {
 	*Mock
 }

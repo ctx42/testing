@@ -43,10 +43,9 @@ func Test_callStack(t *testing.T) {
 	// --- Then ---
 	assert.Len(t, 2, have)
 	assert.Contain(t, "/pkg/mock/helpers.go:", have[0])
-
 	ln := have[0][strings.Index(have[0], ":")+1:]
 	_, err := strconv.Atoi(ln)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func Test_formatMethod_tabular(t *testing.T) {

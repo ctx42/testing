@@ -26,7 +26,7 @@ func ExampleMock_On() {
 }
 
 // ExampleCall_Alter shows how to modify arguments before the real method
-// is called using the fluent Call API. This is a powerful advanced pattern.
+// is called using the fluent Call API.
 func ExampleCall_Alter() {
 	mck := mock.NewMock(&testing.T{})
 
@@ -50,14 +50,14 @@ func ExampleCall_Alter() {
 // --- Advanced Examples ---
 
 // ExampleMock_Proxy demonstrates using Proxy to forward calls to a real
-// implementation. This is one of the most powerful advanced features.
+// implementation.
 func ExampleMock_Proxy() {
 	mck := mock.NewMock(&testing.T{})
 
 	// We use a real object from testcases for demonstration.
 	target := &testcases.TPtr{Val: "original"}
 
-	// Proxy all calls to realTarget.Wrap through the mock.
+	// Proxy all calls to target.Wrap through the mock.
 	mck.Proxy(target.Wrap)
 
 	// Call the proxied method through the mock.
@@ -71,8 +71,7 @@ func ExampleMock_Proxy() {
 }
 
 // ExampleCall_Requires demonstrates using Requires to express ordering
-// dependencies between expectations. This is very useful for complex
-// test scenarios.
+// dependencies between expectations.
 func ExampleCall_Requires() {
 	mck := mock.NewMock(&testing.T{})
 
@@ -80,7 +79,7 @@ func ExampleCall_Requires() {
 	initCall := mck.On("Init").Return(nil)
 	mck.On("DoWork").Return("done").Requires(initCall)
 
-	// Correct order
+	// Call the prerequisite first.
 	_ = mck.Call("Init")
 	result := mck.Call("DoWork").String(0)
 	fmt.Println(result)

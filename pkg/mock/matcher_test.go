@@ -17,12 +17,12 @@ func Test_NewMatcher(t *testing.T) {
 		want := "[mock.MyMatcher=func(int) bool]"
 
 		// --- When ---
-		am := NewMatcher(fn, want)
+		have := NewMatcher(fn, want)
 
 		// --- Then ---
-		assert.Equal(t, want, am.desc)
-		assert.True(t, am.Match(42))
-		assert.False(t, am.Match(44))
+		assert.Equal(t, want, have.desc)
+		assert.True(t, have.Match(42))
+		assert.False(t, have.Match(44))
 	})
 
 	t.Run("error - not returning bool", func(t *testing.T) {
@@ -40,12 +40,13 @@ func Test_NewMatcher(t *testing.T) {
 func Test_Matcher_Desc(t *testing.T) {
 	// --- Given ---
 	want := "[mock.MyMatcher=func(int) bool]"
-
-	// --- When ---
 	am := NewMatcher(func(_ int) bool { return true }, want)
 
+	// --- When ---
+	have := am.Desc()
+
 	// --- Then ---
-	assert.Equal(t, want, am.Desc())
+	assert.Equal(t, want, have)
 }
 
 func Test_Matcher_Match(t *testing.T) {
@@ -91,29 +92,11 @@ func Test_Matcher_Match(t *testing.T) {
 		am := NewMatcher(fn, "mock.Custom")
 
 		// --- When ---
-		msg := assert.PanicMsg(t, func() { am.Match(nil) })
+		have := assert.PanicMsg(t, func() { am.Match(nil) })
 
 		// --- Then ---
 		want := "attempting to call matcher with nil for non-nil expected type"
-		assert.Equal(t, want, *msg)
-	})
-
-	t.Run("nil-able types", func(t *testing.T) {
-		// --- Given ---
-		fnSlice := func(have []int) bool { return have == nil }
-		fnMap := func(have map[string]int) bool { return have == nil }
-		fnPtr := func(have *ExampleType) bool { return have == nil }
-		fnItf := func(have ExampleItf) bool { return have == nil }
-		fnFn := func(have func() int) bool { return have == nil }
-		fnCh := func(have chan int) bool { return have == nil }
-
-		// --- Then ---
-		assert.True(t, NewMatcher(fnSlice, "mock.Custom").Match(nil))
-		assert.True(t, NewMatcher(fnMap, "mock.Custom").Match(nil))
-		assert.True(t, NewMatcher(fnPtr, "mock.Custom").Match(nil))
-		assert.True(t, NewMatcher(fnItf, "mock.Custom").Match(nil))
-		assert.True(t, NewMatcher(fnFn, "mock.Custom").Match(nil))
-		assert.True(t, NewMatcher(fnCh, "mock.Custom").Match(nil))
+		assert.Equal(t, want, *have)
 	})
 
 	t.Run("slice matcher", func(t *testing.T) {
@@ -193,21 +176,49 @@ func Test_Matcher_Match(t *testing.T) {
 	})
 }
 
+func Test_Matcher_Match_nil_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		fn any
+	}{
+		{"slice", func(have []int) bool { return have == nil }},
+		{"map", func(have map[string]int) bool { return have == nil }},
+		{"pointer", func(have *ExampleType) bool { return have == nil }},
+		{"interface", func(have ExampleItf) bool { return have == nil }},
+		{"func", func(have func() int) bool { return have == nil }},
+		{"chan", func(have chan int) bool { return have == nil }},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- Given ---
+			am := NewMatcher(tc.fn, "mock.Custom")
+
+			// --- When ---
+			have := am.Match(nil)
+
+			// --- Then ---
+			assert.True(t, have)
+		})
+	}
+}
+
 func Test_matcherFunc(t *testing.T) {
 	// --- Given ---
-	var have int
+	var arg int
 	fn := func(a int) bool {
-		have = a
+		arg = a
 		return true
 	}
 
 	// --- When ---
-	val := matcherFunc(fn)
+	have := matcherFunc(fn)
 
 	// --- Then ---
-	result := val.Call([]reflect.Value{reflect.ValueOf(42)})
+	result := have.Call([]reflect.Value{reflect.ValueOf(42)})
 	assert.True(t, result[0].Bool())
-	assert.Equal(t, 42, have)
+	assert.Equal(t, 42, arg)
 }
 
 func Test_matcherFunc_panic_tabular(t *testing.T) {

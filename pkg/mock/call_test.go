@@ -203,7 +203,7 @@ func Test_Call_Return(t *testing.T) {
 		have := assert.PanicMsg(t, func() { call.Return() })
 
 		// --- Then ---
-		assert.Equal(t, *have, "proxy calls cannot have return values")
+		assert.Equal(t, "proxy calls cannot have return values", *have)
 	})
 }
 
@@ -230,7 +230,7 @@ func Test_Call_Panic(t *testing.T) {
 
 		// --- Then ---
 		assert.Same(t, call, have)
-		assert.ErrorIs(t, have.panic.(error), ErrTst)
+		assert.ErrorIs(t, ErrTst, have.panic.(error))
 	})
 
 	t.Run("error - proxy call", func(t *testing.T) {
@@ -243,7 +243,7 @@ func Test_Call_Panic(t *testing.T) {
 		have := assert.PanicMsg(t, func() { call.Panic("message") })
 
 		// --- Then ---
-		assert.Equal(t, *have, "cannot call panic on proxy calls")
+		assert.Equal(t, "cannot call panic on proxy calls", *have)
 	})
 }
 
@@ -281,8 +281,7 @@ func Test_Call_Times(t *testing.T) {
 
 		// --- Then ---
 		assert.NotNil(t, have)
-		wMsg := "cannot use Optional and Times at the same time"
-		assert.Equal(t, wMsg, *have)
+		assert.Equal(t, "cannot use Optional and Times at the same time", *have)
 	})
 
 	t.Run("error - negative", func(t *testing.T) {
@@ -328,10 +327,10 @@ func Test_Call_Alter(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		call := newCall("Zero")
-
-		// --- When ---
 		alter0 := func(_ Arguments) {}
 		alter1 := func(_ Arguments) {}
+
+		// --- When ---
 		have := call.Alter(alter0, alter1)
 
 		// --- Then ---
@@ -363,8 +362,7 @@ func Test_Call_Optional(t *testing.T) {
 
 		// --- Then ---
 		assert.NotNil(t, have)
-		wMsg := "cannot use Optional and Times at the same time"
-		assert.Equal(t, wMsg, *have)
+		assert.Equal(t, "cannot use Optional and Times at the same time", *have)
 	})
 }
 
@@ -392,8 +390,10 @@ func Test_Call_Requires(t *testing.T) {
 		// --- Given ---
 		call := newCall("Zero")
 
-		// --- Then ---
+		// --- When ---
 		have := assert.PanicMsg(t, func() { call.Requires(nil) })
+
+		// --- Then ---
 		assert.Contain(t, "nil instance", *have)
 	})
 }
@@ -470,6 +470,7 @@ func Test_Call_Satisfied(t *testing.T) {
 
 		mck := NewMock(tspy, WithNoStack)
 		call := mck.On("Method")
+
 		done := make(chan struct{})
 		go func() {
 			defer close(done)
@@ -636,7 +637,7 @@ func Test_Call_satisfied_tabular(t *testing.T) {
 			err := call.satisfied(tc.haveCalls)
 
 			// --- Then ---
-			assert.True(t, errors.Is(err, tc.err))
+			assert.ErrorIs(t, tc.err, err)
 		})
 	}
 }
@@ -732,8 +733,7 @@ func Test_Call_checkReq(t *testing.T) {
 		pre01 := newCall("Pre01").withParent(mck0)
 
 		mck1 := &Mock{}
-		newCall("Pre11").withParent(mck1)
-		call := newCall("Method").Requires(pre01)
+		call := newCall("Method").withParent(mck1).Requires(pre01)
 
 		// --- When ---
 		have := call.checkReq(nil)
@@ -917,7 +917,7 @@ func Test_Call_callProxy(t *testing.T) {
 		assert.Equal(t, "v abc []", have[0])
 	})
 
-	t.Run("variadic proxy with one variadic arguments", func(t *testing.T) {
+	t.Run("variadic proxy with many variadic arguments", func(t *testing.T) {
 		// --- Given ---
 		ptr := &testcases.TPtr{Val: "v"}
 		prx := reflect.ValueOf(ptr.Variadic)
@@ -931,7 +931,7 @@ func Test_Call_callProxy(t *testing.T) {
 		assert.Equal(t, "v abc [1 2 3]", have[0])
 	})
 
-	t.Run("variadic proxy with many variadic arguments", func(t *testing.T) {
+	t.Run("variadic proxy with one variadic argument", func(t *testing.T) {
 		// --- Given ---
 		ptr := &testcases.TPtr{Val: "v"}
 		prx := reflect.ValueOf(ptr.Variadic)

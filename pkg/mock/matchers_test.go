@@ -17,7 +17,7 @@ func Test_AnyString_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		have any
+		val  any
 		want bool
 	}{
 		{"string", "abc", true},
@@ -28,7 +28,7 @@ func Test_AnyString_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := AnyString.Match(tc.have)
+			have := AnyString.Match(tc.val)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)
@@ -40,7 +40,7 @@ func Test_AnyInt_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		have any
+		val  any
 		want bool
 	}{
 		{"string", "abc", false},
@@ -51,7 +51,7 @@ func Test_AnyInt_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := AnyInt.Match(tc.have)
+			have := AnyInt.Match(tc.val)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)
@@ -63,7 +63,7 @@ func Test_AnyBool_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		have any
+		val  any
 		want bool
 	}{
 		{"string", "abc", false},
@@ -74,7 +74,7 @@ func Test_AnyBool_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := AnyBool.Match(tc.have)
+			have := AnyBool.Match(tc.val)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)
@@ -86,7 +86,7 @@ func Test_AnyCtx_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		have any
+		val  any
 		want bool
 	}{
 		{"context", t.Context(), true},
@@ -98,7 +98,7 @@ func Test_AnyCtx_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := AnyCtx.Match(tc.have)
+			have := AnyCtx.Match(tc.val)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)
@@ -148,34 +148,44 @@ func Test_MatchBy(t *testing.T) {
 		// --- Given ---
 		fn := func(have int) bool { return have == 42 }
 
+		// --- When ---
+		have := MatchBy(fn)
+
 		// --- Then ---
-		assert.True(t, MatchBy(fn).Match(42))
-		assert.False(t, MatchBy(fn).Match(44))
+		assert.True(t, have.Match(42))
+		assert.False(t, have.Match(44))
 	})
 
 	t.Run("error - more than one argument", func(t *testing.T) {
 		// --- Given ---
 		fn := func(a, b int) bool { return true }
 
-		// --- Then ---
+		// --- When ---
 		have := assert.PanicMsg(t, func() { MatchBy(fn) })
-		assert.Contain(t, "mock: match function", *have)
-		assert.Contain(t, "does not take exactly one argument", *have)
+
+		// --- Then ---
+		wRx := `^mock: match function .* does not take exactly one argument$`
+		assert.Regexp(t, wRx, *have)
 	})
 
 	t.Run("error - not returning bool", func(t *testing.T) {
 		// --- Given ---
 		fn := func(have int) {}
 
+		// --- When ---
+		have := assert.PanicMsg(t, func() { MatchBy(fn) })
+
 		// --- Then ---
-		msg := assert.PanicMsg(t, func() { MatchBy(fn) })
-		assert.Contain(t, "mock: match function", *msg)
-		assert.Contain(t, "does not return a bool", *msg)
+		wRx := `^mock: match function .* does not return a bool$`
+		assert.Regexp(t, wRx, *have)
 	})
 
 	t.Run("error - not function", func(t *testing.T) {
+		// --- When ---
 		have := assert.PanicMsg(t, func() { matcherFunc(42) })
-		assert.Equal(t, *have, "mock: \"int\" is not a match function")
+
+		// --- Then ---
+		assert.Equal(t, "mock: \"int\" is not a match function", *have)
 	})
 }
 
@@ -229,7 +239,7 @@ func Test_MatchOfType_tabular(t *testing.T) {
 		testN string
 
 		typ  string
-		have any
+		val  any
 		want bool
 	}{
 		{"int", "int", 42, true},
@@ -258,7 +268,7 @@ func Test_MatchOfType_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := MatchOfType(tc.typ).Match(tc.have)
+			have := MatchOfType(tc.typ).Match(tc.val)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)
@@ -270,7 +280,7 @@ func Test_MatchOfType_desc_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		have string
+		val  string
 		want string
 	}{
 		{"int", "int", "[mock.MatchOfType=int]"},
@@ -286,7 +296,7 @@ func Test_MatchOfType_desc_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := MatchOfType(tc.have)
+			have := MatchOfType(tc.val)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have.Desc())
@@ -323,7 +333,7 @@ func Test_MatchType_tabular(t *testing.T) {
 		testN string
 
 		typ  any
-		have any
+		val  any
 		want bool
 	}{
 		{"same int", 42, 44, true},
@@ -354,7 +364,7 @@ func Test_MatchType_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := MatchType(tc.typ).Match(tc.have)
+			have := MatchType(tc.typ).Match(tc.val)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)
@@ -366,7 +376,7 @@ func Test_MatchType_desc_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		have any
+		val  any
 		want string
 	}{
 		{"int", 42, "[mock.MatchType=int]"},
@@ -382,7 +392,7 @@ func Test_MatchType_desc_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := MatchType(tc.have)
+			have := MatchType(tc.val)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have.Desc())
@@ -394,9 +404,9 @@ func Test_MatchErrorContain_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		want  string
-		have  error
-		match bool
+		sub  string
+		val  error
+		want bool
 	}{
 		{"contains", "long text", errors.New("some long text to match"), true},
 		{
@@ -410,10 +420,10 @@ func Test_MatchErrorContain_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := MatchErrorContain(tc.want).Match(tc.have)
+			have := MatchErrorContain(tc.sub).Match(tc.val)
 
 			// --- Then ---
-			assert.Equal(t, tc.match, have)
+			assert.Equal(t, tc.want, have)
 		})
 	}
 }
@@ -437,9 +447,9 @@ func Test_MatchError_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		want  any
-		have  error
-		match bool
+		target any
+		val    error
+		want   bool
 	}{
 		{"match error message", "test error 0", err0, true},
 		{"no match error message", "other error", err0, false},
@@ -454,10 +464,10 @@ func Test_MatchError_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := MatchError(tc.want).Match(tc.have)
+			have := MatchError(tc.target).Match(tc.val)
 
 			// --- Then ---
-			assert.Equal(t, tc.match, have)
+			assert.Equal(t, tc.want, have)
 		})
 	}
 }

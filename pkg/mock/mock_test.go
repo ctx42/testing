@@ -41,7 +41,7 @@ func Test_NewMock(t *testing.T) {
 		tspy.Finish()
 		assert.Len(t, 0, mck.expected)
 		assert.Len(t, 0, mck.calls)
-		assert.Equal(t, 0, len(mck.meta))
+		assert.Len(t, 0, mck.meta)
 		assert.True(t, mck.stack)
 		assert.False(t, mck.failed)
 		assert.Same(t, tspy, mck.t)
@@ -96,9 +96,9 @@ func Test_Mock_MetaSetAll(t *testing.T) {
 	t.Run("overrides", func(t *testing.T) {
 		// --- Given ---
 		mck := &Mock{meta: map[string]any{"A": 1}}
+		meta := map[string]any{"B": 2}
 
 		// --- When ---
-		meta := map[string]any{"B": 2}
 		mck.MetaSetAll(meta)
 
 		// --- Then ---
@@ -141,6 +141,7 @@ func Test_Mock_MetaAll(t *testing.T) {
 
 		// --- Then ---
 		assert.Equal(t, meta, have)
+
 		have["B"] = 2
 		assert.Equal(t, map[string]any{"A": 1}, mck.meta)
 	})
@@ -158,26 +159,26 @@ func Test_Mock_On(t *testing.T) {
 		mck := NewMock(tspy)
 
 		// --- When ---
-		call0 := mck.On("Zero", "str", 42, true)
+		have := mck.On("Zero", "str", 42, true)
 
 		// --- Then ---
 		assert.Len(t, 1, mck.expected)
-		assert.Same(t, mck.expected[0], call0)
-		assert.Same(t, mck, call0.parent)
-		assert.Equal(t, "Zero", call0.Method)
-		assert.Equal(t, Arguments{"str", 42, true}, call0.args)
-		assert.False(t, call0.argsAny)
-		assert.Len(t, 0, call0.returns)
-		assert.Len(t, 3, call0.Stack)
-		assert.Contain(t, "mock_test.go", call0.Stack[2])
-		assert.Equal(t, 0, call0.wantCalls)
-		assert.Equal(t, 0, call0.haveCalls)
-		assert.False(t, call0.optional)
-		assert.Nil(t, call0.until)
-		assert.Equal(t, time.Duration(0), call0.after)
-		assert.Nil(t, call0.alter)
-		assert.Nil(t, call0.panic)
-		assert.Len(t, 0, call0.requires)
+		assert.Same(t, mck.expected[0], have)
+		assert.Same(t, mck, have.parent)
+		assert.Equal(t, "Zero", have.Method)
+		assert.Equal(t, Arguments{"str", 42, true}, have.args)
+		assert.False(t, have.argsAny)
+		assert.Len(t, 0, have.returns)
+		assert.Len(t, 3, have.Stack)
+		assert.Contain(t, "mock_test.go", have.Stack[2])
+		assert.Equal(t, 0, have.wantCalls)
+		assert.Equal(t, 0, have.haveCalls)
+		assert.False(t, have.optional)
+		assert.Nil(t, have.until)
+		assert.Equal(t, time.Duration(0), have.after)
+		assert.Nil(t, have.alter)
+		assert.Nil(t, have.panic)
+		assert.Len(t, 0, have.requires)
 	})
 
 	t.Run("error - functions are in args expectations", func(t *testing.T) {
@@ -189,12 +190,13 @@ func Test_Mock_On(t *testing.T) {
 
 		mck := NewMock(tspy)
 
+		fn := func(string) error { return nil }
+
 		// --- When ---
-		fn := func() { mck.On("Zero", func(string) error { return nil }) }
+		have := assert.PanicMsg(t, func() { mck.On("Zero", fn) })
 
 		// --- Then ---
-		have := assert.PanicMsg(t, fn)
-		assert.Equal(t, *have, "cannot use functions in argument expectations")
+		assert.Equal(t, "cannot use functions in argument expectations", *have)
 	})
 
 	t.Run("chain calls", func(t *testing.T) {
@@ -208,12 +210,12 @@ func Test_Mock_On(t *testing.T) {
 		mck := NewMock(tspy)
 
 		// --- When ---
-		call := mck.On("Zero", 0).Return("zero").End().
+		have := mck.On("Zero", 0).Return("zero").End().
 			On("One", 1).Return("one")
 
 		// --- Then ---
 		assert.Len(t, 2, mck.expected)
-		assert.Same(t, mck.expected[1], call)
+		assert.Same(t, mck.expected[1], have)
 		assert.Equal(t, "Zero", mck.expected[0].Method)
 		assert.Equal(t, Arguments{"zero"}, mck.expected[0].returns)
 		assert.Equal(t, "One", mck.expected[1].Method)
@@ -227,13 +229,14 @@ func Test_Mock_On(t *testing.T) {
 		tspy.Close()
 
 		imp := NewExampleImpl(NewMock(tspy))
+		am := MatchBy(func(slice []bool) bool { return slice == nil })
+		imp.On("MethodBoolS", am).Return(errors.New("fixture1"))
 
 		// --- When ---
-		mby0 := MatchBy(func(slice []bool) bool { return slice == nil })
-		imp.On("MethodBoolS", mby0).Return(errors.New("fixture1"))
+		have := imp.MethodBoolS(nil)
 
 		// --- Then ---
-		assert.Equal(t, imp.MethodBoolS(nil).Error(), "fixture1")
+		assert.ErrorEqual(t, "fixture1", have)
 	})
 
 	t.Run("error - with variadic method", func(t *testing.T) {
@@ -248,13 +251,13 @@ func Test_Mock_On(t *testing.T) {
 		imp := NewExampleImpl(NewMock(tspy, WithNoStack))
 
 		// --- When ---
-		call := imp.On("MethodIntVar", 1, 2, 3).Return(nil)
+		have := imp.On("MethodIntVar", 1, 2, 3).Return(nil)
 
 		// --- Then ---
 		assert.Len(t, 1, imp.expected)
-		assert.Same(t, call, imp.expected[0])
-		assert.Len(t, 3, call.args)
-		assert.Equal(t, Arguments{1, 2, 3}, call.args)
+		assert.Same(t, have, imp.expected[0])
+		assert.Len(t, 3, have.args)
+		assert.Equal(t, Arguments{1, 2, 3}, have.args)
 
 		assert.NoPanic(t, func() { _ = imp.MethodIntVar(1, 2, 3) })
 		assert.Panic(t, func() { _ = imp.MethodIntVar(1, 2) })
@@ -273,26 +276,26 @@ func Test_Mock_OnAny(t *testing.T) {
 		mck := NewMock(tspy)
 
 		// --- When ---
-		call0 := mck.OnAny("Zero")
+		have := mck.OnAny("Zero")
 
 		// --- Then ---
 		assert.Len(t, 1, mck.expected)
-		assert.Same(t, mck.expected[0], call0)
-		assert.Same(t, mck, call0.parent)
-		assert.Equal(t, "Zero", call0.Method)
-		assert.Empty(t, call0.args)
-		assert.True(t, call0.argsAny)
-		assert.Len(t, 0, call0.returns)
-		assert.Len(t, 3, call0.Stack)
-		assert.Contain(t, "mock_test.go", call0.Stack[2])
-		assert.Equal(t, 0, call0.wantCalls)
-		assert.Equal(t, 0, call0.haveCalls)
-		assert.False(t, call0.optional)
-		assert.Nil(t, call0.until)
-		assert.Equal(t, time.Duration(0), call0.after)
-		assert.Nil(t, call0.alter)
-		assert.Nil(t, call0.panic)
-		assert.Len(t, 0, call0.requires)
+		assert.Same(t, mck.expected[0], have)
+		assert.Same(t, mck, have.parent)
+		assert.Equal(t, "Zero", have.Method)
+		assert.Empty(t, have.args)
+		assert.True(t, have.argsAny)
+		assert.Len(t, 0, have.returns)
+		assert.Len(t, 3, have.Stack)
+		assert.Contain(t, "mock_test.go", have.Stack[2])
+		assert.Equal(t, 0, have.wantCalls)
+		assert.Equal(t, 0, have.haveCalls)
+		assert.False(t, have.optional)
+		assert.Nil(t, have.until)
+		assert.Equal(t, time.Duration(0), have.after)
+		assert.Nil(t, have.alter)
+		assert.Nil(t, have.panic)
+		assert.Len(t, 0, have.requires)
 	})
 
 	t.Run("chain calls", func(t *testing.T) {
@@ -306,12 +309,12 @@ func Test_Mock_OnAny(t *testing.T) {
 		mck := NewMock(tspy)
 
 		// --- When ---
-		call := mck.OnAny("Zero").Return("zero").End().
+		have := mck.OnAny("Zero").Return("zero").End().
 			OnAny("One").Return("one")
 
 		// --- Then ---
 		assert.Len(t, 2, mck.expected)
-		assert.Same(t, mck.expected[1], call)
+		assert.Same(t, mck.expected[1], have)
 		assert.Equal(t, "Zero", mck.expected[0].Method)
 		assert.Equal(t, Arguments{"zero"}, mck.expected[0].returns)
 		assert.Equal(t, "One", mck.expected[1].Method)
@@ -327,12 +330,12 @@ func Test_Mock_OnAny(t *testing.T) {
 		imp := NewExampleImpl(NewMock(tspy))
 
 		// --- When ---
-		call := imp.OnAny("MethodIntVar").Return(nil)
+		have := imp.OnAny("MethodIntVar").Return(nil)
 
 		// --- Then ---
 		assert.Len(t, 1, imp.expected)
-		assert.Same(t, call, imp.expected[0])
-		assert.Len(t, 0, call.args)
+		assert.Same(t, have, imp.expected[0])
+		assert.Len(t, 0, have.args)
 
 		assert.NoPanic(t, func() { _ = imp.MethodIntVar(1, 2, 3) })
 		assert.NoPanic(t, func() { _ = imp.MethodIntVar(1, 2) })
@@ -352,12 +355,12 @@ func Test_Mock_Proxy(t *testing.T) {
 		ptr := &testcases.TPtr{Val: "abc"}
 
 		// --- When ---
-		call := mck.Proxy(ptr.AAA)
+		have := mck.Proxy(ptr.AAA)
 
 		// --- Then ---
-		assert.Same(t, mck, call.parent)
-		assert.Nil(t, call.args)
-		assert.Equal(t, "AAA", call.Method)
+		assert.Same(t, mck, have.parent)
+		assert.Nil(t, have.args)
+		assert.Equal(t, "AAA", have.Method)
 	})
 
 	t.Run("with a custom name", func(t *testing.T) {
@@ -372,12 +375,12 @@ func Test_Mock_Proxy(t *testing.T) {
 		ptr := &testcases.TPtr{Val: "abc"}
 
 		// --- When ---
-		call := mck.Proxy(ptr.AAA, "MyName")
+		have := mck.Proxy(ptr.AAA, "MyName")
 
 		// --- Then ---
-		assert.Same(t, mck, call.parent)
-		assert.Nil(t, call.args)
-		assert.Equal(t, "MyName", call.Method)
+		assert.Same(t, mck, have.parent)
+		assert.Nil(t, have.args)
+		assert.Equal(t, "MyName", have.Method)
 	})
 
 	t.Run("error - not method", func(t *testing.T) {
@@ -427,9 +430,8 @@ func Test_Mock_Called(t *testing.T) {
 		have, err := imp.MethodInts(1, 2, 3)
 
 		// --- Then ---
-		assert.Equal(t, "whoops", err.Error())
+		assert.ErrorEqual(t, "whoops", err)
 		assert.Equal(t, 4, have)
-
 		assert.Len(t, 1, imp.calls)
 		assert.Equal(t, "MethodInts", imp.calls[0].Method)
 		assert.Len(t, 5, imp.calls[0].Stack)
@@ -448,7 +450,10 @@ func Test_Mock_Called(t *testing.T) {
 		imp := NewExampleImpl(NewMock(tspy, WithNoStack))
 
 		// --- When ---
-		assert.Panic(t, func() { imp.Called(1, 2, 3) })
+		have := assert.PanicMsg(t, func() { imp.Called(1, 2, 3) })
+
+		// --- Then ---
+		assert.Equal(t, tester.FailNowMsg, *have)
 	})
 }
 
@@ -462,10 +467,10 @@ func Test_Mock_called(t *testing.T) {
 		mck := NewMock(tspy)
 
 		// --- When ---
-		method := mck.called(0)
+		have := mck.called(0)
 
 		// --- Then ---
-		assert.Equal(t, "called", method)
+		assert.Equal(t, "called", have)
 	})
 
 	t.Run("sub test", func(t *testing.T) {
@@ -477,10 +482,10 @@ func Test_Mock_called(t *testing.T) {
 		mck := NewMock(tspy)
 
 		// --- When ---
-		method := mck.called(1)
+		have := mck.called(1)
 
 		// --- Then ---
-		assert.Equal(t, "<anonymous>", method)
+		assert.Equal(t, "<anonymous>", have)
 	})
 
 	t.Run("error - invalid skip value", func(t *testing.T) {
@@ -491,9 +496,11 @@ func Test_Mock_called(t *testing.T) {
 
 		mck := NewMock(tspy)
 
-		// --- Then ---
+		// --- When ---
 		have := assert.PanicMsg(t, func() { mck.called(100) })
-		assert.Equal(t, *have, "could not get the caller information")
+
+		// --- Then ---
+		assert.Equal(t, "could not get the caller information", *have)
 	})
 }
 
@@ -597,7 +604,10 @@ func Test_Mock_Call(t *testing.T) {
 		_ = mck.Call("Zero", 0, 1)
 
 		// --- When ---
-		assert.Panic(t, func() { mck.Call("Zero", 0, 1) })
+		have := assert.PanicMsg(t, func() { mck.Call("Zero", 0, 1) })
+
+		// --- Then ---
+		assert.Equal(t, tester.FailNowMsg, *have)
 		assert.True(t, mck.failed)
 	})
 
@@ -614,7 +624,10 @@ func Test_Mock_Call(t *testing.T) {
 		mck.On("Zero", 0, 1)
 
 		// --- When ---
-		assert.Panic(t, func() { mck.Call("Zero", 2, 3) })
+		have := assert.PanicMsg(t, func() { mck.Call("Zero", 2, 3) })
+
+		// --- Then ---
+		assert.Equal(t, tester.FailNowMsg, *have)
 		assert.True(t, mck.failed)
 	})
 
@@ -631,7 +644,10 @@ func Test_Mock_Call(t *testing.T) {
 		mck.On("Zero", 0)
 
 		// --- When ---
-		assert.Panic(t, func() { mck.Call("One", 1) })
+		have := assert.PanicMsg(t, func() { mck.Call("One", 1) })
+
+		// --- Then ---
+		assert.Equal(t, tester.FailNowMsg, *have)
 		assert.True(t, mck.failed)
 	})
 
@@ -650,7 +666,10 @@ func Test_Mock_Call(t *testing.T) {
 		mck.On("Two", 2).Return("two").Requires(req0, req1)
 
 		// --- When ---
-		assert.Panic(t, func() { mck.Call("Two", 2) })
+		have := assert.PanicMsg(t, func() { mck.Call("Two", 2) })
+
+		// --- Then ---
+		assert.Equal(t, tester.FailNowMsg, *have)
 		assert.True(t, mck.failed)
 	})
 
@@ -670,7 +689,10 @@ func Test_Mock_Call(t *testing.T) {
 		mck.Call("Zero", 0) // Satisfy one of the requirements.
 
 		// --- When ---
-		assert.Panic(t, func() { mck.Call("Two", 2) })
+		have := assert.PanicMsg(t, func() { mck.Call("Two", 2) })
+
+		// --- Then ---
+		assert.Equal(t, tester.FailNowMsg, *have)
 		assert.True(t, mck.failed)
 	})
 
@@ -689,7 +711,10 @@ func Test_Mock_Call(t *testing.T) {
 		mck.On("Time", tim.UTC())
 
 		// --- When ---
-		assert.Panic(t, func() { mck.Call("Time", tim) })
+		have := assert.PanicMsg(t, func() { mck.Call("Time", tim) })
+
+		// --- Then ---
+		assert.Equal(t, tester.FailNowMsg, *have)
 		assert.True(t, mck.failed)
 	})
 
@@ -709,7 +734,10 @@ func Test_Mock_Call(t *testing.T) {
 		mck.Call("Zero", 0) // Satisfy one of the requirements.
 
 		// --- When ---
-		assert.Panic(t, func() { mck.Call("Two", 2) })
+		have := assert.PanicMsg(t, func() { mck.Call("Two", 2) })
+
+		// --- Then ---
+		assert.Equal(t, tester.FailNowMsg, *have)
 		assert.True(t, mck.failed)
 	})
 
@@ -745,30 +773,20 @@ func Test_Mock_Call(t *testing.T) {
 		mck := NewMock(tspy)
 		mck.On("MethodBool", true).Return("done").Until(ch)
 
-		// --- When ---
 		var have Arguments
 		done := make(chan struct{})
 		start := time.Now()
+
+		// --- When ---
 		go func() {
 			have = mck.Call("MethodBool", true)
 			close(done)
 		}()
 
 		// --- Then ---
-		select {
-		case <-done:
-			// Test it took roughly more than 500ms to run the Call.
-			since := time.Since(start)
-			if !assert.True(t, since > 490*time.Millisecond) {
-				t.Logf("since: %s\n", since.String())
-				return
-			}
-
-		case <-time.After(time.Second):
-			t.Error("Call does not work properly")
-			return
-		}
-		assert.Equal(t, "done", have[0])
+		assert.ChannelWillClose(t, time.Second, done)
+		assert.True(t, time.Since(start) > 490*time.Millisecond)
+		assert.Equal(t, Arguments{"done"}, have)
 		assert.False(t, mck.failed)
 	})
 
@@ -781,30 +799,20 @@ func Test_Mock_Call(t *testing.T) {
 		mck := NewMock(tspy)
 		mck.On("MethodBool", true).Return("done").After(500 * time.Millisecond)
 
-		// --- When ---
 		var have Arguments
 		done := make(chan struct{})
 		start := time.Now()
+
+		// --- When ---
 		go func() {
 			have = mck.Call("MethodBool", true)
 			close(done)
 		}()
 
 		// --- Then ---
-		select {
-		case <-done:
-			// Test it took more than 500ms to run the Call.
-			since := time.Since(start)
-			if !assert.True(t, since > 500*time.Millisecond) {
-				t.Logf("since: %s\n", since.String())
-				return
-			}
-
-		case <-time.After(time.Second):
-			t.Error("Call does not work properly")
-			return
-		}
-		assert.Equal(t, "done", have[0])
+		assert.ChannelWillClose(t, time.Second, done)
+		assert.True(t, time.Since(start) > 500*time.Millisecond)
+		assert.Equal(t, Arguments{"done"}, have)
 		assert.False(t, mck.failed)
 	})
 
@@ -819,8 +827,9 @@ func Test_Mock_Call(t *testing.T) {
 		mck.On("Wait").Return().Until(ch)
 		mck.On("Done").Return().Alter(func(Arguments) { close(ch) })
 
-		// --- When ---
 		done := make(chan struct{})
+
+		// --- When ---
 		go func() {
 			_ = mck.Call("Wait")
 			close(done)
@@ -830,11 +839,7 @@ func Test_Mock_Call(t *testing.T) {
 		_ = mck.Call("Done")
 
 		// --- Then ---
-		select {
-		case <-done:
-		case <-time.After(time.Second):
-			t.Error("Wait deadlocked holding mock mutex")
-		}
+		assert.ChannelWillClose(t, time.Second, done)
 		assert.False(t, mck.failed)
 	})
 
@@ -847,9 +852,11 @@ func Test_Mock_Call(t *testing.T) {
 		mck := NewMock(tspy)
 		mck.On("Zero", 0).Panic("zero panics")
 
-		// --- Then ---
+		// --- When ---
 		have := assert.PanicMsg(t, func() { mck.Call("Zero", 0) })
-		assert.Equal(t, *have, "zero panics")
+
+		// --- Then ---
+		assert.Equal(t, "zero panics", *have)
 		assert.False(t, mck.failed)
 	})
 
@@ -890,15 +897,15 @@ func Test_Mock_Call(t *testing.T) {
 		tspy.Close()
 
 		mck := NewMock(tspy)
-		call0 := mck.On("ConcurrencyTestMethod", 1).Return(1)
+		call := mck.On("ConcurrencyTestMethod", 1).Return(1)
 
+		const cnt = 1000
 		wg := sync.WaitGroup{}
 		wg.Add(2)
 
 		// --- When ---
-		const cnt = 1000
 		go func() {
-			// Edit the call changing its return arguments.
+			// Continuously call the mocked method.
 			for range cnt {
 				_ = mck.Call("ConcurrencyTestMethod", 1)
 			}
@@ -915,7 +922,7 @@ func Test_Mock_Call(t *testing.T) {
 
 		// --- Then ---
 		wg.Wait()
-		assert.Equal(t, cnt*2, call0.haveCalls)
+		assert.Equal(t, cnt*2, call.haveCalls)
 		assert.False(t, mck.failed)
 	})
 
@@ -925,8 +932,8 @@ func Test_Mock_Call(t *testing.T) {
 		tspy.ExpectCleanups(1)
 		tspy.Close()
 
-		mck := NewMock(tspy)
 		ptr := &testcases.TPtr{Val: "b"}
+		mck := NewMock(tspy)
 		mck.Proxy(ptr.Wrap)
 
 		// --- When ---
@@ -944,8 +951,8 @@ func Test_Mock_Call(t *testing.T) {
 		tspy.ExpectCleanups(1)
 		tspy.Close()
 
-		mck := NewMock(tspy)
 		ptr := &testcases.TPtr{Val: "b"}
+		mck := NewMock(tspy)
 		mck.Proxy(ptr.Variadic)
 
 		// --- When ---
@@ -959,29 +966,40 @@ func Test_Mock_Call(t *testing.T) {
 }
 
 func Test_Mock_Callable(t *testing.T) {
-	t.Run("error - too many calls in any order", func(t *testing.T) {
-		for _, first := range []int{1, 2} {
-			// --- Given ---
-			tspy := tester.New(t)
-			tspy.ExpectCleanups(1)
-			tspy.Close()
+	t.Run("error - too many calls registered first", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
 
-			mck := NewMock(tspy, WithNoStack)
-			if first == 1 {
-				mck.On("A", 1).Once()
-				mck.On("A", 2).Optional()
-			} else {
-				mck.On("A", 2).Optional()
-				mck.On("A", 1).Once()
-			}
-			_ = mck.Call("A", 1)
+		mck := NewMock(tspy, WithNoStack)
+		mck.On("A", 1).Once()
+		mck.On("A", 2).Optional()
+		_ = mck.Call("A", 1)
 
-			// --- When ---
-			err := mck.Callable("A", 1)
+		// --- When ---
+		err := mck.Callable("A", 1)
 
-			// --- Then ---
-			assert.ErrorIs(t, ErrTooManyCalls, err)
-		}
+		// --- Then ---
+		assert.ErrorIs(t, ErrTooManyCalls, err)
+	})
+
+	t.Run("error - too many calls registered last", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.Close()
+
+		mck := NewMock(tspy, WithNoStack)
+		mck.On("A", 2).Optional()
+		mck.On("A", 1).Once()
+		_ = mck.Call("A", 1)
+
+		// --- When ---
+		err := mck.Callable("A", 1)
+
+		// --- Then ---
+		assert.ErrorIs(t, ErrTooManyCalls, err)
 	})
 
 	t.Run("callable", func(t *testing.T) {
@@ -1350,10 +1368,24 @@ func Test_Mock_find(t *testing.T) {
 		// --- Then ---
 		assert.NoError(t, err)
 		assert.Same(t, want, have)
+	})
+
+	t.Run("returns OnAny call again", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.ExpectFail()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		mck.OnAny("Zero").Return("zero")
+		want := mck.OnAny("One").Return("one")
+		mck.On("One", 2).Return("two") // Will never return this one.
 		want.haveCalls++
 
 		// --- When ---
-		have, err = mck.find("One", []any{2}, nil)
+		have, err := mck.find("One", []any{2}, nil)
 
 		// --- Then ---
 		assert.NoError(t, err)
@@ -1370,23 +1402,16 @@ func Test_Mock_find(t *testing.T) {
 
 		mck := NewMock(tspy)
 		mck.OnAny("Zero").Return("zero")
-		wAny := mck.OnAny("One").Return("one").Once()
-		wOn := mck.On("One", 2).Return("two")
+		call := mck.OnAny("One").Return("one").Once()
+		want := mck.On("One", 2).Return("two")
+		call.haveCalls++
 
 		// --- When ---
 		have, err := mck.find("One", []any{2}, nil)
 
 		// --- Then ---
 		assert.NoError(t, err)
-		assert.Same(t, wAny, have)
-		wAny.haveCalls++
-
-		// --- When ---
-		have, err = mck.find("One", []any{2}, nil)
-
-		// --- Then ---
-		assert.NoError(t, err)
-		assert.Same(t, wOn, have)
+		assert.Same(t, want, have)
 	})
 
 	t.Run("proxy calls", func(t *testing.T) {
@@ -1608,7 +1633,7 @@ func Test_Mock_Unset(t *testing.T) {
 
 		mck := NewMock(tspy)
 		call := mck.On("Zero")
-		mck.Unset(call) // OK
+		mck.Unset(call)
 
 		// --- When ---
 		have := mck.Unset(call)
@@ -1629,11 +1654,11 @@ func Test_Mock_AssertExpectations(t *testing.T) {
 		imp.On("MethodBool", true).Once()
 		imp.On("MethodBool", false).Once()
 		imp.On("MethodBool", true).Once()
-
-		// --- When ---
 		imp.MethodBool(true)
 		imp.MethodBool(false)
 		imp.MethodBool(true)
+
+		// --- When ---
 		have := imp.AssertExpectations()
 
 		// --- Then ---
@@ -1671,10 +1696,10 @@ func Test_Mock_AssertExpectations(t *testing.T) {
 		imp.On("MethodBool", true).Once()
 		imp.On("MethodBool", false).Once()
 		imp.On("MethodBool", true).Once()
-
-		// --- When ---
 		imp.MethodBool(true)
 		imp.MethodBool(false)
+
+		// --- When ---
 		have := imp.AssertExpectations()
 
 		// --- Then ---
@@ -1696,10 +1721,10 @@ func Test_Mock_AssertExpectations(t *testing.T) {
 		imp.On("MethodBool", false).Once()
 		imp.On("MethodInts", 1, 2, 3).Return(6, nil).Times(3)
 		imp.On("MethodIntVar", 4, 5).Return(nil).Times(2)
-
-		// --- When ---
 		imp.MethodBool(true)
 		_, _ = imp.MethodInts(1, 2, 3)
+
+		// --- When ---
 		have := imp.AssertExpectations()
 
 		// --- Then ---
@@ -1717,31 +1742,47 @@ func Test_Mock_AssertExpectations(t *testing.T) {
 		tspy.Close()
 
 		imp := NewExampleImpl(NewMock(tspy, WithNoStack))
-		mby0 := MatchBy(func(_ bool) bool { var i int; return 1/i == 0 })
-		imp.On("MethodBool", mby0).Return()
+		am := MatchBy(func(_ bool) bool { var i int; return 1/i == 0 })
+		imp.On("MethodBool", am).Return()
 
-		// --- When ---
+		// AssertExpectations must not deadlock after the matcher panicked.
 		defer func() {
 			ch := make(chan struct{})
 			go func() {
 				_ = imp.AssertExpectations()
 				close(ch)
 			}()
-
-			select {
-			case <-ch:
-			case <-time.After(time.Second):
-				t.Error("AssertExpectations() deadlocked")
-			}
+			assert.ChannelWillClose(t, time.Second, ch)
 		}()
 
+		// --- When ---
+		have := assert.PanicMsg(t, func() { imp.MethodBool(false) })
+
 		// --- Then ---
-		assert.Panic(t, func() { imp.MethodBool(false) })
+		assert.Equal(t, tester.FailNowMsg, *have)
 		assert.True(t, imp.failed)
 	})
 }
 
 func Test_Mock_AssertCallCount(t *testing.T) {
+	t.Run("not called", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.ExpectFail()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		imp := NewExampleImpl(NewMock(tspy))
+		imp.On("MethodIntVar", 42).Return(nil)
+
+		// --- When ---
+		have := imp.AssertCallCount("MethodIntVar", 0)
+
+		// --- Then ---
+		assert.True(t, have)
+	})
+
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
@@ -1750,13 +1791,14 @@ func Test_Mock_AssertCallCount(t *testing.T) {
 
 		imp := NewExampleImpl(NewMock(tspy))
 		imp.On("MethodIntVar", 42).Return(nil)
+		assert.Nil(t, imp.MethodIntVar(42))
+		assert.Nil(t, imp.MethodIntVar(42))
+
+		// --- When ---
+		have := imp.AssertCallCount("MethodIntVar", 2)
 
 		// --- Then ---
-		assert.True(t, imp.AssertCallCount("MethodIntVar", 0))
-		assert.Nil(t, imp.MethodIntVar(42))
-		assert.True(t, imp.AssertCallCount("MethodIntVar", 1))
-		assert.Nil(t, imp.MethodIntVar(42))
-		assert.True(t, imp.AssertCallCount("MethodIntVar", 2))
+		assert.True(t, have)
 		assert.False(t, imp.failed)
 	})
 
