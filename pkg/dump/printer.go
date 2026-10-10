@@ -1,9 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// Package dump.
-//
-//nolint:forbidigo
 package dump
 
 import (
@@ -11,7 +8,8 @@ import (
 	"strings"
 )
 
-// Printer represents code printer.
+// Printer builds the text of a dumped value. Build it with [NewPrinter]; the
+// zero value is not usable.
 type Printer struct {
 	dmp Dump
 	buf *strings.Builder

@@ -46,7 +46,7 @@ func Test_RegisterTypeDumper(t *testing.T) {
 		affirm.Equal(t, wMsg, buf.String())
 	})
 
-	t.Run("panics if already registered", func(t *testing.T) {
+	t.Run("error - already registered", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
 		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
@@ -82,7 +82,7 @@ func Test_RegisterTypeDumper(t *testing.T) {
 		affirm.Equal(t, 1, len(typeDumpers))
 	})
 
-	t.Run("panics if the checker is nil", func(t *testing.T) {
+	t.Run("error - nil dumper", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
 		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
@@ -318,7 +318,8 @@ func Test_Any(t *testing.T) {
 	have := Any(map[string]int{"A": 1, "B": 2})
 
 	// --- Then ---
-	want := "map[string]int{\n" +
+	want := "" +
+		"map[string]int{\n" +
 		"  \"A\": 1,\n" +
 		"  \"B\": 2,\n" +
 		"}"
@@ -366,13 +367,33 @@ func dumpValueTestCases() []struct {
 		{"uint16", New(WithFlat, WithCompact), uint16(123), "123"},
 		{"uint32", New(WithFlat, WithCompact), uint32(123), "123"},
 		{"uint64", New(WithFlat, WithCompact), uint64(123), "123"},
-		{"uintptr", New(WithFlat, WithCompact, WithPtrAddr), uintptr(123), "<0x7b>"},
+		{
+			"uintptr",
+			New(WithFlat, WithCompact, WithPtrAddr),
+			uintptr(123),
+			"<0x7b>",
+		},
 		{"float32", New(WithFlat, WithCompact), float32(12.3), "12.3"},
 		{"float64", New(WithFlat, WithCompact), 12.3, "12.3"},
-		{"complex64", New(WithFlat, WithCompact), complex(float32(1), float32(2)), "(1+2i)"},
-		{"complex128", New(WithFlat, WithCompact), complex(3.3, 4.4), "(3.3+4.4i)"},
+		{
+			"complex64",
+			New(WithFlat, WithCompact),
+			complex(float32(1), float32(2)),
+			"(1+2i)",
+		},
+		{
+			"complex128",
+			New(WithFlat, WithCompact),
+			complex(3.3, 4.4),
+			"(3.3+4.4i)",
+		},
 		{"array", New(WithFlat, WithCompact), [2]int{}, "[2]int{0,0}"},
-		{"chan", New(WithFlat, WithCompact), make(chan int), "(chan int)(<addr>)"},
+		{
+			"chan",
+			New(WithFlat, WithCompact),
+			make(chan int),
+			"(chan int)(<addr>)",
+		},
 		{"func", New(WithFlat, WithCompact), func() {}, "<func>(<addr>)"},
 		{"interface nil", New(WithFlat, WithCompact), itfNil, ValNil},
 		{"any nil", New(WithFlat, WithCompact), aAnyNil, ValNil},
@@ -571,7 +592,9 @@ func Test_Dump_Any(t *testing.T) {
 		have := dmp.Any(val)
 
 		// --- Then ---
-		want := `[][]any{{"str00",0,"str02"},{"str10",1,"str12"},{"str10",1,nil}}`
+		want := "" +
+			`[][]any{{"str00",0,"str02"},` +
+			`{"str10",1,"str12"},{"str10",1,nil}}`
 		affirm.Equal(t, want, have)
 	})
 

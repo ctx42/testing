@@ -48,7 +48,9 @@ func Test_GetTimeDumper_tabular(t *testing.T) {
 			"TimeAsGoString",
 			TimeAsGoString,
 			time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW),
-			`time.Date(2000, time.January, 2, 3, 4, 5, 0, time.Location("Europe/Warsaw"))`,
+			"" +
+				`time.Date(2000, time.January, 2, 3, 4, 5, 0, ` +
+				`time.Location("Europe/Warsaw"))`,
 		},
 		{
 			"unsupported",
@@ -243,7 +245,8 @@ func Test_TimeDumperDate(t *testing.T) {
 		have := TimeDumperDate(dmp, 0, val)
 
 		// --- Then ---
-		want := "time.Date(2000, time.January, 2, 3, 4, 5, 0, " +
+		want := "" +
+			"time.Date(2000, time.January, 2, 3, 4, 5, 0, " +
 			"time.Location(\"Europe/Warsaw\"))"
 		affirm.Equal(t, want, have)
 	})

@@ -11,7 +11,7 @@ import (
 	"github.com/ctx42/testing/internal/affirm"
 )
 
-func Test_SampleDumper_tabular(t *testing.T) {
+func Test_SimpleDumper_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -55,7 +55,7 @@ func Test_SampleDumper_tabular(t *testing.T) {
 	}
 }
 
-func Test_SampleDumper(t *testing.T) {
+func Test_SimpleDumper(t *testing.T) {
 	t.Run("string with Flat false and FlatStrings off", func(t *testing.T) {
 		// --- Given ---
 		dmp := New(WithFlatStrings(0))
@@ -78,7 +78,7 @@ func Test_SampleDumper(t *testing.T) {
 		affirm.Equal(t, "\"str0\\nstr1\\n\"", have)
 	})
 
-	t.Run("long string with Flat false and FlatStrings default", func(t *testing.T) {
+	t.Run("long string not flat with default FlatStrings", func(t *testing.T) {
 		// --- Given ---
 		// The string is one character longer than the default value of
 		// [Dump.FlatStrings]
@@ -108,7 +108,7 @@ func Test_SampleDumper(t *testing.T) {
 		affirm.Equal(t, "\"str0\\nstr1\\n\"", have)
 	})
 
-	t.Run("string with Dump.flatStrings true", func(t *testing.T) {
+	t.Run("string with Dump flatStrings true", func(t *testing.T) {
 		// --- Given ---
 		dmp := Dump{flatStrings: true}
 
@@ -130,7 +130,7 @@ func Test_SampleDumper(t *testing.T) {
 		affirm.Equal(t, "\"str0\"", have)
 	})
 
-	t.Run("unsupported kind", func(t *testing.T) {
+	t.Run("error - unsupported kind", func(t *testing.T) {
 		// --- Given ---
 		dmp := New(WithIndent(1))
 

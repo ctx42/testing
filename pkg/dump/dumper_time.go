@@ -11,20 +11,6 @@ import (
 	"github.com/ctx42/testing/internal/core"
 )
 
-// Special format values for [time.Time] accepted by [WithTimeFormat],
-// [GetTimeDumper], and [Dump.TimeFormat].
-const (
-	// TimeAsRFC3339 is the default (empty) format, producing RFC3339Nano.
-	TimeAsRFC3339 = ""
-
-	// TimeAsUnix produces a Unix timestamp (seconds since epoch) as a
-	// decimal number.
-	TimeAsUnix = "<unix>"
-
-	// TimeAsGoString produces output identical to time.Time.GoString().
-	TimeAsGoString = "<go-str>"
-)
-
 // GetTimeDumper returns a [Dumper] for [time.Time] values using the given
 // format (one of the TimeAs* constants or a standard Go time layout).
 func GetTimeDumper(format string) Dumper {
@@ -56,7 +42,7 @@ func TimeDumperFmt(format string) Dumper {
 }
 
 // TimeDumperUnix requires val to be a value representing [time.Time] and
-// returns its string representation as a Unix timestamp. Returns [valErrUsage]
+// returns its string representation as a Unix timestamp. Returns [ValErrUsage]
 // ("<dump-usage-error>") string if the type cannot be matched.
 func TimeDumperUnix(dmp Dump, lvl int, val reflect.Value) string {
 	ts, ok := timeValue(val)
@@ -70,7 +56,7 @@ func TimeDumperUnix(dmp Dump, lvl int, val reflect.Value) string {
 
 // TimeDumperDate requires val to be a value representing [time.Time] and
 // returns its representation using [time.Time.GoString] method. Returns
-// [valErrUsage] ("<dump-usage-error>") string if the type cannot be matched.
+// [ValErrUsage] ("<dump-usage-error>") string if the type cannot be matched.
 func TimeDumperDate(dmp Dump, lvl int, val reflect.Value) string {
 	ts, ok := timeValue(val)
 	if !ok {

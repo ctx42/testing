@@ -8,9 +8,9 @@ import (
 )
 
 // SliceDumper is a generic dumper for slices. It expects val to represent the
-// [reflect.Slice] kind. Returns [valErrUsage] ("<dump-usage-error>") string if
-// the kind cannot be matched. It returns string representation in the format
-// defined by [Dump] configuration.
+// [reflect.Slice] kind. Returns [ValErrUsage] ("<dump-usage-error>") string if
+// the kind cannot be matched. It returns the string representation in the
+// format defined by [Dump] configuration.
 func SliceDumper(dmp Dump, lvl int, val reflect.Value) string {
 	if val.Kind() != reflect.Slice {
 		prn := NewPrinter(dmp)

@@ -8,17 +8,6 @@ import (
 	"time"
 )
 
-// Formats used by [GetDurDumper].
-// Special format values for [time.Duration] accepted by [WithTimeFormat]
-// (via DurationFormat), [GetDurDumper], and [Dump.DurationFormat].
-const (
-	// DurAsString is the default (empty) format, using time.Duration.String.
-	DurAsString = ""
-
-	// DurAsSeconds renders the duration as a floating-point number of seconds.
-	DurAsSeconds = "<seconds>"
-)
-
 // GetDurDumper returns a [Dumper] for [time.Duration] values using the given
 // format (one of the DurAs* constants).
 func GetDurDumper(format string) Dumper {

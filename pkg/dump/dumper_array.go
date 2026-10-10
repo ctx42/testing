@@ -13,8 +13,8 @@ import (
 //   - [reflect.Array]
 //   - [reflect.Slice]
 //
-// Returns [valErrUsage] ("<dump-usage-error>") string if the kind cannot be
-// matched. It returns string representation in the format defined by [Dump]
+// Returns [ValErrUsage] ("<dump-usage-error>") string if the kind cannot be
+// matched. It returns the string representation in the format defined by [Dump]
 // configuration.
 func ArrayDumper(dmp Dump, lvl int, val reflect.Value) string {
 	prn := NewPrinter(dmp)

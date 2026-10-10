@@ -79,7 +79,13 @@ func Test_HexPtrDumper_tabular(t *testing.T) {
 		{"uintptr", uintptr(1234), 0, 0, "<0x4d2>"},
 		{"byte", byte(123), 0, 0, "0x7b"},
 		{"usage error", 1234, 0, 0, ValErrUsage},
-		{"unsafe pointer", unsafe.Pointer(sPtr), 0, 0, fmt.Sprintf("<%p>", sPtr)},
+		{
+			"unsafe pointer",
+			unsafe.Pointer(sPtr),
+			0,
+			0,
+			fmt.Sprintf("<%p>", sPtr),
+		},
 
 		{"uses indent", 1234, 2, 0, "    " + ValErrUsage},
 		{"uses level", 1234, 0, 1, "  " + ValErrUsage},

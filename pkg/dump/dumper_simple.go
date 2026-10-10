@@ -28,7 +28,7 @@ import (
 //   - [reflect.Float64]
 //   - [reflect.String]
 //
-// It returns string representation in the format defined by [Dump]
+// It returns the string representation in the format defined by [Dump]
 // configuration.
 //
 //nolint:cyclop

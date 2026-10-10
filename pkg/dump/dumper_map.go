@@ -9,9 +9,9 @@ import (
 )
 
 // MapDumper is a generic dumper for maps. It expects val to represent the
-// [reflect.Map] kind. Returns [valErrUsage] ("<dump-usage-error>") string if
-// the kind cannot be matched. It returns string representation in the format
-// defined by [Dump] configuration.
+// [reflect.Map] kind. Returns [ValErrUsage] ("<dump-usage-error>") string if
+// the kind cannot be matched. It returns the string representation in the
+// format defined by [Dump] configuration.
 //
 //nolint:cyclop
 func MapDumper(dmp Dump, lvl int, val reflect.Value) string {

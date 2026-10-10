@@ -54,7 +54,7 @@ func Test_StructDumper(t *testing.T) {
 		affirm.Equal(t, want.String(), have)
 	})
 
-	t.Run("simple flat & compact struct", func(t *testing.T) {
+	t.Run("simple flat and compact struct", func(t *testing.T) {
 		// --- Given ---
 		s := testcases.TA{
 			Int: 1,
@@ -110,7 +110,7 @@ func Test_StructDumper(t *testing.T) {
 		affirm.Equal(t, want.String(), have)
 	})
 
-	t.Run("multi-level flat & compact struct", func(t *testing.T) {
+	t.Run("multi-level flat and compact struct", func(t *testing.T) {
 		// --- Given ---
 		s := testcases.TRec{
 			Int: 1,

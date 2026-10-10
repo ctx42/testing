@@ -263,7 +263,7 @@ func Test_Printer_Sep(t *testing.T) {
 	})
 }
 
-func Test_Printer_Write_String(t *testing.T) {
+func Test_Printer_Write(t *testing.T) {
 	// --- Given ---
 	dmp := New()
 

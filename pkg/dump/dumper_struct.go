@@ -9,8 +9,8 @@ import (
 )
 
 // StructDumper is a generic dumper for maps. It expects val to represent the
-// [reflect.Struct] kind. Returns [valErrUsage] ("<dump-usage-error>") string
-// if the kind cannot be matched. It returns string representation in the
+// [reflect.Struct] kind. Returns [ValErrUsage] ("<dump-usage-error>") string
+// if the kind cannot be matched. It returns the string representation in the
 // format defined by [Dump] configuration.
 func StructDumper(dmp Dump, lvl int, val reflect.Value) string {
 	dmp.flatStrings = true

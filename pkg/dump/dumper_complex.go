@@ -14,8 +14,8 @@ import (
 //   - [reflect.Complex64]
 //   - [reflect.Complex128]
 //
-// Returns [valErrUsage] ("<dump-usage-error>") string if kind cannot be
-// matched. It returns string representation in the format defined by [Dump]
+// Returns [ValErrUsage] ("<dump-usage-error>") string if kind cannot be
+// matched. It returns the string representation in the format defined by [Dump]
 // configuration.
 func ComplexDumper(dmp Dump, lvl int, val reflect.Value) string {
 	var str string
@@ -23,8 +23,10 @@ func ComplexDumper(dmp Dump, lvl int, val reflect.Value) string {
 	case reflect.Complex64:
 		// Use Complex(), not Interface(), so unexported fields still dump.
 		str = fmt.Sprintf("%v", complex64(val.Complex()))
+
 	case reflect.Complex128:
 		str = fmt.Sprintf("%v", val.Complex())
+
 	default:
 		str = ValErrUsage
 	}

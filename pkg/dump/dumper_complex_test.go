@@ -11,7 +11,7 @@ import (
 )
 
 func Test_ComplexDumper(t *testing.T) {
-	t.Run("invalid usage", func(t *testing.T) {
+	t.Run("error - usage", func(t *testing.T) {
 		// --- Given ---
 		dmp := New()
 

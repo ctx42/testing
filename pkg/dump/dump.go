@@ -15,8 +15,8 @@
 // time/duration formats, etc.), and both simple one-shot use via [Any]
 // and reusable configured instances via [New].
 //
-// See the package [README] for usage patterns, configuration examples,
-// and extensibility. See [examples_test.go] for executable demonstrations
+// See the package README for usage patterns, configuration examples,
+// and extensibility. See examples_test.go for executable demonstrations
 // (many of which are also wired into the README via gmdoceg markers).
 //
 // Key types and entry points:
@@ -26,7 +26,7 @@
 //   - [RegisterTypeDumper] — optional global custom type handlers (see
 //     package documentation for the full customization model)
 //   - Time/duration sentinels: [TimeAsUnix], [DurAsString], ...
-//   - [Diff] / [DiffValue] — for rich want/have comparisons
+//   - [Dump.Diff] / [Dump.DiffValue] — for rich want/have comparisons
 //
 // The customization model supports both global defaults (via
 // [RegisterTypeDumper] and package-level variables) and per-instance
@@ -126,6 +126,30 @@ var (
 	typLocation = reflect.TypeFor[time.Location]()
 	typTime     = reflect.TypeFor[time.Time]()
 	typError    = reflect.TypeFor[error]()
+)
+
+// Special format values for [time.Time] accepted by [WithTimeFormat],
+// [GetTimeDumper], and [Dump.TimeFormat].
+const (
+	// TimeAsRFC3339 is the default (empty) format, producing RFC3339Nano.
+	TimeAsRFC3339 = ""
+
+	// TimeAsUnix produces a Unix timestamp (seconds since epoch) as a
+	// decimal number.
+	TimeAsUnix = "<unix>"
+
+	// TimeAsGoString produces output identical to time.Time.GoString().
+	TimeAsGoString = "<go-str>"
+)
+
+// Special format values for [time.Duration] accepted by [GetDurDumper] and
+// [Dump.DurationFormat].
+const (
+	// DurAsString is the default (empty) format, using time.Duration.String.
+	DurAsString = ""
+
+	// DurAsSeconds renders the duration as a floating-point number of seconds.
+	DurAsSeconds = "<seconds>"
 )
 
 // Dumper is the signature for custom value renderers.
@@ -371,7 +395,7 @@ func (dmp Dump) Diff(want, have any) (string, string, string) {
 	return dmp.DiffValue(wVal, hVal)
 }
 
-// DiffValue is like [Diff] but accepts reflect.Value directly.
+// DiffValue is like [Dump.Diff] but accepts reflect.Value directly.
 func (dmp Dump) DiffValue(wVal, hVal reflect.Value) (string, string, string) {
 	// Format values for display.
 	wStr, _ := dmp.value(0, wVal)
@@ -435,7 +459,7 @@ func (dmp Dump) Value(val reflect.Value) string {
 	return str
 }
 
-// value dumps given a value as a string.
+// value dumps the given value as a string.
 //
 //nolint:cyclop
 func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {

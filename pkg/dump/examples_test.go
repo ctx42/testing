@@ -131,3 +131,19 @@ func ExampleDump_Any_recursive() {
 	//   },
 	// }
 }
+
+func ExampleDump_Diff() {
+	want := map[string]int{"a": 1, "b": 2}
+	have := map[string]int{"a": 1, "b": 3}
+
+	_, _, diff := dump.New().Diff(want, have)
+
+	fmt.Println(diff)
+	// Output:
+	// @@ -1,4 +1,4 @@
+	//  map[string]int{
+	//    "a": 1,
+	// -  "b": 3,
+	// +  "b": 2,
+	//  }
+}

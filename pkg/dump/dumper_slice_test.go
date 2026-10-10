@@ -50,7 +50,7 @@ func Test_SliceDumper_tabular(t *testing.T) {
 			"nil",
 		},
 		{
-			"flat & compact slice of int",
+			"flat and compact slice of int",
 			New(WithFlat, WithCompact),
 			[]int{1, 2},
 			"[]int{1,2}",

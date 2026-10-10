@@ -13,8 +13,8 @@ import (
 //
 //   - [reflect.Func]
 //
-// Returns [valErrUsage] ("<dump-usage-error>") string if kind cannot be
-// matched. It returns string representation in the format defined by [Dump]
+// Returns [ValErrUsage] ("<dump-usage-error>") string if kind cannot be
+// matched. It returns the string representation in the format defined by [Dump]
 // configuration.
 func FuncDumper(dmp Dump, lvl int, val reflect.Value) string {
 	var str string
@@ -25,6 +25,7 @@ func FuncDumper(dmp Dump, lvl int, val reflect.Value) string {
 			ptrAddr = fmt.Sprintf("<0x%x>", val.Pointer())
 		}
 		str = fmt.Sprintf("%s(%s)", ValFunc, ptrAddr)
+
 	default:
 		str = ValErrUsage
 	}

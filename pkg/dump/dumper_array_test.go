@@ -93,7 +93,7 @@ func Test_ArrayDumper_tabular(t *testing.T) {
 			"[2]interface {}{nil, nil}",
 		},
 		{
-			"flat array of map[string]int",
+			"flat array of map string int",
 			New(WithFlat),
 			[...]map[string]int{
 				{"A": 1},
@@ -102,7 +102,7 @@ func Test_ArrayDumper_tabular(t *testing.T) {
 			`[2]map[string]int{{"A": 1}, {"b": 2}}`,
 		},
 		{
-			"array of map[int]int",
+			"array of map int int",
 			New(),
 			[...]map[int]int{
 				{1: 10},

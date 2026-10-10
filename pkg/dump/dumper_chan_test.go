@@ -25,7 +25,7 @@ func Test_ChanDumper(t *testing.T) {
 		affirm.Equal(t, "(chan int)(<0x0>)", have)
 	})
 
-	t.Run("usage error", func(t *testing.T) {
+	t.Run("error - usage", func(t *testing.T) {
 		// --- Given ---
 		dmp := New()
 		val := reflect.ValueOf(1234)
