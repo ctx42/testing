@@ -114,6 +114,12 @@ func Test_New(t *testing.T) {
 		affirm.Equal(t, 0, len(spy.haveLogMsgs))
 		affirm.Equal(t, false, spy.ignoreLog)
 		affirm.Equal(t, false, spy.runningFinish)
+		affirm.Equal(t, 0, spy.wantCleanupsCnt)
+		affirm.Equal(t, 0, len(spy.wantLogMsgs))
+		affirm.Equal(t, false, spy.asserted)
+		affirm.Nil(t, spy.ctx)
+		affirm.Nil(t, spy.cancelCtx)
+		affirm.Equal(t, true, spy.tt == ti)
 	})
 
 	t.Run("set expected Helper calls", func(t *testing.T) {
