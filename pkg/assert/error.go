@@ -101,7 +101,7 @@ func ErrorContain(t tester.T, want string, err error, opts ...any) bool {
 // [fmt.Sprint] is used for the string representation of the error.
 //
 // See [check.ErrorRegexp] for the error-returning form.
-func ErrorRegexp(t tester.T, want string, err error, opts ...any) bool {
+func ErrorRegexp(t tester.T, want any, err error, opts ...any) bool {
 	t.Helper()
 	if e := check.ErrorRegexp(want, err, opts...); e != nil {
 		t.Error(e)

@@ -497,6 +497,17 @@ func Test_Zone(t *testing.T) {
 		affirm.Equal(t, true, have)
 	})
 
+	t.Run("success - zone names", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+
+		// --- When ---
+		have := Zone(tspy, "Europe/Warsaw", testcases.WAW)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
 	t.Run("error - fails", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)

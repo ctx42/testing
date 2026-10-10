@@ -6,6 +6,7 @@ package assert
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
@@ -326,6 +327,18 @@ func Test_ErrorRegexp(t *testing.T) {
 
 		// --- When ---
 		have := ErrorRegexp(tspy, "^abc", errors.New("abc def ghi"))
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("success - compiled regexp", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t).Close()
+		rx := regexp.MustCompile("^abc")
+
+		// --- When ---
+		have := ErrorRegexp(tspy, rx, errors.New("abc def ghi"))
 
 		// --- Then ---
 		affirm.Equal(t, true, have)

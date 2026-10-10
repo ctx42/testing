@@ -5,6 +5,7 @@ package assert
 
 import (
 	"testing"
+	"time"
 
 	"github.com/ctx42/testing/internal/affirm"
 	"github.com/ctx42/testing/pkg/check"
@@ -21,6 +22,20 @@ func Test_Wait(t *testing.T) {
 
 		// --- When ---
 		have := Wait(tspy, "100ms", fn)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("success - duration timeout", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.Close()
+
+		fn := func() bool { return true }
+
+		// --- When ---
+		have := Wait(tspy, 100*time.Millisecond, fn)
 
 		// --- Then ---
 		affirm.Equal(t, true, have)

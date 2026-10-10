@@ -4,8 +4,6 @@
 package assert
 
 import (
-	"time"
-
 	"github.com/ctx42/testing/pkg/check"
 	"github.com/ctx42/testing/pkg/tester"
 )
@@ -118,7 +116,10 @@ func Recent(t tester.T, have any, opts ...any) bool {
 }
 
 // Zone asserts that "want" and "have" timezones are equal.
-func Zone(t tester.T, want, have *time.Location, opts ...any) bool {
+//
+// Arguments may be zone name strings or [time.Location] values; nil is
+// treated as [time.UTC].
+func Zone(t tester.T, want, have any, opts ...any) bool {
 	t.Helper()
 	if e := check.Zone(want, have, opts...); e != nil {
 		t.Error(e)
