@@ -67,8 +67,9 @@ const (
 
 // find implements log matching strategies.
 type find struct {
-	strategy Strategy // Match strategy.
-	want     string   // Expected string.
+	strategy Strategy       // Match strategy.
+	want     string         // Expected string.
+	rx       *regexp.Regexp // Compiled want for the Regexp strategy.
 }
 
 // match returns true if "want" can be found in "have" using strategy.
@@ -77,7 +78,11 @@ func (ent find) match(have string) bool {
 	case Equal:
 		return ent.want == have
 	case Regexp:
-		return regexp.MustCompile(ent.want).MatchString(have)
+		rx := ent.rx
+		if rx == nil {
+			rx = regexp.MustCompile(ent.want)
+		}
+		return rx.MatchString(have)
 	case Contains:
 		return strings.Contains(have, ent.want)
 	case NotContains:
@@ -240,6 +245,10 @@ type Spy struct {
 	// True when the Finish method is running.
 	runningFinish bool
 
+	// True when expectations were asserted, so the cleanup registered by New
+	// does not report the same failures again.
+	asserted bool
+
 	// Context returned by Context method.
 	ctx context.Context
 
@@ -279,19 +288,7 @@ type Spy struct {
 func New(tt *testing.T, expectHelpers ...int) *Spy {
 	tt.Helper()
 	spy := &Spy{tt: tt, wantHelperCnt: -1}
-	cu := func() {
-		tt.Helper()
-		spy.mx.Lock()
-		if !spy.finished {
-			spy.mx.Unlock()
-			spy.Finish()
-			spy.mx.Lock()
-		}
-		defer spy.mx.Unlock()
-		spy.assertExpectations()
-		spy.tt = nil
-	}
-	tt.Cleanup(cu)
+	tt.Cleanup(spy.cleanup)
 	if len(expectHelpers) > 0 {
 		spy.ExpectHelpers(expectHelpers[0])
 	}
@@ -336,6 +333,7 @@ func (spy *Spy) ExpectError() *Spy {
 }
 
 func (spy *Spy) Error(args ...any) {
+	spy.tt.Helper()
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
 	spy.log(args...)
@@ -343,6 +341,7 @@ func (spy *Spy) Error(args ...any) {
 }
 
 func (spy *Spy) Errorf(format string, args ...any) {
+	spy.tt.Helper()
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
 	spy.logf(format, args...)
@@ -365,6 +364,7 @@ func (spy *Spy) ExpectFatal() *Spy {
 }
 
 func (spy *Spy) Fatal(args ...any) {
+	spy.tt.Helper()
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
 	spy.log(args...)
@@ -372,6 +372,7 @@ func (spy *Spy) Fatal(args ...any) {
 }
 
 func (spy *Spy) Fatalf(format string, args ...any) {
+	spy.tt.Helper()
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
 	spy.logf(format, args...)
@@ -379,6 +380,7 @@ func (spy *Spy) Fatalf(format string, args ...any) {
 }
 
 func (spy *Spy) FailNow() {
+	spy.tt.Helper()
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
 	spy.failNow()
@@ -501,7 +503,7 @@ func (spy *Spy) GetTempDir(idx int) string {
 		spy.tError("ExpectTempDir method must be called before GetTempDir")
 		return ""
 	}
-	if idx >= len(spy.haveTempDirs) {
+	if idx < 0 || idx >= len(spy.haveTempDirs) {
 		format := "temp directory with index %d does not exist"
 		spy.tErrorf(format, idx)
 		return ""
@@ -531,6 +533,11 @@ func (spy *Spy) Context() context.Context {
 	}
 	if spy.ctx == nil {
 		spy.ctx, spy.cancelCtx = context.WithCancel(parent)
+		if spy.runningFinish {
+			// Like testing.TB, the context is canceled while cleanups run.
+			spy.cancelCtx()
+			spy.cancelCtx = nil
+		}
 	}
 	return spy.ctx
 }
@@ -573,6 +580,14 @@ func (spy *Spy) ExpectLog(matcher Strategy, msg string, args ...any) *Spy {
 		strategy: matcher,
 		want:     msg,
 	}
+	if matcher == Regexp {
+		rx, err := regexp.Compile(msg)
+		if err != nil {
+			spy.panicked = true
+			panic(fmt.Sprintf("invalid ExpectLog regexp: %s", err))
+		}
+		ent.rx = rx
+	}
 	spy.wantLogMgs = append(spy.wantLogMgs, ent)
 	return spy
 }
@@ -580,16 +595,19 @@ func (spy *Spy) ExpectLog(matcher Strategy, msg string, args ...any) *Spy {
 // ExpectLogEqual is a convenience for ExpectLog([Equal], ...). The message
 // must match exactly after formatting.
 func (spy *Spy) ExpectLogEqual(format string, args ...any) *Spy {
+	spy.tt.Helper()
 	return spy.ExpectLog(Equal, format, args...)
 }
 
 // ExpectLogContain is a convenience for ExpectLog([Contains], ...).
 func (spy *Spy) ExpectLogContain(format string, args ...any) *Spy {
+	spy.tt.Helper()
 	return spy.ExpectLog(Contains, format, args...)
 }
 
 // ExpectLogNotContain is a convenience for ExpectLog([NotContains], ...).
 func (spy *Spy) ExpectLogNotContain(format string, args ...any) *Spy {
+	spy.tt.Helper()
 	return spy.ExpectLog(NotContains, format, args...)
 }
 
@@ -597,22 +615,26 @@ func (spy *Spy) ExpectLogNotContain(format string, args ...any) *Spy {
 // message must match exactly after formatting, using a case-insensitive
 // comparison.
 func (spy *Spy) ExpectLogEqualFold(format string, args ...any) *Spy {
+	spy.tt.Helper()
 	return spy.ExpectLog(EqualFold, format, args...)
 }
 
 // ExpectLogContainFold is a convenience for ExpectLog([ContainsFold], ...),
 // using a case-insensitive comparison.
 func (spy *Spy) ExpectLogContainFold(format string, args ...any) *Spy {
+	spy.tt.Helper()
 	return spy.ExpectLog(ContainsFold, format, args...)
 }
 
 // ExpectLogNotContainFold is a convenience for ExpectLog([NotContainsFold], ...),
 // using a case-insensitive comparison.
 func (spy *Spy) ExpectLogNotContainFold(format string, args ...any) *Spy {
+	spy.tt.Helper()
 	return spy.ExpectLog(NotContainsFold, format, args...)
 }
 
 func (spy *Spy) Log(args ...any) {
+	spy.tt.Helper()
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
 	spy.log(args...)
@@ -629,6 +651,7 @@ func (spy *Spy) log(args ...any) {
 }
 
 func (spy *Spy) Logf(format string, args ...any) {
+	spy.tt.Helper()
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
 	spy.logf(format, args...)
@@ -720,13 +743,31 @@ func (spy *Spy) Finish() *Spy {
 	spy.runningFinish = true
 	spy.mx.Unlock()
 
+	defer func() {
+		spy.mx.Lock()
+		defer spy.mx.Unlock()
+		spy.runningFinish = false
+		spy.finished = true
+	}()
 	spy.runCleanups()
-
-	spy.mx.Lock()
-	defer spy.mx.Unlock()
-	spy.runningFinish = false
-	spy.finished = true
 	return spy
+}
+
+// cleanup finishes the Spy and asserts its expectations unless they were
+// already asserted. [New] registers it on the real test runner.
+func (spy *Spy) cleanup() {
+	spy.tt.Helper()
+	spy.mx.Lock()
+	if !spy.finished {
+		spy.mx.Unlock()
+		spy.Finish()
+		spy.mx.Lock()
+	}
+	defer spy.mx.Unlock()
+	if !spy.asserted {
+		spy.assertExpectations()
+	}
+	spy.tt = nil
 }
 
 // AssertExpectations verifies that every expectation set via the Expect*
@@ -752,6 +793,7 @@ func (spy *Spy) AssertExpectations() bool {
 func (spy *Spy) assertExpectations() bool {
 	spy.tt.Helper()
 	spy.checkState(assertCall)
+	spy.asserted = true
 	if spy.panicked {
 		spy.tErrorf(errInvalidUsage)
 		return false
@@ -957,6 +999,14 @@ func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 				have = haves[eqIdx]
 				eqIdx++
 				matched = want.match(have)
+			} else {
+				format := "expected HUT to log message %d:\n" +
+					"\tmatcher: %s\n" +
+					"\t   want: %q\n" +
+					"\t   have: <no message>"
+				spy.tErrorf(format, idx, want.strategy, want.want)
+				ok = false
+				continue
 			}
 
 		default:
@@ -1015,30 +1065,31 @@ func (spy *Spy) assertEnv(wants, haves map[string]string) bool {
 		}
 	}
 
-	if len(wants) < len(haves) {
-		haveKeys := make([]string, 0, len(wants))
-		for wantKey := range haves {
-			haveKeys = append(haveKeys, wantKey)
-		}
-		sort.Strings(haveKeys)
+	haveKeys := make([]string, 0, len(haves))
+	for haveKey := range haves {
+		haveKeys = append(haveKeys, haveKey)
+	}
+	sort.Strings(haveKeys)
 
-		for _, haveKey := range haveKeys {
-			haveVal := haves[haveKey]
-			if _, exists := wants[haveKey]; !exists {
-				format := "expected HUT not to set environment variable:\n" +
-					"\t  have key: %q\n" +
-					"\thave value: %q"
-				spy.tErrorf(format, haveKey, haveVal)
-				ok = false
-			}
+	for _, haveKey := range haveKeys {
+		haveVal := haves[haveKey]
+		if _, exists := wants[haveKey]; !exists {
+			format := "expected HUT not to set environment variable:\n" +
+				"\t  have key: %q\n" +
+				"\thave value: %q"
+			spy.tErrorf(format, haveKey, haveVal)
+			ok = false
 		}
 	}
 	return ok
 }
 
-// runCleanups runs registered cleanups.
+// runCleanups runs registered cleanups in reverse order. Like testing.TB,
+// a cleanup calling Fatal, FailNow or Skip stops only itself and the rest
+// still run; any other panic is re-raised after all cleanups ran.
 func (spy *Spy) runCleanups() int {
 	cnt := 0
+	var pan any
 
 	// Snapshot cancel under lock so concurrent Context() cannot race.
 	spy.mx.Lock()
@@ -1062,15 +1113,31 @@ func (spy *Spy) runCleanups() int {
 			break
 		}
 		spy.mx.Unlock()
-		cleanup()
+		if val := runCleanup(cleanup); val != nil && pan == nil {
+			pan = val
+		}
 		cnt++
 	}
 	spy.mx.Lock()
-	defer spy.mx.Unlock()
 	spy.ctx = nil
-	spy.cancelCtx = nil
-	spy.haveCleanups = spy.haveCleanups[:0]
+	spy.mx.Unlock()
+	if pan != nil {
+		panic(pan)
+	}
 	return cnt
+}
+
+// runCleanup runs fn and returns the value of a panic other than the ones
+// raised by FailNow and Skip.
+func runCleanup(fn func()) (pan any) {
+	defer func() {
+		val := recover()
+		if val != FailNowMsg && val != SkipNowMsg {
+			pan = val
+		}
+	}()
+	fn()
+	return nil
 }
 
 // checkState check if requested action is valid for current Spy state.

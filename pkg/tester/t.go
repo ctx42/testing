@@ -41,7 +41,7 @@ type T interface {
 	// current goroutine). Execution will continue at the next test or
 	// benchmark. FailNow must be called from the goroutine running the test or
 	// benchmark function, not from other goroutines created during the test.
-	// Calling FailNow does not stop.
+	// Calling FailNow does not stop those other goroutines.
 	FailNow()
 
 	// Failed reports whether the function has failed.

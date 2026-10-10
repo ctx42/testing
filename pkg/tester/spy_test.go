@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -795,7 +796,7 @@ func Test_Spy_FailNow(t *testing.T) {
 		spy := New(ti, 0)
 
 		// --- Then ---
-		msg := affirm.Panic(t, func() { spy.Fatal("msg", 0) })
+		msg := affirm.Panic(t, func() { spy.FailNow() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errMockOnNotClosed, *msg)
 		affirm.Equal(t, true, spy.panicked)
@@ -809,7 +810,7 @@ func Test_Spy_FailNow(t *testing.T) {
 		spy.Finish()
 
 		// --- Then ---
-		msg := affirm.Panic(t, func() { spy.Fatal("msg", 0) })
+		msg := affirm.Panic(t, func() { spy.FailNow() })
 		affirm.NotNil(t, msg)
 		affirm.Equal(t, errActionOnFinished, *msg)
 		affirm.Equal(t, true, spy.panicked)
@@ -1104,6 +1105,7 @@ func Test_Spy_Setenv(t *testing.T) {
 	t.Run("set", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
+		isolateEnv(t, "k0")
 
 		spy := New(ti)
 		spy.Close()
@@ -1119,6 +1121,7 @@ func Test_Spy_Setenv(t *testing.T) {
 	t.Run("set multiple", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
+		isolateEnv(t, "k0", "k1")
 
 		spy := New(ti)
 		spy.Close()
@@ -1319,11 +1322,29 @@ func Test_Spy_ExpectTempDir(t *testing.T) {
 }
 
 func Test_Spy_GetTempDir(t *testing.T) {
+	t.Run("error - negative index", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.ExpectTempDir(1)
+		spy.Close()
+
+		// --- When ---
+		have := spy.GetTempDir(-1)
+
+		// --- Then ---
+		affirm.Equal(t, "", have)
+		wMsg := "temp directory with index -1 does not exist"
+		assertSpyHasMsg(t, spy, 0, wMsg)
+	})
+
 	t.Run("get directories", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
 
 		spy := New(ti, 0)
+		removeTempDirs(t, spy)
 		spy.ExpectTempDir(2)
 		spy.Close()
 		want0 := spy.TempDir()
@@ -1344,6 +1365,7 @@ func Test_Spy_GetTempDir(t *testing.T) {
 		ti := &testing.T{}
 
 		spy := New(ti, 0)
+		removeTempDirs(t, spy)
 		spy.ExpectTempDir(-1)
 		spy.Close()
 		want0 := spy.TempDir()
@@ -1384,6 +1406,7 @@ func Test_Spy_GetTempDir(t *testing.T) {
 		ti := &testing.T{}
 
 		spy := New(ti, 0)
+		removeTempDirs(t, spy)
 		spy.ExpectTempDir(2)
 		spy.Close()
 		spy.TempDir()
@@ -1409,6 +1432,7 @@ func Test_Spy_TempDir(t *testing.T) {
 		ti := &testing.T{}
 
 		spy := New(ti, 0)
+		removeTempDirs(t, spy)
 		spy.Close()
 
 		// --- When ---
@@ -1431,6 +1455,7 @@ func Test_Spy_TempDir(t *testing.T) {
 		ti := &testing.T{}
 
 		spy := New(ti, 0)
+		removeTempDirs(t, spy)
 		spy.Close()
 
 		// --- When ---
@@ -1480,6 +1505,24 @@ func Test_Spy_TempDir(t *testing.T) {
 }
 
 func Test_Spy_Context(t *testing.T) {
+	t.Run("first call in a cleanup is canceled", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.ExpectCleanups(1)
+		spy.Close()
+
+		var have context.Context
+		spy.Cleanup(func() { have = spy.Context() })
+
+		// --- When ---
+		spy.Finish()
+
+		// --- Then ---
+		affirm.Equal(t, true, errors.Is(have.Err(), context.Canceled))
+	})
+
 	t.Run("call", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
@@ -1600,6 +1643,22 @@ func Test_Spy_IgnoreLogs(t *testing.T) {
 }
 
 func Test_Spy_ExpectLog(t *testing.T) {
+	t.Run("panics on invalid regexp", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+
+		// --- When ---
+		msg := affirm.Panic(t, func() { spy.ExpectLog(Regexp, "[") })
+
+		// --- Then ---
+		wMsg := "invalid ExpectLog regexp: error parsing regexp: " +
+			"missing closing ]: `[`"
+		affirm.Equal(t, wMsg, *msg)
+		affirm.Equal(t, true, spy.panicked)
+	})
+
 	t.Run("set", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
@@ -2531,6 +2590,44 @@ func Test_Spy_Close(t *testing.T) {
 }
 
 func Test_Spy_Finish(t *testing.T) {
+	t.Run("cleanup calling Fatal", func(t *testing.T) {
+		// --- Given ---
+		var runs []int
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.Close()
+		spy.Cleanup(func() { runs = append(runs, 0) })
+		spy.Cleanup(func() { spy.Fatal("cleanup") })
+
+		// --- When ---
+		spy.Finish()
+
+		// --- Then ---
+		affirm.Equal(t, true, spy.finished)
+		affirm.Equal(t, true, spy.haveFatal)
+		affirm.Equal(t, 1, len(runs))
+	})
+
+	t.Run("cleanup panic is raised after other cleanups", func(t *testing.T) {
+		// --- Given ---
+		var runs []int
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.Close()
+		spy.Cleanup(func() { runs = append(runs, 0) })
+		spy.Cleanup(func() { panic("boom") })
+
+		// --- When ---
+		msg := affirm.Panic(t, func() { spy.Finish() })
+
+		// --- Then ---
+		affirm.Equal(t, "boom", *msg)
+		affirm.Equal(t, true, spy.finished)
+		affirm.Equal(t, 1, len(runs))
+	})
+
 	t.Run("finish test", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
@@ -2579,6 +2676,45 @@ func Test_Spy_Finish(t *testing.T) {
 }
 
 func Test_Spy_AssertExpectations(t *testing.T) {
+	t.Run("cleanup after explicit assert", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.ExpectError()
+		spy.Close()
+		spy.AssertExpectations()
+
+		// --- When ---
+		spy.cleanup()
+
+		// --- Then ---
+		assertSpyHasMgs(t, spy, 1)
+	})
+
+	t.Run("error - unexpected env with matching count", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+		isolateEnv(t, "key1")
+
+		spy := New(ti, 0)
+		spy.ExpectSetenv("key0", "val0")
+		spy.Close()
+		spy.Setenv("key1", "val1")
+
+		// --- When ---
+		have := spy.AssertExpectations()
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+		assertSpyHasMgs(t, spy, 2)
+		wMsg := "" +
+			"expected HUT not to set environment variable:\n" +
+			"\t  have key: \"key1\"\n" +
+			"\thave value: \"val1\""
+		assertSpyHasMsg(t, spy, 1, wMsg)
+	})
+
 	t.Run("finishes and runs cleanups", func(t *testing.T) {
 		// --- Given ---
 		var runs []int
@@ -2658,6 +2794,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 	t.Run("ExpectSetenv - success", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
+		isolateEnv(t, "key0", "key1")
 
 		spy := New(ti, 0)
 		spy.ExpectSetenv("key0", "val0")
@@ -2680,6 +2817,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 	t.Run("ExpectSetenv - error - not expected but set", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
+		isolateEnv(t, "key0")
 
 		spy := New(ti, 0)
 		spy.Close()
@@ -2731,6 +2869,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 	t.Run("ExpectSetenv - error - wrong value set", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
+		isolateEnv(t, "key0", "key1")
 
 		spy := New(ti, 0)
 		spy.ExpectSetenv("key0", "val0")
@@ -2763,6 +2902,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 	t.Run("ExpectSetenv - error - not all required set", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
+		isolateEnv(t, "key1")
 
 		spy := New(ti, 0)
 		spy.ExpectSetenv("key0", "val0")
@@ -2788,6 +2928,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 	t.Run("ExpectSetenv - error - more than expected set", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
+		isolateEnv(t, "key0", "key1", "key2")
 
 		spy := New(ti, 0)
 		spy.ExpectSetenv("key0", "val0")
@@ -3119,6 +3260,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		ti := &testing.T{}
 
 		spy := New(ti, 0)
+		removeTempDirs(t, spy)
 		spy.ExpectTempDir(2)
 		spy.Close()
 		spy.TempDir()
@@ -3140,6 +3282,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		ti := &testing.T{}
 
 		spy := New(ti, 0)
+		removeTempDirs(t, spy)
 		spy.ExpectTempDir(-1)
 		spy.Close()
 		spy.TempDir()
@@ -3180,6 +3323,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		ti := &testing.T{}
 
 		spy := New(ti, 0)
+		removeTempDirs(t, spy)
 		spy.ExpectTempDir(2)
 		spy.Close()
 		spy.TempDir()
@@ -3312,7 +3456,7 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		wMsg := "expected HUT to log message 1:\n" +
 			"\tmatcher: equal\n" +
 			"\t   want: \"msg 1\"\n" +
-			"\t   have: \"msg 0\""
+			"\t   have: <no message>"
 		assertSpyHasMsg(t, spy, 0, wMsg)
 	})
 
@@ -3585,17 +3729,17 @@ func assertSpyHasMgs(t *testing.T, spy *Spy, want int) bool {
 	t.Helper()
 	have := len(spy.savedMgs)
 	if want != have {
-		var format strings.Builder
-		format.WriteString("expected Spy to have saved messages:\n" +
-			"\twant: %d\n" +
-			"\thave: %d")
+		var msg strings.Builder
+		_, _ = fmt.Fprintf(&msg, "expected Spy to have saved messages:\n"+
+			"\twant: %d\n"+
+			"\thave: %d", want, have)
 		if have > 0 {
-			format.WriteString("\n\tmessages:\n")
-			for idx, msg := range spy.savedMgs {
-				_, _ = fmt.Fprintf(&format, "\t\t%d: %q\n", idx, msg)
+			msg.WriteString("\n\tmessages:\n")
+			for idx, sm := range spy.savedMgs {
+				_, _ = fmt.Fprintf(&msg, "\t\t%d: %q\n", idx, sm)
 			}
 		}
-		t.Errorf(format.String(), want, have)
+		t.Error(msg.String())
 		return false
 	}
 	return true
@@ -3659,6 +3803,28 @@ func Test_assertSpyHasMsg(t *testing.T) {
 		have := assertSpyHasMsg(ti, spy, 1, "xyz")
 		if have || !ti.Failed() {
 			t.Error("expected failure")
+		}
+	})
+}
+
+// isolateEnv sets keys to an empty value on t so they are restored when t
+// ends. A Spy bound to a zero testing.T calls its Setenv, whose restore
+// never runs.
+func isolateEnv(t *testing.T, keys ...string) {
+	t.Helper()
+	for _, key := range keys {
+		t.Setenv(key, "")
+	}
+}
+
+// removeTempDirs removes, when t ends, the parent directories testing creates
+// for the temporary directories returned by spy. A Spy bound to a zero
+// testing.T calls its TempDir, whose cleanup never runs.
+func removeTempDirs(t *testing.T, spy *Spy) {
+	t.Helper()
+	t.Cleanup(func() {
+		for _, dir := range spy.haveTempDirs {
+			_ = os.RemoveAll(filepath.Dir(dir))
 		}
 	})
 }
