@@ -34,8 +34,8 @@ func Test_RegisterTypeDumper(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 1, len(typeDumpers))
-		wChk := core.Same(dmp, typeDumpers[reflect.TypeFor[custom]()])
-		affirm.Equal(t, true, wChk)
+		same := core.Same(dmp, typeDumpers[reflect.TypeFor[custom]()])
+		affirm.Equal(t, true, same)
 	})
 
 	t.Run("error - already registered", func(t *testing.T) {
@@ -46,17 +46,18 @@ func Test_RegisterTypeDumper(t *testing.T) {
 
 		// --- When ---
 		fn := func() { RegisterTypeDumper(custom{}, dmp) }
-		msg := affirm.Panic(t, fn)
+		have := affirm.Panic(t, fn)
 
 		// --- Then ---
 		wMsg := "cannot overwrite an existing type dumper for: dump.custom"
-		affirm.Equal(t, wMsg, *msg)
+		affirm.Equal(t, wMsg, *have)
 	})
 
 	t.Run("concurrent with New", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
 		t.Cleanup(func() { typeDumpers = nil })
+
 		done := make(chan struct{})
 		go func() {
 			defer close(done)
@@ -80,18 +81,18 @@ func Test_RegisterTypeDumper(t *testing.T) {
 
 		// --- When ---
 		fn := func() { RegisterTypeDumper(custom{}, nil) }
-		msg := affirm.Panic(t, fn)
+		have := affirm.Panic(t, fn)
 
 		// --- Then ---
-		affirm.Equal(t, "cannot register a nil type dumper", *msg)
+		affirm.Equal(t, "cannot register a nil type dumper", *have)
 	})
 
-	t.Run("panics if the type is nil", func(t *testing.T) {
+	t.Run("error - nil type", func(t *testing.T) {
 		// --- When ---
-		msg := affirm.Panic(t, func() { RegisterTypeDumper(nil, dmp) })
+		have := affirm.Panic(t, func() { RegisterTypeDumper(nil, dmp) })
 
 		// --- Then ---
-		affirm.Equal(t, "cannot register a type dumper for a nil type", *msg)
+		affirm.Equal(t, "cannot register a type dumper for a nil type", *have)
 	})
 }
 
@@ -166,10 +167,9 @@ func Test_WithTimeFormat(t *testing.T) {
 	dmp := &Dump{}
 
 	// --- When ---
-	opt := WithTimeFormat(TimeAsUnix)
+	WithTimeFormat(TimeAsUnix)(dmp)
 
 	// --- Then ---
-	opt(dmp)
 	affirm.Equal(t, TimeAsUnix, dmp.TimeFormat)
 }
 
@@ -179,10 +179,9 @@ func Test_WithDurationFormat(t *testing.T) {
 		dmp := &Dump{}
 
 		// --- When ---
-		opt := WithDurationFormat(DurAsSeconds)
+		WithDurationFormat(DurAsSeconds)(dmp)
 
 		// --- Then ---
-		opt(dmp)
 		affirm.Equal(t, DurAsSeconds, dmp.DurationFormat)
 	})
 
@@ -196,42 +195,6 @@ func Test_WithDurationFormat(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "1.5", have)
 	})
-}
-
-func Test_WithMaxDepth(t *testing.T) {
-	// --- Given ---
-	dmp := &Dump{}
-
-	// --- When ---
-	opt := WithMaxDepth(10)
-
-	// --- Then ---
-	opt(dmp)
-	affirm.Equal(t, 10, dmp.MaxDepth)
-}
-
-func Test_WithIndent(t *testing.T) {
-	// --- Given ---
-	dmp := &Dump{}
-
-	// --- When ---
-	opt := WithIndent(10)
-
-	// --- Then ---
-	opt(dmp)
-	affirm.Equal(t, 10, dmp.Indent)
-}
-
-func Test_WithTabWidth(t *testing.T) {
-	// --- Given ---
-	dmp := &Dump{}
-
-	// --- When ---
-	opt := WithTabWidth(10)
-
-	// --- Then ---
-	opt(dmp)
-	affirm.Equal(t, 10, dmp.TabWidth)
 }
 
 func Test_WithDumper(t *testing.T) {
@@ -249,24 +212,24 @@ func Test_WithDumper(t *testing.T) {
 		WithDumper(123, cDpr)(dmp)
 
 		// --- Then ---
-		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[int]()])
-		affirm.Equal(t, true, wChk)
+		same := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[int]()])
+		affirm.Equal(t, true, same)
 	})
 
-	t.Run("overwriting global checker", func(t *testing.T) {
+	t.Run("overwriting global dumper", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
 		dmp := &Dump{Dumpers: make(map[reflect.Type]Dumper)}
-		t.Cleanup(func() { typeDumpers = nil })
 
+		t.Cleanup(func() { typeDumpers = nil })
 		RegisterTypeDumper(custom{}, cDpr)
 
 		// --- When ---
 		WithDumper(custom{}, cDpr)(dmp)
 
 		// --- Then ---
-		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[custom]()])
-		affirm.Equal(t, true, wChk)
+		same := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[custom]()])
+		affirm.Equal(t, true, same)
 	})
 
 	t.Run("nil dumper removes the custom dumper", func(t *testing.T) {
@@ -279,6 +242,7 @@ func Test_WithDumper(t *testing.T) {
 		// --- Then ---
 		_, ok := dmp.Dumpers[reflect.TypeFor[int]()]
 		affirm.Equal(t, false, ok)
+
 		affirm.Equal(t, "123", dmp.Any(123))
 	})
 
@@ -290,17 +254,50 @@ func Test_WithDumper(t *testing.T) {
 		WithDumper(123, cDpr)(dmp)
 
 		// --- Then ---
-		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[int]()])
-		affirm.Equal(t, true, wChk)
+		same := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[int]()])
+		affirm.Equal(t, true, same)
 	})
 
-	t.Run("panics if the type is nil", func(t *testing.T) {
+	t.Run("error - nil type", func(t *testing.T) {
 		// --- When ---
-		msg := affirm.Panic(t, func() { WithDumper(nil, cDpr) })
+		have := affirm.Panic(t, func() { WithDumper(nil, cDpr) })
 
 		// --- Then ---
-		affirm.Equal(t, "cannot set a type dumper for a nil type", *msg)
+		affirm.Equal(t, "cannot set a type dumper for a nil type", *have)
 	})
+}
+
+func Test_WithMaxDepth(t *testing.T) {
+	// --- Given ---
+	dmp := &Dump{}
+
+	// --- When ---
+	WithMaxDepth(10)(dmp)
+
+	// --- Then ---
+	affirm.Equal(t, 10, dmp.MaxDepth)
+}
+
+func Test_WithIndent(t *testing.T) {
+	// --- Given ---
+	dmp := &Dump{}
+
+	// --- When ---
+	WithIndent(10)(dmp)
+
+	// --- Then ---
+	affirm.Equal(t, 10, dmp.Indent)
+}
+
+func Test_WithTabWidth(t *testing.T) {
+	// --- Given ---
+	dmp := &Dump{}
+
+	// --- When ---
+	WithTabWidth(10)(dmp)
+
+	// --- Then ---
+	affirm.Equal(t, 10, dmp.TabWidth)
 }
 
 func Test_New(t *testing.T) {
@@ -322,15 +319,12 @@ func Test_New(t *testing.T) {
 		affirm.Equal(t, DefaultDepth, have.MaxDepth)
 		affirm.Equal(t, DefaultIndent, have.Indent)
 		affirm.Equal(t, DefaultTabWidth, have.TabWidth)
-
 		val, ok := have.Dumpers[typDur]
 		affirm.Equal(t, true, ok)
 		affirm.NotNil(t, val)
-
 		val, ok = have.Dumpers[typLocation]
 		affirm.Equal(t, true, ok)
 		affirm.NotNil(t, val)
-
 		val, ok = have.Dumpers[typTime]
 		affirm.Equal(t, true, ok)
 		affirm.NotNil(t, val)
@@ -338,8 +332,11 @@ func Test_New(t *testing.T) {
 }
 
 func Test_Any(t *testing.T) {
+	// --- Given ---
+	val := map[string]int{"A": 1, "B": 2}
+
 	// --- When ---
-	have := Any(map[string]int{"A": 1, "B": 2})
+	have := Any(val)
 
 	// --- Then ---
 	want := "" +
@@ -348,6 +345,174 @@ func Test_Any(t *testing.T) {
 		"  \"B\": 2,\n" +
 		"}"
 	affirm.Equal(t, want, have)
+}
+
+func Test_Dump_Any(t *testing.T) {
+	t.Run("empty nested collections", func(t *testing.T) {
+		// --- Given ---
+		val := struct {
+			A []int
+			B struct{}
+		}{A: []int{}}
+
+		// --- When ---
+		have := New().Any(val)
+
+		// --- Then ---
+		affirm.Equal(t, "{\n  A: []int{},\n  B: {},\n}", have)
+	})
+
+	t.Run("flat with skipped last private field", func(t *testing.T) {
+		// --- Given ---
+		val := struct {
+			A int
+			b int
+		}{1, 2}
+
+		// --- When ---
+		have := New(WithFlat, WithNoPrivate).Any(val)
+
+		// --- Then ---
+		affirm.Equal(t, "{A: 1}", have)
+	})
+
+	t.Run("pointer address of nested chan", func(t *testing.T) {
+		// --- Given ---
+		val := []chan int{make(chan int)}
+
+		// --- When ---
+		have := New(WithPtrAddr).Any(val)
+
+		// --- Then ---
+		want := fmt.Sprintf("<0x%x>", reflect.ValueOf(val[0]).Pointer())
+		affirm.Equal(t, "[]chan int{\n  (chan int)("+want+"),\n}", have)
+	})
+
+	t.Run("nil slice element is indented", func(t *testing.T) {
+		// --- Given ---
+		val := []any{1, nil}
+
+		// --- When ---
+		have := New().Any(val)
+
+		// --- Then ---
+		affirm.Equal(t, "[]any{\n  1,\n  nil,\n}", have)
+	})
+
+	t.Run("map type keeps spaces", func(t *testing.T) {
+		// --- Given ---
+		val := map[string]chan int{"a": nil}
+
+		// --- When ---
+		have := New().Any(val)
+
+		// --- Then ---
+		want := "map[string]chan int{\n  \"a\": (chan int)(<addr>),\n}"
+		affirm.Equal(t, want, have)
+	})
+
+	t.Run("pointer cycle", func(t *testing.T) {
+		// --- Given ---
+		var val any
+		val = &val
+
+		// --- When ---
+		have := New(WithMaxDepth(3)).Any(val)
+
+		// --- Then ---
+		affirm.Equal(t, ValMaxNesting, have)
+	})
+
+	t.Run("typed nil in error field", func(t *testing.T) {
+		// --- Given ---
+		val := struct{ E error }{E: (*testcases.TPtr)(nil)}
+
+		// --- When ---
+		have := New().Any(val)
+
+		// --- Then ---
+		affirm.Equal(t, "{\n  E: nil,\n}", have)
+	})
+
+	t.Run("nil interface value", func(t *testing.T) {
+		// --- Given ---
+		var itfNil testcases.TItf
+		dmp := New()
+
+		// --- When ---
+		have := dmp.Any(itfNil)
+
+		// --- Then ---
+		affirm.Equal(t, ValNil, have)
+	})
+
+	t.Run("slice of slices of any", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithFlat, WithCompact)
+		val := [][]any{
+			{"str00", 0, "str02"},
+			{"str10", 1, "str12"},
+			{"str10", 1, nil},
+		}
+
+		// --- When ---
+		have := dmp.Any(val)
+
+		// --- Then ---
+		want := "" +
+			`[][]any{{"str00",0,"str02"},` +
+			`{"str10",1,"str12"},{"str10",1,nil}}`
+		affirm.Equal(t, want, have)
+	})
+
+	t.Run("depth", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithFlat, WithCompact)
+		val := struct {
+			S0 struct {
+				S1 struct {
+					S2 struct {
+						S4 struct {
+							S5 struct {
+								S6 struct{ VAL int }
+							}
+						}
+					}
+				}
+			}
+		}{}
+
+		// --- When ---
+		have := dmp.Any(val)
+
+		// --- Then ---
+		affirm.Equal(t, "{S0:{S1:{S2:{S4:{S5:{S6:{VAL:<...>}}}}}}}", have)
+	})
+
+	t.Run("format nested slices", func(t *testing.T) {
+		// --- Given ---
+		val := nodeTree()
+
+		// --- When ---
+		have := New().Any(val)
+
+		// --- Then ---
+		want := goldy.Open(t, "testdata/struct_nested.gld")
+		affirm.Equal(t, want.String(), have)
+	})
+
+	t.Run("format nested slices indented twice", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithIndent(2))
+		val := nodeTree()
+
+		// --- When ---
+		have := dmp.Any(val)
+
+		// --- Then ---
+		want := goldy.Open(t, "testdata/struct_nested_with_indent.gld")
+		affirm.Equal(t, want.String(), have)
+	})
 }
 
 // dumpValueTestCases returns the test cases shared between
@@ -441,12 +606,6 @@ func dumpValueTestCases() []struct {
 		},
 		{"struct nil", New(WithFlat, WithCompact), sNil, "nil"},
 		{
-			"registered",
-			New(WithFlat, WithCompact),
-			time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
-			`"2000-01-02T03:04:05Z"`,
-		},
-		{
 			"unsafe pointer",
 			New(WithFlat, WithCompact, WithPtrAddr),
 			unsafe.Pointer(sPtr),
@@ -459,13 +618,13 @@ func dumpValueTestCases() []struct {
 			`"error message"`,
 		},
 		{
-			"special case for type error 2",
+			"special case for error slice",
 			New(WithFlat, WithCompact, WithPtrAddr),
 			es,
 			"[]error{\"error message\"}",
 		},
 		{
-			"special case for type error 2",
+			"special case for nil error slice",
 			New(WithFlat, WithCompact, WithPtrAddr),
 			esNil,
 			"[]error{nil}",
@@ -493,235 +652,16 @@ func Test_Dump_Any_tabular(t *testing.T) {
 	}
 }
 
-func Test_Dump_Value_tabular(t *testing.T) {
-	tt := dumpValueTestCases()
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
-			// --- When ---
-			have := tc.dmp.Value(reflect.ValueOf(tc.v))
-
-			// --- Then ---
-			affirm.Equal(t, tc.want, have)
-		})
-	}
-}
-
-func Test_Dump_Any(t *testing.T) {
-	t.Run("empty nested collections", func(t *testing.T) {
-		// --- Given ---
-		val := struct {
-			A []int
-			B struct{}
-		}{A: []int{}}
-
-		// --- When ---
-		have := New().Any(val)
-
-		// --- Then ---
-		affirm.Equal(t, "{\n  A: []int{},\n  B: {},\n}", have)
-	})
-
-	t.Run("flat with skipped last private field", func(t *testing.T) {
-		// --- Given ---
-		val := struct {
-			A int
-			b int
-		}{1, 2}
-
-		// --- When ---
-		have := New(WithFlat, WithNoPrivate).Any(val)
-
-		// --- Then ---
-		affirm.Equal(t, "{A: 1}", have)
-	})
-
-	t.Run("pointer address of nested chan", func(t *testing.T) {
-		// --- Given ---
-		val := []chan int{make(chan int)}
-
-		// --- When ---
-		have := New(WithPtrAddr).Any(val)
-
-		// --- Then ---
-		want := fmt.Sprintf("<0x%x>", reflect.ValueOf(val[0]).Pointer())
-		affirm.Equal(t, "[]chan int{\n  (chan int)("+want+"),\n}", have)
-	})
-
-	t.Run("nil slice element is indented", func(t *testing.T) {
-		// --- When ---
-		have := New().Any([]any{1, nil})
-
-		// --- Then ---
-		affirm.Equal(t, "[]any{\n  1,\n  nil,\n}", have)
-	})
-
-	t.Run("map type keeps spaces", func(t *testing.T) {
-		// --- Given ---
-		val := map[string]chan int{"a": nil}
-
-		// --- When ---
-		have := New().Any(val)
-
-		// --- Then ---
-		want := "map[string]chan int{\n  \"a\": (chan int)(<addr>),\n}"
-		affirm.Equal(t, want, have)
-	})
-
-	t.Run("pointer cycle", func(t *testing.T) {
-		// --- Given ---
-		var val any
-		val = &val
-
-		// --- When ---
-		have := New(WithMaxDepth(3)).Any(val)
-
-		// --- Then ---
-		affirm.Equal(t, ValMaxNesting, have)
-	})
-
-	t.Run("typed nil in error field", func(t *testing.T) {
-		// --- Given ---
-		val := struct{ E error }{E: (*testcases.TPtr)(nil)}
-
-		// --- When ---
-		have := New().Any(val)
-
-		// --- Then ---
-		affirm.Equal(t, "{\n  E: nil,\n}", have)
-	})
-
-	t.Run("nil interface value", func(t *testing.T) {
-		// --- Given ---
-		var itfNil testcases.TItf
-		dmp := New()
-
-		// --- When ---
-		have := dmp.Any(itfNil)
-
-		// --- Then ---
-		affirm.Equal(t, ValNil, have)
-	})
-
-	t.Run("slice of slices of any", func(t *testing.T) {
-		// --- Given ---
-		val := [][]any{
-			{"str00", 0, "str02"},
-			{"str10", 1, "str12"},
-			{"str10", 1, nil},
-		}
-		dmp := New(WithFlat, WithCompact)
-
-		// --- When ---
-		have := dmp.Any(val)
-
-		// --- Then ---
-		want := "" +
-			`[][]any{{"str00",0,"str02"},` +
-			`{"str10",1,"str12"},{"str10",1,nil}}`
-		affirm.Equal(t, want, have)
-	})
-
-	t.Run("depth", func(t *testing.T) {
-		// --- Given ---
-		val := struct {
-			S0 struct {
-				S1 struct {
-					S2 struct {
-						S4 struct {
-							S5 struct {
-								S6 struct{ VAL int }
-							}
-						}
-					}
-				}
-			}
-		}{}
-		dmp := New(WithFlat, WithCompact)
-
-		// --- When ---
-		have := dmp.Any(val)
-
-		// --- Then ---
-		affirm.Equal(t, "{S0:{S1:{S2:{S4:{S5:{S6:{VAL:<...>}}}}}}}", have)
-	})
-
-	t.Run("format nested slices", func(t *testing.T) {
-		// --- Given ---
-		type Node struct {
-			Value    int
-			Children []*Node
-		}
-
-		val := &Node{
-			Value: 1,
-			Children: []*Node{
-				{
-					Value: 2,
-				},
-				{
-					Value: 3,
-					Children: []*Node{
-						{
-							Value: 4,
-						},
-					},
-				},
-			},
-		}
-
-		// --- When ---
-		have := New().Any(val)
-
-		// --- Then ---
-		want := goldy.Open(t, "testdata/struct_nested.gld")
-		affirm.Equal(t, want.String(), have)
-	})
-
-	t.Run("format nested slices indented twice", func(t *testing.T) {
-		// --- Given ---
-		type Node struct {
-			Value    int
-			Children []*Node
-		}
-
-		val := &Node{
-			Value: 1,
-			Children: []*Node{
-				{
-					Value: 2,
-				},
-				{
-					Value: 3,
-					Children: []*Node{
-						{
-							Value: 4,
-						},
-					},
-				},
-			},
-		}
-		dmp := New(WithIndent(2))
-
-		// --- When ---
-		have := dmp.Any(val)
-
-		// --- Then ---
-		want := goldy.Open(t, "testdata/struct_nested_with_indent.gld")
-		affirm.Equal(t, want.String(), have)
-	})
-}
-
 func Test_Dump_Diff_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		opts    []Option
-		wantIn  any
-		haveIn  any
-		wantOut string
-		haveOut string
-		diffOut string
+		opts   []Option
+		wantIn any
+		haveIn any
+		wOut   string
+		hOut   string
+		wDiff  string
 	}{
 		{"same strings", nil, "abc", "abc", `"abc"`, `"abc"`, ""},
 		{
@@ -776,7 +716,7 @@ func Test_Dump_Diff_tabular(t *testing.T) {
 				"+c",
 		},
 		{
-			"both multiline strings end with a new line",
+			"multiline want ends with a new line",
 			nil,
 			"a\nb\nc\n",
 			"abc",
@@ -815,15 +755,7 @@ func Test_Dump_Diff_tabular(t *testing.T) {
 				" c\n" +
 				"-d",
 		},
-		{
-			"both nil",
-			[]Option{WithFlatStrings(6)},
-			nil,
-			nil,
-			"nil",
-			"nil",
-			"",
-		},
+		{"both nil", []Option{WithFlatStrings(6)}, nil, nil, "nil", "nil", ""},
 		{
 			"want is nil",
 			nil,
@@ -859,12 +791,12 @@ func Test_Dump_Diff_tabular(t *testing.T) {
 			dmp := New(tc.opts...)
 
 			// --- When ---
-			wantOut, haveOut, diffOut := dmp.Diff(tc.wantIn, tc.haveIn)
+			hWant, hHave, hDiff := dmp.Diff(tc.wantIn, tc.haveIn)
 
 			// --- Then ---
-			affirm.Equal(t, tc.wantOut, wantOut)
-			affirm.Equal(t, tc.haveOut, haveOut)
-			affirm.Equal(t, tc.diffOut, diffOut)
+			affirm.Equal(t, tc.wOut, hWant)
+			affirm.Equal(t, tc.hOut, hHave)
+			affirm.Equal(t, tc.wDiff, hDiff)
 		})
 	}
 }
@@ -873,7 +805,6 @@ func Test_Dump_forDiff(t *testing.T) {
 	t.Setenv("___", "___")
 	t.Run("changes Flat and Compact configuration", func(t *testing.T) {
 		// --- Given ---
-		val := reflect.ValueOf([]int{1, 2, 3})
 		dmp := Dump{
 			Flat:        true,
 			FlatStrings: 10,
@@ -882,17 +813,31 @@ func Test_Dump_forDiff(t *testing.T) {
 			Indent:      Indent,
 			TabWidth:    TabWidth,
 		}
+		val := reflect.ValueOf([]int{1, 2, 3})
 
 		// --- When ---
-		have, haveKnd := dmp.forDiff(val)
+		have := dmp.forDiff(val)
 
 		// --- Then ---
 		affirm.Equal(t, "{\n  1,\n  2,\n  3,\n}", have)
-		affirm.Equal(t, reflect.Slice, haveKnd)
 		affirm.Equal(t, true, dmp.Flat)
 		affirm.Equal(t, 10, dmp.FlatStrings)
 		affirm.Equal(t, true, dmp.Compact)
 	})
+}
+
+func Test_Dump_Value_tabular(t *testing.T) {
+	tt := dumpValueTestCases()
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := tc.dmp.Value(reflect.ValueOf(tc.v))
+
+			// --- Then ---
+			affirm.Equal(t, tc.want, have)
+		})
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -992,7 +937,7 @@ func Benchmark_Dump_Any_SliceOfStructs(b *testing.B) {
 }
 
 func Benchmark_Dump_Any_DeeplyNested(b *testing.B) {
-	// Build a moderately deep nested structure
+	// Build a moderately deep nested structure.
 	type node struct {
 		Val  int
 		Next *node
@@ -1016,7 +961,7 @@ func Benchmark_Dump_Any_Cyclic(b *testing.B) {
 		Next *node
 	}
 	head := &node{Val: 1}
-	head.Next = head // cycle
+	head.Next = head // Form a cycle.
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

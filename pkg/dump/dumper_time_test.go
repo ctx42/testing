@@ -63,10 +63,10 @@ func Test_GetTimeDumper_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			dmp := GetTimeDumper(tc.format)
+			dumper := GetTimeDumper(tc.format)
+			have := dumper(Dump{}, 0, reflect.ValueOf(tc.val))
 
 			// --- Then ---
-			have := dmp(Dump{}, 0, reflect.ValueOf(tc.val))
 			affirm.Equal(t, tc.want, have)
 		})
 	}
@@ -75,10 +75,10 @@ func Test_GetTimeDumper_tabular(t *testing.T) {
 func Test_TimeDumperFmt(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
+		dumper := TimeDumperFmt(time.DateOnly)
 		dmp := New()
 		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW)
 		val := reflect.ValueOf(tim)
-		dumper := TimeDumperFmt(time.DateOnly)
 
 		// --- When ---
 		have := dumper(dmp, 0, val)
@@ -89,9 +89,9 @@ func Test_TimeDumperFmt(t *testing.T) {
 
 	t.Run("zero value", func(t *testing.T) {
 		// --- Given ---
+		dumper := TimeDumperFmt(time.DateOnly)
 		dmp := New()
 		val := reflect.ValueOf(time.Time{})
-		dumper := TimeDumperFmt(time.DateOnly)
 
 		// --- When ---
 		have := dumper(dmp, 0, val)
@@ -102,10 +102,10 @@ func Test_TimeDumperFmt(t *testing.T) {
 
 	t.Run("uses indent and level", func(t *testing.T) {
 		// --- Given ---
+		dumper := TimeDumperFmt(time.DateOnly)
 		dmp := New(WithIndent(2))
 		tim := time.Date(2000, 1, 2, 3, 4, 5, 0, testcases.WAW)
 		val := reflect.ValueOf(tim)
-		dumper := TimeDumperFmt(time.DateOnly)
 
 		// --- When ---
 		have := dumper(dmp, 1, val)
@@ -116,8 +116,8 @@ func Test_TimeDumperFmt(t *testing.T) {
 
 	t.Run("error - invalid type", func(t *testing.T) {
 		// --- Given ---
-		dmp := New(WithIndent(1))
 		dumper := TimeDumperFmt(time.DateOnly)
+		dmp := New(WithIndent(1))
 
 		// --- When ---
 		have := dumper(dmp, 2, reflect.ValueOf(123))
@@ -261,8 +261,7 @@ func Test_TimeDumperDate(t *testing.T) {
 		have := TimeDumperDate(dmp, 0, val)
 
 		// --- Then ---
-		want := "time.Date(2000,time.January,2,3,4,5,6,time.UTC)"
-		affirm.Equal(t, want, have)
+		affirm.Equal(t, "time.Date(2000,time.January,2,3,4,5,6,time.UTC)", have)
 	})
 
 	t.Run("start of Unix epoch", func(t *testing.T) {

@@ -15,7 +15,6 @@ func Test_FuncDumper(t *testing.T) {
 	t.Run("nil function", func(t *testing.T) {
 		// --- Given ---
 		dmp := New(WithPtrAddr)
-
 		var fn func()
 		val := reflect.ValueOf(fn)
 
@@ -43,16 +42,15 @@ func Test_FuncDumper(t *testing.T) {
 		dmp := New(WithPtrAddr)
 		fn := func() {}
 		val := reflect.ValueOf(fn)
-		want := fmt.Sprintf("<func>(<0x%x>)", val.Pointer())
 
 		// --- When ---
 		have := FuncDumper(dmp, 0, val)
 
 		// --- Then ---
-		affirm.Equal(t, want, have)
+		affirm.Equal(t, fmt.Sprintf("<func>(<0x%x>)", val.Pointer()), have)
 	})
 
-	t.Run("uses indent and level", func(t *testing.T) {
+	t.Run("error - usage uses indent and level", func(t *testing.T) {
 		// --- Given ---
 		dmp := New(WithIndent(2))
 		val := reflect.ValueOf(1234)

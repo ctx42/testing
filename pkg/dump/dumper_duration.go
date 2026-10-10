@@ -11,14 +11,10 @@ import (
 // GetDurDumper returns a [Dumper] for [time.Duration] values using the given
 // format (one of the DurAs* constants).
 func GetDurDumper(format string) Dumper {
-	switch format {
-	case DurAsString:
-		return DurDumperString
-	case DurAsSeconds:
+	if format == DurAsSeconds {
 		return DurDumperSeconds
-	default:
-		return DurDumperString
 	}
+	return DurDumperString
 }
 
 // DurDumperString is the built-in dumper for [time.Duration] using the

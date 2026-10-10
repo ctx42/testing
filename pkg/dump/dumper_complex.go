@@ -14,9 +14,9 @@ import (
 //   - [reflect.Complex64]
 //   - [reflect.Complex128]
 //
-// Returns [ValErrUsage] ("<dump-usage-error>") string if kind cannot be
-// matched. It returns the string representation in the format defined by [Dump]
-// configuration.
+// Returns [ValErrUsage] ("<dump-usage-error>") string if the kind cannot
+// be matched. It returns the string representation in the format defined by
+// [Dump] configuration.
 func ComplexDumper(dmp Dump, lvl int, val reflect.Value) string {
 	var str string
 	switch val.Kind() {

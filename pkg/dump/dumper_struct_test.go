@@ -16,6 +16,7 @@ import (
 func Test_StructDumper(t *testing.T) {
 	t.Run("simple struct with private fields", func(t *testing.T) {
 		// --- Given ---
+		dmp := New()
 		s := testcases.TA{
 			Int: 1,
 			Str: "2",
@@ -24,7 +25,6 @@ func Test_StructDumper(t *testing.T) {
 			Loc: testcases.WAW,
 			TAp: nil,
 		}
-		dmp := New()
 
 		// --- When ---
 		have := StructDumper(dmp, 0, reflect.ValueOf(s))
@@ -36,6 +36,7 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("simple struct without private fields", func(t *testing.T) {
 		// --- Given ---
+		dmp := New(WithNoPrivate)
 		s := testcases.TA{
 			Int: 1,
 			Str: "2",
@@ -44,7 +45,6 @@ func Test_StructDumper(t *testing.T) {
 			Loc: testcases.WAW,
 			TAp: nil,
 		}
-		dmp := New(WithNoPrivate)
 
 		// --- When ---
 		have := StructDumper(dmp, 0, reflect.ValueOf(s))
@@ -56,6 +56,7 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("simple flat and compact struct", func(t *testing.T) {
 		// --- Given ---
+		dmp := New(WithFlat, WithCompact)
 		s := testcases.TA{
 			Int: 1,
 			Str: "2",
@@ -64,7 +65,6 @@ func Test_StructDumper(t *testing.T) {
 			Loc: testcases.WAW,
 			TAp: nil,
 		}
-		dmp := New(WithFlat, WithCompact)
 
 		// --- When ---
 		have := StructDumper(dmp, 0, reflect.ValueOf(s))
@@ -76,13 +76,13 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("multi level struct", func(t *testing.T) {
 		// --- Given ---
+		dmp := New()
 		s := testcases.TRec{
 			Int: 1,
 			Rec: &testcases.TRec{
 				Int: 2,
 			},
 		}
-		dmp := New()
 
 		// --- When ---
 		have := StructDumper(dmp, 0, reflect.ValueOf(s))
@@ -94,13 +94,13 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("multi-level struct with indent", func(t *testing.T) {
 		// --- Given ---
+		dmp := New(WithIndent(2))
 		s := testcases.TRec{
 			Int: 1,
 			Rec: &testcases.TRec{
 				Int: 2,
 			},
 		}
-		dmp := New(WithIndent(2))
 
 		// --- When ---
 		have := StructDumper(dmp, 0, reflect.ValueOf(s))
@@ -112,13 +112,13 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("multi-level flat and compact struct", func(t *testing.T) {
 		// --- Given ---
+		dmp := New(WithFlat, WithCompact)
 		s := testcases.TRec{
 			Int: 1,
 			Rec: &testcases.TRec{
 				Int: 2,
 			},
 		}
-		dmp := New(WithFlat, WithCompact)
 
 		// --- When ---
 		have := StructDumper(dmp, 0, reflect.ValueOf(s))
@@ -130,6 +130,7 @@ func Test_StructDumper(t *testing.T) {
 
 	t.Run("struct with a multiline string field value", func(t *testing.T) {
 		// --- Given ---
+		dmp := New(WithFlatStrings(0))
 		s := struct {
 			F0 int
 			F1 string
@@ -137,7 +138,6 @@ func Test_StructDumper(t *testing.T) {
 			F0: 1,
 			F1: "a\nb\nc\n",
 		}
-		dmp := New(WithFlatStrings(0))
 
 		// --- When ---
 		have := StructDumper(dmp, 0, reflect.ValueOf(s))

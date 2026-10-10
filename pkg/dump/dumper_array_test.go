@@ -34,56 +34,26 @@ func Test_ArrayDumper_tabular(t *testing.T) {
 		val  any
 		want string
 	}{
-		{
-			"default",
-			New(),
-			[2]int{0, 1},
-			"[2]int{\n  0,\n  1,\n}",
-		},
-		{
-			"nil array",
-			New(),
-			nilArr,
-			"[2]int{\n  0,\n  0,\n}",
-		},
+		{"default", New(), [2]int{0, 1}, "[2]int{\n  0,\n  1,\n}"},
+		{"zero array", New(), nilArr, "[2]int{\n  0,\n  0,\n}"},
 		{
 			"default with indent",
 			New(WithIndent(2)),
 			[2]int{0, 1},
 			"    [2]int{\n      0,\n      1,\n    }",
 		},
-		{
-			"flat array",
-			New(WithFlat),
-			[2]int{0, 1},
-			"[2]int{0, 1}",
-		},
+		{"flat array", New(WithFlat), [2]int{0, 1}, "[2]int{0, 1}"},
 		{
 			"flat and compact array",
 			New(WithFlat, WithCompact),
 			[2]int{0, 1},
 			"[2]int{0,1}",
 		},
+		{"flat array empty int", New(WithFlat), [2]int{}, "[2]int{0, 0}"},
+		{"flat slice empty", New(WithFlat), []int{}, "[]int{}"},
+		{"flat array empty any", New(WithFlat), [2]any{}, "[2]any{nil, nil}"},
 		{
-			"flat array empty int",
-			New(WithFlat),
-			[2]int{},
-			"[2]int{0, 0}",
-		},
-		{
-			"flat slice empty",
-			New(WithFlat),
-			[]int{},
-			"[]int{}",
-		},
-		{
-			"flat array empty any",
-			New(WithFlat),
-			[2]any{},
-			"[2]any{nil, nil}",
-		},
-		{
-			"flat array empty any",
+			"flat array empty interface",
 			(func() Dump {
 				dmp := New(WithFlat)
 				dmp.UseAny = false

@@ -22,7 +22,7 @@ func Test_ComplexDumper(t *testing.T) {
 		affirm.Equal(t, ValErrUsage, have)
 	})
 
-	t.Run("invalid usage uses level", func(t *testing.T) {
+	t.Run("error - usage uses level", func(t *testing.T) {
 		// --- Given ---
 		dmp := New()
 
@@ -33,7 +33,7 @@ func Test_ComplexDumper(t *testing.T) {
 		affirm.Equal(t, "  "+ValErrUsage, have)
 	})
 
-	t.Run("uses indent and level", func(t *testing.T) {
+	t.Run("error - usage uses indent and level", func(t *testing.T) {
 		// --- Given ---
 		dmp := New(WithIndent(2))
 

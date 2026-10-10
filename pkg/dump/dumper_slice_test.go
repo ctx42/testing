@@ -13,8 +13,8 @@ import (
 func Test_SliceDumper(t *testing.T) {
 	t.Run("slice of any", func(t *testing.T) {
 		// --- Given ---
-		val := []any{"str0", 1, "str2"}
 		dmp := New(WithFlat, WithCompact)
+		val := []any{"str0", 1, "str2"}
 
 		// --- When ---
 		have := SliceDumper(dmp, 0, reflect.ValueOf(val))
@@ -43,24 +43,14 @@ func Test_SliceDumper_tabular(t *testing.T) {
 		val  any
 		want string
 	}{
-		{
-			"nil slice",
-			New(WithFlat, WithCompact),
-			[]int(nil),
-			"nil",
-		},
+		{"nil slice", New(WithFlat, WithCompact), []int(nil), "nil"},
 		{
 			"flat and compact slice of int",
 			New(WithFlat, WithCompact),
 			[]int{1, 2},
 			"[]int{1,2}",
 		},
-		{
-			"default slice of int",
-			New(),
-			[]int{1, 2},
-			"[]int{\n  1,\n  2,\n}",
-		},
+		{"default slice of int", New(), []int{1, 2}, "[]int{\n  1,\n  2,\n}"},
 	}
 
 	for _, tc := range tt {

@@ -37,7 +37,7 @@ func Test_ChanDumper(t *testing.T) {
 		affirm.Equal(t, ValErrUsage, have)
 	})
 
-	t.Run("usage error uses level", func(t *testing.T) {
+	t.Run("error - usage uses level", func(t *testing.T) {
 		// --- Given ---
 		dmp := New()
 		val := reflect.ValueOf(1234)
@@ -58,8 +58,7 @@ func Test_ChanDumper(t *testing.T) {
 		have := ChanDumper(dmp, 0, val)
 
 		// --- Then ---
-		want := fmt.Sprintf("(chan int)(<0x%x>)", val.Pointer())
-		affirm.Equal(t, want, have)
+		affirm.Equal(t, fmt.Sprintf("(chan int)(<0x%x>)", val.Pointer()), have)
 	})
 
 	t.Run("uses level", func(t *testing.T) {

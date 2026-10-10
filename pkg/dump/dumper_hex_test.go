@@ -78,7 +78,7 @@ func Test_HexPtrDumper_tabular(t *testing.T) {
 	}{
 		{"uintptr", uintptr(1234), 0, 0, "<0x4d2>"},
 		{"byte", byte(123), 0, 0, "0x7b"},
-		{"usage error", 1234, 0, 0, ValErrUsage},
+		{"error - usage", 1234, 0, 0, ValErrUsage},
 		{
 			"unsafe pointer",
 			unsafe.Pointer(sPtr),
@@ -87,9 +87,15 @@ func Test_HexPtrDumper_tabular(t *testing.T) {
 			fmt.Sprintf("<%p>", sPtr),
 		},
 
-		{"uses indent", 1234, 2, 0, "    " + ValErrUsage},
-		{"uses level", 1234, 0, 1, "  " + ValErrUsage},
-		{"uses indent and level", 1234, 2, 1, "      " + ValErrUsage},
+		{"error - usage uses indent", 1234, 2, 0, "    " + ValErrUsage},
+		{"error - usage uses level", 1234, 0, 1, "  " + ValErrUsage},
+		{
+			"error - usage uses indent and level",
+			1234,
+			2,
+			1,
+			"      " + ValErrUsage,
+		},
 	}
 
 	for _, tc := range tt {

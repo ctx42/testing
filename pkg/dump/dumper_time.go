@@ -15,7 +15,7 @@ import (
 // format (one of the TimeAs* constants or a standard Go time layout).
 func GetTimeDumper(format string) Dumper {
 	switch format {
-	case "":
+	case TimeAsRFC3339:
 		return TimeDumperFmt(time.RFC3339Nano)
 	case TimeAsUnix:
 		return TimeDumperUnix
@@ -55,7 +55,7 @@ func TimeDumperUnix(dmp Dump, lvl int, val reflect.Value) string {
 }
 
 // TimeDumperDate requires val to be a value representing [time.Time] and
-// returns its representation using [time.Time.GoString] method. Returns
+// returns its representation using the [time.Time.GoString] method. Returns
 // [ValErrUsage] ("<dump-usage-error>") string if the type cannot be matched.
 func TimeDumperDate(dmp Dump, lvl int, val reflect.Value) string {
 	ts, ok := timeValue(val)

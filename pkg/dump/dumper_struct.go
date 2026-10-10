@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// StructDumper is a generic dumper for maps. It expects val to represent the
+// StructDumper is a generic dumper for structs. It expects val to represent the
 // [reflect.Struct] kind. Returns [ValErrUsage] ("<dump-usage-error>") string
 // if the kind cannot be matched. It returns the string representation in the
 // format defined by [Dump] configuration.

@@ -26,12 +26,12 @@ func MapDumper(dmp Dump, lvl int, val reflect.Value) string {
 		prn.Write(typeName(dmp, val.Type()))
 	}
 
-	keys := val.MapKeys()
-	slices.SortStableFunc(keys, valueCmp)
-
 	if val.IsNil() {
 		return prn.Write("(nil)").String()
 	}
+
+	keys := val.MapKeys()
+	slices.SortStableFunc(keys, valueCmp)
 
 	num := val.Len()
 	prn.Write("{").NLI(num)

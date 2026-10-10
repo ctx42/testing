@@ -22,7 +22,7 @@
 // Key types and entry points:
 //   - [New] + [Dump] — the core configurable dumper
 //   - [Any] — one-shot convenience using defaults
-//   - [Option] functions (WithFlat, WithTimeFormat, WithDumper, ...)
+//   - [Option] functions ([WithFlat], [WithTimeFormat], [WithDumper], ...)
 //   - [RegisterTypeDumper] — optional global custom type handlers (see
 //     package documentation for the full customization model)
 //   - Time/duration sentinels: [TimeAsUnix], [DurAsString], ...
@@ -64,7 +64,9 @@ const (
 	// ValChan is shown for channel values.
 	ValChan = "<chan>"
 
-	// ValInvalid is the representation of an invalid reflect.Value.
+	// ValInvalid was the representation of an invalid [reflect.Value].
+	//
+	// Deprecated: invalid values render as [ValNil]; nothing emits it.
 	ValInvalid = "<invalid>"
 
 	// ValMaxNesting is emitted when recursion exceeds [Dump.MaxDepth].
@@ -174,7 +176,7 @@ var (
 // all values of the given type by default (across all [New] calls that
 // do not override it with [WithDumper]).
 //
-// It panics if typ is nil or a dumper for the same type is already
+// It panics if typ or dmp is nil, or a dumper for the same type is already
 // registered. It is safe to call concurrently with [New].
 func RegisterTypeDumper(typ any, dmp Dumper) {
 	if dmp == nil {
@@ -335,8 +337,7 @@ type Dump struct {
 	// TabWidth is the number of spaces that represent one indentation level.
 	TabWidth int
 
-	// internal: mirrors FlatStrings for nested string fields inside structs
-	// when we want them forced flat.
+	// flatStrings forces strings in struct fields to render quoted.
 	flatStrings bool
 
 	// hops counts consecutive pointer and interface dereferences, which do
@@ -433,8 +434,8 @@ func (dmp Dump) DiffValue(wVal, hVal reflect.Value) (string, string, string) {
 	}
 
 	// Format values for diff.
-	wDiffStr, _ := dmp.forDiff(wVal)
-	hDiffStr, _ := dmp.forDiff(hVal)
+	wDiffStr := dmp.forDiff(wVal)
+	hDiffStr := dmp.forDiff(hVal)
 	wDiffMlStr := strings.Contains(wDiffStr, "\n")
 	hDiffMlStr := strings.Contains(hDiffStr, "\n")
 
@@ -445,22 +446,22 @@ func (dmp Dump) DiffValue(wVal, hVal reflect.Value) (string, string, string) {
 
 	edits := diff.Strings(hDiffStr, wDiffStr)
 	// Error can't happen: edits are consistent.
-	unified, _ := diff.CtxToUnified("want", "have", hDiffStr, edits, 2)
+	unified, _ := diff.CtxToUnified("have", "want", hDiffStr, edits, 2)
 	return wStr, hStr, strings.TrimRight(unified, "\n")
 }
 
-// forDiff prepares a value for diffing by formatting it into a string. Returns
-// the string representation of the value and kind.
-func (dmp Dump) forDiff(val reflect.Value) (string, reflect.Kind) {
+// forDiff prepares a value for diffing by formatting it into a multi-line,
+// non-compact string; a quoted string is unquoted.
+func (dmp Dump) forDiff(val reflect.Value) string {
 	dmp.Flat = false
 	dmp.FlatStrings = 0
 	dmp.Compact = false
 
-	str, knd := dmp.value(0, val)
+	str, _ := dmp.value(0, val)
 	if s, err := strconv.Unquote(str); err == nil {
 		str = s
 	}
-	return str, knd
+	return str
 }
 
 // Value renders a reflect.Value using this configuration.

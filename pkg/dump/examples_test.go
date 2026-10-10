@@ -37,7 +37,7 @@ func ExampleDump_Any() {
 	// }
 }
 
-func ExampleDump_Any_flatCompact() {
+func ExampleDump_Any_flat() {
 	val := map[string]any{
 		"int": 42,
 		"loc": testcases.WAW,

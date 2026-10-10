@@ -15,9 +15,9 @@ import (
 //   - [reflect.Uintptr]
 //   - [reflect.UnsafePointer]
 //
-// Returns [ValErrUsage] ("<dump-usage-error>") string if kind cannot be
-// matched. It returns the string representation in the format defined by [Dump]
-// configuration.
+// Returns [ValErrUsage] ("<dump-usage-error>") string if the kind cannot
+// be matched. It returns the string representation in the format defined by
+// [Dump] configuration.
 func HexPtrDumper(dmp Dump, lvl int, val reflect.Value) string {
 	var str string
 	switch val.Kind() {

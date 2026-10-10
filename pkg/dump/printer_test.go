@@ -95,7 +95,7 @@ func Test_Printer_Comma(t *testing.T) {
 		// --- Given ---
 		dmp := Dump{Flat: true}
 
-		// --- cfgn ---
+		// --- When ---
 		have := NewPrinter(dmp).Comma(false)
 
 		// --- Then ---
@@ -242,7 +242,7 @@ func Test_Printer_Sep(t *testing.T) {
 
 	t.Run("not compact and not flat and last", func(t *testing.T) {
 		// --- Given ---
-		dmp := Dump{Compact: true, Flat: false}
+		dmp := Dump{Compact: false, Flat: false}
 
 		// --- When ---
 		have := NewPrinter(dmp).Sep(true)

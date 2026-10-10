@@ -105,7 +105,7 @@ func Test_MapDumper_tabular(t *testing.T) {
 			"map[int]int{\n  1: 10,\n  2: 20,\n}",
 		},
 		{
-			"default map int int ith indent",
+			"default map int int with indent",
 			New(WithIndent(2)),
 			map[int]int{1: 10, 2: 20},
 			"    map[int]int{\n      1: 10,\n      2: 20,\n    }",
@@ -123,7 +123,7 @@ func Test_MapDumper_tabular(t *testing.T) {
 			"map[int]int{1:10,2:20}",
 		},
 		{
-			"flat map int testcases T1",
+			"flat map int testcases TRec",
 			New(WithFlat, WithCompact, WithTimeFormat(TimeAsUnix)),
 			map[int]testcases.TRec{0: {Int: 0}, 1: {Int: 1}},
 			"map[int]testcases.TRec{0:{Int:0,Rec:nil},1:{Int:1,Rec:nil}}",

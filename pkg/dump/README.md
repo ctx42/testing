@@ -68,7 +68,7 @@ values are rendered to suit your needs. Here are some key options:
 
 For a compact, single-line representation, use the Flat option:
 
-<!-- gmdoceg:ExampleDump_Any_flatCompact -->
+<!-- gmdoceg:ExampleDump_Any_flat -->
 ```go
 val := map[string]any{
 	"int": 42,
@@ -109,7 +109,10 @@ displayed:
 ```go
 val := map[string]time.Duration{"timeout": 1500 * time.Millisecond}
 
-have := dump.New(dump.WithFlat, dump.WithDurationFormat(dump.DurAsSeconds)).Any(val)
+have := dump.New(
+	dump.WithFlat,
+	dump.WithDurationFormat(dump.DurAsSeconds),
+).Any(val)
 
 fmt.Println(have)
 // Output:
@@ -118,22 +121,22 @@ fmt.Println(have)
 
 ### Pointer Addresses
 
-By default, pointer addresses are hidden, but you can enable them with 
+By default, pointer addresses are hidden, but you can enable them with
 `dump.WithPtrAddr` option:
 
 ```go
 val := map[string]any{
-    "fn0": func() {},
-    "fn1": func() {},
+	"fn0": func() {},
+	"fn1": func() {},
 }
 
-have := New(dump.WithPtrAddr).Any(val)
+have := dump.New(dump.WithPtrAddr).Any(val)
 
 fmt.Println(have)
 // Output:
 // map[string]any{
-// 	"fn0": <func>(<0x533760>),
-// 	"fn1": <func>(<0x533780>),
+//   "fn0": <func>(<0x533760>),
+//   "fn1": <func>(<0x533780>),
 // }
 ```
 
@@ -142,7 +145,6 @@ fmt.Println(have)
 For ultimate flexibility, you can define custom dumpers for specific types.
 Dumpers for types are regular functions matching the `dump.Dumper` signature
 declared in the package.
-the package.
 
 ```go
 type Dumper func(dmp Dump, level int, val reflect.Value) string
