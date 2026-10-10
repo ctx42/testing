@@ -243,6 +243,45 @@ func Test_file_findPackage(t *testing.T) {
 		assert.Equal(t, &gopkg{alias: "a1", pkgName: "n1", resolved: true}, have)
 	})
 
+	t.Run("skips unrelated import failing to resolve", func(t *testing.T) {
+		// --- Given ---
+		res := &resolver{}
+		wd := must.Value(os.Getwd())
+		fil := &file{
+			pks: []*gopkg{
+				newPkg(wd, "example.com/does/not/exist"),
+				{pkgName: "n1", resolved: true},
+			},
+		}
+
+		// --- When ---
+		have, err := fil.findPackage(res, "n1")
+
+		// --- Then ---
+		assert.NoError(t, err)
+		assert.Equal(t, &gopkg{pkgName: "n1", resolved: true}, have)
+	})
+
+	t.Run("error - wanted import fails to resolve", func(t *testing.T) {
+		// --- Given ---
+		res := &resolver{}
+		wd := must.Value(os.Getwd())
+		fil := &file{
+			pks: []*gopkg{
+				{pkgName: "n1", resolved: true},
+				newPkg(wd, "example.com/does/not/exist"),
+			},
+		}
+
+		// --- When ---
+		have, err := fil.findPackage(res, "exist")
+
+		// --- Then ---
+		assert.ErrorIs(t, ErrUnkPkg, err)
+		assert.ErrorContain(t, "example.com/does/not/exist", err)
+		assert.Nil(t, have)
+	})
+
 	t.Run("error - empty packages", func(t *testing.T) {
 		// --- Given ---
 		res := &resolver{}
