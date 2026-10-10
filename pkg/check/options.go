@@ -79,14 +79,17 @@ var (
 // given type. It will be used by default in all checks (via [DefaultOptions])
 // unless overridden per-call with [WithTypeChecker].
 //
-// It panics if a checker for the same type is already registered. It is safe
-// to call concurrently with checks.
+// It panics if typ is nil or a checker for the same type is already
+// registered. It is safe to call concurrently with checks.
 //
 // See the Design section in the root README for the overall customization
 // model, and [WithTypeChecker] for per-check overrides.
 func RegisterTypeChecker(typ any, chk Checker) {
 	if chk == nil {
 		panic("cannot register a nil type checker")
+	}
+	if typ == nil {
+		panic("cannot register a type checker for a nil type")
 	}
 	typeCheckersMx.Lock()
 	defer typeCheckersMx.Unlock()
@@ -171,10 +174,14 @@ func WithDumper(optsD ...dump.Option) Option {
 
 // WithTypeChecker registers a custom [Checker] for values of the given type
 // (used only for checks with these options). It overrides any globally
-// registered checker from [RegisterTypeChecker] for that type.
+// registered checker from [RegisterTypeChecker] for that type. It panics if
+// typ is nil.
 //
 // See the Design section in the root README for the customization model.
 func WithTypeChecker(typ any, chk Checker) Option {
+	if typ == nil {
+		panic("cannot set a type checker for a nil type")
+	}
 	rt := reflect.TypeOf(typ)
 	return func(ops Options) Options {
 		ops.TypeCheckers = maps.Clone(ops.TypeCheckers)

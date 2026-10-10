@@ -85,6 +85,14 @@ func Test_RegisterTypeDumper(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "cannot register a nil type dumper", *msg)
 	})
+
+	t.Run("panics if the type is nil", func(t *testing.T) {
+		// --- When ---
+		msg := affirm.Panic(t, func() { RegisterTypeDumper(nil, dmp) })
+
+		// --- Then ---
+		affirm.Equal(t, "cannot register a type dumper for a nil type", *msg)
+	})
 }
 
 func Test_WithFlat(t *testing.T) {
@@ -284,6 +292,14 @@ func Test_WithDumper(t *testing.T) {
 		// --- Then ---
 		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[int]()])
 		affirm.Equal(t, true, wChk)
+	})
+
+	t.Run("panics if the type is nil", func(t *testing.T) {
+		// --- When ---
+		msg := affirm.Panic(t, func() { WithDumper(nil, cDpr) })
+
+		// --- Then ---
+		affirm.Equal(t, "cannot set a type dumper for a nil type", *msg)
 	})
 }
 

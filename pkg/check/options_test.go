@@ -83,6 +83,14 @@ func Test_RegisterTypeChecker(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "cannot register a nil type checker", *msg)
 	})
+
+	t.Run("panics if the type is nil", func(t *testing.T) {
+		// --- When ---
+		msg := affirm.Panic(t, func() { RegisterTypeChecker(nil, chk) })
+
+		// --- Then ---
+		affirm.Equal(t, "cannot register a type checker for a nil type", *msg)
+	})
 }
 
 func Test_WithTrail(t *testing.T) {
@@ -188,6 +196,14 @@ func Test_WithTypeChecker(t *testing.T) {
 		// --- Then ---
 		wChk := core.Same(cChk, have.TypeCheckers[reflect.TypeFor[custom]()])
 		affirm.Equal(t, true, wChk)
+	})
+
+	t.Run("panics if the type is nil", func(t *testing.T) {
+		// --- When ---
+		msg := affirm.Panic(t, func() { WithTypeChecker(nil, cChk) })
+
+		// --- Then ---
+		affirm.Equal(t, "cannot set a type checker for a nil type", *msg)
 	})
 }
 

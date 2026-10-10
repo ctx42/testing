@@ -174,11 +174,14 @@ var (
 // all values of the given type by default (across all [New] calls that
 // do not override it with [WithDumper]).
 //
-// It panics if a dumper for the same type is already registered. It is safe to
-// call concurrently with [New].
+// It panics if typ is nil or a dumper for the same type is already
+// registered. It is safe to call concurrently with [New].
 func RegisterTypeDumper(typ any, dmp Dumper) {
 	if dmp == nil {
 		panic("cannot register a nil type dumper")
+	}
+	if typ == nil {
+		panic("cannot register a type dumper for a nil type")
 	}
 	typeDumpersMx.Lock()
 	defer typeDumpersMx.Unlock()
@@ -240,10 +243,13 @@ func WithDurationFormat(format string) Option {
 // WithDumper registers a per-instance custom [Dumper] for the given type.
 // It overrides any globally registered dumper for that type (see
 // [RegisterTypeDumper]). A nil dumper removes the custom dumper, so values of
-// the type are rendered by the default rules.
+// the type are rendered by the default rules. It panics if typ is nil.
 func WithDumper(typ any, dumper Dumper) Option {
+	if typ == nil {
+		panic("cannot set a type dumper for a nil type")
+	}
+	rt := reflect.TypeOf(typ)
 	return func(dmp *Dump) {
-		rt := reflect.TypeOf(typ)
 		if dumper == nil {
 			delete(dmp.Dumpers, rt)
 			return
