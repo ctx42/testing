@@ -25,6 +25,7 @@ package mock
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"reflect"
 	"runtime"
 	"strings"
@@ -130,23 +131,23 @@ func NewMock(t tester.T, opts ...Option) *Mock {
 	return mck
 }
 
-// MetaSetAll stores arbitrary data on the mock for later retrieval via
-// [Mock.MetaAll]. The data is never used by the mock itself.
+// MetaSetAll stores a copy of arbitrary data on the mock for later retrieval
+// via [Mock.MetaAll]. The data is never used by the mock itself.
 func (mck *Mock) MetaSetAll(data map[string]any) {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
-	mck.meta = data
+	mck.meta = maps.Clone(data)
 }
 
-// MetaAll returns the data previously stored with [Mock.MetaSetAll], or an
-// empty map if nothing was set.
+// MetaAll returns a copy of the data previously stored with
+// [Mock.MetaSetAll], or an empty map if nothing was set.
 func (mck *Mock) MetaAll() map[string]any {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
 	if mck.meta == nil {
-		mck.meta = make(map[string]any)
+		return make(map[string]any)
 	}
-	return mck.meta
+	return maps.Clone(mck.meta)
 }
 
 // On adds an expectation that the named method will be called with the

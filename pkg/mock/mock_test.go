@@ -103,7 +103,19 @@ func Test_Mock_MetaSetAll(t *testing.T) {
 
 		// --- Then ---
 		assert.Equal(t, map[string]any{"B": 2}, mck.meta)
-		assert.Same(t, meta, mck.meta)
+	})
+
+	t.Run("stores a copy", func(t *testing.T) {
+		// --- Given ---
+		mck := &Mock{}
+		meta := map[string]any{"A": 1}
+
+		// --- When ---
+		mck.MetaSetAll(meta)
+
+		// --- Then ---
+		meta["B"] = 2
+		assert.Equal(t, map[string]any{"A": 1}, mck.meta)
 	})
 }
 
@@ -119,7 +131,7 @@ func Test_Mock_MetaAll(t *testing.T) {
 		assert.NotNil(t, have)
 	})
 
-	t.Run("returns same map", func(t *testing.T) {
+	t.Run("returns a copy", func(t *testing.T) {
 		// --- Given ---
 		meta := map[string]any{"A": 1}
 		mck := &Mock{meta: meta}
@@ -128,7 +140,9 @@ func Test_Mock_MetaAll(t *testing.T) {
 		have := mck.MetaAll()
 
 		// --- Then ---
-		assert.Same(t, meta, have)
+		assert.Equal(t, meta, have)
+		have["B"] = 2
+		assert.Equal(t, map[string]any{"A": 1}, mck.meta)
 	})
 }
 
