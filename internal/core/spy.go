@@ -6,6 +6,7 @@ package core
 import (
 	"bytes"
 	"fmt"
+	"strings"
 )
 
 // T defines an interface capturing a subset of [testing.TB] methods, used to
@@ -26,6 +27,8 @@ type T interface {
 // reporting methods, used to mock `*testing.T` when testing helper functions.
 // It logs calls to Error, Errorf, Fatal, and Fatalf, allowing verification of
 // test behavior without causing actual test failures.
+//
+// Spy is not safe for concurrent use.
 type Spy struct {
 	HelperCalled     bool          // Tracks if Helper was called.
 	ReportedError    bool          // Tracks if Error or Errorf was called.
@@ -48,8 +51,7 @@ func (spy *Spy) Capture() *Spy {
 	return spy
 }
 
-// Helper is a no-op method that satisfies the [testing.TB.Helper] interface,
-// allowing [Spy] to be used in contexts expecting a testing helper.
+// Helper records the call in [Spy.HelperCalled].
 func (spy *Spy) Helper() { spy.HelperCalled = true }
 
 // Error records a non-fatal error with the provided arguments, appending them
@@ -63,19 +65,19 @@ func (spy *Spy) Error(args ...any) {
 }
 
 // Errorf records a non-fatal error using the provided format string and
-// arguments, appending the formatted message to Messages with a newline. It
-// sets [Spy.ReportedError] to true.
+// arguments, appending the formatted message to Messages, followed by a
+// newline unless it already ends with one. It sets [Spy.ReportedError] to
+// true.
 func (spy *Spy) Errorf(format string, args ...any) {
 	spy.ReportedError = true
-	if spy.Messages != nil {
-		_, _ = fmt.Fprintf(spy.Messages, format, args...)
-		_ = spy.Messages.WriteByte('\n')
-	}
+	spy.logf(format, args...)
 }
 
 // Fatal records a fatal error with the provided arguments, appending them as a
 // space-separated message to Messages, followed by a newline. It sets
-// [Spy.TriggeredFailure] to true and panics with [FailNowMsg].
+// [Spy.TriggeredFailure] to true and panics with [FailNowMsg]. Unlike
+// [testing.TB], which calls runtime.Goexit, the panic can be recovered by
+// the helper under test.
 func (spy *Spy) Fatal(args ...any) {
 	spy.TriggeredFailure = true
 	if spy.Messages != nil {
@@ -85,15 +87,26 @@ func (spy *Spy) Fatal(args ...any) {
 }
 
 // Fatalf records a fatal error using the provided format string and arguments,
-// appending the formatted message to Messages with a newline. It sets
-// [Spy.TriggeredFailure] to true and panics with [FailNowMsg].
+// appending the formatted message to Messages, followed by a newline unless
+// it already ends with one. It sets [Spy.TriggeredFailure] to true and panics
+// with [FailNowMsg].
 func (spy *Spy) Fatalf(format string, args ...any) {
 	spy.TriggeredFailure = true
-	if spy.Messages != nil {
-		_, _ = fmt.Fprintf(spy.Messages, format, args...)
+	spy.logf(format, args...)
+	panic(FailNowMsg)
+}
+
+// logf appends the formatted message to Messages, when capture is on, and
+// terminates it with a newline unless it already ends with one.
+func (spy *Spy) logf(format string, args ...any) {
+	if spy.Messages == nil {
+		return
+	}
+	msg := fmt.Sprintf(format, args...)
+	_, _ = spy.Messages.WriteString(msg)
+	if !strings.HasSuffix(msg, "\n") {
 		_ = spy.Messages.WriteByte('\n')
 	}
-	panic(FailNowMsg)
 }
 
 // Failed reports whether an error or failure has been recorded, returning true

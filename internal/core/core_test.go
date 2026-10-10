@@ -140,7 +140,7 @@ func Test_Same_tabular(t *testing.T) {
 	a1 := [2]int{1, 2}
 	var aNil0 [2]int
 	var aNil1 [2]float64
-	type Ta []int
+	type Ta [2]int
 	var aA, aB Ta
 
 	// Maps.
@@ -203,11 +203,11 @@ func Test_Same_tabular(t *testing.T) {
 		{"array nil var have", a0, aNil0, false},
 		{"array nil var both", aNil0, aNil0, false},
 		{"array nil different type both", aNil0, aNil1, false},
-		{"array nil same type both", aA, aB, true},
+		{"array nil same type both", aA, aB, false},
 
 		{"map same", m0, m0, true},
 		{"map not same", m0, m1, false},
-		{"map nil want", nil, s1, false},
+		{"map nil want", nil, m1, false},
 		{"map nil var want", mNil0, m1, false},
 		{"map nil have", m0, nil, false},
 		{"map nil var have", m0, mNil0, false},
@@ -219,7 +219,7 @@ func Test_Same_tabular(t *testing.T) {
 		{"chanel same", c0, c0, true},
 		{"chanel not the same", c0, c1, false},
 		{"chanel nil want", nil, c1, false},
-		{"chanel nil var want", mNil0, c1, false},
+		{"chanel nil var want", cNil0, c1, false},
 		{"chanel nil have", c0, nil, false},
 		{"chanel nil var have", c0, cNil0, false},
 		{"chanel nil both", nil, nil, false},
@@ -698,7 +698,7 @@ func Test_ValueSimple_tabular(t *testing.T) {
 		wantOK  bool
 	}{
 		{"bool - false", false, false, true},
-		{"bool - true", false, false, true},
+		{"bool - true", true, true, true},
 		{"int", 42, 42, true},
 		{"int8", int8(42), int8(42), true},
 		{"int16", int16(42), int16(42), true},
@@ -723,7 +723,7 @@ func Test_ValueSimple_tabular(t *testing.T) {
 		{"slice", []int{1, 2, 3}, nil, false},
 		{"string", "abc", "abc", true},
 		{"struct", testcases.TPtr{}, nil, false},
-		{"unsafe pointer", uintptr(unsafe.Pointer(ptr)), nil, false},
+		{"unsafe pointer", unsafe.Pointer(ptr), nil, false},
 	}
 
 	for _, tc := range tt {

@@ -121,6 +121,21 @@ func Test_Spy_Errorf(t *testing.T) {
 			t.Errorf(sameLogMsg, want, have)
 		}
 	})
+
+	t.Run("message ending with new line", func(t *testing.T) {
+		// --- Given ---
+		tspy := NewSpy().Capture()
+
+		// --- When ---
+		tspy.Errorf("a%s\n", "bc")
+
+		// --- Then ---
+		have := tspy.Messages.String()
+		want := "abc\n"
+		if want != have {
+			t.Errorf(sameLogMsg, want, have)
+		}
+	})
 }
 
 func Test_Spy_Fatal(t *testing.T) {
@@ -215,6 +230,23 @@ func Test_Spy_Fatalf(t *testing.T) {
 			t.Errorf(sameLogMsg, want, have)
 		}
 	})
+
+	t.Run("message ending with new line", func(t *testing.T) {
+		// --- Given ---
+		tspy := NewSpy().Capture()
+
+		// --- When ---
+		have, _ := WillPanic(func() { tspy.Fatalf("a%s\n", "bc") })
+
+		// --- Then ---
+		if have != FailNowMsg {
+			t.Errorf("want panic %q, have %#v", FailNowMsg, have)
+		}
+		want := "abc\n"
+		if want != tspy.Messages.String() {
+			t.Errorf(sameLogMsg, want, tspy.Messages.String())
+		}
+	})
 }
 
 func Test_Spy_Failed_tabular(t *testing.T) {
@@ -276,21 +308,13 @@ func Test_Spy_Log(t *testing.T) {
 		tspy := NewSpy()
 		tspy.Errorf("a%s", "bc")
 
-		var have string
-		defer func() {
-			if r := recover(); r != nil {
-				have = r.(string)
-				return
-			}
-			t.Errorf("expected panic")
-		}()
-
 		// --- When ---
-		tspy.Log()
+		have, _ := WillPanic(func() { tspy.Log() })
 
 		// --- Then ---
-		if have == "" {
-			t.Errorf("expected panic with message")
+		want := "Spy.Log called without log capture being on"
+		if want != have {
+			t.Errorf(sameLogMsg, want, have)
 		}
 	})
 }
