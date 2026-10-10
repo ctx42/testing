@@ -34,6 +34,15 @@ func AssertTA(t tester.T, want, have *testcases.TA, opts ...any) bool {
 	if !assert.Equal(t, want.Str, have.Str, fName("Str")) {
 		return false
 	}
+	if !assert.Equal(t, want.Tim, have.Tim, fName("Tim")) {
+		return false
+	}
+	if !assert.Equal(t, want.Dur, have.Dur, fName("Dur")) {
+		return false
+	}
+	if !assert.Equal(t, want.Loc, have.Loc, fName("Loc")) {
+		return false
+	}
 	if !assert.Equal(t, want.TAp, have.TAp, fName("TAp")) {
 		return false
 	}
@@ -70,6 +79,28 @@ func Test_AssertTA(t *testing.T) {
 
 		w := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 2, Str: "b"}}
 		h := &testcases.TA{Int: 1, Str: "a", TAp: &testcases.TA{Int: 3, Str: "b"}}
+
+		// --- When ---
+		have := AssertTA(tspy, w, h)
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+	})
+
+	t.Run("not equal duration", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectError()
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: TA.Dur\n" +
+			"   want: 1\n" +
+			"   have: 2"
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
+
+		w := &testcases.TA{Dur: 1}
+		h := &testcases.TA{Dur: 2}
 
 		// --- When ---
 		have := AssertTA(tspy, w, h)

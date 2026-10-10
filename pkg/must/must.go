@@ -22,6 +22,7 @@ package must
 
 import (
 	"errors"
+	"fmt"
 )
 
 // Value returns val if err is nil; otherwise it panics with err.
@@ -54,18 +55,18 @@ func Nil(err error) {
 }
 
 // First returns the first element of s (or the zero value if empty).
-// Panics if err is not nil.
+// Panics with err if err is not nil.
 //
-// See [Single] when you require exactly one element.
+// See [Single] when you require at most one element.
 func First[T any](s []T, err error) T {
-	v, err := single(s, err)
-	if errors.Is(err, errExpSingle) {
-		return v
-	}
 	if err != nil {
 		panic(err)
 	}
-	return v
+	if len(s) == 0 {
+		var zero T
+		return zero
+	}
+	return s[0]
 }
 
 // Single returns the single element of s (or the zero value if empty).
@@ -86,9 +87,9 @@ func Single[T any](s []T, err error) T {
 var errExpSingle = errors.New("expected a single result")
 
 // single returns the first element in the slice or T's zero value if the slice
-// is empty. It returns T's zero value and error if err is not nil. If a slice
-// has more than one element, it returns the first element and errExpSingle
-// error.
+// is empty. It returns T's zero value and err if err is not nil. If the slice
+// has more than one element, it returns the first element and an error
+// wrapping errExpSingle with the number of elements.
 func single[T any](s []T, err error) (T, error) {
 	var t T
 	if err != nil {
@@ -100,6 +101,6 @@ func single[T any](s []T, err error) (T, error) {
 	case 1:
 		return s[0], nil
 	default:
-		return s[0], errExpSingle
+		return s[0], fmt.Errorf("%w: got %d", errExpSingle, len(s))
 	}
 }

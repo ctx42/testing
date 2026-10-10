@@ -5,9 +5,11 @@ package must
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
+	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/pkg/testcases"
 )
 
@@ -113,6 +115,18 @@ func Test_First(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, T{V: 1}, have)
 	})
+
+	t.Run("error - wraps the single result error", func(t *testing.T) {
+		// --- Given ---
+		_, single := single([]T{{V: 1}, {V: 2}}, nil)
+		err := fmt.Errorf("query: %w", single)
+
+		// --- When ---
+		val, _ := core.WillPanic(func() { First([]T{{V: 1}}, err) })
+
+		// --- Then ---
+		affirm.Equal(t, true, val == any(err))
+	})
 }
 
 func Test_Single(t *testing.T) {
@@ -160,6 +174,17 @@ func Test_Single(t *testing.T) {
 		msg := affirm.Panic(t, func() { Single(fn()) })
 
 		// --- Then ---
-		affirm.Equal(t, "expected a single result", *msg)
+		affirm.Equal(t, "expected a single result: got 2", *msg)
+	})
+
+	t.Run("panics with the error value", func(t *testing.T) {
+		// --- Given ---
+		err := errors.New("test msg")
+
+		// --- When ---
+		val, _ := core.WillPanic(func() { Single([]T{{V: 1}}, err) })
+
+		// --- Then ---
+		affirm.Equal(t, true, val == any(err))
 	})
 }

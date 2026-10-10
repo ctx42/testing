@@ -8,7 +8,9 @@ package examples
 import (
 	"testing"
 
+	"github.com/ctx42/testing/pkg/assert"
 	"github.com/ctx42/testing/pkg/mock"
+	"github.com/ctx42/testing/pkg/tester"
 )
 
 // Adder is a simple interface to mock.
@@ -27,7 +29,8 @@ type AdderMock struct {
 // NewAdderMock creates a new [AdderMock] instance. By convention, constructor
 // functions are prefixed with "New". More complex mocks may accept additional
 // parameters.
-func NewAdderMock(t *testing.T) *AdderMock {
+func NewAdderMock(t tester.T) *AdderMock {
+	t.Helper()
 	return &AdderMock{mock.NewMock(t)}
 }
 
@@ -57,5 +60,5 @@ func Test_Adder_Add(t *testing.T) {
 	have := mck.Add(1.0, 2.0)
 
 	// --- Then ---
-	_ = have // The "have" is: 3.000000
+	assert.Equal(t, 3.0, have)
 }

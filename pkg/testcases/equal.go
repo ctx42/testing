@@ -8,11 +8,15 @@ import (
 )
 
 // EqualCase represents one test case for equality behavior.
+//
+// AreEqual follows check.Equal, which differs from [reflect.DeepEqual]: it
+// compares time.Time values by instant (ignoring the location), functions by
+// identity and pointers by the values they point to.
 type EqualCase struct {
 	Desc     string // Human-readable description of the case.
 	Val0     any    // First value.
 	Val1     any    // Second value.
-	AreEqual bool   // Whether the two values are considered equal.
+	AreEqual bool   // Whether check.Equal considers the values equal.
 }
 
 // EqualCases returns a large, battle-tested set of cases for verifying
@@ -201,9 +205,12 @@ func EqualPrimitives() []EqualCase {
 
 		{"equal string", "abc", "abc", true},
 		{"not equal string", "ab", "abc", false},
+		{"string and named string", "abc", TStrType("abc"), false},
 
 		{"equal int", 42, 42, true},
 		{"not equal int", 42, 44, false},
+		{"int and int64", 42, int64(42), false},
+		{"int and named int", 1, TIntType(1), false},
 
 		{"equal int8", int8(42), int8(42), true},
 		{"not equal int8", int8(42), int8(44), false},

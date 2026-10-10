@@ -35,6 +35,10 @@ type Module struct {
 //   - "v2" - uses tst-a@v0.2.0 and tst-b@v0.2.0 modules.
 func New(t tester.T, version string) *Module {
 	t.Helper()
+	if version != "v1" && version != "v2" {
+		t.Fatalf("unknown test project version: %s", version)
+		return nil
+	}
 
 	base := t.TempDir()
 	mod := &Module{
@@ -61,11 +65,18 @@ func New(t tester.T, version string) *Module {
 	return mod
 }
 
-// WriteFile writes a file, rooted at the module's root directory, with the
-// given name and content. Calls t.Fatal on error.
+// WriteFile writes a file with the given name and content, creating missing
+// parent directories, and returns its path. A relative pth is rooted at the
+// module's root directory; an absolute one is used as-is. Calls t.Fatal on
+// error.
 func (mod *Module) WriteFile(pth, content string) string {
 	mod.t.Helper()
-	pth = filepath.Join(mod.Dir, pth)
+	if !filepath.IsAbs(pth) {
+		pth = filepath.Join(mod.Dir, pth)
+	}
+	if err := os.MkdirAll(filepath.Dir(pth), 0700); err != nil {
+		mod.t.Fatal(err)
+	}
 	if err := os.WriteFile(pth, []byte(content), 0600); err != nil {
 		mod.t.Fatal(err)
 	}
@@ -92,7 +103,7 @@ func (mod *Module) Path(elems ...string) string {
 }
 
 // goMod returns "go.mod" file content for the test project based on the
-// project version. Panics if the version is unknown.
+// project version. Fails the test if the version is unknown.
 func (mod *Module) goMod() string {
 	mod.t.Helper()
 
@@ -124,7 +135,7 @@ func (mod *Module) goMod() string {
 }
 
 // goSum returns "go.sum" file content for the test project based on the
-// project version. Panics if the version is unknown.
+// project version. Fails the test if the version is unknown.
 func (mod *Module) goSum() string {
 	mod.t.Helper()
 
@@ -152,7 +163,7 @@ func (mod *Module) goSum() string {
 }
 
 // projectGo returns "project.go" file content for the test project based on
-// the project version. Panics if the version is unknown.
+// the project version. Fails the test if the version is unknown.
 func (mod *Module) projectGo() string {
 	mod.t.Helper()
 
@@ -186,7 +197,9 @@ func (mod *Module) projectGo() string {
 // createExternalModules creates minimal source trees for tst-a and tst-b
 // inside the same temporary directory as the main module and records their
 // locations so that getModInfo tests do not depend on the global module cache.
+// The tst-b module provides the pkg/mocker/first package project.go imports.
 func (mod *Module) createExternalModules(baseDir string) {
+	mod.t.Helper()
 	var versions []struct {
 		path    string
 		version string
@@ -217,6 +230,10 @@ func (mod *Module) createExternalModules(baseDir string) {
 		dir := filepath.Join(baseDir, filepath.Base(v.path))
 		mod.CreateDir(dir)
 		mod.writeExternalGoMod(dir, v.path)
+		if filepath.Base(v.path) == "tst-b" {
+			code := "package first\n\ntype First interface{ First() }\n"
+			mod.WriteFile(filepath.Join(dir, "pkg/mocker/first/first.go"), code)
+		}
 
 		key := v.path + "@" + v.version
 		mod.ExternalDirs[key] = dir
@@ -225,6 +242,7 @@ func (mod *Module) createExternalModules(baseDir string) {
 
 // writeExternalGoMod writes a minimal go.mod for an external test module.
 func (mod *Module) writeExternalGoMod(dir, modulePath string) {
+	mod.t.Helper()
 	content := "module " + modulePath + "\n\ngo 1.24.0\n"
 	pth := filepath.Join(dir, "go.mod")
 	if err := os.WriteFile(pth, []byte(content), 0600); err != nil {
