@@ -11,7 +11,7 @@
 // test setups.
 //
 // [Spy] is the primary tool: pass it to your Helper Under Test (HUT) in
-// place of *testing.T, set expectations with the Expect* methods, call
+// place of [testing.T], set expectations with the Expect* methods, call
 // [Spy.Close], exercise the helper, then verify with [Spy.AssertExpectations]
 // (or let the automatic cleanup do it).
 //
@@ -22,7 +22,8 @@
 //
 // Key types and entry points:
 //   - [T] — the interface your helpers should accept
-//   - [New] — creates a [Spy] bound to a real *testing.T
-//   - [Spy] — the spy implementation with Expect*, Close, AssertExpectations
+//   - [New] — creates a [Spy] bound to a real [testing.T]
+//   - [Spy] — the spy implementation with Expect*, [Spy.Close] and
+//     [Spy.AssertExpectations]
 //   - [Strategy] + ExpectLog* — for precise log message verification
 package tester
