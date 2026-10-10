@@ -823,7 +823,7 @@ func Test_gopkg_equal_tabular(t *testing.T) {
 func Test_gopkg_from(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		files := make([]*file, 0)
+		files := []*file{{}}
 		fset := &token.FileSet{}
 
 		from := &gopkg{

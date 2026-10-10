@@ -61,7 +61,7 @@ func Test_newProxy(t *testing.T) {
 		assert.Nil(t, call.alter)
 		assert.Nil(t, call.panic)
 		assert.Nil(t, call.requires)
-		assert.Same(t, ptr.AAA, call.proxy.Interface())
+		assert.Same(t, met.Interface(), call.proxy.Interface())
 	})
 
 	t.Run("variadic", func(t *testing.T) {
@@ -87,7 +87,7 @@ func Test_newProxy(t *testing.T) {
 		assert.Nil(t, call.alter)
 		assert.Nil(t, call.panic)
 		assert.Nil(t, call.requires)
-		assert.Same(t, ptr.Variadic, call.proxy.Interface())
+		assert.Same(t, met.Interface(), call.proxy.Interface())
 	})
 
 	t.Run("custom name", func(t *testing.T) {

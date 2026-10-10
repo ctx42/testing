@@ -106,6 +106,71 @@ func Test_WillPanic(t *testing.T) {
 	})
 }
 
+func Test_Same(t *testing.T) {
+	t.Run("method values of different receivers", func(t *testing.T) {
+		// --- Given ---
+		a, b := &testcases.TPtr{Val: "a"}, &testcases.TPtr{Val: "b"}
+
+		// --- When ---
+		have := Same(a.AAA, b.AAA)
+
+		// --- Then ---
+		if have {
+			t.Error("expected not same")
+		}
+	})
+
+	t.Run("closures with different captures", func(t *testing.T) {
+		// --- Given ---
+		mk := func(i int) func() int { return func() int { return i } }
+
+		// --- When ---
+		have := Same(mk(1), mk(2))
+
+		// --- Then ---
+		if have {
+			t.Error("expected not same")
+		}
+	})
+
+	t.Run("the same closure", func(t *testing.T) {
+		// --- Given ---
+		mk := func(i int) func() int { return func() int { return i } }
+		fn := mk(1)
+
+		// --- When ---
+		have := Same(fn, fn)
+
+		// --- Then ---
+		if !have {
+			t.Error("expected same")
+		}
+	})
+
+	t.Run("sub-slice of the same array", func(t *testing.T) {
+		// --- Given ---
+		s := []int{1, 2, 3}
+
+		// --- When ---
+		have := Same(s[:1], s)
+
+		// --- Then ---
+		if have {
+			t.Error("expected not same")
+		}
+	})
+
+	t.Run("distinct empty slices", func(t *testing.T) {
+		// --- When ---
+		have := Same([]int{}, make([]int, 0))
+
+		// --- Then ---
+		if have {
+			t.Error("expected not same")
+		}
+	})
+}
+
 func Test_Same_tabular(t *testing.T) {
 	// Pointers.
 	ptr0 := &testcases.TPtr{Val: "0"}

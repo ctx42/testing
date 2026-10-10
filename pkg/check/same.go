@@ -10,8 +10,10 @@ import (
 
 // Same checks that "want" and "have" are pointers to the same object.
 //
-// Sameness is based on type + value equality (via [internal/core.Same]).
-// Works for pointers, slices, maps, funcs. Arrays always fail.
+// Sameness is based on type + identity (via [internal/core.Same]). Works for
+// pointers, maps, channels, funcs and slices. Functions are the same only
+// when they are the same function value; slices only when they share the
+// backing array start, length and capacity. Arrays always fail.
 //
 // See assert.Same for the assertion wrapper.
 func Same(want, have any, opts ...any) error {

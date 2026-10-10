@@ -8,7 +8,6 @@ package core
 
 import (
 	"reflect"
-	"runtime"
 	"runtime/debug"
 	"unsafe"
 )
@@ -48,7 +47,11 @@ func WillPanic(fn func()) (val any, stack string) {
 // Same returns true when two generic pointers point to the same memory.
 //
 // It works with pointers to objects, slices, maps, channels and functions.
-// Functions are the same when they have the same code. For arrays, and for
+// Functions are the same when they are the same function value: a top-level
+// function, or the same closure or method value (each evaluation of a
+// capturing closure or method value creates a new one). Slices are the same
+// when they share the start of the backing array, the length and the
+// capacity; distinct empty slices are never the same. For arrays, and for
 // untyped nil arguments, it always returns false; typed nil values of the
 // same type are the same.
 //
@@ -58,11 +61,11 @@ func Same(want, have any) bool {
 	wKnd, hKnd := wVal.Kind(), hVal.Kind()
 
 	if wKnd == reflect.Func || hKnd == reflect.Func {
-		return sameFunc(wVal, hVal)
+		return sameFunc(want, have)
 	}
 
 	if wKnd == reflect.Slice && hKnd == reflect.Slice {
-		return same(wVal, hVal)
+		return sameSlice(wVal, hVal)
 	}
 
 	if wKnd == reflect.Array && hKnd == reflect.Array {
@@ -90,21 +93,41 @@ func Same(want, have any) bool {
 	return want == have
 }
 
-// sameFunc returns true when arguments are functions of the same type with
-// the same code (or both without a name, e.g. nil).
-func sameFunc(want, have reflect.Value) bool {
-	if !want.IsValid() || !have.IsValid() {
+// sameFunc returns true when arguments are the same function value of the
+// same type, compared by the function value pointer an interface holds for a
+// function (or both nil).
+//
+//nolint:gosec
+func sameFunc(want, have any) bool {
+	wTyp, hTyp := reflect.TypeOf(want), reflect.TypeOf(have)
+	if wTyp == nil || hTyp == nil || !wTyp.AssignableTo(hTyp) {
 		return false
 	}
+	// A func is pointer-shaped, so the interface data word is the pointer to
+	// its function value (code pointer plus captured variables).
+	wData := (*[2]unsafe.Pointer)(unsafe.Pointer(&want))[1]
+	hData := (*[2]unsafe.Pointer)(unsafe.Pointer(&have))[1]
+	return wData == hData
+}
 
+// sameSlice returns true when both slices of the same type share the start of
+// the backing array, the length and the capacity, or are both nil. Distinct
+// zero-capacity slices may share an address and are never the same.
+//
+//nolint:gosec
+func sameSlice(want, have reflect.Value) bool {
 	if !want.Type().AssignableTo(have.Type()) {
 		return false
 	}
-
-	fn0pc := runtime.FuncForPC(want.Pointer())
-	fn1pc := runtime.FuncForPC(have.Pointer())
-
-	return fn0pc.Name() == fn1pc.Name()
+	if want.IsNil() || have.IsNil() {
+		return want.IsNil() && have.IsNil()
+	}
+	if want.Cap() == 0 || have.Cap() == 0 {
+		return false
+	}
+	return want.Pointer() == have.Pointer() &&
+		want.Len() == have.Len() &&
+		want.Cap() == have.Cap()
 }
 
 // same returns true if values represent pointers to the same memory.

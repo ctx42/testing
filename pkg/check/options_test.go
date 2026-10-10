@@ -331,7 +331,7 @@ func Test_WithOptions(t *testing.T) {
 		TrailLog:       &trailLog,
 		TypeCheckers:   make(map[reflect.Type]Checker),
 		TrailCheckers:  make(map[string]Checker),
-		SkipTrails:     make([]string, 0),
+		SkipTrails:     []string{"skip"},
 		SkipUnexported: true,
 		CmpSimpleType:  true,
 		IncreaseSoft:   true,
