@@ -209,6 +209,7 @@ func (call *Call) Optional() *Call {
 
 // Requires declares that the listed calls must be satisfied before this
 // expectation can be met. Prerequisites can be on the same or different mocks.
+// While they are unmet, a call matches another callable expectation, if any.
 func (call *Call) Requires(calls ...*Call) *Call {
 	for _, req := range calls {
 		if req == nil {

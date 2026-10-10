@@ -674,6 +674,27 @@ func Test_Mock_Call(t *testing.T) {
 		assert.True(t, mck.failed)
 	})
 
+	t.Run("skips expectation with unmet requirements", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.ExpectFail()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		mck := NewMock(tspy, WithNoStack)
+		req := mck.On("Zero", 0)
+		mck.On("Two", 2).Return("two a").Requires(req)
+		mck.On("Two", 2).Return("two b")
+
+		// --- When ---
+		have := mck.Call("Two", 2)
+
+		// --- Then ---
+		assert.Equal(t, Arguments{"two b"}, have)
+		assert.False(t, mck.failed)
+	})
+
 	t.Run("wait for until", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
@@ -1007,6 +1028,46 @@ func Test_Mock_Callable(t *testing.T) {
 
 		mck := NewMock(tspy)
 		pre := mck.On("Init").Return()
+		mck.On("Do").Return().Requires(pre)
+
+		// --- When ---
+		err := mck.Callable("Do")
+
+		// --- Then ---
+		assert.ErrorIs(t, ErrRequirements, err)
+	})
+
+	t.Run("skips expectation with unmet prerequisites", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.ExpectFail()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		pre := mck.On("Init").Return()
+		mck.On("Do").Return().Requires(pre)
+		mck.On("Do").Return()
+
+		// --- When ---
+		err := mck.Callable("Do")
+
+		// --- Then ---
+		assert.NoError(t, err)
+	})
+
+	t.Run("prerequisites error wins over too many calls", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(1)
+		tspy.ExpectFail()
+		tspy.IgnoreLogs()
+		tspy.Close()
+
+		mck := NewMock(tspy)
+		pre := mck.On("Init").Return()
+		mck.On("Do").Once().Return().addCall()
 		mck.On("Do").Return().Requires(pre)
 
 		// --- When ---

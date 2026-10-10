@@ -279,13 +279,6 @@ func (mck *Mock) Call(method string, args ...any) Arguments {
 		return nil
 	}
 
-	if err = call.checkReq(cs); err != nil {
-		mck.failed = true
-		mck.mx.Unlock()
-		mck.t.Fatal(err)
-		return nil
-	}
-
 	// Record the call under the mock lock so concurrent Call/CanCall see a
 	// consistent haveCalls (wait/proxy still run unlocked below).
 	call.addCall()
@@ -305,11 +298,8 @@ func (mck *Mock) Callable(method string, args ...any) error {
 	mck.mx.Lock()
 	defer mck.mx.Unlock()
 	mck.t.Helper()
-	call, err := mck.find(method, args, nil)
-	if err != nil {
-		return err
-	}
-	return call.checkReq(nil)
+	_, err := mck.find(method, args, nil)
+	return err
 }
 
 // find finds a callable method with given name and matching arguments. When
@@ -317,14 +307,30 @@ func (mck *Mock) Callable(method string, args ...any) error {
 // Note that there may be more methods in the expected slice matching the
 // criteria in which case the first one is returned.
 //
-// A callable method is one that returns no error from [Call.CanCall] method,
-// and has matching arguments.
+// A callable method is one that has matching arguments, returns no error
+// from [Call.CanCall] method, and has all prerequisites satisfied.
 //
 //nolint:cyclop
 func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
-	// The first error of an expectation whose arguments match, reported when
-	// no expectation is callable, whatever the registration order.
-	var tooMany error
+	// The first errors of expectations whose arguments match, reported when
+	// no expectation is callable, whatever the registration order. Unmet
+	// prerequisites are reported before too many calls.
+	var tooMany, unmet error
+	callable := func(call *Call) bool {
+		if err := call.CanCall(); err != nil {
+			if tooMany == nil {
+				tooMany = err
+			}
+			return false
+		}
+		if err := call.checkReq(cs); err != nil {
+			if unmet == nil {
+				unmet = err
+			}
+			return false
+		}
+		return true
+	}
 
 	// Find a method (including proxies) with matching arguments.
 	for _, call := range mck.expected {
@@ -336,12 +342,8 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 				continue
 			}
 		}
-		err := call.CanCall()
-		if err == nil {
+		if callable(call) {
 			return call, nil
-		}
-		if tooMany == nil {
-			tooMany = err
 		}
 	}
 
@@ -351,17 +353,14 @@ func (mck *Mock) find(method string, args []any, cs []string) (*Call, error) {
 		if call.Method != method {
 			continue
 		}
-		if call.proxy.IsValid() && len(call.args) == 0 {
-			err := call.CanCall()
-			if err == nil {
-				return call, nil
-			}
-			if tooMany == nil {
-				tooMany = err
-			}
+		if call.proxy.IsValid() && len(call.args) == 0 && callable(call) {
+			return call, nil
 		}
 	}
 
+	if unmet != nil {
+		return nil, unmet
+	}
 	if tooMany != nil {
 		return nil, tooMany
 	}
