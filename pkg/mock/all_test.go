@@ -7,7 +7,7 @@ import (
 	"errors"
 )
 
-// ExampleImpl is a test implementation of ExampleItf
+// ExampleImpl is a test implementation of ExampleItf.
 type ExampleImpl struct {
 	*Mock
 }
@@ -18,45 +18,54 @@ func NewExampleImpl(mck *Mock) *ExampleImpl {
 	return &ExampleImpl{Mock: mck}
 }
 
+// MethodInts records the call and returns the configured values.
 func (imp *ExampleImpl) MethodInts(a, b, c int) (int, error) {
 	rets := imp.Called(a, b, c)
 	return rets.Int(0), errors.New("whoops")
 }
 
+// MethodBool records the call and returns the configured values.
 func (imp *ExampleImpl) MethodBool(val bool) {
 	imp.Called(val)
 }
 
+// MethodPtr records the call and returns the configured values.
 func (imp *ExampleImpl) MethodPtr(et *ExampleType) error {
 	rets := imp.Called(et)
 	return rets.Error(0)
 }
 
+// MethodItf records the call and returns the configured values.
 func (imp *ExampleImpl) MethodItf(v ExampleItf) error {
 	rets := imp.Called(v)
 	return rets.Error(0)
 }
 
+// MethodChan records the call and returns the configured values.
 func (imp *ExampleImpl) MethodChan(ch chan struct{}) error {
 	rets := imp.Called(ch)
 	return rets.Error(0)
 }
 
+// MethodMap records the call and returns the configured values.
 func (imp *ExampleImpl) MethodMap(m map[string]bool) error {
 	rets := imp.Called(m)
 	return rets.Error(0)
 }
 
+// MethodBoolS records the call and returns the configured values.
 func (imp *ExampleImpl) MethodBoolS(slice []bool) error {
 	rets := imp.Called(slice)
 	return rets.Error(0)
 }
 
+// MethodFunc records the call and returns the configured values.
 func (imp *ExampleImpl) MethodFunc(fn func(string) error) error {
 	rets := imp.Called(fn)
 	return rets.Error(0)
 }
 
+// MethodIntVar records the call and returns the configured values.
 func (imp *ExampleImpl) MethodIntVar(a ...int) error {
 	var args []any
 	for _, v := range a {
@@ -66,11 +75,13 @@ func (imp *ExampleImpl) MethodIntVar(a ...int) error {
 	return rets.Error(0)
 }
 
+// MethodAnyVar records the call and returns the configured values.
 func (imp *ExampleImpl) MethodAnyVar(a ...any) error {
 	rets := imp.Called(a...) // nolint: asasalint
 	return rets.Error(0)
 }
 
+// MethodIntIntVar records the call and returns the configured values.
 func (imp *ExampleImpl) MethodIntIntVar(a int, b ...int) error {
 	args := []any{a}
 	for _, v := range b {
@@ -80,8 +91,10 @@ func (imp *ExampleImpl) MethodIntIntVar(a int, b ...int) error {
 	return rets.Error(0)
 }
 
+// ExampleFuncType is a named function type.
 type ExampleFuncType func(string) error
 
+// MethodFuncType records the call and returns the configured values.
 func (imp *ExampleImpl) MethodFuncType(fn ExampleFuncType) error {
 	rets := imp.Called(fn)
 	return rets.Error(0)
@@ -95,5 +108,5 @@ type ExampleItf interface{ HasRan() bool }
 // ExampleType represents test type implementing ExampleItf.
 type ExampleType struct{ ran bool }
 
-// HasRun satisfies ExampleItf interface.
+// HasRan satisfies ExampleItf interface.
 func (et *ExampleType) HasRan() bool { return et.ran }
