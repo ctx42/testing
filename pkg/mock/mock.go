@@ -31,7 +31,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/notice"
 	"github.com/ctx42/testing/pkg/tester"
 )
@@ -72,9 +71,6 @@ const (
 	hUnexpectedCall = "[mock] unexpected method call"
 	hNotFoundCall   = "[mock] method call not found"
 )
-
-// dumper is the default value renderer used for diagnostic output.
-var dumper = dump.New()
 
 // Option configures a [Mock] created by [NewMock].
 type Option func(*Mock)

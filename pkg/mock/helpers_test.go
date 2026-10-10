@@ -9,9 +9,11 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/ctx42/testing/pkg/assert"
+	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/testcases"
 )
 
@@ -108,6 +110,26 @@ func Test_formatMethod_tabular(t *testing.T) {
 		})
 	}
 }
+
+func Test_formatArgs(t *testing.T) {
+	t.Run("uses dumpers registered after init", func(t *testing.T) {
+		// --- Given ---
+		t.Setenv("___", "___")
+		type custom struct{}
+		dmp := func(dump.Dump, int, reflect.Value) string { return "custom" }
+		registerOnce.Do(func() { dump.RegisterTypeDumper(custom{}, dmp) })
+
+		// --- When ---
+		have := formatArgs(Arguments{custom{}})
+
+		// --- Then ---
+		assert.Equal(t, "0: custom", have)
+	})
+}
+
+// registerOnce guards the global dumper registration in Test_formatArgs,
+// which panics when repeated (e.g. with -count).
+var registerOnce sync.Once
 
 func Test_formatArgs_tabular(t *testing.T) {
 	tt := []struct {

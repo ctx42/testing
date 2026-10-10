@@ -10,6 +10,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/ctx42/testing/pkg/dump"
 )
 
 // callStack returns an array of strings containing the file and line number
@@ -88,15 +90,17 @@ func formatMethod(method string, args, rets Arguments) string {
 	return strings.Join(out, "\n")
 }
 
-// formatArgs returns formatted multi-line string representing arguments. Uses
-// internal [dump.Dump].
+// formatArgs returns formatted multi-line string representing arguments. It
+// renders them with a default [dump.Dump] created per call, so dumpers
+// registered with [dump.RegisterTypeDumper] at any time are used.
 func formatArgs(args Arguments) string {
 	if len(args) == 0 {
 		return ""
 	}
+	dmp := dump.New()
 	var out []string
 	for idx, arg := range args {
-		out = append(out, fmt.Sprintf("%d: %s", idx, dumper.Any(arg)))
+		out = append(out, fmt.Sprintf("%d: %s", idx, dmp.Any(arg)))
 	}
 	return strings.Join(out, "\n")
 }
