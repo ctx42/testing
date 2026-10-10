@@ -1015,6 +1015,18 @@ func Test_Notice_MetaLookup(t *testing.T) {
 		affirm.Nil(t, hVal)
 		affirm.Equal(t, false, hOK)
 	})
+
+	t.Run("nil meta", func(t *testing.T) {
+		// --- Given ---
+		msg := &Notice{}
+
+		// --- When ---
+		hVal, hOK := msg.MetaLookup("A")
+
+		// --- Then ---
+		affirm.Nil(t, hVal)
+		affirm.Equal(t, false, hOK)
+	})
 }
 
 func Test_Notice_longest(t *testing.T) {

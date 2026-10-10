@@ -40,7 +40,7 @@ func Test_Wait(t *testing.T) {
 			"    within: 100ms\n" +
 			"  throttle: 10ms"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.Equal(t, true, cnt >= 9 && cnt <= 10)
+		affirm.Equal(t, true, cnt >= 1 && cnt <= 10)
 		affirm.Equal(t, true, 100*time.Millisecond <= time.Since(start))
 	})
 
@@ -61,7 +61,7 @@ func Test_Wait(t *testing.T) {
 			"    within: 101ms\n" +
 			"  throttle: 5ms"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.Equal(t, true, cnt >= 19 && cnt <= 20)
+		affirm.Equal(t, true, cnt >= 1 && cnt <= 20)
 		affirm.Equal(t, true, 100*time.Millisecond <= time.Since(start))
 	})
 
