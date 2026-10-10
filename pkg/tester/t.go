@@ -16,7 +16,7 @@ import (
 // Any real *testing.T, *testing.B, or *testing.F satisfies T. Compile-time
 // assertions exist in the package tests.
 //
-// See the package [README] for the list of methods helpers may use and for
+// See the package README for the list of methods helpers may use and for
 // the recommended refactoring pattern from *testing.T to tester.T.
 type T interface {
 	// Cleanup registers a function to be called when the test and all its

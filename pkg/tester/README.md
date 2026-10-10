@@ -76,7 +76,7 @@ So for example, a test helper:
 // the test as failed, writes an error message to the test log, and returns false.
 func IsOdd(t *testing.T, have int) bool {
 	t.Helper()
-	if have%2 != 0 {
+	if have%2 == 0 {
 		t.Errorf("expected %d to be odd", have)
 		return false
 	}
@@ -91,7 +91,7 @@ Can be refactored without any change to the body of the function as follows:
 // the test as failed, writes an error message to the test log, and returns false.
 func IsOdd(t tester.T, have int) bool {
 	t.Helper()
-	if have%2 != 0 {
+	if have%2 == 0 {
 		t.Errorf("expected %d to be odd", have)
 		return false
 	}
@@ -202,7 +202,7 @@ it will expect _at least one_ call to `Helper` method, but you can define
 exact number of times it should be called by adding optional argument
 
 ```go
-tspy := tester.New(t)
+tspy := tester.New(t, 2)
 ```
 
 Now if the HUT does not make exactly 2 calls to `Helper` it will fail the test.
@@ -263,7 +263,7 @@ FAIL
 ```
 
 The `Spy` provides a couple of ways to examine log messages. The 
-`ExpectLog(matcher MStrategy, format string, args ...any)` where you 
+`ExpectLog(matcher Strategy, format string, args ...any)` where you 
 provide matching strategy: 
 
 - `tester.Equal` - the log must be exact match with given formatted string

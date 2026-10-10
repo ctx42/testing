@@ -15,9 +15,9 @@
 // [Spy.Close], exercise the helper, then verify with [Spy.AssertExpectations]
 // (or let the automatic cleanup do it).
 //
-// See the package [README] for the full usage guide, lifecycle patterns,
-// log matching strategies, and examples. See [examples/tester.go] and
-// [examples/tester_test.go] (in the module root) for complete, tested
+// See the package README for the full usage guide, lifecycle patterns,
+// log matching strategies, and examples. See examples/tester.go and
+// examples/tester_test.go (in the module root) for complete, tested
 // demonstrations.
 //
 // Key types and entry points:

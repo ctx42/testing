@@ -73,30 +73,37 @@ type find struct {
 }
 
 // match returns true if "want" can be found in "have" using strategy.
-func (ent find) match(have string) bool {
-	switch ent.strategy {
+func (fnd find) match(have string) bool {
+	switch fnd.strategy {
 	case Equal:
-		return ent.want == have
+		return fnd.want == have
+
 	case Regexp:
-		rx := ent.rx
+		rx := fnd.rx
 		if rx == nil {
-			rx = regexp.MustCompile(ent.want)
+			rx = regexp.MustCompile(fnd.want)
 		}
 		return rx.MatchString(have)
+
 	case Contains:
-		return strings.Contains(have, ent.want)
+		return strings.Contains(have, fnd.want)
+
 	case NotContains:
-		return !strings.Contains(have, ent.want)
+		return !strings.Contains(have, fnd.want)
+
 	case EqualFold:
-		return strings.EqualFold(ent.want, have)
+		return strings.EqualFold(fnd.want, have)
+
 	case ContainsFold:
 		lHave := strings.ToLower(have)
-		return strings.Contains(lHave, strings.ToLower(ent.want))
+		return strings.Contains(lHave, strings.ToLower(fnd.want))
+
 	case NotContainsFold:
 		lHave := strings.ToLower(have)
-		return !strings.Contains(lHave, strings.ToLower(ent.want))
+		return !strings.Contains(lHave, strings.ToLower(fnd.want))
+
 	default:
-		return ent.want == have
+		return fnd.want == have
 	}
 }
 
@@ -112,19 +119,25 @@ const (
 	errCloseOnFinished          = "close on finished Spy is not allowed"
 	errAssertOnNotClosed        = "assertion on not closed Spy is not allowed"
 	errAssertOnNotFinished      = "assertion on not finished Spy is not allowed"
-	errIgnoreLogsAfterExpectLog = "calling IgnoreLogs after ExpectLog* is not allowed"
-	errExpectLogAfterIgnoreLogs = "calling ExpectLog* after IgnoreLogs is not allowed"
+	errIgnoreLogsAfterExpectLog = "" +
+		"calling IgnoreLogs after ExpectLog* is not allowed"
+	errExpectLogAfterIgnoreLogs = "" +
+		"calling ExpectLog* after IgnoreLogs is not allowed"
 )
 
-// FailNowMsg is the exact panic message produced when [Spy.FailNow] (or
-// Fatal/Fatalf) is called on the spy. Tests that intentionally exercise
-// FailNow paths can match against this constant.
-const FailNowMsg = "FailNow was called directly"
+// Panic messages [Spy] uses to stop the helper under test like a real
+// [testing.TB] does. Tests that intentionally exercise these paths can match
+// against them.
+const (
+	// FailNowMsg is the panic message of [Spy.FailNow], [Spy.Fatal] and
+	// [Spy.Fatalf].
+	FailNowMsg = "FailNow was called directly"
 
-// SkipNowMsg is the exact panic message produced when [Spy.Skip] is called
-// on the spy. It mirrors [FailNowMsg] so helpers that call Skip stop like a
-// real testing.TB (Skip + SkipNow).
-const SkipNowMsg = "SkipNow was called directly"
+	// SkipNowMsg is the panic message of [Spy.Skip].
+	SkipNowMsg = "SkipNow was called directly"
+)
+
+var _ T = (*Spy)(nil)
 
 // Spy is a test double implementing [T] (and therefore a subset of
 // [testing.TB]) that records calls and lets you set precise expectations.
@@ -150,7 +163,8 @@ const SkipNowMsg = "SkipNow was called directly"
 //	affirm.Nil(t, have)
 //
 // After Close, call [Spy.AssertExpectations] explicitly if you did not
-// let the automatic cleanup handle it. See the package [README] for the
+// let the automatic cleanup handle it. Build it with [New]; the zero value
+// is not usable. See the package README for the
 // complete guide to Expect*, log strategies, cleanups, TempDir, etc.
 type Spy struct {
 	// Set to true if requirement for number of calls to the mocked Helper
@@ -218,23 +232,23 @@ type Spy struct {
 	wantCleanupsCnt int
 
 	// Actual number of cleanup functions set by HUT.
-	hadCleanupsCnt int
+	haveCleanupsCnt int
 
 	// Cleanup functions which will be run before running assertions.
 	haveCleanups []func()
 
 	// Messages sent to the actual test runner (the one received in New
 	// function).
-	savedMgs []string
+	savedMsgs []string
 
 	// Log messages expected to be printed by the HUT.
-	wantLogMgs []find
+	wantLogMsgs []find
 
 	// Actual messages sent to the mocked test runner Log and Logf methods.
-	haveLogMgs []string
+	haveLogMsgs []string
 
-	// When set to true, it will not trigger an assertion error if haveLogMgs
-	// is not empty and wantLogMgs is empty.
+	// When set to true, it will not trigger an assertion error if haveLogMsgs
+	// is not empty and wantLogMsgs is empty.
 	ignoreLog bool
 
 	// Test runner which we use for reporting errors when Spy expectations
@@ -249,7 +263,8 @@ type Spy struct {
 	// does not report the same failures again.
 	asserted bool
 
-	// Context returned by Context method.
+	// Context returned by Context method. It is stored, like in
+	// testing.common, so every call returns the same context.
 	ctx context.Context
 
 	// When context was retrieved using Context method this is set to a
@@ -313,7 +328,7 @@ func (spy *Spy) Cleanup(f func()) {
 	defer spy.mx.Unlock()
 	spy.tt.Helper()
 	spy.checkState(mockedCall)
-	spy.hadCleanupsCnt++
+	spy.haveCleanupsCnt++
 	spy.haveCleanups = append(spy.haveCleanups, f)
 }
 
@@ -518,7 +533,8 @@ func (spy *Spy) TempDir() string {
 	spy.checkState(mockedCall)
 	pth := spy.tt.TempDir()
 	spy.haveTempDirs = append(spy.haveTempDirs, pth)
-	spy.haveCleanups = append(spy.haveCleanups, func() { _ = os.RemoveAll(pth) })
+	rm := func() { _ = os.RemoveAll(pth) }
+	spy.haveCleanups = append(spy.haveCleanups, rm)
 	return pth
 }
 
@@ -550,7 +566,7 @@ func (spy *Spy) IgnoreLogs() *Spy {
 	defer spy.mx.Unlock()
 	spy.tt.Helper()
 	spy.checkState(expectCall)
-	if len(spy.wantLogMgs) > 0 {
+	if len(spy.wantLogMsgs) > 0 {
 		spy.panicked = true
 		panic(errIgnoreLogsAfterExpectLog)
 	}
@@ -588,7 +604,7 @@ func (spy *Spy) ExpectLog(matcher Strategy, msg string, args ...any) *Spy {
 		}
 		ent.rx = rx
 	}
-	spy.wantLogMgs = append(spy.wantLogMgs, ent)
+	spy.wantLogMsgs = append(spy.wantLogMsgs, ent)
 	return spy
 }
 
@@ -626,8 +642,8 @@ func (spy *Spy) ExpectLogContainFold(format string, args ...any) *Spy {
 	return spy.ExpectLog(ContainsFold, format, args...)
 }
 
-// ExpectLogNotContainFold is a convenience for ExpectLog([NotContainsFold], ...),
-// using a case-insensitive comparison.
+// ExpectLogNotContainFold is a convenience for
+// ExpectLog([NotContainsFold], ...), using a case-insensitive comparison.
 func (spy *Spy) ExpectLogNotContainFold(format string, args ...any) *Spy {
 	spy.tt.Helper()
 	return spy.ExpectLog(NotContainsFold, format, args...)
@@ -647,7 +663,7 @@ func (spy *Spy) log(args ...any) {
 	if msg != "" {
 		msg = msg[:len(msg)-1]
 	}
-	spy.haveLogMgs = append(spy.haveLogMgs, msg)
+	spy.haveLogMsgs = append(spy.haveLogMsgs, msg)
 }
 
 func (spy *Spy) Logf(format string, args ...any) {
@@ -661,7 +677,7 @@ func (spy *Spy) logf(format string, args ...any) {
 	spy.tt.Helper()
 	spy.checkState(mockedCall)
 	msg := fmt.Sprintf(format, args...)
-	spy.haveLogMgs = append(spy.haveLogMgs, msg)
+	spy.haveLogMsgs = append(spy.haveLogMsgs, msg)
 }
 
 // ExamineLog returns the concatenation of all messages logged so far by
@@ -671,7 +687,7 @@ func (spy *Spy) ExamineLog() string {
 	spy.tt.Helper()
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
-	return strings.Join(spy.haveLogMgs, "\n")
+	return strings.Join(spy.haveLogMsgs, "\n")
 }
 
 // ExpectNames declares how many times Name must be called on the spy.
@@ -795,7 +811,7 @@ func (spy *Spy) assertExpectations() bool {
 	spy.checkState(assertCall)
 	spy.asserted = true
 	if spy.panicked {
-		spy.tErrorf(errInvalidUsage)
+		spy.tError(errInvalidUsage)
 		return false
 	}
 
@@ -817,7 +833,7 @@ func (spy *Spy) assertExpectations() bool {
 	if ok {
 		ok = ret
 	}
-	ret = spy.checkCallCnt("Cleanup", spy.wantCleanupsCnt, spy.hadCleanupsCnt)
+	ret = spy.checkCallCnt("Cleanup", spy.wantCleanupsCnt, spy.haveCleanupsCnt)
 	if ok {
 		ok = ret
 	}
@@ -829,7 +845,7 @@ func (spy *Spy) assertExpectations() bool {
 	if ok {
 		ok = ret
 	}
-	ret = spy.assertLogMgs(spy.wantLogMgs, spy.haveLogMgs)
+	ret = spy.assertLogMgs(spy.wantLogMsgs, spy.haveLogMsgs)
 	if ok {
 		ok = ret
 	}
@@ -851,7 +867,8 @@ func (spy *Spy) assertSkipped() bool {
 	if spy.wantSkipped == spy.haveSkipped {
 		return true
 	}
-	msg := "expected HUT to mark test as skipped:\n" +
+	msg := "" +
+		"expected HUT to mark test as skipped:\n" +
 		"\twant: %v\n" +
 		"\thave: %v"
 	spy.tErrorf(msg, spy.wantSkipped, spy.haveSkipped)
@@ -908,7 +925,8 @@ func (spy *Spy) checkCallCnt(name string, want, have int) bool {
 	spy.tt.Helper()
 	ok := true
 	if want != have {
-		format := "expected %s to be called N times:\n" +
+		format := "" +
+			"expected %s to be called N times:\n" +
 			"\twant: %d\n" +
 			"\thave: %d"
 		spy.tErrorf(format, name, want, have)
@@ -927,7 +945,8 @@ func (spy *Spy) checkCallMaybeCnt(name string, want, have int) bool {
 	}
 	ok := true
 	if want != have {
-		format := "expected %s to be called N times:\n" +
+		format := "" +
+			"expected %s to be called N times:\n" +
 			"\twant: %d\n" +
 			"\thave: %d"
 		spy.tErrorf(format, name, want, have)
@@ -937,7 +956,7 @@ func (spy *Spy) checkCallMaybeCnt(name string, want, have int) bool {
 }
 
 // assertHelperCalls asserts HUT reacted according to expectation set by
-// [ExpectHelpers] method.
+// [Spy.ExpectHelpers] method.
 func (spy *Spy) assertHelperCalls(want, have int) bool {
 	spy.tt.Helper()
 	ok := true
@@ -946,7 +965,8 @@ func (spy *Spy) assertHelperCalls(want, have int) bool {
 		if want >= 0 {
 			wantN = strconv.Itoa(want)
 		}
-		format := "expected Helper to be called N times:\n" +
+		format := "" +
+			"expected Helper to be called N times:\n" +
 			"\twant: %s\n" +
 			"\thave: %d"
 		spy.tErrorf(format, wantN, have)
@@ -974,7 +994,8 @@ func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 		if spy.ignoreLog {
 			return true
 		}
-		format := "expected HUT to log no messages but got:\n" +
+		format := "" +
+			"expected HUT to log no messages but got:\n" +
 			"\thave: %q"
 		spy.tErrorf(format, haveStr)
 		return false
@@ -1000,7 +1021,8 @@ func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 				eqIdx++
 				matched = want.match(have)
 			} else {
-				format := "expected HUT to log message %d:\n" +
+				format := "" +
+					"expected HUT to log message %d:\n" +
 					"\tmatcher: %s\n" +
 					"\t   want: %q\n" +
 					"\t   have: <no message>"
@@ -1013,7 +1035,8 @@ func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 			matched = want.match(haveStr)
 		}
 		if !matched {
-			format := "expected HUT to log message %d:\n" +
+			format := "" +
+				"expected HUT to log message %d:\n" +
 				"\tmatcher: %s\n" +
 				"\t   want: %q\n" +
 				"\t   have: %q"
@@ -1023,7 +1046,8 @@ func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 	}
 	if pureMultiEq && len(haves) > eqCount {
 		extra := strings.Join(haves[eqCount:], "\n")
-		format := "expected HUT to log %d messages:\n" +
+		format := "" +
+			"expected HUT to log %d messages:\n" +
 			"\t want: %d\n" +
 			"\t have: %d\n" +
 			"\textra: %q"
@@ -1049,7 +1073,8 @@ func (spy *Spy) assertEnv(wants, haves map[string]string) bool {
 		wantVal := wants[wantKey]
 		if haveVal, exists := haves[wantKey]; exists {
 			if wantVal != haveVal {
-				format := "expected HUT to set environment variable:\n" +
+				format := "" +
+					"expected HUT to set environment variable:\n" +
 					"\t  want key: %q\n" +
 					"\twant value: %q\n" +
 					"\thave value: %q"
@@ -1057,7 +1082,8 @@ func (spy *Spy) assertEnv(wants, haves map[string]string) bool {
 				ok = false
 			}
 		} else {
-			format := "expected HUT to set environment variable:\n" +
+			format := "" +
+				"expected HUT to set environment variable:\n" +
 				"\t  want key: %q\n" +
 				"\twant value: %q"
 			spy.tErrorf(format, wantKey, wantVal)
@@ -1074,7 +1100,8 @@ func (spy *Spy) assertEnv(wants, haves map[string]string) bool {
 	for _, haveKey := range haveKeys {
 		haveVal := haves[haveKey]
 		if _, exists := wants[haveKey]; !exists {
-			format := "expected HUT not to set environment variable:\n" +
+			format := "" +
+				"expected HUT not to set environment variable:\n" +
 				"\t  have key: %q\n" +
 				"\thave value: %q"
 			spy.tErrorf(format, haveKey, haveVal)
@@ -1087,8 +1114,7 @@ func (spy *Spy) assertEnv(wants, haves map[string]string) bool {
 // runCleanups runs registered cleanups in reverse order. Like testing.TB,
 // a cleanup calling Fatal, FailNow or Skip stops only itself and the rest
 // still run; any other panic is re-raised after all cleanups ran.
-func (spy *Spy) runCleanups() int {
-	cnt := 0
+func (spy *Spy) runCleanups() {
 	var pan any
 
 	// Snapshot cancel under lock so concurrent Context() cannot race.
@@ -1116,7 +1142,6 @@ func (spy *Spy) runCleanups() int {
 		if val := runCleanup(cleanup); val != nil && pan == nil {
 			pan = val
 		}
-		cnt++
 	}
 	spy.mx.Lock()
 	spy.ctx = nil
@@ -1124,7 +1149,6 @@ func (spy *Spy) runCleanups() int {
 	if pan != nil {
 		panic(pan)
 	}
-	return cnt
 }
 
 // runCleanup runs fn and returns the value of a panic other than the ones
@@ -1143,9 +1167,9 @@ func runCleanup(fn func()) (pan any) {
 // checkState check if requested action is valid for current Spy state.
 //
 //nolint:cyclop
-func (spy *Spy) checkState(action action) {
+func (spy *Spy) checkState(act action) {
 	spy.tt.Helper()
-	switch action {
+	switch act {
 	case expectCall:
 		if spy.finished {
 			spy.tError(errExpectOnFinished)
@@ -1211,7 +1235,7 @@ func (spy *Spy) checkState(action action) {
 func (spy *Spy) tError(args ...any) {
 	spy.tt.Helper()
 	msg := fmt.Sprint(args...)
-	spy.savedMgs = append(spy.savedMgs, msg)
+	spy.savedMsgs = append(spy.savedMsgs, msg)
 	spy.tt.Error(msg)
 }
 
@@ -1219,6 +1243,6 @@ func (spy *Spy) tError(args ...any) {
 func (spy *Spy) tErrorf(format string, args ...any) {
 	spy.tt.Helper()
 	msg := fmt.Sprintf(format, args...)
-	spy.savedMgs = append(spy.savedMgs, msg)
+	spy.savedMsgs = append(spy.savedMsgs, msg)
 	spy.tt.Error(msg)
 }
