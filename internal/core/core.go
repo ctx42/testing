@@ -13,8 +13,6 @@ import (
 	"unsafe"
 )
 
-var nilVal = reflect.ValueOf(nil)
-
 // IsNil checks whether the provided interface is actual nil or wrapped nil.
 // Actual nil means the interface itself has no type or value (have == nil).
 func IsNil(have any) bool {
@@ -22,12 +20,11 @@ func IsNil(have any) bool {
 		return true
 	}
 	val := reflect.ValueOf(have)
-	val.IsValid()
 	kind := val.Kind()
 	switch kind {
 	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map:
 		return val.IsNil()
-	case reflect.Pointer, reflect.Slice:
+	case reflect.Pointer, reflect.Slice, reflect.UnsafePointer:
 		return val.IsNil()
 	default:
 		return false
@@ -94,7 +91,7 @@ func Same(want, have any) bool {
 // sameFunc returns true when arguments represent values for functions or
 // methods of the same type.
 func sameFunc(want, have reflect.Value) bool {
-	if want.Equal(nilVal) || have.Equal(nilVal) {
+	if !want.IsValid() || !have.IsValid() {
 		return false
 	}
 
@@ -140,90 +137,42 @@ func Pointer(val reflect.Value) unsafe.Pointer {
 	return val.UnsafePointer()
 }
 
-// Value returns the underlying value represented by the [reflect.Value].
-// Returns nil, false if the underlying value cannot be returned.
-//
-// nolint:gosec
+// Value returns the underlying value represented by the [reflect.Value],
+// including values obtained through unexported struct fields. The zero
+// [reflect.Value] yields untyped nil. Returns nil, false if the value cannot
+// be returned.
 func Value(val reflect.Value) (any, bool) {
-	if nilVal.Equal(val) {
+	if !val.IsValid() {
 		return nil, true
 	}
-
-	if val.CanInterface() {
-		return val.Interface(), true
-	}
-
-	if v, ok := ValueSimple(val); ok {
-		return reflect.ValueOf(v).Convert(val.Type()).Interface(), true
-	}
-
-	if val.CanAddr() {
-		valPtr := unsafe.Pointer(val.UnsafeAddr())
-		valUnsafe := reflect.NewAt(val.Type(), valPtr).Elem()
-		return valUnsafe.Interface(), true
-	}
-
-	switch knd := val.Kind(); knd {
-	case reflect.Pointer:
-		if val.Elem().Kind() == reflect.Struct {
-			return unsafeCopyValue(val.Type(), val.Elem())
+	if !val.CanInterface() {
+		val = exported(val)
+		if !val.CanInterface() {
+			return nil, false
 		}
-		return nil, false
-
-	case reflect.Func, reflect.Chan:
-		return unsafeCopyValue(val.Type(), val)
-
-	case reflect.Struct, reflect.Slice, reflect.Array, reflect.Map:
-		return unsafeCopyValue(val.Type(), val)
-
-	default:
-		return nil, false
 	}
+	return val.Interface(), true
 }
 
-// unsafeCopyValue extracts the concrete value from a [reflect.Value] that may
-// be unexported or unaddressable.
-//
-// It is used internally by [Value] to access private struct fields. When the
-// value is addressable it uses pointer conversion; otherwise it performs a
-// byte-wise copy of the underlying memory using unsafe.
-//
-// typ must match the expected type of the field. Returns false if extraction
-// is not possible (e.g. nil data pointer).
+// flagRO mirrors the read-only bits of the [reflect.Value] flag word
+// (flagStickyRO and flagEmbedRO) set on values obtained through unexported
+// struct fields.
+const flagRO = 1<<5 | 1<<6
+
+// exported returns a copy of val with its read-only flags cleared, so the
+// value can be passed to [reflect.Value.Interface]. It relies on the layout
+// of [reflect.Value]: type pointer, data pointer, flag word.
 //
 // nolint:gosec
-func unsafeCopyValue(typ reflect.Type, val reflect.Value) (any, bool) {
-	v := reflect.New(typ).Elem()
-
-	if val.CanAddr() {
-		valPtr := unsafe.Pointer(val.UnsafeAddr())
-		*(*unsafe.Pointer)(unsafe.Pointer(v.UnsafeAddr())) = valPtr
-		return v.Interface(), true
-	}
-
-	// Unaddressable: Copy the value's memory byte-by-byte.
-	size := int(typ.Size())
-	// Access the [reflect.Value] internal representation.
+func exported(val reflect.Value) reflect.Value {
 	type valueHeader struct {
-		_    uintptr        // Type pointer.
-		data unsafe.Pointer // Data pointer.
-		_    uintptr        // Flag or padding.
+		_    unsafe.Pointer
+		_    unsafe.Pointer
+		flag uintptr
 	}
-	vHeader := (*valueHeader)(unsafe.Pointer(&val))
-	if vHeader.data == nil {
-		return nil, false
-	}
-
-	// Copy the bytes from vHeader.data to v.
-	destPtr := unsafe.Pointer(v.UnsafeAddr())
-	srcPtr := vHeader.data
-	for i := range size {
-		*(*byte)(unsafe.Pointer(uintptr(destPtr) + uintptr(i))) =
-			*(*byte)(unsafe.Pointer(uintptr(srcPtr) + uintptr(i)))
-	}
-
-	// Return the struct value as any
-	return v.Interface(), true
+	hdr := (*valueHeader)(unsafe.Pointer(&val))
+	hdr.flag &^= flagRO
+	return val
 }
 
 // ValueSimple returns the underlying value and true when the provided

@@ -4,6 +4,7 @@
 package core
 
 import (
+	"io"
 	"reflect"
 	"runtime"
 	"testing"
@@ -31,6 +32,31 @@ func Test_IsNil_tabular_ZENValues(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_IsNil(t *testing.T) {
+	t.Run("nil unsafe pointer", func(t *testing.T) {
+		// --- When ---
+		have := IsNil(unsafe.Pointer(nil))
+
+		// --- Then ---
+		if !have {
+			t.Error("expected nil value")
+		}
+	})
+
+	t.Run("not nil unsafe pointer", func(t *testing.T) {
+		// --- Given ---
+		var i int
+
+		// --- When ---
+		have := IsNil(unsafe.Pointer(&i))
+
+		// --- Then ---
+		if have {
+			t.Error("expected not-nil value")
+		}
+	})
 }
 
 func Test_WillPanic(t *testing.T) {
@@ -568,29 +594,83 @@ func Test_Value_tabular_success(t *testing.T) {
 	}
 }
 
-func Test_unsafeCopyValue(t *testing.T) {
-	t.Run("nil vHeader data pointer", func(t *testing.T) {
-		// --- Given ---
-		typ := reflect.TypeFor[int]()
-		val := reflect.ValueOf(nil)
+func Test_Value_unexported_tabular(t *testing.T) {
+	i := 42
+	chn := make(chan int)
+	m := map[string]int{"a": 1}
 
-		// --- When ---
-		haveVal, haveOK := unsafeCopyValue(typ, val)
+	tt := []struct {
+		testN string
 
-		// --- Then ---
-		if haveOK {
-			t.Error("expected false")
-		}
-		if haveVal != nil {
-			t.Errorf("expected nil")
-		}
-	})
+		in   reflect.Value
+		want any
+	}{
+		{
+			"nil pointer",
+			reflect.ValueOf(struct{ loc *time.Location }{}).Field(0),
+			(*time.Location)(nil),
+		},
+		{
+			"pointer",
+			reflect.ValueOf(struct{ ptr *int }{ptr: &i}).Field(0),
+			&i,
+		},
+		{
+			"map",
+			reflect.ValueOf(struct{ m map[string]int }{m: m}).Field(0),
+			m,
+		},
+		{
+			"chan",
+			reflect.ValueOf(struct{ c chan int }{c: chn}).Field(0),
+			chn,
+		},
+		{
+			"interface",
+			reflect.ValueOf(struct {
+				err error
+				i   int
+			}{err: io.EOF}).Field(0),
+			io.EOF,
+		},
+		{
+			"nil interface",
+			reflect.ValueOf(struct {
+				err error
+				i   int
+			}{}).Field(0),
+			nil,
+		},
+		{
+			"uintptr",
+			reflect.ValueOf(struct {
+				u uintptr
+				i int
+			}{u: 42}).Field(0),
+			uintptr(42),
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have, haveOK := Value(tc.in)
+
+			// --- Then ---
+			if !haveOK {
+				t.Error("expected true")
+			}
+			if !reflect.DeepEqual(tc.want, have) {
+				t.Errorf(expMsg, tc.want, have)
+			}
+		})
+	}
 }
 
 func Test_Value_zeroReflectValue(t *testing.T) {
 	// --- Given ---
-	// Passing the zero reflect.Value{} directly exercises the special
-	// nilVal.Equal(val) path at the top of Value.
+	// Passing the zero reflect.Value{} directly exercises the invalid value
+	// path at the top of Value.
 	zero := reflect.Value{}
 
 	// --- When ---

@@ -294,6 +294,39 @@ func Test_Equal_custom_type_checkers(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
+	t.Run("unexported nil pointer with default checker", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ loc *time.Location }
+		var loc *time.Location
+
+		// --- When ---
+		err := Equal(T{loc: loc}, T{loc: loc})
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("custom checker gets unexported map", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ m map[string]int }
+		var lens []int
+		chk := func(want, have any, _ ...any) error {
+			wm, hm := want.(map[string]int), have.(map[string]int)
+			lens = append(lens, len(wm), len(hm))
+			return nil
+		}
+		opt := WithTypeChecker(map[string]int{}, chk)
+		w := T{m: map[string]int{"a": 1}}
+		h := T{m: map[string]int{"a": 1, "b": 2}}
+
+		// --- When ---
+		err := Equal(w, h, opt)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []int{1, 2}, lens)
+	})
+
 	t.Run("custom checker gets named simple type", func(t *testing.T) {
 		// --- Given ---
 		var types []string
