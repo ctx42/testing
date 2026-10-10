@@ -77,7 +77,7 @@ func (imp *ExampleImpl) MethodIntVar(a ...int) error {
 
 // MethodAnyVar records the call and returns the configured values.
 func (imp *ExampleImpl) MethodAnyVar(a ...any) error {
-	rets := imp.Called(a...) // nolint: asasalint
+	rets := imp.Called(a...) //nolint:asasalint
 	return rets.Error(0)
 }
 

@@ -13,7 +13,7 @@ import (
 // the kind cannot be matched. It returns string representation in the format
 // defined by [Dump] configuration.
 //
-// nolint: cyclop
+//nolint:cyclop
 func MapDumper(dmp Dump, lvl int, val reflect.Value) string {
 	prn := NewPrinter(dmp)
 	prn.Tab(dmp.Indent + lvl)

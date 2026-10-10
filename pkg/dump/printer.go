@@ -3,7 +3,7 @@
 
 // Package dump.
 //
-// nolint: forbidigo
+//nolint:forbidigo
 package dump
 
 import (

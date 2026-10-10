@@ -37,7 +37,7 @@ func isPrintableChar(v byte) bool {
 
 // valToString returns a string representation of the value.
 //
-// nolint: cyclop
+//nolint:cyclop
 func valToString(key reflect.Value) string {
 	switch key.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:

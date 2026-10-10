@@ -50,7 +50,7 @@ func WillPanic(fn func()) (val any, stack string) {
 // It works with pointers to objects, slices, maps and functions. For arrays,
 // it always returns false.
 //
-// nolint: cyclop
+//nolint:cyclop
 func Same(want, have any) bool {
 	wVal, hVal := reflect.ValueOf(want), reflect.ValueOf(have)
 	wKnd, hKnd := wVal.Kind(), hVal.Kind()
@@ -112,7 +112,7 @@ func sameFunc(want, have reflect.Value) bool {
 
 // same returns true if values represent pointers to the same memory.
 //
-// nolint:gosec
+//nolint:gosec
 func same(want, have reflect.Value) bool {
 	if !want.Type().AssignableTo(have.Type()) {
 		return false
@@ -126,7 +126,7 @@ func same(want, have reflect.Value) bool {
 // Pointer checks if the argument represents a pointer type and returns its
 // memory address as an [unsafe.Pointer], otherwise returns nil.
 //
-// nolint:gosec
+//nolint:gosec
 func Pointer(val reflect.Value) unsafe.Pointer {
 	if !val.IsValid() || val.Kind() != reflect.Pointer {
 		return nil
@@ -163,7 +163,7 @@ const flagRO = 1<<5 | 1<<6
 // value can be passed to [reflect.Value.Interface]. It relies on the layout
 // of [reflect.Value]: type pointer, data pointer, flag word.
 //
-// nolint:gosec
+//nolint:gosec
 func exported(val reflect.Value) reflect.Value {
 	type valueHeader struct {
 		_    unsafe.Pointer
@@ -178,7 +178,7 @@ func exported(val reflect.Value) reflect.Value {
 // ValueSimple returns the underlying value and true when the provided
 // [reflect.Value] is a simple type. Otherwise, returns untyped nil and false.
 //
-// nolint: cyclop
+//nolint:cyclop
 func ValueSimple(val reflect.Value) (any, bool) {
 	switch knd := val.Kind(); knd {
 	case reflect.Bool:
@@ -186,21 +186,21 @@ func ValueSimple(val reflect.Value) (any, bool) {
 	case reflect.Int:
 		return int(val.Int()), true
 	case reflect.Int8:
-		return int8(val.Int()), true // nolint: gosec
+		return int8(val.Int()), true //nolint:gosec
 	case reflect.Int16:
-		return int16(val.Int()), true // nolint: gosec
+		return int16(val.Int()), true //nolint:gosec
 	case reflect.Int32:
-		return int32(val.Int()), true // nolint: gosec
+		return int32(val.Int()), true //nolint:gosec
 	case reflect.Int64:
 		return val.Int(), true
 	case reflect.Uint:
 		return uint(val.Uint()), true
 	case reflect.Uint8:
-		return uint8(val.Uint()), true // nolint: gosec
+		return uint8(val.Uint()), true //nolint:gosec
 	case reflect.Uint16:
-		return uint16(val.Uint()), true // nolint: gosec
+		return uint16(val.Uint()), true //nolint:gosec
 	case reflect.Uint32:
-		return uint32(val.Uint()), true // nolint: gosec
+		return uint32(val.Uint()), true //nolint:gosec
 	case reflect.Uint64:
 		return val.Uint(), true
 	case reflect.Float32:

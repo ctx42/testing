@@ -69,7 +69,7 @@ func Open(t tester.T, pth string, opts ...func(*Goldy)) *Goldy {
 	t.Helper()
 
 	// G304: path comes from test code calling golden file helpers.
-	fil, err := os.Open(pth) // nolint:gosec
+	fil, err := os.Open(pth) //nolint:gosec
 	if err != nil {
 		t.Fatalf("error opening file: %v", err)
 		return nil
@@ -134,7 +134,7 @@ func Create(t tester.T, pth string) *Goldy {
 	t.Helper()
 
 	// G304: path comes from test code calling golden file helpers.
-	fil, err := os.Create(pth) // nolint:gosec
+	fil, err := os.Create(pth) //nolint:gosec
 	if err != nil {
 		t.Fatalf("error creating file: %v", err)
 		return nil

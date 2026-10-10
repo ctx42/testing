@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
+// SPDX-License-Identifier: MIT
+
 // Package testcases provides a rich, curated collection of test values and
 // cases designed specifically for people writing custom assertions or using
 // [tester.Spy] to test their own test helpers.

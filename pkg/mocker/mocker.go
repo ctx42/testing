@@ -219,7 +219,7 @@ func (mck *Mocker) parseItf(cfg Config, fld *ast.Field) ([]*method, error) {
 
 	// Embedded interface from some other package.
 	case *ast.SelectorExpr:
-		path := v.X.(*ast.Ident).Name // nolint: forcetypeassert
+		path := v.X.(*ast.Ident).Name //nolint:forcetypeassert
 		pkg, err := cfg.srcFile.findPackage(mck.res, path)
 		if err != nil {
 			return nil, err
@@ -284,7 +284,7 @@ func (mck *Mocker) parseArgs(
 
 // parseExpr parses method argument type expression.
 //
-// nolint: gocognit, cyclop
+//nolint:gocognit,cyclop
 func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 	switch v := e.(type) {
 	// Local type (the same package) from a potentially different file.
@@ -339,7 +339,7 @@ func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 	// Represents a type from some other package. For example, "arg pkg.Type"
 	// where "pkg" may be the package name or package import alias.
 	case *ast.SelectorExpr:
-		pkgName := v.X.(*ast.Ident).Name // nolint: forcetypeassert
+		pkgName := v.X.(*ast.Ident).Name //nolint:forcetypeassert
 		pkg, err := cfg.srcFile.findPackage(mck.res, pkgName)
 		if err != nil {
 			return expression{}, err

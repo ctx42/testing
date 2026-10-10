@@ -19,7 +19,7 @@ func Len(t tester.T, want int, have any, opts ...any) bool {
 	if e := check.Len(want, have, opts...); e != nil {
 		var cnt int
 		if val, ok := notice.From(e).MetaLookup("len"); ok {
-			cnt = val.(int) // nolint: forcetypeassert
+			cnt = val.(int) //nolint:forcetypeassert
 		}
 		if want > cnt {
 			t.Fatal(e)
@@ -37,7 +37,7 @@ func Cap(t tester.T, want int, have any, opts ...any) bool {
 	if e := check.Cap(want, have, opts...); e != nil {
 		var cnt int
 		if val, ok := notice.From(e).MetaLookup("cap"); ok {
-			cnt = val.(int) // nolint: forcetypeassert
+			cnt = val.(int) //nolint:forcetypeassert
 		}
 		if want > cnt {
 			t.Fatal(e)

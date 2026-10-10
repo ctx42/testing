@@ -74,7 +74,7 @@ type Content interface {
 // (full read + [strings.Contains]). See [assert.FileContain].
 func FileContain[T Content](want T, pth string, opts ...any) error {
 	// G304: path comes from test assertions on filesystem content.
-	content, err := os.ReadFile(pth) // nolint:gosec
+	content, err := os.ReadFile(pth) //nolint:gosec
 	if err != nil {
 		ops := DefaultOptions(opts...)
 		msg := notice.New("expected no error reading the file").

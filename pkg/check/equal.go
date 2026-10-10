@@ -53,7 +53,7 @@ type visit struct {
 // [WithTrailChecker]), trail skipping ([WithSkipTrail]), unexported field
 // skipping ([WithSkipUnexported]), and cycle detection.
 //
-// nolint: gocognit, cyclop
+//nolint:gocognit,cyclop
 func deepEqual(
 	wVal, hVal reflect.Value,
 	visited map[visit]bool,
@@ -284,7 +284,7 @@ func deepEqual(
 
 	case reflect.Int8:
 		ops.LogTrail()
-		w, h := int8(wVal.Int()), int8(hVal.Int()) // nolint: gosec
+		w, h := int8(wVal.Int()), int8(hVal.Int()) //nolint:gosec
 		if w == h {
 			return nil
 		}
@@ -292,7 +292,7 @@ func deepEqual(
 
 	case reflect.Int16:
 		ops.LogTrail()
-		w, h := int16(wVal.Int()), int16(hVal.Int()) // nolint: gosec
+		w, h := int16(wVal.Int()), int16(hVal.Int()) //nolint:gosec
 		if w == h {
 			return nil
 		}
@@ -300,7 +300,7 @@ func deepEqual(
 
 	case reflect.Int32:
 		ops.LogTrail()
-		w, h := int32(wVal.Int()), int32(hVal.Int()) // nolint: gosec
+		w, h := int32(wVal.Int()), int32(hVal.Int()) //nolint:gosec
 		if w == h {
 			return nil
 		}
@@ -324,7 +324,7 @@ func deepEqual(
 
 	case reflect.Uint8:
 		ops.LogTrail()
-		w, h := uint8(wVal.Uint()), uint8(hVal.Uint()) // nolint: gosec
+		w, h := uint8(wVal.Uint()), uint8(hVal.Uint()) //nolint:gosec
 		if w == h {
 			return nil
 		}
@@ -332,7 +332,7 @@ func deepEqual(
 
 	case reflect.Uint16:
 		ops.LogTrail()
-		w, h := uint16(wVal.Uint()), uint16(hVal.Uint()) // nolint: gosec
+		w, h := uint16(wVal.Uint()), uint16(hVal.Uint()) //nolint:gosec
 		if w == h {
 			return nil
 		}
@@ -340,7 +340,7 @@ func deepEqual(
 
 	case reflect.Uint32:
 		ops.LogTrail()
-		w, h := uint32(wVal.Uint()), uint32(hVal.Uint()) // nolint: gosec
+		w, h := uint32(wVal.Uint()), uint32(hVal.Uint()) //nolint:gosec
 		if w == h {
 			return nil
 		}
@@ -356,7 +356,7 @@ func deepEqual(
 
 	case reflect.Float32:
 		ops.LogTrail()
-		w, h := float32(wVal.Float()), float32(hVal.Float()) // nolint: gosec
+		w, h := float32(wVal.Float()), float32(hVal.Float()) //nolint:gosec
 		if w == h {
 			return nil
 		}
@@ -466,8 +466,8 @@ func refPtrs(w, h reflect.Value) (unsafe.Pointer, unsafe.Pointer, bool) {
 		if w.IsNil() || h.IsNil() {
 			return nil, nil, false
 		}
-		return unsafe.Pointer(w.Pointer()), // nolint:gosec
-			unsafe.Pointer(h.Pointer()), // nolint:gosec
+		return unsafe.Pointer(w.Pointer()), //nolint:gosec
+			unsafe.Pointer(h.Pointer()), //nolint:gosec
 			true
 
 	default:

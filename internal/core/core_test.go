@@ -78,7 +78,7 @@ func Test_WillPanic(t *testing.T) {
 
 	t.Run("panicked with nil", func(t *testing.T) {
 		// --- Given ---
-		fn := func() { panic(nil) } // nolint: govet
+		fn := func() { panic(nil) } //nolint:govet
 
 		// --- When ---
 		val, stack := WillPanic(fn)
@@ -277,7 +277,7 @@ func Test_Pointer_tabular(t *testing.T) {
 	}
 }
 
-// nolint:cyclop
+//nolint:cyclop
 func Test_Value(t *testing.T) {
 	t.Run("struct by pointer - with exported fields", func(t *testing.T) {
 		// --- Given ---

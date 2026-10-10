@@ -165,7 +165,7 @@ func (cfg Config) create() (Config, error) {
 	fName := cfg.tgtFilename
 	fMode := os.O_RDWR | os.O_CREATE | os.O_TRUNC
 	// G304: output path comes from trusted mocker configuration.
-	file, err := os.OpenFile(fName, fMode, 0644) // nolint:gosec
+	file, err := os.OpenFile(fName, fMode, 0644) //nolint:gosec
 	if err != nil {
 		return cfg, err
 	}

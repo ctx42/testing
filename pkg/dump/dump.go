@@ -437,7 +437,7 @@ func (dmp Dump) Value(val reflect.Value) string {
 
 // value dumps given a value as a string.
 //
-// nolint: cyclop
+//nolint:cyclop
 func (dmp Dump) value(lvl int, val reflect.Value) (string, reflect.Kind) {
 	if lvl > dmp.MaxDepth {
 		return ValMaxNesting, reflect.Invalid

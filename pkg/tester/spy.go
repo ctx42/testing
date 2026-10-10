@@ -1142,7 +1142,7 @@ func runCleanup(fn func()) (pan any) {
 
 // checkState check if requested action is valid for current Spy state.
 //
-// nolint:cyclop
+//nolint:cyclop
 func (spy *Spy) checkState(action action) {
 	spy.tt.Helper()
 	switch action {

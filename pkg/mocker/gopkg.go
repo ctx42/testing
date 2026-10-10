@@ -123,7 +123,7 @@ func (pkg *gopkg) getPkgInfo() (err error) {
 			Dir  string
 		}
 	}{}
-	if err = json.Unmarshal(out, &p); err != nil { // nolint: musttag
+	if err = json.Unmarshal(out, &p); err != nil { //nolint:musttag
 		return fmt.Errorf("%w: %w", ErrUnkPkg, err)
 	}
 
@@ -140,7 +140,7 @@ func (pkg *gopkg) getPkgInfo() (err error) {
 
 // getModInfo retrieves module and package information for the package.
 //
-// nolint: gocognit, cyclop
+//nolint:gocognit,cyclop
 func (pkg *gopkg) getModInfo() (err error) {
 	var out []byte
 	cmd := exec.Command("go", "list", "-m", "-json", "all")
@@ -161,7 +161,7 @@ func (pkg *gopkg) getModInfo() (err error) {
 	dec := json.NewDecoder(bytes.NewReader(out))
 	for dec.More() {
 		i++
-		if err = dec.Decode(&mod); err != nil { // nolint: musttag
+		if err = dec.Decode(&mod); err != nil { //nolint:musttag
 			return fmt.Errorf("%w: %w", ErrUnkPkg, err)
 		}
 		// The module in the working directory is the first on the list.

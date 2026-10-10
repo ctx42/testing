@@ -42,8 +42,8 @@ func JSON[W, H Text](want W, have H, opts ...any) error {
 	}
 
 	if err := Equal(wantItf, haveItf, WithOptions(ops)); err != nil {
-		w, _ := json.Marshal(wantItf) // nolint:errchkjson
-		h, _ := json.Marshal(haveItf) // nolint:errchkjson
+		w, _ := json.Marshal(wantItf) //nolint:errchkjson
+		h, _ := json.Marshal(haveItf) //nolint:errchkjson
 		msg := notice.New("expected JSON strings to be equal").
 			Want("%v", string(w)).
 			Have("%v", string(h))
@@ -107,5 +107,5 @@ func toBytes[T Text](v T) []byte {
 	if s, ok := any(v).(string); ok {
 		return []byte(s)
 	}
-	return any(v).([]byte) // nolint: forcetypeassert
+	return any(v).([]byte) //nolint:forcetypeassert
 }

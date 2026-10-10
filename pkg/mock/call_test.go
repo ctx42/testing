@@ -725,8 +725,8 @@ func Test_Call_proxyCall(t *testing.T) {
 
 	t.Run("nil interface arguments", func(t *testing.T) {
 		// --- Given ---
-		fn := func(err error, p *string) (error, *string) {
-			return err, p
+		fn := func(p *string, err error) (*string, error) {
+			return p, err
 		}
 		call := newProxy(reflect.ValueOf(fn))
 

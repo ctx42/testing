@@ -62,7 +62,7 @@ var ErrNotice = errors.New("notice error")
 // The default base error is [ErrNotice]; change it with [Notice.Wrap]
 // to control what [errors.Is] sees on that node (see [Notice.Is]).
 //
-// nolint: errname
+//nolint:errname
 type Notice struct {
 	HeaderText   string // HeaderText message.
 	HeaderPrefix string // HeaderText prefix message.
@@ -106,7 +106,7 @@ func From(err error, prefix ...string) *Notice {
 		pref = prefix[0]
 	}
 	//goland:noinspection GoTypeAssertionOnErrors
-	if e, ok := err.(*Notice); ok { // nolint: errorlint
+	if e, ok := err.(*Notice); ok { //nolint:errorlint
 		if e == nil {
 			return nil
 		}
@@ -262,16 +262,16 @@ func isErr(err, target error, head *Notice) bool {
 	comparable := target == nil || reflect.TypeOf(target).Comparable()
 	for err != nil {
 		//goland:noinspection GoTypeAssertionOnErrors
-		if n, ok := err.(*Notice); ok && n.Head() == head { // nolint: errorlint
+		if n, ok := err.(*Notice); ok && n.Head() == head { //nolint:errorlint
 			return false
 		}
-		if comparable && err == target { // nolint: errorlint
+		if comparable && err == target { //nolint:errorlint
 			return true
 		}
 		if x, ok := err.(interface{ Is(error) bool }); ok && x.Is(target) {
 			return true
 		}
-		switch x := err.(type) { // nolint: errorlint
+		switch x := err.(type) { //nolint:errorlint
 		case interface{ Unwrap() error }:
 			err = x.Unwrap()
 
@@ -292,7 +292,7 @@ func isErr(err, target error, head *Notice) bool {
 
 // Error returns a formatted string representation of the Notice.
 //
-// nolint: gocognit, cyclop
+//nolint:gocognit,cyclop
 func (msg *Notice) Error() string {
 	mgs := msg.collect()
 

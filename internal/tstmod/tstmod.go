@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
+// SPDX-License-Identifier: MIT
+
 // Package tstmod provides helpers for creating temporary Go modules
 // with controlled external dependencies. It is used internally to test
 // the mocker package's module and package discovery logic.

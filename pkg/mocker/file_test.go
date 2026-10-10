@@ -269,7 +269,7 @@ func Test_file_findPackage(t *testing.T) {
 		have, err := fil.findPackage(res, "abc")
 
 		// --- Then ---
-		assert.Equal(t, true, err == ErrUnkPkg) // nolint: errorlint
+		assert.Equal(t, true, err == ErrUnkPkg) //nolint:errorlint
 		assert.Nil(t, have)
 	})
 }

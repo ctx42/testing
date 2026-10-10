@@ -37,7 +37,7 @@ func (am *Matcher) Match(have any) bool {
 	expectType := am.fn.Type().In(0)
 
 	var expectTypeNilSupported bool
-	switch expectType.Kind() { // nolint:exhaustive
+	switch expectType.Kind() { //nolint:exhaustive
 	case reflect.Slice, reflect.Map, reflect.Pointer:
 		expectTypeNilSupported = true
 	case reflect.Interface, reflect.Func, reflect.Chan:

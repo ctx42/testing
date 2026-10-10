@@ -275,7 +275,7 @@ func Increasing[T constraints.Ordered](seq []T, opts ...any) error {
 // See [assert.NotIncreasing].
 func NotIncreasing[T constraints.Ordered](seq []T, opts ...any) error {
 	if err := Increasing(seq, opts...); err != nil {
-		return nil // nolint: nilerr
+		return nil //nolint:nilerr
 	}
 	ops := DefaultOptions(opts...)
 	var mode string
@@ -329,7 +329,7 @@ func Decreasing[T constraints.Ordered](seq []T, opts ...any) error {
 // See [assert.NotDecreasing].
 func NotDecreasing[T constraints.Ordered](seq []T, opts ...any) error {
 	if err := Decreasing(seq, opts...); err != nil {
-		return nil // nolint: nilerr
+		return nil //nolint:nilerr
 	}
 
 	ops := DefaultOptions(opts...)

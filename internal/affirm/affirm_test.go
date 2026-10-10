@@ -207,7 +207,7 @@ func Test_Panic(t *testing.T) {
 		tspy := core.NewSpy()
 
 		// --- When ---
-		have := Panic(tspy, func() { panic(nil) }) // nolint: govet
+		have := Panic(tspy, func() { panic(nil) }) //nolint:govet
 
 		// --- Then ---
 		if tspy.ReportedError {

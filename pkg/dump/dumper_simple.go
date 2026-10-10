@@ -31,7 +31,7 @@ import (
 // It returns string representation in the format defined by [Dump]
 // configuration.
 //
-// nolint: cyclop
+//nolint:cyclop
 func SimpleDumper(dmp Dump, lvl int, val reflect.Value) string {
 	var v any
 

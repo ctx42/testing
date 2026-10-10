@@ -35,7 +35,7 @@ func typeName(dmp Dump, typ reflect.Type) string {
 // otherwise. Keys of interface type are compared by their dynamic values,
 // ordered by kind and type first.
 //
-// nolint: cyclop
+//nolint:cyclop
 func valueCmp(a, b reflect.Value) int {
 	if a.Kind() == reflect.Interface {
 		a = a.Elem()

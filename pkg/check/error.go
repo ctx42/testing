@@ -19,7 +19,7 @@ import (
 // See [assert.Error] for the assertion wrapper.
 func Error(err error, opts ...any) error {
 	if err != nil {
-		return nil // nolint: nilerr
+		return nil //nolint:nilerr
 	}
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected non-nil error")

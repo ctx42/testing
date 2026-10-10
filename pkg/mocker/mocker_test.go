@@ -306,7 +306,7 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 
 			gfp := filepath.Join("testdata/golden", tc.testN+".gld")
 			want := goldy.Open(t, gfp)
-			// nolint: gocritic
+			//nolint:gocritic
 			// want.SetContent(buf.String()).Save()
 			assert.Equal(t, want.String(), buf.String())
 		})

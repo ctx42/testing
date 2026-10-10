@@ -72,7 +72,7 @@ func Test_First(t *testing.T) {
 
 	t.Run("one element no error", func(t *testing.T) {
 		// --- Given ---
-		fn := func() ([]T, error) { return []T{{V: 1}}, nil } // nolint:unparam
+		fn := func() ([]T, error) { return []T{{V: 1}}, nil } //nolint:unparam
 
 		// --- When ---
 		have := First(fn())
@@ -83,7 +83,7 @@ func Test_First(t *testing.T) {
 
 	t.Run("zero elements no error", func(t *testing.T) {
 		// --- Given ---
-		fn := func() ([]T, error) { return nil, nil } // nolint:unparam
+		fn := func() ([]T, error) { return nil, nil } //nolint:unparam
 
 		// --- When ---
 		have := First(fn())
@@ -105,7 +105,7 @@ func Test_First(t *testing.T) {
 
 	t.Run("more than one element no error", func(t *testing.T) {
 		// --- Given ---
-		fn := func() ([]T, error) { // nolint:unparam
+		fn := func() ([]T, error) { //nolint:unparam
 			return []T{{V: 1}, {V: 2}}, nil
 		}
 
@@ -134,7 +134,7 @@ func Test_Single(t *testing.T) {
 
 	t.Run("one element no error", func(t *testing.T) {
 		// --- Given ---
-		fn := func() ([]T, error) { return []T{{V: 1}}, nil } // nolint:unparam
+		fn := func() ([]T, error) { return []T{{V: 1}}, nil } //nolint:unparam
 
 		// --- When ---
 		have := Single(fn())
@@ -145,7 +145,7 @@ func Test_Single(t *testing.T) {
 
 	t.Run("zero elements no error", func(t *testing.T) {
 		// --- Given ---
-		fn := func() ([]T, error) { return nil, nil } // nolint:unparam
+		fn := func() ([]T, error) { return nil, nil } //nolint:unparam
 
 		// --- When ---
 		have := Single(fn())
@@ -168,7 +168,7 @@ func Test_Single(t *testing.T) {
 	t.Run("more than one element no error", func(t *testing.T) {
 		// --- Given ---
 		s := []T{{V: 1}, {V: 2}}
-		fn := func() ([]T, error) { return s, nil } // nolint: unparam
+		fn := func() ([]T, error) { return s, nil } //nolint:unparam
 
 		// --- When ---
 		msg := affirm.Panic(t, func() { Single(fn()) })

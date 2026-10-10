@@ -50,7 +50,7 @@ func zeroError(have any, opts ...any) error {
 // See [assert.NotZero] for the assertion wrapper.
 func NotZero(have any, opts ...any) error {
 	if Zero(have) != nil {
-		return nil // nolint: nilerr
+		return nil //nolint:nilerr
 	}
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected argument not to be zero value").

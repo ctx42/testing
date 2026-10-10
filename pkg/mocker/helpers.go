@@ -32,7 +32,7 @@ import (
 //	github.com/user/project/pkg/go_package -> go_package
 //	github.com/user/project/pkg/go-package-abc -> abc
 //
-// nolint: cyclop, staticcheck
+//nolint:cyclop,staticcheck
 func assumedPackageName(pth string) string {
 	notIdentifier := func(ch rune) bool {
 		return !('a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' ||
@@ -337,7 +337,7 @@ func toLowerSnakeCase(camel string) string {
 // The returned paths are absolute.
 func findSources(dir string) ([]string, error) {
 	// G304: directory comes from controlled module discovery in mocker.
-	f, err := os.Open(dir) // nolint:gosec
+	f, err := os.Open(dir) //nolint:gosec
 	if err != nil {
 		return nil, err
 	}

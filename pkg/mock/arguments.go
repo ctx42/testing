@@ -53,7 +53,7 @@ func (args Arguments) Equal(haves ...any) bool {
 // and the supplied values. It returns the lines of the diff and the count of
 // mismatches. Used internally by the expectation matching logic.
 //
-// nolint: cyclop
+//nolint:cyclop
 func (args Arguments) Diff(vs []any) ([]string, int) {
 	var out []string
 	var diffCnt int

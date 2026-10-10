@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
+// SPDX-License-Identifier: MIT
+
 package must_test
 
 import (
@@ -6,7 +9,7 @@ import (
 	"github.com/ctx42/testing/pkg/must"
 )
 
-// nolint:unparam
+//nolint:unparam
 func ExampleFirst() {
 	type Row struct{ Name string }
 
@@ -22,7 +25,7 @@ func ExampleFirst() {
 	// {a}
 }
 
-// nolint:unparam
+//nolint:unparam
 func ExampleSingle() {
 	type Row struct{ Name string }
 

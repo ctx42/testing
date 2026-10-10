@@ -127,7 +127,7 @@ type TA struct {
 	Loc *time.Location
 	TAp *TA
 
-	private int // nolint: unused
+	private int //nolint:unused
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -166,7 +166,7 @@ type TNested struct {
 // /////////////////////////////////////////////////////////////////////////////
 
 // TVal is a value type implementing [TItf] and error.
-type TVal struct{ Val string } // nolint: errname
+type TVal struct{ Val string } //nolint:errname
 
 // AAA returns the value.
 func (typ TVal) AAA() string { return typ.Val }
@@ -177,7 +177,7 @@ func (typ TVal) Error() string { return typ.Val }
 // /////////////////////////////////////////////////////////////////////////////
 
 // TPtr is a type implementing [TItf] and error with pointer receivers.
-type TPtr struct{ Val string } // nolint: errname
+type TPtr struct{ Val string } //nolint:errname
 
 // AAA returns the value.
 func (typ *TPtr) AAA() string { return typ.Val }
