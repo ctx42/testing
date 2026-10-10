@@ -95,7 +95,7 @@ func ExampleNotice_Append_multiLine() {
 	//   name: 5
 }
 
-func ExampleNotice_Append_forceNexLine() {
+func ExampleNotice_Append_forceNextLine() {
 	msg := notice.New("expected values to be equal").
 		Want("%s", "abc").
 		Have("\n%s", "xyz").
@@ -201,4 +201,38 @@ func ExampleIndent() {
 	//     line1
 	//     line2
 	//     line3
+}
+
+func ExampleJoin() {
+	err0 := notice.New("expected values to be equal").
+		Want("%d", 1).
+		Have("%d", 2)
+	err1 := notice.New("expected value to be true").Have("%v", false)
+
+	err := notice.Join(err0, err1)
+
+	fmt.Println(err)
+	// Output:
+	// multiple expectations violated:
+	//   error: expected values to be equal
+	//    want: 1
+	//    have: 2
+	//       ---
+	//   error: expected value to be true
+	//    have: false
+}
+
+func ExampleSortNotices() {
+	msgB := notice.New("second").SetTrail("B")
+	msgA := notice.New("first").SetTrail("A")
+	_ = notice.Join(msgB, msgA)
+
+	tail := notice.SortNotices(msgB, notice.TrailCmp)
+
+	for _, msg := range tail.All() {
+		fmt.Println(msg.Trail, msg.HeaderText)
+	}
+	// Output:
+	// A first
+	// B second
 }

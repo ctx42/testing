@@ -15,36 +15,33 @@ import (
 
 func Test_New(t *testing.T) {
 	t.Run("with args", func(t *testing.T) {
-		t.Run("with args", func(t *testing.T) {
-			// --- When ---
-			msg := New("header %s", "row")
+		// --- When ---
+		have := New("header %s", "row")
 
-			// --- Then ---
-			affirm.Equal(t, "header row", msg.HeaderText)
-			affirm.Equal(t, "", msg.HeaderPrefix)
-			affirm.Equal(t, "", msg.Trail)
-			affirm.Nil(t, msg.Rows)
-			affirm.Nil(t, msg.Meta)
-			affirm.Equal(t, true, errors.Is(msg.err, ErrNotice))
-			affirm.Nil(t, msg.prev)
-			affirm.Nil(t, msg.next)
-		})
-
+		// --- Then ---
+		affirm.Equal(t, "header row", have.HeaderText)
+		affirm.Equal(t, "", have.HeaderPrefix)
+		affirm.Equal(t, "", have.Trail)
+		affirm.Nil(t, have.Rows)
+		affirm.Nil(t, have.Meta)
+		affirm.Equal(t, true, errors.Is(have.err, ErrNotice))
+		affirm.Nil(t, have.prev)
+		affirm.Nil(t, have.next)
 	})
 
 	t.Run("with percent but no args", func(t *testing.T) {
 		// --- When ---
-		msg := New("header %s")
+		have := New("header %s")
 
 		// --- Then ---
-		affirm.Equal(t, "header %s", msg.HeaderText)
-		affirm.Equal(t, "", msg.HeaderPrefix)
-		affirm.Equal(t, "", msg.Trail)
-		affirm.Nil(t, msg.Rows)
-		affirm.Nil(t, msg.Meta)
-		affirm.Equal(t, true, errors.Is(msg.err, ErrNotice))
-		affirm.Nil(t, msg.prev)
-		affirm.Nil(t, msg.next)
+		affirm.Equal(t, "header %s", have.HeaderText)
+		affirm.Equal(t, "", have.HeaderPrefix)
+		affirm.Equal(t, "", have.Trail)
+		affirm.Nil(t, have.Rows)
+		affirm.Nil(t, have.Meta)
+		affirm.Equal(t, true, errors.Is(have.err, ErrNotice))
+		affirm.Nil(t, have.prev)
+		affirm.Nil(t, have.next)
 	})
 }
 
@@ -95,11 +92,11 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, "header row", have.HeaderText)
 		affirm.Equal(t, "", have.HeaderPrefix)
 		affirm.Equal(t, "", have.Trail)
-		wRows := []Row{
+		want := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 			{Name: "second", Format: "%d", Args: []any{2}},
 		}
-		affirm.DeepEqual(t, wRows, have.Rows)
+		affirm.DeepEqual(t, want, have.Rows)
 		affirm.Equal(t, true, errors.Is(have, ErrNotice))
 	})
 
@@ -115,11 +112,11 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, "header row", have.HeaderText)
 		affirm.Equal(t, "prefix", have.HeaderPrefix)
 		affirm.Equal(t, "", have.Trail)
-		wRows := []Row{
+		want := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 			{Name: "second", Format: "%d", Args: []any{2}},
 		}
-		affirm.DeepEqual(t, wRows, have.Rows)
+		affirm.DeepEqual(t, want, have.Rows)
 		affirm.Equal(t, true, errors.Is(have, ErrNotice))
 	})
 
@@ -136,15 +133,15 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, "header row", have.HeaderText)
 		affirm.Equal(t, "prefix 1", have.HeaderPrefix)
 		affirm.Equal(t, "", have.Trail)
-		wRows := []Row{
+		want := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 			{Name: "second", Format: "%d", Args: []any{2}},
 		}
-		affirm.DeepEqual(t, wRows, have.Rows)
+		affirm.DeepEqual(t, want, have.Rows)
 		affirm.Equal(t, true, errors.Is(have, ErrNotice))
 	})
 
-	t.Run("chain of two: prefix propagates to prev", func(t *testing.T) {
+	t.Run("chain of two - prefix propagates to prev", func(t *testing.T) {
 		// --- Given ---
 		msg0 := New("header0")
 		msg1 := New("header1")
@@ -159,7 +156,7 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, "prefix", msg0.HeaderPrefix)
 	})
 
-	t.Run("chain of three: prefix propagates through all", func(t *testing.T) {
+	t.Run("chain of three - prefix propagates through all", func(t *testing.T) {
 		// --- Given ---
 		msg0 := New("header0")
 		msg1 := New("header1")
@@ -188,11 +185,11 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, "assertion error", have.HeaderText)
 		affirm.Equal(t, "", have.HeaderPrefix)
 		affirm.Equal(t, "", have.Trail)
-		wRows := []Row{
+		want := []Row{
 			{Name: "error", Format: "%s", Args: []any{orig}},
 			{Name: "first", Format: "%d", Args: []any{1}},
 		}
-		affirm.DeepEqual(t, wRows, have.Rows)
+		affirm.DeepEqual(t, want, have.Rows)
 		affirm.Equal(t, true, errors.Is(have, orig))
 		affirm.Equal(t, false, errors.Is(have, ErrNotice))
 	})
@@ -209,11 +206,11 @@ func Test_From(t *testing.T) {
 		affirm.Equal(t, "assertion error", have.HeaderText)
 		affirm.Equal(t, "prefix", have.HeaderPrefix)
 		affirm.Equal(t, "", have.Trail)
-		wRows := []Row{
+		want := []Row{
 			{Name: "error", Format: "%s", Args: []any{orig}},
 			{Name: "first", Format: "%d", Args: []any{1}},
 		}
-		affirm.DeepEqual(t, wRows, have.Rows)
+		affirm.DeepEqual(t, want, have.Rows)
 		affirm.Equal(t, true, errors.Is(have, orig))
 		affirm.Equal(t, false, errors.Is(have, ErrNotice))
 	})
@@ -297,7 +294,10 @@ func Test_Notice_Header(t *testing.T) {
 
 	t.Run("with prefix", func(t *testing.T) {
 		// --- Given ---
-		msg := &Notice{HeaderText: "expected values to be equal", HeaderPrefix: "my prefix"}
+		msg := &Notice{
+			HeaderText:   "expected values to be equal",
+			HeaderPrefix: "my prefix",
+		}
 
 		// --- When ---
 		have := msg.Header()
@@ -339,8 +339,8 @@ func Test_Notice_Append(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		wRows := []Row{{Name: "first", Format: "%dst", Args: []any{1}}}
-		affirm.DeepEqual(t, wRows, have.Rows)
+		want := []Row{{Name: "first", Format: "%dst", Args: []any{1}}}
+		affirm.DeepEqual(t, want, have.Rows)
 	})
 
 	t.Run("append second", func(t *testing.T) {
@@ -351,11 +351,11 @@ func Test_Notice_Append(t *testing.T) {
 		_ = msg.Append("second", "%dnd", 2)
 
 		// --- Then ---
-		wRows := []Row{
+		want := []Row{
 			{Name: "first", Format: "%dst", Args: []any{1}},
 			{Name: "second", Format: "%dnd", Args: []any{2}},
 		}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 
 	t.Run("append an existing name overwrites", func(t *testing.T) {
@@ -366,11 +366,11 @@ func Test_Notice_Append(t *testing.T) {
 		_ = msg.Append("first", "%s", "abc")
 
 		// --- Then ---
-		wRows := []Row{
+		want := []Row{
 			{Name: "first", Format: "%s", Args: []any{"abc"}},
 			{Name: "second", Format: "%d", Args: []any{2}},
 		}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 }
 
@@ -384,8 +384,8 @@ func Test_Notice_AppendRow(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		wRows := []Row{{Name: "first", Format: "%dst", Args: []any{1}}}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		want := []Row{{Name: "first", Format: "%dst", Args: []any{1}}}
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 
 	t.Run("append multiple", func(t *testing.T) {
@@ -399,11 +399,11 @@ func Test_Notice_AppendRow(t *testing.T) {
 		)
 
 		// --- Then ---
-		wRows := []Row{
+		want := []Row{
 			{Name: "first", Format: "%dst", Args: []any{1}},
 			{Name: "second", Format: "%dnd", Args: []any{2}},
 		}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 
 	t.Run("append an existing name overwrites", func(t *testing.T) {
@@ -414,11 +414,11 @@ func Test_Notice_AppendRow(t *testing.T) {
 		_ = msg.AppendRow(NewRow("first", "%d", 3))
 
 		// --- Then ---
-		wRows := []Row{
+		want := []Row{
 			{Name: "first", Format: "%d", Args: []any{3}},
 			{Name: "second", Format: "%d", Args: []any{2}},
 		}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 }
 
@@ -432,10 +432,10 @@ func Test_Notice_Prepend(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		wRows := []Row{
+		want := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 		}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 
 	t.Run("prepend second", func(t *testing.T) {
@@ -446,11 +446,11 @@ func Test_Notice_Prepend(t *testing.T) {
 		_ = msg.Prepend("second", "%d", 2)
 
 		// --- Then ---
-		wRows := []Row{
+		want := []Row{
 			{Name: "second", Format: "%d", Args: []any{2}},
 			{Name: "first", Format: "%d", Args: []any{1}},
 		}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 
 	t.Run("prepend existing name changes it", func(t *testing.T) {
@@ -463,11 +463,11 @@ func Test_Notice_Prepend(t *testing.T) {
 		_ = msg.Prepend("second", "%d", 3)
 
 		// --- Then ---
-		wRows := []Row{
+		want := []Row{
 			{Name: "second", Format: "%d", Args: []any{3}},
 			{Name: "first", Format: "%d", Args: []any{1}},
 		}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 }
 
@@ -498,8 +498,8 @@ func Test_Notice_SetTrail(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "", msg.Trail)
-		wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		want := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
+		affirm.DeepEqual(t, want, msg.Rows)
 		affirm.Equal(t, "header:\n  first: 1", msg.Error())
 	})
 }
@@ -558,11 +558,11 @@ func Test_Notice_Have(t *testing.T) {
 		affirm.Equal(t, true, core.Same(msg, have))
 		affirm.Equal(t, "header", msg.HeaderText)
 		affirm.Equal(t, "", msg.HeaderPrefix)
-		wRows := []Row{
+		want := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 			{Name: "have", Format: "%s", Args: []any{"row"}},
 		}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 
 	t.Run("row already exists", func(t *testing.T) {
@@ -579,12 +579,12 @@ func Test_Notice_Have(t *testing.T) {
 		affirm.Equal(t, true, core.Same(msg, have))
 		affirm.Equal(t, "header", msg.HeaderText)
 		affirm.Equal(t, "", msg.HeaderPrefix)
-		wRows := []Row{
+		want := []Row{
 			{Name: "first", Format: "%d", Args: []any{1}},
 			{Name: "have", Format: "%s", Args: []any{"row"}},
 			{Name: "second", Format: "%d", Args: []any{2}},
 		}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 }
 
@@ -600,8 +600,8 @@ func Test_Notice_Wrap(t *testing.T) {
 	affirm.Equal(t, true, core.Same(msg, have))
 	affirm.Equal(t, false, errors.Is(msg, ErrNotice))
 	affirm.Equal(t, true, errors.Is(msg, errMy))
-	wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
-	affirm.DeepEqual(t, wRows, msg.Rows)
+	want := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
+	affirm.DeepEqual(t, want, msg.Rows)
 }
 
 func Test_Notice_Unwrap(t *testing.T) {
@@ -639,8 +639,8 @@ func Test_Notice_Remove(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		wRows := []Row{{Name: "second", Format: "%d", Args: []any{2}}}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		want := []Row{{Name: "second", Format: "%d", Args: []any{2}}}
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 
 	t.Run("remove not existing", func(t *testing.T) {
@@ -652,8 +652,8 @@ func Test_Notice_Remove(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(msg, have))
-		wRows := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
-		affirm.DeepEqual(t, wRows, msg.Rows)
+		want := []Row{{Name: "first", Format: "%d", Args: []any{1}}}
+		affirm.DeepEqual(t, want, msg.Rows)
 	})
 }
 
@@ -701,9 +701,23 @@ func Test_Notice_Is(t *testing.T) {
 		joined := Join(New("one").Wrap(errA), New("two").Wrap(errB))
 
 		// --- When ---
+		have := errors.Is(joined, errA)
+
 		// --- Then ---
-		affirm.Equal(t, true, errors.Is(joined, errA))
-		affirm.Equal(t, true, errors.Is(joined, errB))
+		affirm.Equal(t, true, have)
+	})
+
+	t.Run("matches wrapped error on the tail notice", func(t *testing.T) {
+		// --- Given ---
+		errA := errors.New("err-a")
+		errB := errors.New("err-b")
+		joined := Join(New("one").Wrap(errA), New("two").Wrap(errB))
+
+		// --- When ---
+		have := errors.Is(joined, errB)
+
+		// --- Then ---
+		affirm.Equal(t, true, have)
 	})
 }
 
@@ -960,11 +974,11 @@ func Test_Notice_MetaLookup(t *testing.T) {
 		msg := &Notice{Meta: map[string]any{"A": 0}}
 
 		// --- When ---
-		haveVal, haveOK := msg.MetaLookup("A")
+		hVal, hOK := msg.MetaLookup("A")
 
 		// --- Then ---
-		affirm.Equal(t, 0, haveVal)
-		affirm.Equal(t, true, haveOK)
+		affirm.Equal(t, 0, hVal)
+		affirm.Equal(t, true, hOK)
 	})
 
 	t.Run("get not existing key", func(t *testing.T) {
@@ -972,11 +986,11 @@ func Test_Notice_MetaLookup(t *testing.T) {
 		msg := &Notice{Meta: map[string]any{"A": 0}}
 
 		// --- When ---
-		haveVal, haveOK := msg.MetaLookup("B")
+		hVal, hOK := msg.MetaLookup("B")
 
 		// --- Then ---
-		affirm.Nil(t, haveVal)
-		affirm.Equal(t, false, haveOK)
+		affirm.Nil(t, hVal)
+		affirm.Equal(t, false, hOK)
 	})
 }
 
@@ -1326,7 +1340,7 @@ func Test_Join(t *testing.T) {
 		affirm.DeepEqual(t, []*Notice{a0, a1, b0, b1}, have.(*Notice).All())
 	})
 
-	t.Run("skip nil errors errors", func(t *testing.T) {
+	t.Run("skip nil errors", func(t *testing.T) {
 		// --- Given ---
 		msg0 := New("header0")
 		msg1 := New("header1")
@@ -1341,6 +1355,230 @@ func Test_Join(t *testing.T) {
 	})
 }
 
+func Test_TrailCmp_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		a    string
+		b    string
+		want int
+	}{
+		{"both empty", "", "", 0},
+		{"empty before not empty", "", "A", -1},
+		{"not empty after empty", "A", "", 1},
+		{"equal", "ABC", "ABC", 0},
+		{"less", "ABC", "XYZ", -1},
+		{"greater", "XYZ", "ABC", 1},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- Given ---
+			a := New("header").SetTrail(tc.a)
+			b := New("header").SetTrail(tc.b)
+
+			// --- When ---
+			have := TrailCmp(a, b)
+
+			// --- Then ---
+			affirm.Equal(t, tc.want, have)
+		})
+	}
+}
+
+func Test_SortNotices(t *testing.T) {
+	t.Run("cmp returning any sign", func(t *testing.T) {
+		// --- Given ---
+		msgC := New("hdrC").SetTrail("ccc")
+		msgA := New("hdrA").SetTrail("a")
+		msgB := New("hdrB").SetTrail("bb")
+		_ = Join(msgA, msgC, msgB)
+		cmp := func(x, y *Notice) int { return len(x.Trail) - len(y.Trail) }
+
+		// --- When ---
+		have := SortNotices(msgA, cmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgC, have))
+		wFwd := "| hdrA (a) -> hdrB (bb) -> hdrC (ccc)"
+		affirm.Equal(t, wFwd, FWD(have.Head()))
+	})
+
+	t.Run("not a head node", func(t *testing.T) {
+		// --- Given ---
+		msgB := New("hdrB").SetTrail("B")
+		msgC := New("hdrC").SetTrail("C")
+		msgA := New("hdrA").SetTrail("A")
+		_ = Join(msgB, msgC, msgA)
+
+		// --- When ---
+		have := SortNotices(msgC, TrailCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgC, have))
+		wFwd := "| hdrA (A) -> hdrB (B) -> hdrC (C)"
+		affirm.Equal(t, wFwd, FWD(have.Head()))
+		affirm.Equal(t, "| hdrC (C) -> hdrB (B) -> hdrA (A)", REV(have))
+	})
+
+	t.Run("nil chain", func(t *testing.T) {
+		// --- Given ---
+		var head *Notice
+
+		// --- When ---
+		have := SortNotices(head, TrailCmp)
+
+		// --- Then ---
+		affirm.Nil(t, have)
+	})
+
+	t.Run("single node", func(t *testing.T) {
+		// --- Given ---
+		msg := New("header").SetTrail("a")
+
+		// --- When ---
+		have := SortNotices(msg, TrailCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msg, have))
+		affirm.Equal(t, "a", have.Trail)
+		affirm.Nil(t, have.prev)
+		affirm.Nil(t, have.next)
+	})
+
+	t.Run("two sorted nodes", func(t *testing.T) {
+		// --- Given ---
+		msgA := New("hdrA").SetTrail("A")
+		msgB := New("hdrB").SetTrail("B")
+		_ = Join(msgA, msgB)
+
+		// --- When ---
+		have := SortNotices(msgA, TrailCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgB, have))
+		affirm.Equal(t, "| hdrA (A) -> hdrB (B)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrB (B) -> hdrA (A)", REV(have))
+	})
+
+	t.Run("two unsorted nodes", func(t *testing.T) {
+		// --- Given ---
+		msgA := New("hdrA").SetTrail("A")
+		msgB := New("hdrB").SetTrail("B")
+		_ = Join(msgB, msgA)
+
+		// --- When ---
+		have := SortNotices(msgB, TrailCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgB, have))
+		affirm.Equal(t, "| hdrA (A) -> hdrB (B)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrB (B) -> hdrA (A)", REV(have))
+	})
+
+	t.Run("three nodes with equal sort values", func(t *testing.T) {
+		// --- Given ---
+		msgA0 := New("hdr0").SetTrail("A")
+		msgA1 := New("hdr1").SetTrail("A")
+		msgA2 := New("hdr2").SetTrail("A")
+		_ = Join(msgA0, msgA1, msgA2)
+
+		// --- When ---
+		have := SortNotices(msgA0, TrailCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgA2, have))
+		affirm.Equal(t, "| hdr0 (A) -> hdr1 (A) -> hdr2 (A)", FWD(have.Head()))
+		affirm.Equal(t, "| hdr2 (A) -> hdr1 (A) -> hdr0 (A)", REV(have))
+	})
+
+	t.Run("chain starts with equal sort values", func(t *testing.T) {
+		// --- Given ---
+		msgA0 := New("hdr0").SetTrail("A")
+		msgA1 := New("hdr1").SetTrail("A")
+		msgB := New("hdrB").SetTrail("B")
+		_ = Join(msgA0, msgA1, msgB)
+
+		// --- When ---
+		have := SortNotices(msgA0, TrailCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgB, have))
+		affirm.Equal(t, "| hdr0 (A) -> hdr1 (A) -> hdrB (B)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrB (B) -> hdr1 (A) -> hdr0 (A)", REV(have))
+	})
+
+	t.Run("three nodes unsorted", func(t *testing.T) {
+		// --- Given ---
+		msgA := New("hdrA").SetTrail("A")
+		msgB := New("hdrB").SetTrail("B")
+		msgC := New("hdrC").SetTrail("C")
+		_ = Join(msgC, msgA, msgB)
+
+		// --- When ---
+		have := SortNotices(msgC, TrailCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgC, have))
+		affirm.Equal(t, "| hdrA (A) -> hdrB (B) -> hdrC (C)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrC (C) -> hdrB (B) -> hdrA (A)", REV(have))
+	})
+
+	t.Run("nodes unsorted with repetitions", func(t *testing.T) {
+		// --- Given ---
+		msgA := New("hdrA").SetTrail("A")
+		msgB0 := New("hdrB0").SetTrail("B")
+		msgB1 := New("hdrB1").SetTrail("B")
+		msgC := New("hdrC").SetTrail("C")
+		_ = Join(msgC, msgA, msgB0, msgB1)
+
+		// --- When ---
+		have := SortNotices(msgC, TrailCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgC, have))
+		wFwd := "| hdrA (A) -> hdrB0 (B) -> hdrB1 (B) -> hdrC (C)"
+		affirm.Equal(t, wFwd, FWD(have.Head()))
+		wRev := "| hdrC (C) -> hdrB1 (B) -> hdrB0 (B) -> hdrA (A)"
+		affirm.Equal(t, wRev, REV(have))
+	})
+
+	t.Run("nodes unsorted with repetitions 2", func(t *testing.T) {
+		// --- Given ---
+		msgA := New("hdrA").SetTrail("A")
+		msgB0 := New("hdrB0").SetTrail("B")
+		msgB1 := New("hdrB1").SetTrail("B")
+		msgC := New("hdrC").SetTrail("C")
+		_ = Join(msgB0, msgC, msgA, msgB1)
+
+		// --- When ---
+		have := SortNotices(msgB0, TrailCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgC, have))
+		wFwd := "| hdrA (A) -> hdrB0 (B) -> hdrB1 (B) -> hdrC (C)"
+		affirm.Equal(t, wFwd, FWD(have.Head()))
+		wRev := "| hdrC (C) -> hdrB1 (B) -> hdrB0 (B) -> hdrA (A)"
+		affirm.Equal(t, wRev, REV(have))
+	})
+
+	t.Run("nodes with empty sort values", func(t *testing.T) {
+		// --- Given ---
+		msg0 := New("hdr0").SetTrail("")
+		msgA := New("hdrA").SetTrail("A")
+		msg1 := New("hdr2").SetTrail("")
+		_ = Join(msg0, msgA, msg1)
+
+		// --- When ---
+		have := SortNotices(msg0, TrailCmp)
+
+		// --- Then ---
+		affirm.Equal(t, true, core.Same(msgA, have))
+		affirm.Equal(t, "| hdr0 () -> hdr2 () -> hdrA (A)", FWD(have.Head()))
+		affirm.Equal(t, "| hdrA (A) -> hdr2 () -> hdr0 ()", REV(have))
+	})
+}
+
 // Benchmarks for the notice error model and hot formatting paths.
 
 func Benchmark_Notice_Error_Simple(b *testing.B) {
@@ -1349,8 +1587,7 @@ func Benchmark_Notice_Error_Simple(b *testing.B) {
 		Have("%s", "xyz")
 
 	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = msg.Error()
 	}
 }
@@ -1370,8 +1607,7 @@ func Benchmark_Notice_Is_And_Unwrap(b *testing.B) {
 	msg := New("failed").Wrap(myErr)
 
 	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = errors.Is(msg, myErr)
 		_ = msg.Unwrap()
 	}

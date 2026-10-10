@@ -4,9 +4,9 @@
 // Package notice provides the builder for rich, structured assertion messages
 // used throughout the module.
 //
-// It is the formatting layer in the layered architecture: `assert` (user-facing)
-// is built on `check` (composable, returns error) which produces `*Notice`
-// values for detailed, trail-aware diagnostics.
+// It is the formatting layer in the layered architecture: `assert`
+// (user-facing) is built on `check` (composable, returns error) which
+// produces `*Notice` values for detailed, trail-aware diagnostics.
 //
 // Notices implement [error]. They wrap a base error (default [ErrNotice]).
 // [Notice.Is] makes [errors.Is] match any base on a [Join] chain; [errors.As]
@@ -17,7 +17,7 @@
 // Walk the chain with [Notice.Head], [Notice.Next], [Notice.Prev], or collect
 // all with [Notice.All]. Chains are mutable.
 //
-// See the package [README] for usage and [examples_test.go] for executable
+// See the package README for usage and examples_test.go for executable
 // examples.
 //
 // Key types and entry points:
@@ -35,13 +35,15 @@ import (
 	"reflect"
 	"slices"
 	"strings"
+	"unicode/utf8"
 )
 
+// Row names and headers used when rendering notices.
 const (
-	// trail represents the header name containing the field trail (path) name.
+	// trail is the name of the row holding the field trail (path).
 	trail = "trail"
 
-	// multiHeader is a header for multiple notices.
+	// multiHeader is the header of a chain of notices.
 	multiHeader = "multiple expectations violated"
 )
 
@@ -59,15 +61,15 @@ var ErrNotice = errors.New("notice error")
 // [Join] / [Notice.Chain]. Walk with [Notice.Head], [Notice.Next],
 // [Notice.Prev] or collect with [Notice.All].
 //
-// The default base error is [ErrNotice]; change it with [Notice.Wrap]
-// to control what [errors.Is] sees on that node (see [Notice.Is]).
+// The default base error is [ErrNotice]; change it with [Notice.Wrap] to
+// control what [errors.Is] matches across the whole chain (see [Notice.Is]).
 //
 //nolint:errname
 type Notice struct {
-	HeaderText   string // HeaderText message.
-	HeaderPrefix string // HeaderText prefix message.
+	HeaderText   string // Header message.
+	HeaderPrefix string // Prefix shown as "[prefix]" before the header.
 
-	// Is a trail to the field, element, or key the notice message is about.
+	// Trail to the field, element, or key the notice message is about.
 	Trail string
 
 	Rows []Row          // Context rows.
@@ -106,16 +108,16 @@ func From(err error, prefix ...string) *Notice {
 		pref = prefix[0]
 	}
 	//goland:noinspection GoTypeAssertionOnErrors
-	if e, ok := err.(*Notice); ok { //nolint:errorlint
-		if e == nil {
+	if msg, ok := err.(*Notice); ok { //nolint:errorlint
+		if msg == nil {
 			return nil
 		}
 		if pref != "" {
-			for m := e.Head(); m != nil; m = m.next {
+			for m := msg.Head(); m != nil; m = m.next {
 				m.HeaderPrefix = pref
 			}
 		}
-		return e
+		return msg
 	}
 
 	msg := New("assertion error").Wrap(err).Append("error", "%s", err)
@@ -123,7 +125,7 @@ func From(err error, prefix ...string) *Notice {
 	return msg
 }
 
-// SetHeader sets the header message. Implements fluent interface.
+// SetHeader sets the header message. It implements a fluent interface.
 func (msg *Notice) SetHeader(header string, args ...any) *Notice {
 	if len(args) > 0 {
 		header = fmt.Sprintf(header, args...)
@@ -132,7 +134,7 @@ func (msg *Notice) SetHeader(header string, args ...any) *Notice {
 	return msg
 }
 
-// SetPrefix sets the header prefix. Implements fluent interface.
+// SetPrefix sets the header prefix. It implements a fluent interface.
 func (msg *Notice) SetPrefix(prefix string, args ...any) *Notice {
 	if len(args) > 0 {
 		prefix = fmt.Sprintf(prefix, args...)
@@ -151,7 +153,7 @@ func (msg *Notice) Header() string {
 }
 
 // Append adds a row (name + formatted value). Replaces any existing row with
-// the same name. Implements fluent interface.
+// the same name. It implements a fluent interface.
 func (msg *Notice) Append(name, format string, args ...any) *Notice {
 	return msg.appendRow(NewRow(name, format, args...))
 }
@@ -164,7 +166,7 @@ func (msg *Notice) AppendRow(desc ...Row) *Notice {
 	return msg
 }
 
-// appendRow appends [Row] to the [Notice]. Implements fluent interface.
+// appendRow appends [Row] to the [Notice]. It implements a fluent interface.
 func (msg *Notice) appendRow(row Row) *Notice {
 	fn := func(have Row) bool { return have.Name == row.Name }
 	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
@@ -177,12 +179,12 @@ func (msg *Notice) appendRow(row Row) *Notice {
 }
 
 // Prepend prepends a new row with the specified name and value built using
-// [fmt.Sprintf] from format and args. Implements fluent interface.
+// [fmt.Sprintf] from format and args. It implements a fluent interface.
 func (msg *Notice) Prepend(name, format string, args ...any) *Notice {
 	return msg.prependRow(NewRow(name, format, args...))
 }
 
-// prependRow prepends [Row] to the [Notice]. Implements fluent interface.
+// prependRow prepends [Row] to the [Notice]. It implements a fluent interface.
 func (msg *Notice) prependRow(row Row) *Notice {
 	fn := func(have Row) bool { return have.Name == row.Name }
 	if idx := slices.IndexFunc(msg.Rows, fn); idx >= 0 {
@@ -194,16 +196,16 @@ func (msg *Notice) prependRow(row Row) *Notice {
 	return msg
 }
 
-// SetTrail adds trail row if "tr" is not an empty string. If the trail row
-// already exists, it overwrites it. Implements fluent interface.
+// SetTrail sets the trail rendered as the first row of the notice; an empty
+// trail renders no row. It implements a fluent interface.
 //
 // SetTrail examples:
 //
 //   - Type
 //   - Type[1].Field
 //   - Type["key"].Field
-func (msg *Notice) SetTrail(trail string) *Notice {
-	msg.Trail = trail
+func (msg *Notice) SetTrail(tr string) *Notice {
+	msg.Trail = tr
 	return msg
 }
 
@@ -233,7 +235,7 @@ func (msg *Notice) Unwrap() error {
 }
 
 // Remove removes the row with the given name, if present.
-// Implements fluent interface.
+// It implements a fluent interface.
 func (msg *Notice) Remove(name string) *Notice {
 	fn := func(row Row) bool { return row.Name == name }
 	msg.Rows = slices.DeleteFunc(msg.Rows, fn)
@@ -290,11 +292,13 @@ func isErr(err, target error, head *Notice) bool {
 	return false
 }
 
-// Error returns a formatted string representation of the Notice.
+// Error renders every notice of the chain: the header, the trail and the
+// rows with aligned names. A chain of more than one notice is rendered under
+// a common header with each notice's header in an "error" row.
 //
 //nolint:gocognit,cyclop
 func (msg *Notice) Error() string {
-	mgs := msg.collect()
+	mgs := msg.All()
 
 	var longest int
 	for _, m := range mgs {
@@ -310,8 +314,8 @@ func (msg *Notice) Error() string {
 		if longest < len("error") {
 			longest = len("error")
 		}
-		buf.WriteString(multiHeader)
-		buf.WriteString(":\n")
+		_, _ = buf.WriteString(multiHeader)
+		_, _ = buf.WriteString(":\n")
 	}
 
 	for im, m := range mgs {
@@ -324,19 +328,19 @@ func (msg *Notice) Error() string {
 
 		header := m.Header()
 		if multiMsg && header != "" {
-			buf.WriteString("  ")
-			buf.WriteString(Pad("error", longest))
-			buf.WriteString(": ")
-			buf.WriteString(header)
+			_, _ = buf.WriteString("  ")
+			_, _ = buf.WriteString(Pad("error", longest))
+			_, _ = buf.WriteString(": ")
+			_, _ = buf.WriteString(header)
 		} else {
-			buf.WriteString(header)
+			_, _ = buf.WriteString(header)
 		}
 
 		if len(rows) > 0 && header != "" {
 			if !multiMsg {
-				buf.WriteString(":")
+				_, _ = buf.WriteString(":")
 			}
-			buf.WriteString("\n")
+			_, _ = buf.WriteString("\n")
 		}
 
 		for ir, r := range rows {
@@ -344,29 +348,29 @@ func (msg *Notice) Error() string {
 			name := r.PadName(longest)
 			value := r.String()
 
-			buf.WriteString("  ")
-			buf.WriteString(name)
-			buf.WriteString(":")
+			_, _ = buf.WriteString("  ")
+			_, _ = buf.WriteString(name)
+			_, _ = buf.WriteString(":")
 
 			if idx := strings.IndexByte(value, '\n'); idx >= 0 {
 				value = Indent(len(name)+4, ' ', value)
 				if idx != 0 {
-					buf.WriteString("\n")
+					_, _ = buf.WriteString("\n")
 				}
 			} else {
-				buf.WriteString(" ")
+				_, _ = buf.WriteString(" ")
 			}
-			buf.WriteString(value)
+			_, _ = buf.WriteString(value)
 
 			if !lastRow {
-				buf.WriteString("\n")
+				_, _ = buf.WriteString("\n")
 			}
 		}
 
 		if !lastMsg {
-			buf.WriteString("\n")
-			buf.WriteString(Pad("---", longest+4))
-			buf.WriteString("\n")
+			_, _ = buf.WriteString("\n")
+			_, _ = buf.WriteString(Pad("---", longest+4))
+			_, _ = buf.WriteString("\n")
 		}
 	}
 
@@ -374,7 +378,7 @@ func (msg *Notice) Error() string {
 }
 
 // MetaSet stores arbitrary data under key for later retrieval.
-// To retrieve, use [Notice.MetaLookup]. Implements fluent interface.
+// To retrieve, use [Notice.MetaLookup]. It implements a fluent interface.
 func (msg *Notice) MetaSet(key string, val any) *Notice {
 	if msg.Meta == nil {
 		msg.Meta = make(map[string]any)
@@ -402,8 +406,8 @@ func (msg *Notice) longest() int {
 		maxLen = len(trail)
 	}
 	for _, row := range msg.Rows {
-		if maxLen < len(row.Name) {
-			maxLen = len(row.Name)
+		if n := utf8.RuneCountInString(row.Name); maxLen < n {
+			maxLen = n
 		}
 	}
 	return maxLen
@@ -411,10 +415,10 @@ func (msg *Notice) longest() int {
 
 // Chain links msg after prev in the chain (mutates both) and returns msg.
 //
-// After the call: prev.Next() == msg and msg.Prev() == prev. The msg node is
-// detached from any previous predecessor first so re-joining cannot leave
-// stale prev/next pointers; msg and its successors (the msg…tail sublist)
-// move together. Self-links, and links to one of msg's own successors (which
+// After the call: prev.Next() returns the notice and its Prev() returns prev.
+// The notice is detached from any previous predecessor first, so re-joining
+// cannot leave stale prev/next pointers; the notice and its successors move
+// together. Self-links, and links to one of msg's own successors (which
 // would form a cycle), are ignored.
 // Use [Join] for a safer way to build chains from multiple values.
 func (msg *Notice) Chain(prev *Notice) *Notice {
@@ -451,12 +455,12 @@ func (msg *Notice) Head() *Notice {
 
 // Next returns the following notice in the chain (nil if this is the last).
 //
-// The link is set by [Chain] or [Join].
+// The link is set by [Notice.Chain] or [Join].
 func (msg *Notice) Next() *Notice { return msg.next }
 
 // Prev returns the preceding notice in the chain (nil if this is the first).
 //
-// The link is set by [Chain] or [Join].
+// The link is set by [Notice.Chain] or [Join].
 func (msg *Notice) Prev() *Notice { return msg.prev }
 
 // All returns every notice in the chain, starting from the head.
@@ -476,9 +480,6 @@ func (msg *Notice) All() []*Notice {
 	return mgs
 }
 
-// collect collects all the notices in the chain starting with the Head notice.
-func (msg *Notice) collect() []*Notice { return msg.All() }
-
 // Join chains multiple notices or errors into a linked list.
 //
 // Each non-nil argument is converted via [From] and linked using
@@ -495,34 +496,34 @@ func Join(ers ...error) error {
 		return nil
 	}
 
-	var err *Notice // Tail of the chain built so far.
+	var tail *Notice // Tail of the chain built so far.
 	for _, next := range ers {
 		nxt := From(next)
 		if nxt == nil {
 			continue
 		}
-		if err == nil {
-			err = nxt
-			for err.next != nil {
-				err = err.next
+		if tail == nil {
+			tail = nxt
+			for tail.next != nil {
+				tail = tail.next
 			}
 			continue
 		}
 		// Head so a multi-notice operand keeps every node when appended.
-		ne := nxt.Head()
-		if inChain(ne, err) {
+		head := nxt.Head()
+		if inChain(head, tail) {
 			continue // The operand is already on the chain.
 		}
-		_ = ne.Chain(err)
-		err = ne
-		for err.next != nil {
-			err = err.next
+		_ = head.Chain(tail)
+		tail = head
+		for tail.next != nil {
+			tail = tail.next
 		}
 	}
-	if err == nil {
+	if tail == nil {
 		return nil
 	}
-	return err
+	return tail
 }
 
 // inChain reports whether node is reachable from head through next links.
@@ -533,4 +534,90 @@ func inChain(head, node *Notice) bool {
 		}
 	}
 	return false
+}
+
+// TrailCmp compares two notices by their Trail strings.
+// Returns -1 if x < y, 0 if equal, +1 if x > y.
+// Suitable for use with [SortNotices] or slices.SortFunc.
+func TrailCmp(x, y *Notice) int {
+	if x.Trail < y.Trail {
+		return -1
+	}
+	if x.Trail > y.Trail {
+		return 1
+	}
+	return 0
+}
+
+// SortNotices sorts, in place and stably, the chain head belongs to using
+// cmp. The cmp function returns a negative number if a should precede b,
+// zero if they are equal, or a positive number if a should follow b.
+//
+// It mutates prev/next pointers. If head is nil or its chain has one node it
+// is returned unchanged. The returned value is the tail of the sorted chain
+// (useful for further [Join] or [Notice.Chain] calls).
+func SortNotices(head *Notice, cmp func(a, b *Notice) int) *Notice {
+	if head == nil {
+		return nil
+	}
+	head = head.Head()
+	if head.next == nil {
+		return head
+	}
+
+	var found *Notice
+
+	// We detach the head from the list by removing the pointer to it from the
+	// next node and removing the pointer to the next node from itself.
+	head.next.prev = nil
+	current := head.next
+	sorted := head
+	sorted.next = nil
+	tail := sorted
+
+	for current != nil {
+		found = nil
+		next := current.next
+
+		for node := sorted; node != nil; node = node.next {
+			if cmp(current, node) < 0 {
+				break
+			}
+			found = node
+		}
+
+		// Detach node.
+		if current.next != nil {
+			current.next.prev = current.prev
+		}
+
+		switch found {
+		case nil:
+			// Insert at the beginning.
+			current.prev = nil
+			current.next = sorted
+			sorted.prev = current
+
+			sorted = current
+
+		default:
+			// Insert after found.
+			current.next = found.next
+			if found.next != nil {
+				found.next.prev = current
+			}
+
+			found.next = current
+			current.prev = found
+
+			//goland:noinspection GoDirectComparisonOfErrors
+			if found == tail {
+				tail = current
+			}
+		}
+
+		current = next // Move to the next unsorted node.
+	}
+
+	return tail
 }

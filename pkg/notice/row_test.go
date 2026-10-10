@@ -67,7 +67,7 @@ func Test_Row_String_tabular(t *testing.T) {
 	}
 }
 
-func Test_PaddedName_tabular(t *testing.T) {
+func Test_Row_PadName_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -84,7 +84,7 @@ func Test_PaddedName_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- Given ---
-			row := Row{Name: "name"}
+			row := Row{Name: tc.name}
 
 			// --- When ---
 			have := row.PadName(tc.length)
