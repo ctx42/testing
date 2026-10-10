@@ -9,13 +9,13 @@ import (
 	"github.com/ctx42/testing/pkg/assert"
 )
 
-func Test_candidate_betterThan(t *testing.T) {
+func Test_candidate_betterThan_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
 		this  candidate
 		other candidate
-		exp   bool
+		want  bool
 	}{
 		{
 			"both nil",
@@ -67,7 +67,7 @@ func Test_candidate_betterThan(t *testing.T) {
 			have := tc.this.betterThan(tc.other)
 
 			// --- Then ---
-			assert.Equal(t, tc.exp, have)
+			assert.Equal(t, tc.want, have)
 		})
 	}
 }

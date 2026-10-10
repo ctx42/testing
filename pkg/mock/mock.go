@@ -58,12 +58,10 @@ var (
 	ErrNotFound = errors.New("method not found")
 )
 
-const (
-	// Any is a sentinel used with [Arguments.Diff] and in expectation
-	// definitions to indicate that the argument value should not be
-	// considered during matching.
-	Any = "mock.Any"
-)
+// Any is a sentinel used with [Arguments.Diff] and in expectation definitions
+// to indicate that the argument value should not be considered during
+// matching.
+const Any = "mock.Any"
 
 // Mock fatal message headers (internal).
 const (
@@ -89,7 +87,8 @@ func WithNoStack(mck *Mock) { mck.stack = false }
 // A [Mock] is typically embedded in a hand-written or generated *Mock struct
 // that implements the target interface. Use [NewMock] to create one; it
 // automatically registers a [testing.TB.Cleanup] handler that calls
-// [Mock.AssertExpectations] at the end of the test.
+// [Mock.AssertExpectations] at the end of the test. The zero value is not
+// usable.
 type Mock struct {
 	// Calls expected on the mock.
 	expected []*Call
@@ -127,7 +126,7 @@ func NewMock(t tester.T, opts ...Option) *Mock {
 	for _, opt := range opts {
 		opt(mck)
 	}
-	t.Cleanup(func() { t.Helper(); mck.AssertExpectations() })
+	t.Cleanup(func() { t.Helper(); _ = mck.AssertExpectations() })
 	return mck
 }
 

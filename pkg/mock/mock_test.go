@@ -410,11 +410,11 @@ func Test_Mock_Called(t *testing.T) {
 		mck.On("MethodInts", 1, 2, 3).Return(4)
 
 		// --- When ---
-		got, err := mck.MethodInts(1, 2, 3)
+		have, err := mck.MethodInts(1, 2, 3)
 
 		// --- Then ---
 		assert.Equal(t, "whoops", err.Error())
-		assert.Equal(t, 4, got)
+		assert.Equal(t, 4, have)
 
 		assert.Len(t, 1, mck.calls)
 		assert.Equal(t, "MethodInts", mck.calls[0].Method)
@@ -438,7 +438,7 @@ func Test_Mock_Called(t *testing.T) {
 	})
 }
 
-func Test_called(t *testing.T) {
+func Test_Mock_called(t *testing.T) {
 	t.Run("self", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
@@ -686,11 +686,11 @@ func Test_Mock_Call(t *testing.T) {
 		mck.On("MethodBool", true).Return("done").Until(ch)
 
 		// --- When ---
-		var got Arguments
+		var have Arguments
 		done := make(chan struct{})
 		start := time.Now()
 		go func() {
-			got = mck.Call("MethodBool", true)
+			have = mck.Call("MethodBool", true)
 			close(done)
 		}()
 
@@ -708,7 +708,7 @@ func Test_Mock_Call(t *testing.T) {
 			t.Error("Call does not work properly")
 			return
 		}
-		assert.Equal(t, "done", got[0])
+		assert.Equal(t, "done", have[0])
 		assert.False(t, mck.failed)
 	})
 
@@ -722,11 +722,11 @@ func Test_Mock_Call(t *testing.T) {
 		mck.On("MethodBool", true).Return("done").After(500 * time.Millisecond)
 
 		// --- When ---
-		var got Arguments
+		var have Arguments
 		done := make(chan struct{})
 		start := time.Now()
 		go func() {
-			got = mck.Call("MethodBool", true)
+			have = mck.Call("MethodBool", true)
 			close(done)
 		}()
 
@@ -744,7 +744,7 @@ func Test_Mock_Call(t *testing.T) {
 			t.Error("Call does not work properly")
 			return
 		}
-		assert.Equal(t, "done", got[0])
+		assert.Equal(t, "done", have[0])
 		assert.False(t, mck.failed)
 	})
 
@@ -1029,14 +1029,14 @@ func Test_Mock_find(t *testing.T) {
 		mck := NewMock(tspy)
 		mck.On("Zero", 0).Return("zero")
 		mck.On("One", 1).Return("one")
-		exp := mck.On("One", 2).Return("two")
+		want := mck.On("One", 2).Return("two")
 
 		// --- When ---
 		have, err := mck.find("One", []any{2}, nil)
 
 		// --- Then ---
 		assert.NoError(t, err)
-		assert.Same(t, exp, have)
+		assert.Same(t, want, have)
 	})
 
 	t.Run("error - matching name not matching arg count", func(t *testing.T) {
@@ -1135,14 +1135,14 @@ func Test_Mock_find(t *testing.T) {
 		mck := NewMock(tspy)
 		mck.On("Zero", 0).Return("zero")
 		mck.On("One", 1).Times(-1).Return("one")
-		exp := mck.On("One", 1).Return("two")
+		want := mck.On("One", 1).Return("two")
 
 		// --- When ---
 		have, err := mck.find("One", []any{1}, nil)
 
 		// --- Then ---
 		assert.NoError(t, err)
-		assert.Same(t, exp, have)
+		assert.Same(t, want, have)
 	})
 
 	t.Run("method with variadic args", func(t *testing.T) {
@@ -1155,14 +1155,14 @@ func Test_Mock_find(t *testing.T) {
 
 		mck := NewExampleImpl(NewMock(tspy))
 		mck.On("MethodBool", true)
-		exp := mck.On("MethodIntVar", 1, 2, 3).Return(nil)
+		want := mck.On("MethodIntVar", 1, 2, 3).Return(nil)
 
 		// --- When ---
 		have, err := mck.find("MethodIntVar", []any{1, 2, 3}, nil)
 
 		// --- Then ---
 		assert.NoError(t, err)
-		assert.Same(t, exp, have)
+		assert.Same(t, want, have)
 	})
 
 	t.Run("error - method with variadic args not found", func(t *testing.T) {
@@ -1198,14 +1198,14 @@ func Test_Mock_find(t *testing.T) {
 		mck := NewExampleImpl(NewMock(tspy))
 
 		by := MatchBy(func(have int) bool { return have < 10 })
-		exp := mck.On("MethodIntVar", by, by, 10, by).Return(nil)
+		want := mck.On("MethodIntVar", by, by, 10, by).Return(nil)
 
 		// --- When ---
 		have, err := mck.find("MethodIntVar", []any{1, 2, 10, 4}, nil)
 
 		// --- Then ---
 		assert.NoError(t, err)
-		assert.Same(t, exp, have)
+		assert.Same(t, want, have)
 	})
 
 	t.Run("error - when matcher panics", func(t *testing.T) {
@@ -1241,7 +1241,7 @@ func Test_Mock_find(t *testing.T) {
 
 		mck := NewMock(tspy)
 		mck.OnAny("Zero").Return("zero")
-		exp := mck.OnAny("One").Return("one")
+		want := mck.OnAny("One").Return("one")
 		mck.On("One", 2).Return("two") // Will never return this one.
 
 		// --- When ---
@@ -1249,15 +1249,15 @@ func Test_Mock_find(t *testing.T) {
 
 		// --- Then ---
 		assert.NoError(t, err)
-		assert.Same(t, exp, have)
-		exp.haveCalls++
+		assert.Same(t, want, have)
+		want.haveCalls++
 
 		// --- When ---
 		have, err = mck.find("One", []any{2}, nil)
 
 		// --- Then ---
 		assert.NoError(t, err)
-		assert.Same(t, exp, have)
+		assert.Same(t, want, have)
 	})
 
 	t.Run("respects wantCount for calls using OnAny", func(t *testing.T) {
@@ -1390,14 +1390,14 @@ func Test_Mock_closest(t *testing.T) {
 
 		mck := NewExampleImpl(NewMock(tspy))
 		mck.On("MethodBool", true)
-		exp := mck.On("MethodIntVar", 42, 44).Return(nil)
+		want := mck.On("MethodIntVar", 42, 44).Return(nil)
 		mck.On("MethodIntVar", 7, 42, 44).Return(nil)
 
 		// --- When ---
-		got, diff := mck.closest("MethodIntVar", 42, 44)
+		have, diff := mck.closest("MethodIntVar", 42, 44)
 
 		// --- Then ---
-		assert.Same(t, exp, got)
+		assert.Same(t, want, have)
 		wantDiff := []string{
 			"0: PASS: (int=42) == (int=42)",
 			"1: PASS: (int=44) == (int=44)",
@@ -1418,10 +1418,10 @@ func Test_Mock_closest(t *testing.T) {
 		mck.On("MethodBool", false)
 
 		// --- When ---
-		got, have := mck.closest("MethodBoolean", true)
+		hCall, have := mck.closest("MethodBoolean", true)
 
 		// --- Then ---
-		assert.Nil(t, got)
+		assert.Nil(t, hCall)
 		assert.Nil(t, have)
 	})
 }

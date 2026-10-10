@@ -401,10 +401,34 @@ func Test_Call_CanCall_tabular(t *testing.T) {
 		{"no max called optional", 0, 1, true, nil},
 		{"called fewer times than expected not optional", 2, 0, false, nil},
 		{"called fewer times than expected optional", 2, 0, true, nil},
-		{"called requested number of times not optional", 1, 1, false, ErrTooManyCalls},
-		{"called requested number of times optional", 1, 1, true, ErrTooManyCalls},
-		{"called more than requested number of times not optional", 1, 2, false, ErrTooManyCalls},
-		{"called more than requested number of times optional", 1, 2, true, ErrTooManyCalls},
+		{
+			"called requested number of times not optional",
+			1,
+			1,
+			false,
+			ErrTooManyCalls,
+		},
+		{
+			"called requested number of times optional",
+			1,
+			1,
+			true,
+			ErrTooManyCalls,
+		},
+		{
+			"called more than requested number of times not optional",
+			1,
+			2,
+			false,
+			ErrTooManyCalls,
+		},
+		{
+			"called more than requested number of times optional",
+			1,
+			2,
+			true,
+			ErrTooManyCalls,
+		},
 	}
 
 	for _, tc := range tt {
@@ -498,11 +522,23 @@ func Test_Call_satisfied_tabular(t *testing.T) {
 		{"no max called not optional", 0, 1, true, nil},
 		{"no max called multiple times optional", 0, 10, true, nil},
 		{"no max called multiple times not optional", 0, 10, false, nil},
-		{"called fewer times than max not optional", 2, 1, false, ErrTooFewCalls},
+		{
+			"called fewer times than max not optional",
+			2,
+			1,
+			false,
+			ErrTooFewCalls,
+		},
 		{"called fewer times than max optional", 2, 1, true, nil},
 		{"called requested number of times and optional", 5, 5, false, nil},
 		{"called requested number of times optional", 5, 5, true, nil},
-		{"called more times than max not optional", 1, 10, false, ErrTooManyCalls},
+		{
+			"called more times than max not optional",
+			1,
+			10,
+			false,
+			ErrTooManyCalls,
+		},
 		{"called more times than max optional", 1, 10, true, ErrTooManyCalls},
 	}
 
@@ -693,7 +729,7 @@ func Test_Call_call(t *testing.T) {
 	})
 }
 
-func Test_Call_proxyCall(t *testing.T) {
+func Test_Call_callProxy(t *testing.T) {
 	t.Run("regular call", func(t *testing.T) {
 		// --- Given ---
 		ptr := &testcases.TPtr{Val: "c"}

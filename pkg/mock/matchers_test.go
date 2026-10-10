@@ -179,18 +179,38 @@ func Test_MatchBy(t *testing.T) {
 	})
 }
 
-func Test_MatchBy_description_tabular(t *testing.T) {
+func Test_MatchBy_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
 		fn   any
 		want string
 	}{
-		{"1", func(have int) bool { return false }, "[mock.MatchBy=func(int) bool]"},
-		{"2", func(have bool) bool { return false }, "[mock.MatchBy=func(bool) bool]"},
-		{"3", func(have ExampleItf) bool { return false }, "[mock.MatchBy=func(mock.ExampleItf) bool]"},
-		{"4", func(have ExampleType) bool { return false }, "[mock.MatchBy=func(mock.ExampleType) bool]"},
-		{"5", func(have *ExampleType) bool { return false }, "[mock.MatchBy=func(*mock.ExampleType) bool]"},
+		{
+			"1",
+			func(have int) bool { return false },
+			"[mock.MatchBy=func(int) bool]",
+		},
+		{
+			"2",
+			func(have bool) bool { return false },
+			"[mock.MatchBy=func(bool) bool]",
+		},
+		{
+			"3",
+			func(have ExampleItf) bool { return false },
+			"[mock.MatchBy=func(mock.ExampleItf) bool]",
+		},
+		{
+			"4",
+			func(have ExampleType) bool { return false },
+			"[mock.MatchBy=func(mock.ExampleType) bool]",
+		},
+		{
+			"5",
+			func(have *ExampleType) bool { return false },
+			"[mock.MatchBy=func(*mock.ExampleType) bool]",
+		},
 	}
 
 	for _, tc := range tt {
@@ -204,7 +224,7 @@ func Test_MatchBy_description_tabular(t *testing.T) {
 	}
 }
 
-func Test_MatchOfType_match_tabular(t *testing.T) {
+func Test_MatchOfType_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -236,7 +256,7 @@ func Test_MatchOfType_match_tabular(t *testing.T) {
 	}
 }
 
-func Test_MatchOfType_description_tabular(t *testing.T) {
+func Test_MatchOfType_desc_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -276,7 +296,7 @@ func Test_MatchType(t *testing.T) {
 	})
 }
 
-func Test_MatchType_match_tabular(t *testing.T) {
+func Test_MatchType_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -310,7 +330,7 @@ func Test_MatchType_match_tabular(t *testing.T) {
 	}
 }
 
-func Test_MatchType_description_tabular(t *testing.T) {
+func Test_MatchType_desc_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -338,9 +358,9 @@ func Test_MatchErrorContain_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		want string
-		have error
-		exp  bool
+		want  string
+		have  error
+		match bool
 	}{
 		{"1", "long text", errors.New("some long text to match"), true},
 		{"2", "other text", errors.New("some long text to match"), false},
@@ -352,7 +372,7 @@ func Test_MatchErrorContain_tabular(t *testing.T) {
 			have := MatchErrorContain(tc.want).Match(tc.have)
 
 			// --- Then ---
-			assert.Equal(t, tc.exp, have)
+			assert.Equal(t, tc.match, have)
 		})
 	}
 }
@@ -366,9 +386,9 @@ func Test_MatchError_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		want any
-		have error
-		exp  bool
+		want  any
+		have  error
+		match bool
 	}{
 		{"match error message", "test error 0", err0, true},
 		{"no match error message", "other error", err0, false},
@@ -386,7 +406,7 @@ func Test_MatchError_tabular(t *testing.T) {
 			have := MatchError(tc.want).Match(tc.have)
 
 			// --- Then ---
-			assert.Equal(t, tc.exp, have)
+			assert.Equal(t, tc.match, have)
 		})
 	}
 }

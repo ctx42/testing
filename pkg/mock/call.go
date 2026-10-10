@@ -113,113 +113,113 @@ func newProxy(proxy reflect.Value, name ...string) *Call {
 }
 
 // withParent sets [Mock] instance the call belongs to.
-func (c *Call) withParent(parent *Mock) *Call {
-	c.parent = parent
-	return c
+func (call *Call) withParent(parent *Mock) *Call {
+	call.parent = parent
+	return call
 }
 
 // withStack sets the stack trace where the call requirement was defined.
-func (c *Call) withStack(stack []string) *Call {
-	c.Stack = stack
-	return c
+func (call *Call) withStack(stack []string) *Call {
+	call.Stack = stack
+	return call
 }
 
 // With sets the expected arguments for a proxied call (see [Mock.Proxy]).
 // Without With, proxy calls accept any arguments.
-func (c *Call) With(args ...any) *Call {
-	if !c.proxy.IsValid() {
+func (call *Call) With(args ...any) *Call {
+	if !call.proxy.IsValid() {
 		panic("cannot set arguments on non-proxy calls")
 	}
-	c.args = args
-	return c
+	call.args = args
+	return call
 }
 
 // Return sets the values that will be returned when the mocked method is
 // later invoked. It panics if called on a proxy call (proxies forward real
 // return values).
-func (c *Call) Return(args ...any) *Call {
-	if c.proxy.IsValid() {
+func (call *Call) Return(args ...any) *Call {
+	if call.proxy.IsValid() {
 		panic("proxy calls cannot have return values")
 	}
-	c.returns = args
-	return c
+	call.returns = args
+	return call
 }
 
 // Panic arranges for the mocked method to panic with the given value when
 // invoked. Useful for testing error paths that expect panics. It panics if
 // called on a proxy call.
-func (c *Call) Panic(value any) *Call {
-	if c.proxy.IsValid() {
+func (call *Call) Panic(value any) *Call {
+	if call.proxy.IsValid() {
 		panic("cannot call panic on proxy calls")
 	}
-	c.panic = value
-	return c
+	call.panic = value
+	return call
 }
 
 // Once is a shorthand for [Call.Times](1): the expectation must be satisfied
 // exactly once. Mutually exclusive with [Call.Optional].
-func (c *Call) Once() *Call { return c.Times(1) }
+func (call *Call) Once() *Call { return call.Times(1) }
 
 // Times sets the exact number of times this expectation must be met.
 // Mutually exclusive with [Call.Optional].
-func (c *Call) Times(i int) *Call {
-	if c.optional {
+func (call *Call) Times(i int) *Call {
+	if call.optional {
 		panic("cannot use Optional and Times at the same time")
 	}
-	c.wantCalls = i
-	return c
+	call.wantCalls = i
+	return call
 }
 
 // Until makes the mocked method block until the channel is closed or
 // receives a value. Useful for testing timeouts, cancellation, or ordering.
-func (c *Call) Until(ch <-chan time.Time) *Call {
-	c.until = ch
-	return c
+func (call *Call) Until(ch <-chan time.Time) *Call {
+	call.until = ch
+	return call
 }
 
 // After makes the mocked method sleep for the given duration before
 // returning (simpler fixed-delay alternative to [Call.Until]).
-func (c *Call) After(d time.Duration) *Call {
-	c.after = d
-	return c
+func (call *Call) After(d time.Duration) *Call {
+	call.after = d
+	return call
 }
 
 // Alter registers functions to be called with the received arguments
 // immediately before the mock returns (or after any delay). Commonly used
 // to mutate pointer arguments before the real implementation sees them.
-func (c *Call) Alter(fn ...func(Arguments)) *Call {
-	c.alter = append(c.alter, fn...)
-	return c
+func (call *Call) Alter(fn ...func(Arguments)) *Call {
+	call.alter = append(call.alter, fn...)
+	return call
 }
 
 // Optional marks the expectation as optional: zero or more calls are
 // acceptable and will not cause AssertExpectations to fail. Mutually
 // exclusive with [Call.Times] / [Call.Once].
-func (c *Call) Optional() *Call {
-	if c.wantCalls > 0 {
+func (call *Call) Optional() *Call {
+	if call.wantCalls > 0 {
 		panic("cannot use Optional and Times at the same time")
 	}
-	c.optional = true
-	return c
+	call.optional = true
+	return call
 }
 
 // Requires declares that the listed calls must be satisfied before this
 // expectation can be met. Prerequisites can be on the same or different mocks.
-func (c *Call) Requires(calls ...*Call) *Call {
-	for _, call := range calls {
-		if call == nil {
+func (call *Call) Requires(calls ...*Call) *Call {
+	for _, req := range calls {
+		if req == nil {
 			panic("a nil instance of mock.Call passed to mock.Call.Requires")
 		}
 	}
-	c.requires = append(c.requires, calls...)
-	return c
+	call.requires = append(call.requires, calls...)
+	return call
 }
 
 // CanCall reports whether this expectation can be satisfied by one more call
 // right now. Returns nil if allowed, otherwise one of the Err* sentinels or
 // a richer [notice.Notice] explaining the violation.
-func (c *Call) CanCall() error {
-	err := c.satisfied(c.calls() + 1)
+func (call *Call) CanCall() error {
+	err := call.satisfied(call.calls() + 1)
 	if err == nil ||
 		errors.Is(err, ErrNeverCalled) || errors.Is(err, ErrTooFewCalls) {
 		return nil
@@ -229,67 +229,67 @@ func (c *Call) CanCall() error {
 
 // Satisfied reports whether this expectation has been fully met (correct
 // call count + all prerequisites satisfied).
-func (c *Call) Satisfied() bool {
-	return c.satisfied(c.calls()) == nil
+func (call *Call) Satisfied() bool {
+	return call.satisfied(call.calls()) == nil
 }
 
 // calls returns the number of recorded calls.
-func (c *Call) calls() int {
-	c.mx.Lock()
-	defer c.mx.Unlock()
-	return c.haveCalls
+func (call *Call) calls() int {
+	call.mx.Lock()
+	defer call.mx.Unlock()
+	return call.haveCalls
 }
 
 // addCall records one call.
-func (c *Call) addCall() {
-	c.mx.Lock()
-	defer c.mx.Unlock()
-	c.haveCalls++
+func (call *Call) addCall() {
+	call.mx.Lock()
+	defer call.mx.Unlock()
+	call.haveCalls++
 }
 
 // satisfied returns nil if the call requirements are satisfied. It takes
 // haveCalls instead of using instance field value, so it can be used to check
 // if it is ok to call it one more time see [Call.CanCall].
-func (c *Call) satisfied(haveCalls int) error {
-	if c.wantCalls == haveCalls && c.wantCalls != 0 {
+func (call *Call) satisfied(haveCalls int) error {
+	if call.wantCalls == haveCalls && call.wantCalls != 0 {
 		return nil // Called requested number of times.
 	}
 
-	if c.wantCalls == 0 {
+	if call.wantCalls == 0 {
 		if haveCalls == 0 {
-			if c.optional {
+			if call.optional {
 				return nil // Optional and never called.
 			}
-			method := formatMethod(c.Method, c.args, c.returns)
+			method := formatMethod(call.Method, call.args, call.returns)
 			return notice.New(hNeverCalled).
 				Append("method", "%s", method).
-				Append("expected args", "\n%s", formatArgs(c.args)).
+				Append("expected args", "\n%s", formatArgs(call.args)).
 				Wrap(ErrNeverCalled)
 		}
 		return nil // Can be called any number of times.
 	}
 
-	if c.wantCalls < haveCalls {
-		method := formatMethod(c.Method, c.args, c.returns)
+	if call.wantCalls < haveCalls {
+		method := formatMethod(call.Method, call.args, call.returns)
 		msg := notice.New(hTooManyCalls).
 			Append("method", "%s", method)
-		if len(c.args) > 0 {
-			_ = msg.Append("expected args", "\n%s", formatArgs(c.args))
+		if len(call.args) > 0 {
+			_ = msg.Append("expected args", "\n%s", formatArgs(call.args))
 		}
-		return msg.Append("want calls", "%d", c.wantCalls).
+		return msg.Append("want calls", "%d", call.wantCalls).
 			Append("have calls", "%d", haveCalls).
 			Wrap(ErrTooManyCalls)
 	}
 
-	if c.optional {
+	if call.optional {
 		return nil // Can be called up to wantCalls times.
 	}
 
-	method := formatMethod(c.Method, c.args, c.returns)
+	method := formatMethod(call.Method, call.args, call.returns)
 	return notice.New(hTooFewCalls).
 		Append("method", "%s", method).
-		Append("expected args", "\n%s", formatArgs(c.args)).
-		Append("want calls", "%d", c.wantCalls).
+		Append("expected args", "\n%s", formatArgs(call.args)).
+		Append("want calls", "%d", call.wantCalls).
 		Append("have calls", "%d", haveCalls).
 		Wrap(ErrTooFewCalls)
 }
@@ -297,23 +297,23 @@ func (c *Call) satisfied(haveCalls int) error {
 // checkReq verifies that all prerequisites for a method call are met. The
 // stack parameter should contain the stack trace from where the method was
 // invoked.
-func (c *Call) checkReq(cs []string) (err error) {
-	for _, req := range c.requires {
+func (call *Call) checkReq(cs []string) (err error) {
+	for _, req := range call.requires {
 		if req.Satisfied() {
 			continue
 		}
 
 		parent := "the same mock"
-		if req.parent != c.parent {
+		if req.parent != call.parent {
 			parent = "a different mock"
 		}
 
-		method := formatMethod(c.Method, c.args, c.returns)
+		method := formatMethod(call.Method, call.args, call.returns)
 		requires := formatMethod(req.Method, req.args, req.returns)
 
 		msg := notice.New(hUnexpectedCall).Append("method", "%s", method)
-		if len(c.args) > 0 {
-			_ = msg.Append("expected args", "\n%s", formatArgs(c.args))
+		if len(call.args) > 0 {
+			_ = msg.Append("expected args", "\n%s", formatArgs(call.args))
 		}
 		_ = msg.Append("requires", "%s", requires)
 		if len(req.args) > 0 {
@@ -331,23 +331,23 @@ func (c *Call) checkReq(cs []string) (err error) {
 // call represents a call to the mocked method with arguments. Returns
 // configured return values. [Mock.Call] increments haveCalls under its mutex
 // before invoking this so concurrent callers do not race on the counter.
-func (c *Call) call(args ...any) Arguments {
-	if c.until != nil {
-		<-c.until
+func (call *Call) call(args ...any) Arguments {
+	if call.until != nil {
+		<-call.until
 	} else {
-		time.Sleep(c.after)
+		time.Sleep(call.after)
 	}
-	if c.panic != nil {
-		panic(c.panic)
+	if call.panic != nil {
+		panic(call.panic)
 	}
 
-	for _, fn := range c.alter {
+	for _, fn := range call.alter {
 		fn(args)
 	}
-	if c.proxy.IsValid() {
-		return c.callProxy(args...)
+	if call.proxy.IsValid() {
+		return call.callProxy(args...)
 	}
-	return c.returns
+	return call.returns
 }
 
 // callProxy calls proxy method with given arguments. Panics if the proxy
@@ -355,12 +355,12 @@ func (c *Call) call(args ...any) Arguments {
 //
 // A nil interface argument is converted with [reflect.Zero] of the
 // corresponding parameter type so nil error, pointer, and similar args work.
-func (c *Call) callProxy(args ...any) Arguments {
-	if !c.proxy.IsValid() {
+func (call *Call) callProxy(args ...any) Arguments {
+	if !call.proxy.IsValid() {
 		panic("proxy method not found")
 	}
 
-	typ := c.proxy.Type()
+	typ := call.proxy.Type()
 	numIn := typ.NumIn()
 	variadic := typ.IsVariadic()
 	argVals := make([]reflect.Value, 0, len(args))
@@ -378,7 +378,7 @@ func (c *Call) callProxy(args ...any) Arguments {
 		argVals = append(argVals, reflect.Zero(inTyp))
 	}
 
-	retArgs := c.proxy.Call(argVals)
+	retArgs := call.proxy.Call(argVals)
 	var returns []any
 	for _, ret := range retArgs {
 		returns = append(returns, ret.Interface())
@@ -387,15 +387,15 @@ func (c *Call) callProxy(args ...any) Arguments {
 }
 
 // satisfy marks the call as satisfied.
-func (c *Call) satisfy() *Call {
-	c.mx.Lock()
-	defer c.mx.Unlock()
-	if c.wantCalls == 0 {
-		c.haveCalls = 1
+func (call *Call) satisfy() *Call {
+	call.mx.Lock()
+	defer call.mx.Unlock()
+	if call.wantCalls == 0 {
+		call.haveCalls = 1
 	} else {
-		c.haveCalls = c.wantCalls
+		call.haveCalls = call.wantCalls
 	}
-	return c
+	return call
 }
 
 // End terminates a fluent expectation chain and returns the parent [Mock].
@@ -403,4 +403,4 @@ func (c *Call) satisfy() *Call {
 // up one call:
 //
 //	mck.On("A").Return(1).End().On("B").Return(2)
-func (c *Call) End() *Mock { return c.parent }
+func (call *Call) End() *Mock { return call.parent }

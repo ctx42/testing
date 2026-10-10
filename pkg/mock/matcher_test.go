@@ -192,9 +192,9 @@ func Test_Matcher_Match(t *testing.T) {
 
 func Test_matcherFunc(t *testing.T) {
 	// --- Given ---
-	var got int
+	var have int
 	fn := func(a int) bool {
-		got = a
+		have = a
 		return true
 	}
 
@@ -204,18 +204,22 @@ func Test_matcherFunc(t *testing.T) {
 	// --- Then ---
 	result := val.Call([]reflect.Value{reflect.ValueOf(42)})
 	assert.True(t, result[0].Bool())
-	assert.Equal(t, 42, got)
+	assert.Equal(t, 42, have)
 }
 
-func Test_matcherFnValue_panic_tabular(t *testing.T) {
+func Test_matcherFunc_panic_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		fn  any
-		exp string
+		fn   any
+		want string
 	}{
 		{"1", 42, "mock: \"int\" is not a match function"},
-		{"2", func(a, b int) bool { return false }, " does not take exactly one argument"},
+		{
+			"2",
+			func(a, b int) bool { return false },
+			" does not take exactly one argument",
+		},
 		{"3", func(a int) {}, " does not return a bool"},
 	}
 
@@ -225,7 +229,7 @@ func Test_matcherFnValue_panic_tabular(t *testing.T) {
 			have := assert.PanicMsg(t, func() { matcherFunc(tc.fn) })
 
 			// --- Then ---
-			assert.Contain(t, tc.exp, *have)
+			assert.Contain(t, tc.want, *have)
 		})
 	}
 }
