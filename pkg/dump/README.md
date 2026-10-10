@@ -101,6 +101,21 @@ fmt.Println(have)
 // map[time.Time]int{"3:04AM": 42}
 ```
 
+### Custom Duration Formats
+
+Similarly, `dump.WithDurationFormat` controls how `time.Duration` values are
+displayed:
+
+```go
+val := map[string]time.Duration{"timeout": 1500 * time.Millisecond}
+
+have := dump.New(dump.WithFlat, dump.WithDurationFormat(dump.DurAsSeconds)).Any(val)
+
+fmt.Println(have)
+// Output:
+// map[string]time.Duration{"timeout": 1.5}
+```
+
 ### Pointer Addresses
 
 By default, pointer addresses are hidden, but you can enable them with 

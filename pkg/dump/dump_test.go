@@ -165,6 +165,31 @@ func Test_WithTimeFormat(t *testing.T) {
 	affirm.Equal(t, TimeAsUnix, dmp.TimeFormat)
 }
 
+func Test_WithDurationFormat(t *testing.T) {
+	t.Run("set", func(t *testing.T) {
+		// --- Given ---
+		dmp := &Dump{}
+
+		// --- When ---
+		opt := WithDurationFormat(DurAsSeconds)
+
+		// --- Then ---
+		opt(dmp)
+		affirm.Equal(t, DurAsSeconds, dmp.DurationFormat)
+	})
+
+	t.Run("used by New", func(t *testing.T) {
+		// --- Given ---
+		dmp := New(WithDurationFormat(DurAsSeconds))
+
+		// --- When ---
+		have := dmp.Any(1500 * time.Millisecond)
+
+		// --- Then ---
+		affirm.Equal(t, "1.5", have)
+	})
+}
+
 func Test_WithMaxDepth(t *testing.T) {
 	// --- Given ---
 	dmp := &Dump{}
@@ -270,7 +295,7 @@ func Test_New(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, have.Flat)
-		affirm.Equal(t, 200, have.FlatStrings)
+		affirm.Equal(t, DefaultFlatStrings, have.FlatStrings)
 		affirm.Equal(t, false, have.Compact)
 		affirm.Equal(t, TimeFormat, have.TimeFormat)
 		affirm.Equal(t, "", have.DurationFormat)
@@ -280,7 +305,7 @@ func Test_New(t *testing.T) {
 		affirm.Equal(t, true, len(have.Dumpers) == 3)
 		affirm.Equal(t, DefaultDepth, have.MaxDepth)
 		affirm.Equal(t, DefaultIndent, have.Indent)
-		affirm.Equal(t, DefaultTabWith, have.TabWidth)
+		affirm.Equal(t, DefaultTabWidth, have.TabWidth)
 
 		val, ok := have.Dumpers[typDur]
 		affirm.Equal(t, true, ok)

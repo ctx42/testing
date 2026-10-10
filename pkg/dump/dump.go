@@ -94,8 +94,17 @@ const (
 	// DefaultIndent is the default extra indentation per level.
 	DefaultIndent = 0
 
+	// DefaultTabWidth is the default number of spaces per indentation level.
+	DefaultTabWidth = 2
+
 	// DefaultTabWith is the default number of spaces per indentation level.
-	DefaultTabWith = 2
+	//
+	// Deprecated: use [DefaultTabWidth].
+	DefaultTabWith = DefaultTabWidth
+
+	// DefaultFlatStrings is the default length (in bytes) above which a
+	// string containing newlines is rendered as a multiline block.
+	DefaultFlatStrings = 200
 )
 
 // Package-level defaults. These are read by [New] at construction time and
@@ -112,7 +121,7 @@ var (
 	Indent = DefaultIndent
 
 	// TabWidth is the package default spaces per indentation level.
-	TabWidth = DefaultTabWith
+	TabWidth = DefaultTabWidth
 )
 
 // Types for built-in dumpers.
@@ -191,8 +200,9 @@ type Option func(*Dump)
 func WithFlat(dmp *Dump) { dmp.Flat = true }
 
 // WithFlatStrings sets the length (in bytes) above which a string containing
-// newlines is rendered as a multiline block instead of a quoted string.
-// [WithFlat] takes precedence. Zero disables the feature.
+// newlines is rendered as a multiline block instead of a quoted string
+// (default is [DefaultFlatStrings]). [WithFlat] takes precedence. Zero
+// disables the feature.
 func WithFlatStrings(n int) Option {
 	return func(dmp *Dump) { dmp.FlatStrings = n }
 }
@@ -217,6 +227,14 @@ func WithNoPrivate(dmp *Dump) { dmp.PrintPrivate = false }
 // [RegisterTypeDumper] takes precedence.
 func WithTimeFormat(format string) Option {
 	return func(dmp *Dump) { dmp.TimeFormat = format }
+}
+
+// WithDurationFormat sets the format used for [time.Duration] values. The
+// special values [DurAsString] and [DurAsSeconds] are supported. See
+// [Dump.DurationFormat]. A [time.Duration] dumper registered with
+// [RegisterTypeDumper] takes precedence.
+func WithDurationFormat(format string) Option {
+	return func(dmp *Dump) { dmp.DurationFormat = format }
 }
 
 // WithDumper registers a per-instance custom [Dumper] for the given type.
@@ -325,7 +343,7 @@ type Dump struct {
 // time.Location are present (unless overridden via options).
 func New(opts ...Option) Dump {
 	dmp := Dump{
-		FlatStrings:  200,
+		FlatStrings:  DefaultFlatStrings,
 		TimeFormat:   TimeFormat,
 		PrintType:    true,
 		PrintPrivate: true,
