@@ -24,16 +24,12 @@ func Test_True(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected value to be true"
-		affirm.Equal(t, wMsg, err.Error())
+		affirm.Equal(t, "expected value to be true", err.Error())
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := True(false, opt)
+		err := True(false, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -43,7 +39,7 @@ func Test_True(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with comment", func(t *testing.T) {
+	t.Run("error - log message with comment", func(t *testing.T) {
 		// --- When ---
 		err := True(false, "A%d", 42)
 
@@ -55,12 +51,9 @@ func Test_True(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail and comment", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
+	t.Run("error - log message with trail and comment", func(t *testing.T) {
 		// --- When ---
-		err := True(false, "A%d", 42, opt)
+		err := True(false, "A%d", 42, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -87,16 +80,12 @@ func Test_False(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected value to be false"
-		affirm.Equal(t, wMsg, err.Error())
+		affirm.Equal(t, "expected value to be false", err.Error())
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := False(true, opt)
+		err := False(true, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)

@@ -48,7 +48,7 @@ func Test_ExitCode(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("not matching exit code", func(t *testing.T) {
+	t.Run("error - not matching exit code", func(t *testing.T) {
 		// --- Given ---
 		cmd := os.Args[0]
 		val := exec.Command(cmd, "--exitCode", "99").Run()
@@ -65,17 +65,16 @@ func Test_ExitCode(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("nil error", func(t *testing.T) {
+	t.Run("error - nil error", func(t *testing.T) {
 		// --- When ---
 		err := ExitCode(1, nil)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected *exec.ExitError got nil"
-		affirm.Equal(t, wMsg, err.Error())
+		affirm.Equal(t, "expected *exec.ExitError got nil", err.Error())
 	})
 
-	t.Run("no exec ExitError in the chain", func(t *testing.T) {
+	t.Run("error - no exec ExitError in the chain", func(t *testing.T) {
 		// --- When ---
 		err := ExitCode(1, errors.New("test"))
 
@@ -86,11 +85,8 @@ func Test_ExitCode(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := ExitCode(1, errors.New("test"), opt)
+		err := ExitCode(1, errors.New("test"), WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)

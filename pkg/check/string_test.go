@@ -12,11 +12,8 @@ import (
 
 func Test_EqualFold(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := EqualFold("ABC", "xyz", opt)
+		err := EqualFold("ABC", "xyz", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -36,10 +33,10 @@ func Test_EqualFold_success_tabular(t *testing.T) {
 		want string
 		have string
 	}{
-		{"1", "abc", "abc"},
-		{"2", "ABC", "abc"},
-		{"3", "abc", "ABC"},
-		{"4", "AbC", "aBc"},
+		{"abc and abc", "abc", "abc"},
+		{"ABC and abc", "ABC", "abc"},
+		{"abc and ABC", "abc", "ABC"},
+		{"AbC and aBc", "AbC", "aBc"},
 	}
 
 	for _, tc := range tt {
@@ -60,8 +57,8 @@ func Test_EqualFold_error_tabular(t *testing.T) {
 		want string
 		have string
 	}{
-		{"1", "abc", "xyz"},
-		{"2", "ABC", "xyz"},
+		{"abc and xyz", "abc", "xyz"},
+		{"ABC and xyz", "ABC", "xyz"},
 	}
 
 	for _, tc := range tt {
@@ -83,11 +80,8 @@ func Test_EqualFold_error_tabular(t *testing.T) {
 
 func Test_Contain(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Contain("abc", "xyz", opt)
+		err := Contain("abc", "xyz", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -107,10 +101,10 @@ func Test_Contain_success_tabular(t *testing.T) {
 		want string
 		have string
 	}{
-		{"1", "b", "abc"},
-		{"2", "bc", "abc"},
-		{"3", "a", "abc"},
-		{"4", "abc", "abc"},
+		{"b and abc", "b", "abc"},
+		{"bc and abc", "bc", "abc"},
+		{"a and abc", "a", "abc"},
+		{"abc and abc", "abc", "abc"},
 	}
 
 	for _, tc := range tt {
@@ -131,7 +125,7 @@ func Test_Contain_error_tabular(t *testing.T) {
 		s   string
 		sub string
 	}{
-		{"1", "abc", "xy"},
+		{"abc and xy", "abc", "xy"},
 	}
 
 	for _, tc := range tt {
@@ -153,11 +147,8 @@ func Test_Contain_error_tabular(t *testing.T) {
 
 func Test_ContainFold(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := ContainFold("abc", "xyz", opt)
+		err := ContainFold("abc", "xyz", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -177,10 +168,10 @@ func Test_ContainFold_success_tabular(t *testing.T) {
 		want string
 		have string
 	}{
-		{"1", "b", "abc"},
-		{"2", "B", "abc"},
-		{"3", "bc", "ABC"},
-		{"4", "ABC", "abc"},
+		{"b and abc", "b", "abc"},
+		{"B and abc", "B", "abc"},
+		{"bc and ABC", "bc", "ABC"},
+		{"ABC and abc", "ABC", "abc"},
 	}
 
 	for _, tc := range tt {
@@ -201,8 +192,8 @@ func Test_ContainFold_error_tabular(t *testing.T) {
 		want string
 		have string
 	}{
-		{"1", "xyz", "abc"},
-		{"2", "XYZ", "abc"},
+		{"xyz and abc", "xyz", "abc"},
+		{"XYZ and abc", "XYZ", "abc"},
 	}
 
 	for _, tc := range tt {
@@ -224,11 +215,8 @@ func Test_ContainFold_error_tabular(t *testing.T) {
 
 func Test_NotContain(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := NotContain("abc", "abc", opt)
+		err := NotContain("abc", "abc", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -248,7 +236,7 @@ func Test_NotContain_success_tabular(t *testing.T) {
 		want string
 		have string
 	}{
-		{"1", "abc", "xy"},
+		{"abc and xy", "abc", "xy"},
 	}
 
 	for _, tc := range tt {
@@ -269,9 +257,9 @@ func Test_NotContain_error_tabular(t *testing.T) {
 		s   string
 		sub string
 	}{
-		{"1", "abc", "b"},
-		{"2", "abc", "bc"},
-		{"3", "abc", "a"},
+		{"abc and b", "abc", "b"},
+		{"abc and bc", "abc", "bc"},
+		{"abc and a", "abc", "a"},
 	}
 
 	for _, tc := range tt {

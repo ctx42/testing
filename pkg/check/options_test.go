@@ -32,29 +32,31 @@ func Test_RegisterTypeChecker(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, 1, len(typeCheckers))
-		wChk := core.Same(chk, typeCheckers[reflect.TypeFor[custom]()])
-		affirm.Equal(t, true, wChk)
+		same := core.Same(chk, typeCheckers[reflect.TypeFor[custom]()])
+		affirm.Equal(t, true, same)
 	})
 
 	t.Run("panics if already registered", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
+
 		t.Cleanup(func() { typeCheckers = nil })
 		typeCheckers = map[reflect.Type]Checker{reflect.TypeFor[custom](): chk}
 
 		// --- When ---
 		fn := func() { RegisterTypeChecker(custom{}, chk) }
-		msg := affirm.Panic(t, fn)
+		have := affirm.Panic(t, fn)
 
 		// --- Then ---
 		wMsg := "cannot overwrite an existing type checker for: check.custom"
-		affirm.Equal(t, wMsg, *msg)
+		affirm.Equal(t, wMsg, *have)
 	})
 
 	t.Run("concurrent with checks", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
 		t.Cleanup(func() { typeCheckers = nil })
+
 		done := make(chan struct{})
 		go func() {
 			defer close(done)
@@ -78,18 +80,18 @@ func Test_RegisterTypeChecker(t *testing.T) {
 
 		// --- When ---
 		fn := func() { RegisterTypeChecker(custom{}, nil) }
-		msg := affirm.Panic(t, fn)
+		have := affirm.Panic(t, fn)
 
 		// --- Then ---
-		affirm.Equal(t, "cannot register a nil type checker", *msg)
+		affirm.Equal(t, "cannot register a nil type checker", *have)
 	})
 
 	t.Run("panics if the type is nil", func(t *testing.T) {
 		// --- When ---
-		msg := affirm.Panic(t, func() { RegisterTypeChecker(nil, chk) })
+		have := affirm.Panic(t, func() { RegisterTypeChecker(nil, chk) })
 
 		// --- Then ---
-		affirm.Equal(t, "cannot register a type checker for a nil type", *msg)
+		affirm.Equal(t, "cannot register a type checker for a nil type", *have)
 	})
 }
 
@@ -178,39 +180,40 @@ func Test_WithTypeChecker(t *testing.T) {
 		have := WithTypeChecker(123, cChk)(ops)
 
 		// --- Then ---
-		wChk := core.Same(cChk, have.TypeCheckers[reflect.TypeFor[int]()])
-		affirm.Equal(t, true, wChk)
+		same := core.Same(cChk, have.TypeCheckers[reflect.TypeFor[int]()])
+		affirm.Equal(t, true, same)
 	})
 
 	t.Run("overwriting global checker", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
-		t.Cleanup(func() { typeCheckers = nil })
 
+		t.Cleanup(func() { typeCheckers = nil })
 		RegisterTypeChecker(custom{}, cChk)
+
 		ops := Options{}
 
 		// --- When ---
 		have := WithTypeChecker(custom{}, cChk)(ops)
 
 		// --- Then ---
-		wChk := core.Same(cChk, have.TypeCheckers[reflect.TypeFor[custom]()])
-		affirm.Equal(t, true, wChk)
+		same := core.Same(cChk, have.TypeCheckers[reflect.TypeFor[custom]()])
+		affirm.Equal(t, true, same)
 	})
 
 	t.Run("panics if the type is nil", func(t *testing.T) {
 		// --- When ---
-		msg := affirm.Panic(t, func() { WithTypeChecker(nil, cChk) })
+		have := affirm.Panic(t, func() { WithTypeChecker(nil, cChk) })
 
 		// --- Then ---
-		affirm.Equal(t, "cannot set a type checker for a nil type", *msg)
+		affirm.Equal(t, "cannot set a type checker for a nil type", *have)
 	})
 }
 
 func Test_WithTrailChecker(t *testing.T) {
 	// --- Given ---
-	ops := Options{}
 	chk := func(want, have any, opts ...any) error { return nil }
+	ops := Options{}
 
 	// --- When ---
 	have := WithTrailChecker("type.field", chk)(ops)
@@ -419,7 +422,7 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, 16, reflect.ValueOf(have).NumField())
 	})
 
-	t.Run("TypeCheckers field is a clone of a global map", func(t *testing.T) {
+	t.Run("TypeCheckers cloned", func(t *testing.T) {
 		// --- Given ---
 		t.Setenv("___", "___")
 		affirm.Nil(t, typeCheckers)
@@ -434,37 +437,34 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, false, core.Same(typeCheckers, have.TypeCheckers))
 	})
 
-	t.Run("the time check is not overwritten when set", func(t *testing.T) {
+	t.Run("time check kept", func(t *testing.T) {
 		// --- Given ---
 		chk := func(_, _ any, _ ...any) error { return nil }
-		opt := WithTypeChecker(time.Time{}, chk)
 
 		// --- When ---
-		have := DefaultOptions(opt)
+		have := DefaultOptions(WithTypeChecker(time.Time{}, chk))
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(chk, have.TypeCheckers[typTime]))
 	})
 
-	t.Run("the timezone check is not overwritten when set", func(t *testing.T) {
+	t.Run("timezone check kept", func(t *testing.T) {
 		// --- Given ---
 		chk := func(_, _ any, _ ...any) error { return nil }
-		opt := WithTypeChecker(time.Location{}, chk)
 
 		// --- When ---
-		have := DefaultOptions(opt)
+		have := DefaultOptions(WithTypeChecker(time.Location{}, chk))
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(chk, have.TypeCheckers[typZone]))
 	})
 
-	t.Run("timezone ptr check is not overwritten when set", func(t *testing.T) {
+	t.Run("timezone ptr check kept", func(t *testing.T) {
 		// --- Given ---
 		chk := func(_, _ any, _ ...any) error { return nil }
-		opt := WithTypeChecker(&time.Location{}, chk)
 
 		// --- When ---
-		have := DefaultOptions(opt)
+		have := DefaultOptions(WithTypeChecker(&time.Location{}, chk))
 
 		// --- Then ---
 		affirm.Equal(t, true, core.Same(chk, have.TypeCheckers[typZonePtr]))
@@ -472,40 +472,31 @@ func Test_DefaultOptions(t *testing.T) {
 
 	t.Run("with formatted comment", func(t *testing.T) {
 		// --- When ---
-		ops := DefaultOptions("A%d", 42)
+		have := DefaultOptions("A%d", 42)
 
 		// --- Then ---
-		affirm.Equal(t, "A42", ops.Comment)
+		affirm.Equal(t, "A42", have.Comment)
 	})
 
 	t.Run("with option", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		have := DefaultOptions(opt)
+		have := DefaultOptions(WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.Equal(t, "type.field", have.Trail)
 	})
 
 	t.Run("with Option type", func(t *testing.T) {
-		// --- Given ---
-		opt := WithCmpBaseTypes()
-
 		// --- When ---
-		have := DefaultOptions(opt)
+		have := DefaultOptions(WithCmpBaseTypes())
 
 		// --- Then ---
 		affirm.Equal(t, true, have.CmpSimpleType)
 	})
 
 	t.Run("with option and formatted comment", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		have := DefaultOptions("A%s", opt, "BC")
+		have := DefaultOptions("A%s", WithTrail("type.field"), "BC")
 
 		// --- Then ---
 		affirm.Equal(t, "ABC", have.Comment)
@@ -516,10 +507,10 @@ func Test_DefaultOptions(t *testing.T) {
 func Test_parseCheckArgs(t *testing.T) {
 	t.Run("error - cannot use a non-string comment format", func(t *testing.T) {
 		// --- When ---
-		msg := affirm.Panic(t, func() { parseCheckArgs(42, "A%d") })
+		have := affirm.Panic(t, func() { parseCheckArgs(42, "A%d") })
 
 		// --- Then ---
-		affirm.Equal(t, "cannot use a non-string comment format", *msg)
+		affirm.Equal(t, "cannot use a non-string comment format", *have)
 	})
 }
 
@@ -531,7 +522,7 @@ func Test_parseCheckArgs_tabular(t *testing.T) {
 
 		wantFmt  string
 		wantArgs []any
-		wantCnt  int // number of Option funcs returned
+		wantCnt  int // The number of Option funcs returned.
 	}{
 		{"empty", nil, "", nil, 0},
 		{"only format", []any{"hello %s"}, "hello %s", nil, 0},
@@ -578,12 +569,12 @@ func Test_parseCheckArgs_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			fmt, args, opts := parseCheckArgs(tc.opts...)
+			hFmt, hArgs, hOpts := parseCheckArgs(tc.opts...)
 
 			// --- Then ---
-			affirm.Equal(t, tc.wantFmt, fmt)
-			affirm.DeepEqual(t, tc.wantArgs, args)
-			affirm.Equal(t, tc.wantCnt, len(opts))
+			affirm.Equal(t, tc.wantFmt, hFmt)
+			affirm.DeepEqual(t, tc.wantArgs, hArgs)
+			affirm.Equal(t, tc.wantCnt, len(hOpts))
 		})
 	}
 }
@@ -600,7 +591,7 @@ func Test_Options_LogTrail(t *testing.T) {
 		// --- Then ---
 		affirm.DeepEqual(t, []string{"abc"}, list)
 		affirm.DeepEqual(t, []string{"abc"}, *ops.TrailLog)
-		affirm.DeepEqual(t, have, ops)
+		affirm.DeepEqual(t, ops, have)
 	})
 
 	t.Run("does not log empty trails", func(t *testing.T) {
@@ -614,7 +605,7 @@ func Test_Options_LogTrail(t *testing.T) {
 		// --- Then ---
 		affirm.DeepEqual(t, []string{}, list)
 		affirm.DeepEqual(t, []string{}, *ops.TrailLog)
-		affirm.DeepEqual(t, have, ops)
+		affirm.DeepEqual(t, ops, have)
 	})
 
 	t.Run("does not panic when nil", func(t *testing.T) {
@@ -625,7 +616,7 @@ func Test_Options_LogTrail(t *testing.T) {
 		have := ops.LogTrail()
 
 		// --- Then ---
-		affirm.DeepEqual(t, have, ops)
+		affirm.DeepEqual(t, ops, have)
 	})
 }
 
@@ -658,7 +649,7 @@ func Test_Options_StructTrail_tabular(t *testing.T) {
 			have := ops.StructTrail(tc.typName, tc.fldName)
 
 			// --- Then ---
-			affirm.Equal(t, ops.Trail, tc.trail)
+			affirm.Equal(t, tc.trail, ops.Trail)
 			affirm.Equal(t, tc.want, have.Trail)
 		})
 	}
@@ -674,7 +665,6 @@ func Test_Options_MapTrail_tabular(t *testing.T) {
 	}{
 		{"empty trail with a key", "", "key", "map[key]"},
 		{"trail ends with index", "[1]", "key", "[1]map[key]"},
-		{"trail ends with index", "[1]", "key", "[1]map[key]"},
 		{"not empty trail", "field", "key", "field[key]"},
 	}
 
@@ -687,7 +677,7 @@ func Test_Options_MapTrail_tabular(t *testing.T) {
 			have := ops.MapTrail(tc.key)
 
 			// --- Then ---
-			affirm.Equal(t, ops.Trail, tc.trail)
+			affirm.Equal(t, tc.trail, ops.Trail)
 			affirm.Equal(t, tc.want, have.Trail)
 		})
 	}
@@ -702,8 +692,8 @@ func Test_Options_ArrTrail_tabular(t *testing.T) {
 		key   int
 		want  string
 	}{
-		{"empty trail with a key", "", "", 1, "[1]"},
-		{"empty trail with a key", "", "kind", 1, "<kind>[1]"},
+		{"empty trail", "", "", 1, "[1]"},
+		{"empty trail with a kind", "", "kind", 1, "<kind>[1]"},
 		{"trail ends with index", "[1]", "", 2, "[1][2]"},
 		{"not empty trail", "field", "", 1, "field[1]"},
 	}
@@ -717,7 +707,7 @@ func Test_Options_ArrTrail_tabular(t *testing.T) {
 			have := ops.ArrTrail(tc.kind, tc.key)
 
 			// --- Then ---
-			affirm.Equal(t, ops.Trail, tc.trail)
+			affirm.Equal(t, tc.trail, ops.Trail)
 			affirm.Equal(t, tc.want, have.Trail)
 		})
 	}

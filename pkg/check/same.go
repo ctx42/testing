@@ -10,7 +10,7 @@ import (
 
 // Same checks that "want" and "have" are pointers to the same object.
 //
-// Sameness is based on type + identity (via [internal/core.Same]). Works for
+// Sameness is based on type + identity (via core.Same). Works for
 // pointers, maps, channels, funcs and slices. Functions are the same only
 // when they are the same function value; slices only when they share the
 // backing array start, length and capacity. Arrays always fail.
@@ -29,7 +29,7 @@ func Same(want, have any, opts ...any) error {
 
 // NotSame checks that "want" and "have" are not pointers to the same object.
 //
-// Both must be pointer variables. Sameness check is type + value equality.
+// Sameness is determined as in [Same].
 //
 // See assert.NotSame for the assertion wrapper.
 func NotSame(want, have any, opts ...any) error {

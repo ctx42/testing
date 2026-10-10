@@ -13,11 +13,8 @@ import (
 
 func Test_Len(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Len(1, []int{1, 2}, opt)
+		err := Len(1, []int{1, 2}, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -136,7 +133,6 @@ func Test_Len_error_tabular(t *testing.T) {
 			// --- Then ---
 			affirm.NotNil(t, err)
 			affirm.Equal(t, tc.wMsg, err.Error())
-
 			var msg *notice.Notice
 			affirm.Equal(t, true, errors.As(err, &msg))
 			cnt, ok := msg.MetaLookup("len")
@@ -148,11 +144,8 @@ func Test_Len_error_tabular(t *testing.T) {
 
 func Test_Cap(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Cap(1, []int{1, 2}, opt)
+		err := Cap(1, []int{1, 2}, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -254,7 +247,6 @@ func Test_Cap_error_tabular(t *testing.T) {
 			// --- Then ---
 			affirm.NotNil(t, err)
 			affirm.Equal(t, tc.wMsg, err.Error())
-
 			var msg *notice.Notice
 			affirm.Equal(t, true, errors.As(err, &msg))
 			cnt, ok := msg.MetaLookup("cap")
@@ -300,10 +292,9 @@ func Test_Has(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		val := []int{1, 2, 3}
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Has(42, val, opt)
+		err := Has(42, val, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -358,10 +349,9 @@ func Test_HasNo(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		val := []int{1, 2, 3}
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := HasNo(2, val, opt)
+		err := HasNo(2, val, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -397,22 +387,22 @@ func Test_HasKey(t *testing.T) {
 		val := map[string]int{"A": 1, "B": 2, "C": 3}
 
 		// --- When ---
-		haveValue, err := HasKey("B", val)
+		have, err := HasKey("B", val)
 
 		// --- Then ---
-		affirm.Equal(t, 2, haveValue)
+		affirm.Equal(t, 2, have)
 		affirm.Nil(t, err)
 	})
 
-	t.Run("has not", func(t *testing.T) {
+	t.Run("error - has not", func(t *testing.T) {
 		// --- Given ---
 		val := map[string]int{"A": 1, "B": 2, "C": 3}
 
 		// --- When ---
-		haveValue, err := HasKey("X", val)
+		have, err := HasKey("X", val)
 
 		// --- Then ---
-		affirm.Equal(t, 0, haveValue)
+		affirm.Equal(t, 0, have)
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected map to have a key:\n" +
@@ -426,15 +416,15 @@ func Test_HasKey(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("nil map", func(t *testing.T) {
+	t.Run("error - nil map", func(t *testing.T) {
 		// --- Given ---
 		var m map[string]any
 
 		// --- When ---
-		haveValue, err := HasKey("X", m)
+		have, err := HasKey("X", m)
 
 		// --- Then ---
-		affirm.Nil(t, haveValue)
+		affirm.Nil(t, have)
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected map to have a key:\n" +
@@ -446,13 +436,12 @@ func Test_HasKey(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		var m map[string]any
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		haveValue, err := HasKey("X", m, opt)
+		have, err := HasKey("X", m, WithTrail("type.field"))
 
 		// --- Then ---
-		affirm.Nil(t, haveValue)
+		affirm.Nil(t, have)
 		affirm.NotNil(t, err)
 		wMsg := "" +
 			"expected map to have a key:\n" +
@@ -500,10 +489,9 @@ func Test_HasNoKey(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		val := map[string]int{"A": 1, "B": 2, "C": 3}
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := HasNoKey("B", val, opt)
+		err := HasNoKey("B", val, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -534,13 +522,12 @@ func Test_HasKeyValue(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("has key but value does not match", func(t *testing.T) {
+	t.Run("error - has key but value does not match", func(t *testing.T) {
 		// --- Given ---
 		val := map[string]int{"A": 1, "B": 2, "C": 3}
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := HasKeyValue("B", 100, val, opt)
+		err := HasKeyValue("B", 100, val, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -553,18 +540,18 @@ func Test_HasKeyValue(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("has no key", func(t *testing.T) {
+	t.Run("error - has no key", func(t *testing.T) {
 		// --- Given ---
 		val := map[string]int{"A": 1, "B": 2, "C": 3}
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := HasKeyValue("X", 2, val, opt)
+		err := HasKeyValue("X", 2, val, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
 		wMsg := "" +
-			"expected map to have a key:\n  trail: type.field\n" +
+			"expected map to have a key:\n" +
+			"  trail: type.field\n" +
 			"    key: \"X\"\n" +
 			"    map:\n" +
 			"         map[string]int{\n" +
@@ -589,7 +576,7 @@ func Test_SliceSubset(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("want slice is subset of have slice", func(t *testing.T) {
+	t.Run("subset", func(t *testing.T) {
 		// --- Given ---
 		want := []string{"A", "B", "C"}
 		have := []string{"D", "C", "B", "A"}
@@ -601,7 +588,7 @@ func Test_SliceSubset(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("want slice is not a subset of have slice", func(t *testing.T) {
+	t.Run("error - not a subset", func(t *testing.T) {
 		// --- Given ---
 		want := []int{9, 8, 0, 1, 2}
 		have := []int{2, 1, 0}
@@ -625,10 +612,9 @@ func Test_SliceSubset(t *testing.T) {
 		// --- Given ---
 		want := []int{9, 9, 0, 1, 2}
 		have := []int{2, 1, 0}
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := SliceSubset(want, have, opt)
+		err := SliceSubset(want, have, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -673,10 +659,9 @@ func Test_MapSubset(t *testing.T) {
 			"KEY0": "VAL0",
 			"KEY1": "VAL1",
 		}
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := MapSubset(want, have, opt)
+		err := MapSubset(want, have, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -799,10 +784,9 @@ func Test_MapsSubset(t *testing.T) {
 		have := []map[string]string{
 			{"KEY0": "VAL0", "KEY1": "VAL1"},
 		}
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := MapsSubset(want, have, opt)
+		err := MapsSubset(want, have, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)

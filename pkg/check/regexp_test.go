@@ -44,7 +44,7 @@ func Test_Regexp(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("no match", func(t *testing.T) {
+	t.Run("error - no match", func(t *testing.T) {
 		// --- When ---
 		err := Regexp("^abc42.*$", "abc1234")
 
@@ -58,11 +58,8 @@ func Test_Regexp(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Regexp("^abc42.*$", "abc1234", opt)
+		err := Regexp("^abc42.*$", "abc1234", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -74,7 +71,7 @@ func Test_Regexp(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid regexp", func(t *testing.T) {
+	t.Run("error - invalid regexp", func(t *testing.T) {
 		// --- When ---
 		err := Regexp("[p", "abc1234")
 

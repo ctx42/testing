@@ -39,9 +39,6 @@ func ChannelWillClose[C any](within any, c <-chan C, opts ...any) error {
 
 		case _, open := <-c:
 			if !open {
-				if !tim.Stop() {
-					<-tim.C
-				}
 				return nil
 			}
 		}

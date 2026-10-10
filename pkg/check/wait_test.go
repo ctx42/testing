@@ -68,10 +68,9 @@ func Test_Wait(t *testing.T) {
 	t.Run("error - trail set", func(t *testing.T) {
 		// --- Given ---
 		fn := func() bool { return false }
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Wait("100ms", fn, opt)
+		err := Wait("100ms", fn, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)

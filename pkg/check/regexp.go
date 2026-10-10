@@ -11,7 +11,7 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Regexp checks that "want" regexp matches a string form of "have".
+// Regexp checks that "want" regexp matches the string form of "have".
 //
 // "want" may be a regexp string or [*regexp.Regexp]. [fmt.Sprint] is used
 // on "have".

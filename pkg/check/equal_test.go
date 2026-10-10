@@ -82,7 +82,7 @@ func Test_Equal(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("does not modify options passed by WithOptions", func(t *testing.T) {
+	t.Run("WithOptions not modified", func(t *testing.T) {
 		// --- Given ---
 		ops := DefaultOptions(WithTrailChecker("a", Exact))
 		src := DefaultOptions(WithOptions(ops))
@@ -170,7 +170,7 @@ func Test_Equal_invalid_arguments(t *testing.T) {
 }
 
 func Test_Equal_one_argument_invalid(t *testing.T) {
-	t.Run("want is invalid", func(t *testing.T) {
+	t.Run("error - want is invalid", func(t *testing.T) {
 		// --- When ---
 		err := Equal(nil, 123)
 
@@ -183,7 +183,7 @@ func Test_Equal_one_argument_invalid(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("have is invalid", func(t *testing.T) {
+	t.Run("error - have is invalid", func(t *testing.T) {
 		// --- When ---
 		err := Equal(123, nil)
 
@@ -196,7 +196,7 @@ func Test_Equal_one_argument_invalid(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("logs trail", func(t *testing.T) {
+	t.Run("error - logs trail", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []any{WithTrail("type.field"), WithTrailLog(&trail)}
@@ -217,7 +217,7 @@ func Test_Equal_one_argument_invalid(t *testing.T) {
 }
 
 func Test_Equal_not_matching_types(t *testing.T) {
-	t.Run("not matching", func(t *testing.T) {
+	t.Run("error - not matching", func(t *testing.T) {
 		// --- When ---
 		err := Equal(123, "abc")
 
@@ -230,7 +230,7 @@ func Test_Equal_not_matching_types(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("logs trail", func(t *testing.T) {
+	t.Run("error - logs trail", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []any{WithTrail("type.field"), WithTrailLog(&trail)}
@@ -253,16 +253,16 @@ func Test_Equal_not_matching_types(t *testing.T) {
 func Test_Equal_custom_trail_checkers(t *testing.T) {
 	t.Run("custom checker is not used", func(t *testing.T) {
 		// --- Given ---
+		// Both are defining the same time in different timezone.
+		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
+
 		trail := make([]string, 0)
 		opts := []any{
 			WithTrail("type.other"),
 			WithTrailLog(&trail),
 			WithTrailChecker("type.field", Exact),
 		}
-
-		// Both are defining the same time in different timezone.
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -272,18 +272,18 @@ func Test_Equal_custom_trail_checkers(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.other"}, trail)
 	})
 
-	t.Run("custom checker used", func(t *testing.T) {
+	t.Run("error - custom checker used", func(t *testing.T) {
 		// --- Given ---
+		// Both are defining the same time in different timezone.
+		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
+
 		trail := make([]string, 0)
 		opts := []any{
 			WithTrail("type.field"),
 			WithTrailLog(&trail),
 			WithTrailChecker("type.field", Exact),
 		}
-
-		// Both are defining the same time in different timezone.
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -320,7 +320,7 @@ func Test_Equal_custom_checkers_aliased_pointers(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("nested checker options do not leak to siblings", func(t *testing.T) {
+	t.Run("nested checker options isolated", func(t *testing.T) {
 		// --- Given ---
 		type T struct{ V int }
 		var calls int
@@ -340,17 +340,17 @@ func Test_Equal_custom_checkers_aliased_pointers(t *testing.T) {
 }
 
 func Test_Equal_custom_type_checkers(t *testing.T) {
-	t.Run("use the custom type checker", func(t *testing.T) {
+	t.Run("error - use the custom type checker", func(t *testing.T) {
 		// --- Given ---
+		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
+
 		trail := make([]string, 0)
 		opts := []any{
 			WithTrail("type.field"),
 			WithTrailLog(&trail),
 			WithTrailChecker("type.field", Exact),
 		}
-
-		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		have := time.Date(2000, 1, 2, 4, 4, 5, 0, testcases.WAW)
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -366,9 +366,9 @@ func Test_Equal_custom_type_checkers(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("use the custom checker with nils", func(t *testing.T) {
+	t.Run("error - use the custom checker with nils", func(t *testing.T) {
 		// --- Given ---
-		var want, have = 1, 2
+		want, have := 1, 2
 
 		trail := make([]string, 0)
 		opts := []any{
@@ -408,12 +408,11 @@ func Test_Equal_custom_type_checkers(t *testing.T) {
 			lens = append(lens, len(wm), len(hm))
 			return nil
 		}
-		opt := WithTypeChecker(map[string]int{}, chk)
 		w := T{m: map[string]int{"a": 1}}
 		h := T{m: map[string]int{"a": 1, "b": 2}}
 
 		// --- When ---
-		err := Equal(w, h, opt)
+		err := Equal(w, h, WithTypeChecker(map[string]int{}, chk))
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -441,11 +440,11 @@ func Test_Equal_custom_type_checkers(t *testing.T) {
 func Test_Equal_kind_Ptr(t *testing.T) {
 	t.Run("equal structs by pointer", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := &struct{ Int int }{Int: 123}
 		have := &struct{ Int int }{Int: 123}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -457,11 +456,11 @@ func Test_Equal_kind_Ptr(t *testing.T) {
 
 	t.Run("equal time Location", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type")}
-
 		want := must.Value(time.LoadLocation("Europe/Warsaw"))
 		have := must.Value(time.LoadLocation("Europe/Warsaw"))
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -471,13 +470,13 @@ func Test_Equal_kind_Ptr(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type"}, trail)
 	})
 
-	t.Run("not equal time Location", func(t *testing.T) {
+	t.Run("error - not equal time Location", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type")}
-
 		want := must.Value(time.LoadLocation("Europe/Warsaw"))
 		have := must.Value(time.LoadLocation("Europe/Paris"))
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -509,7 +508,7 @@ func Test_Equal_kind_Ptr(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type"}, trail)
 	})
 
-	t.Run("not equal want is not nil have is nil", func(t *testing.T) {
+	t.Run("error - not equal want is not nil have is nil", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithTrail("type")}
@@ -532,7 +531,7 @@ func Test_Equal_kind_Ptr(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type"}, trail)
 	})
 
-	t.Run("not equal want is nil have is not nil", func(t *testing.T) {
+	t.Run("error - not equal want is nil have is not nil", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithTrail("type")}
@@ -559,11 +558,11 @@ func Test_Equal_kind_Ptr(t *testing.T) {
 func Test_Equal_kind_Struct(t *testing.T) {
 	t.Run("equal structs by value", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := struct{ Int int }{Int: 123}
 		have := struct{ Int int }{Int: 123}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -575,11 +574,11 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("equal time struct", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type")}
-
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -591,11 +590,11 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("equal time struct field", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := testcases.TTim{Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)}
 		have := testcases.TTim{Tim: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -605,13 +604,13 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.DeepEqual(t, []string{"TTim.Tim"}, trail)
 	})
 
-	t.Run("not equal time struct", func(t *testing.T) {
+	t.Run("error - not equal time struct", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type")}
-
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -644,12 +643,12 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("equal time Location struct field", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		waw := must.Value(time.LoadLocation("Europe/Warsaw"))
 		want := testcases.TLoc{Loc: waw}
 		have := testcases.TLoc{Loc: waw}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -659,13 +658,13 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.DeepEqual(t, []string{"TLoc.Loc"}, trail)
 	})
 
-	t.Run("not equal time Location nil have", func(t *testing.T) {
+	t.Run("error - not equal time Location nil have", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := testcases.TLoc{Loc: testcases.WAW}
 		have := testcases.TLoc{Loc: nil}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -682,11 +681,11 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("equal structs with embedded not struct field", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := testcases.TC{TD: testcases.TD("abc"), Int: 123}
 		have := testcases.TC{TD: testcases.TD("abc"), Int: 123}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -698,14 +697,14 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("skipped fields are marked", func(t *testing.T) {
 		// --- Given ---
+		want := testcases.NewTPrv().SetInt(1)
+		have := testcases.NewTPrv().SetInt(2)
+
 		trail := make([]string, 0)
 		opts := []any{
 			WithTrailLog(&trail),
 			WithSkipTrail("TPrv.vInt", "TPrv.tim"),
 		}
-
-		want := testcases.NewTPrv().SetInt(1)
-		have := testcases.NewTPrv().SetInt(2)
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -727,13 +726,13 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.DeepEqual(t, wTrail, trail)
 	})
 
-	t.Run("not equal structs with multiple errors", func(t *testing.T) {
+	t.Run("error - not equal structs with multiple errors", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := testcases.TIntStr{Int: 42, Str: "abc"}
 		have := testcases.TIntStr{Int: 44, Str: "xyz"}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -755,7 +754,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.DeepEqual(t, []string{"TIntStr.Int", "TIntStr.Str"}, trail)
 	})
 
-	t.Run("not equal when want is the nil struct pointer", func(t *testing.T) {
+	t.Run("error - want nil struct pointer", func(t *testing.T) {
 		// --- Given ---
 		var want *testcases.TA
 		have := &testcases.TA{Str: "abc"}
@@ -780,7 +779,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("not equal when have is a nil struct pointer", func(t *testing.T) {
+	t.Run("error - have nil struct pointer", func(t *testing.T) {
 		// --- Given ---
 		want := &testcases.TA{Str: "abc"}
 		var have *testcases.TA
@@ -805,17 +804,17 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("not equal deeply nested", func(t *testing.T) {
+	t.Run("error - not equal deeply nested", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithSkipUnexported()}
-
 		want := testcases.TNested{
 			STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 42}}},
 		}
 		have := testcases.TNested{
 			STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 44}}},
 		}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithSkipUnexported()}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -853,18 +852,18 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("skip trail checks", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{
-			WithTrailLog(&trail),
-			WithSkipTrail("TNested.STAp[0].TAp.Int"),
-			WithSkipUnexported(),
-		}
-
 		want := testcases.TNested{
 			STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 42}}},
 		}
 		have := testcases.TNested{
 			STAp: []*testcases.TA{{TAp: &testcases.TA{Int: 44}}},
+		}
+
+		trail := make([]string, 0)
+		opts := []any{
+			WithTrailLog(&trail),
+			WithSkipTrail("TNested.STAp[0].TAp.Int"),
+			WithSkipUnexported(),
 		}
 
 		// --- When ---
@@ -897,11 +896,11 @@ func Test_Equal_kind_Struct(t *testing.T) {
 
 	t.Run("error - private int fields not equal", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := testcases.NewTPrv().SetInt(1)
 		have := testcases.NewTPrv().SetInt(2)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1094,6 +1093,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		// --- Given ---
 		m0 := map[string]any{}
 		m0["self"] = m0
+
 		m1 := map[string]any{}
 		m1["self"] = m1
 
@@ -1108,6 +1108,7 @@ func Test_Equal_kind_Struct(t *testing.T) {
 		// --- Given ---
 		s0 := []any{nil}
 		s0[0] = s0
+
 		s1 := []any{nil}
 		s1[0] = s1
 
@@ -1143,11 +1144,11 @@ func Test_Equal_kind_Struct(t *testing.T) {
 func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 	t.Run("equal slice", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := []int{1, 2}
 		have := []int{1, 2}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1159,10 +1160,10 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 
 	t.Run("equal same slice instance", func(t *testing.T) {
 		// --- Given ---
+		want := []int{1, 2}
+
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
-		want := []int{1, 2}
 
 		// --- When ---
 		err := Equal(want, want, opts...)
@@ -1172,13 +1173,13 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal slice value", func(t *testing.T) {
+	t.Run("error - not equal slice value", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := []int{1, 2}
 		have := []int{1, 7}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1193,13 +1194,13 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		affirm.DeepEqual(t, []string{"<slice>[0]", "<slice>[1]"}, trail)
 	})
 
-	t.Run("not equal array value", func(t *testing.T) {
+	t.Run("error - not equal array value", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := [...]int{1, 2}
 		have := [...]int{1, 7}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1214,13 +1215,13 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		affirm.DeepEqual(t, []string{"<array>[0]", "<array>[1]"}, trail)
 	})
 
-	t.Run("not equal slice lengths", func(t *testing.T) {
+	t.Run("error - not equal slice lengths", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
 		want := []int{1, 2}
 		have := []int{1}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1251,13 +1252,13 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal slices with multiple errors", func(t *testing.T) {
+	t.Run("error - not equal slices with multiple errors", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := []int{1, 2}
 		have := []int{2, 3}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1327,11 +1328,11 @@ func Test_Equal_kind_Map(t *testing.T) {
 
 	t.Run("equal map", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := map[int]int{1: 42}
 		have := map[int]int{1: 42}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1343,10 +1344,10 @@ func Test_Equal_kind_Map(t *testing.T) {
 
 	t.Run("equal same map", func(t *testing.T) {
 		// --- Given ---
+		want := map[int]int{1: 42}
+
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
-		want := map[int]int{1: 42}
 
 		// --- When ---
 		err := Equal(want, want, opts...)
@@ -1356,13 +1357,13 @@ func Test_Equal_kind_Map(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal map", func(t *testing.T) {
+	t.Run("error - not equal map", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := map[int]int{1: 42}
 		have := map[int]int{1: 44}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1378,13 +1379,13 @@ func Test_Equal_kind_Map(t *testing.T) {
 		affirm.DeepEqual(t, []string{"map[1]"}, trail)
 	})
 
-	t.Run("not equal have map missing keys", func(t *testing.T) {
+	t.Run("error - not equal have map missing keys", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := map[int]int{1: 42, 2: 43}
 		have := map[int]int{1: 42, 3: 44}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1402,13 +1403,13 @@ func Test_Equal_kind_Map(t *testing.T) {
 		affirm.DeepEqual(t, []string{"map[1]"}, trail)
 	})
 
-	t.Run("not equal map length", func(t *testing.T) {
+	t.Run("error - not equal map length", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
 		want := map[int]int{1: 42, 2: 44}
 		have := map[int]int{1: 42, 2: 43, 3: 44}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1443,13 +1444,13 @@ func Test_Equal_kind_Map(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal maps with multiple errors", func(t *testing.T) {
+	t.Run("error - not equal maps with multiple errors", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
 		want := map[int]int{1: 42, 2: 44}
 		have := map[int]int{1: 44, 2: 42}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1475,11 +1476,11 @@ func Test_Equal_kind_Map(t *testing.T) {
 func Test_Equal_kind_Interface(t *testing.T) {
 	t.Run("equal", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
-
 		want := []any{42}
 		have := []any{42}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1491,10 +1492,11 @@ func Test_Equal_kind_Interface(t *testing.T) {
 
 	t.Run("equal both nil", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail)}
 		want := []any{nil}
 		have := []any{nil}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail)}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1532,7 +1534,7 @@ func Test_Equal_kind_Bool(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal", func(t *testing.T) {
+	t.Run("error - not equal", func(t *testing.T) {
 		// --- Given ---
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
@@ -1658,10 +1660,10 @@ func Test_Equal_kind_error_tabular(t *testing.T) {
 func Test_Equal_kind_Chan(t *testing.T) {
 	t.Run("equal", func(t *testing.T) {
 		// --- Given ---
+		want := make(chan bool)
+
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
-		want := make(chan bool)
 
 		// --- When ---
 		err := Equal(want, want, opts...)
@@ -1671,13 +1673,13 @@ func Test_Equal_kind_Chan(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal", func(t *testing.T) {
+	t.Run("error - not equal", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
 		want := make(chan bool)
 		have := make(chan bool)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1693,13 +1695,13 @@ func Test_Equal_kind_Chan(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal unexported field", func(t *testing.T) {
+	t.Run("error - not equal unexported field", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
 		want := struct{ want chan bool }{make(chan bool)}
 		have := struct{ want chan bool }{make(chan bool)}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1719,10 +1721,10 @@ func Test_Equal_kind_Chan(t *testing.T) {
 func Test_Equal_kind_Func(t *testing.T) {
 	t.Run("equal", func(t *testing.T) {
 		// --- Given ---
+		want := func() {}
+
 		trail := make([]string, 0)
 		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
-		want := func() {}
 
 		// --- When ---
 		err := Equal(want, want, opts...)
@@ -1732,13 +1734,13 @@ func Test_Equal_kind_Func(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal", func(t *testing.T) {
+	t.Run("error - not equal", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
 		want := func() {}
 		have := func() {}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1758,11 +1760,11 @@ func Test_Equal_kind_Func(t *testing.T) {
 func Test_Equal_kind_Uintptr(t *testing.T) {
 	t.Run("equal", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
 		want := uintptr(42)
 		have := uintptr(42)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1772,13 +1774,13 @@ func Test_Equal_kind_Uintptr(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal without addresses", func(t *testing.T) {
+	t.Run("error - not equal without addresses", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
 		want := uintptr(42)
 		have := uintptr(44)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1794,17 +1796,17 @@ func Test_Equal_kind_Uintptr(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal with addresses", func(t *testing.T) {
+	t.Run("error - not equal with addresses", func(t *testing.T) {
 		// --- Given ---
+		want := uintptr(42)
+		have := uintptr(44)
+
 		trail := make([]string, 0)
 		opts := []any{
 			WithTrailLog(&trail),
 			WithTrail("type.field"),
 			WithDumper(dump.WithPtrAddr),
 		}
-
-		want := uintptr(42)
-		have := uintptr(44)
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1824,12 +1826,12 @@ func Test_Equal_kind_Uintptr(t *testing.T) {
 func Test_Equal_kind_UnsafePointer(t *testing.T) {
 	t.Run("equal", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
 		w := 42
 		want := unsafe.Pointer(&w)
 		have := unsafe.Pointer(&w)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1839,15 +1841,15 @@ func Test_Equal_kind_UnsafePointer(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
-	t.Run("not equal", func(t *testing.T) {
+	t.Run("error - not equal", func(t *testing.T) {
 		// --- Given ---
-		trail := make([]string, 0)
-		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
-
 		w := 42
 		h := 42
 		want := unsafe.Pointer(&w)
 		have := unsafe.Pointer(&h)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
 
 		// --- When ---
 		err := Equal(want, have, opts...)
@@ -1871,14 +1873,7 @@ func Test_Equal_EqualCases_tabular(t *testing.T) {
 			have := Equal(tc.Val0, tc.Val1)
 
 			// --- Then ---
-			if tc.AreEqual && have != nil {
-				format := "expected nil error:\n  have: %#v"
-				t.Errorf(format, have)
-			}
-			if !tc.AreEqual && have == nil {
-				format := "expected not-nil error:\n  have: %#v"
-				t.Errorf(format, have)
-			}
+			affirm.Equal(t, tc.AreEqual, have == nil)
 		})
 	}
 }
@@ -1919,11 +1914,8 @@ func Test_NotEqual(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := NotEqual(42, 42, opt)
+		err := NotEqual(42, 42, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)

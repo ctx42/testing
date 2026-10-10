@@ -36,14 +36,13 @@ func Test_ChannelWillClose(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("timeout", func(t *testing.T) {
+	t.Run("error - timeout", func(t *testing.T) {
 		// --- Given ---
 		c := make(chan struct{})
 		defer close(c)
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := ChannelWillClose("5ms", c, opt)
+		err := ChannelWillClose("5ms", c, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -54,7 +53,7 @@ func Test_ChannelWillClose(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid duration", func(t *testing.T) {
+	t.Run("error - invalid duration", func(t *testing.T) {
 		// --- Given ---
 		c := make(chan struct{})
 		defer close(c)

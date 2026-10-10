@@ -54,7 +54,7 @@ func ContainFold(want, have string, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// NotContain checks that the string "have" does **not** contain the
+// NotContain checks that the string "have" does not contain the
 // substring "want".
 //
 // See assert.NotContain for the assertion wrapper.

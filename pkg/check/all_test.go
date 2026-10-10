@@ -56,10 +56,10 @@ func WithNow(fn func() time.Time) Option {
 
 func Test_WithNow(t *testing.T) {
 	// --- Given ---
-	ops := Options{}
 	now := func() time.Time {
 		return time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 	}
+	ops := Options{}
 
 	// --- When ---
 	have := WithNow(now)(ops)

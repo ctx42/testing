@@ -157,7 +157,7 @@ func ErrorContain(want string, err error, opts ...any) error {
 }
 
 // ErrorRegexp checks that "err" is not nil and its message matches the "want"
-// regexp (string or [*regexp.Regexp]). Uses [fmt.Sprint] for error text.
+// regexp (string or [*regexp.Regexp]), matching against err.Error().
 //
 // See assert.ErrorRegexp for the assertion wrapper.
 func ErrorRegexp(want any, err error, opts ...any) error {

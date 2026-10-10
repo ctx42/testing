@@ -14,7 +14,7 @@
 //   - Per-check overrides via [WithTypeChecker], [WithTrailChecker], etc.
 //   - Full option objects via [WithOptions] and [DefaultOptions].
 //
-// These checks form the foundation of the [assert] package. They are useful
+// These checks form the foundation of the assert package. They are useful
 // when building custom assertion helpers or when performing multiple checks
 // before deciding how to report failure.
 //

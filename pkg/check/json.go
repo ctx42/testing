@@ -41,7 +41,7 @@ func JSON[W, H Text](want W, have H, opts ...any) error {
 		return AddRows(ops, msg)
 	}
 
-	if err := Equal(wantItf, haveItf, WithOptions(ops)); err != nil {
+	if err = Equal(wantItf, haveItf, WithOptions(ops)); err != nil {
 		w, _ := json.Marshal(wantItf) //nolint:errchkjson
 		h, _ := json.Marshal(haveItf) //nolint:errchkjson
 		msg := notice.New("expected JSON strings to be equal").
@@ -53,7 +53,7 @@ func JSON[W, H Text](want W, have H, opts ...any) error {
 }
 
 // unmarshalJSON decodes data keeping numbers as [json.Number] in canonical
-// form (see [canonicalJSON]), so integers too large for float64 are compared
+// form (see canonicalJSON), so integers too large for float64 are compared
 // exactly.
 func unmarshalJSON(data []byte) (any, error) {
 	var val any

@@ -352,3 +352,20 @@ func ExampleContainFold() {
 	fmt.Println(err)
 	// Output: <nil>
 }
+
+func ExampleFieldName() {
+	type User struct{ Name string }
+
+	ops := check.DefaultOptions(check.WithTrail("user"))
+	fName := check.FieldName(ops, "User")
+
+	want, have := User{Name: "Alice"}, User{Name: "Bob"}
+	err := check.Equal(want.Name, have.Name, fName("Name"))
+
+	fmt.Println(err)
+	// Output:
+	// expected values to be equal:
+	//   trail: user.Name
+	//    want: "Alice"
+	//    have: "Bob"
+}

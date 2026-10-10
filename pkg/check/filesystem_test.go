@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/internal/affirm"
+	"github.com/ctx42/testing/pkg/must"
+	"github.com/ctx42/testing/pkg/tester"
 )
 
 func Test_FileExist(t *testing.T) {
@@ -21,11 +23,8 @@ func Test_FileExist(t *testing.T) {
 	})
 
 	t.Run("error - does not exist", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := FileExist("testdata/not_existing.txt", opt)
+		err := FileExist("testdata/not_existing.txt", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -37,11 +36,8 @@ func Test_FileExist(t *testing.T) {
 	})
 
 	t.Run("error - is a directory", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := FileExist("testdata/dir", opt)
+		err := FileExist("testdata/dir", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -80,7 +76,7 @@ func Test_FileExist(t *testing.T) {
 }
 
 func Test_NoFileExist(t *testing.T) {
-	t.Run("exists", func(t *testing.T) {
+	t.Run("error - exists", func(t *testing.T) {
 		// --- When ---
 		err := NoFileExist("testdata/file.txt")
 
@@ -100,12 +96,9 @@ func Test_NoFileExist(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("is a directory", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
+	t.Run("error - is a directory", func(t *testing.T) {
 		// --- When ---
-		err := NoFileExist("testdata/dir", opt)
+		err := NoFileExist("testdata/dir", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -145,7 +138,7 @@ func Test_FileContain(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("does not contain string", func(t *testing.T) {
+	t.Run("error - does not contain string", func(t *testing.T) {
 		// --- When ---
 		err := FileContain("not there", "testdata/file.txt")
 
@@ -158,7 +151,7 @@ func Test_FileContain(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("does not contain byte slice", func(t *testing.T) {
+	t.Run("error - does not contain byte slice", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -175,7 +168,7 @@ func Test_FileContain(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("file does not exist", func(t *testing.T) {
+	t.Run("error - file does not exist", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTrail("type.field")
 
@@ -192,7 +185,7 @@ func Test_FileContain(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("is a directory", func(t *testing.T) {
+	t.Run("error - is a directory", func(t *testing.T) {
 		// --- When ---
 		err := FileContain("content", "testdata/dir")
 
@@ -215,12 +208,9 @@ func Test_DirExist(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("does not exist", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
+	t.Run("error - does not exist", func(t *testing.T) {
 		// --- When ---
-		err := DirExist("testdata/not_existing_dir", opt)
+		err := DirExist("testdata/not_existing_dir", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -231,12 +221,9 @@ func Test_DirExist(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("is a file", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
+	t.Run("error - is a file", func(t *testing.T) {
 		// --- When ---
-		err := DirExist("testdata/file.txt", opt)
+		err := DirExist("testdata/file.txt", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -275,12 +262,9 @@ func Test_DirExist(t *testing.T) {
 }
 
 func Test_NoDirExist(t *testing.T) {
-	t.Run("exists", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
+	t.Run("error - exists", func(t *testing.T) {
 		// --- When ---
-		err := NoDirExist("testdata/dir", opt)
+		err := NoDirExist("testdata/dir", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -299,12 +283,9 @@ func Test_NoDirExist(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("is a file", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
+	t.Run("error - is a file", func(t *testing.T) {
 		// --- When ---
-		err := NoDirExist("testdata/file.txt", opt)
+		err := NoDirExist("testdata/file.txt", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -329,15 +310,10 @@ func Test_NoDirExist(t *testing.T) {
 
 // symlink creates a symbolic link to "target" in a temporary directory and
 // returns the link path.
-func symlink(t *testing.T, target string) string {
+func symlink(t tester.T, target string) string {
 	t.Helper()
-	abs, err := filepath.Abs(target)
-	if err != nil {
-		t.Fatal(err)
-	}
+	abs := must.Value(filepath.Abs(target))
 	lnk := filepath.Join(t.TempDir(), "link")
-	if err = os.Symlink(abs, lnk); err != nil {
-		t.Fatal(err)
-	}
+	must.Nil(os.Symlink(abs, lnk))
 	return lnk
 }

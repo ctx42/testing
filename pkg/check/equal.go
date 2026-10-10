@@ -40,7 +40,7 @@ func NotEqual(want, have any, opts ...any) error {
 	return nil
 }
 
-// visit tracks pointers during [deepEqual] to detect cycles and prevent
+// visit tracks pointers during deepEqual to detect cycles and prevent
 // infinite recursion.
 type visit struct {
 	want unsafe.Pointer
@@ -55,7 +55,8 @@ type visit struct {
 //
 //nolint:gocognit,cyclop
 func deepEqual(
-	wVal, hVal reflect.Value,
+	wVal reflect.Value,
+	hVal reflect.Value,
 	visited map[visit]bool,
 	opts ...any,
 ) error {
@@ -65,7 +66,7 @@ func deepEqual(
 	// Return when the trail should be skipped (see [WithSkipTrail]).
 	if i := slices.Index(ops.SkipTrails, ops.Trail); i >= 0 {
 		ops.Trail += " <skipped>"
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		return nil
 	}
 
@@ -74,20 +75,20 @@ func deepEqual(
 	if wVal.IsValid() && !wVal.CanInterface() && ops.SkipUnexported {
 		trail := ops.Trail
 		ops.Trail += " <skipped>"
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		ops.Trail = trail
 		return nil
 	}
 
 	// Both are untyped nil value.
 	if !wVal.IsValid() && !hVal.IsValid() {
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		return nil
 	}
 
 	// One of the values is untyped nil.
 	if !wVal.IsValid() || !hVal.IsValid() {
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		if wVal.IsValid() {
 			wStr := ops.Dumper.Value(wVal)
 			msg := notice.New("expected values to be equal").
@@ -107,7 +108,7 @@ func deepEqual(
 	wTyp := wVal.Type()
 	hTyp := hVal.Type()
 	if wTyp != hTyp {
-		// Compare simple types if any of the types is an alias.
+		// Compare simple types when both share a simple underlying type.
 		if ops.CmpSimpleType {
 			wSmp, wOK := core.ValueSimple(wVal)
 			hSmp, hOK := core.ValueSimple(hVal)
@@ -118,7 +119,7 @@ func deepEqual(
 			}
 		}
 
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		msg := notice.New("expected values to be equal").
 			Append("want type", "%s", wTyp).
 			Append("have type", "%s", hTyp)
@@ -131,7 +132,7 @@ func deepEqual(
 	}
 
 	if chk != nil {
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		wItf, wOk := core.Value(wVal)
 		hItf, hOk := core.Value(hVal)
 		if !wOk || !hOk {
@@ -162,7 +163,7 @@ func deepEqual(
 	case reflect.Pointer:
 		// Both-nil is equal; otherwise recurse into the pointed-to values.
 		if wVal.IsNil() && hVal.IsNil() {
-			ops.LogTrail()
+			_ = ops.LogTrail()
 			return nil
 		}
 		return deepEqual(wVal.Elem(), hVal.Elem(), visited, WithOptions(ops))
@@ -175,9 +176,6 @@ func deepEqual(
 		for i := 0; i < wVal.NumField(); i++ {
 			wfVal := wVal.Field(i)
 			hfVal := hVal.Field(i)
-			if !wfVal.IsValid() {
-				continue
-			}
 			wSF := wVal.Type().Field(i)
 			iOps := sOps.StructTrail("", wSF.Name)
 			e := deepEqual(wfVal, hfVal, visited, WithOptions(iOps))
@@ -191,7 +189,7 @@ func deepEqual(
 		// Lengths must match first. Then compare element-wise with index
 		// trails.
 		if wVal.Len() != hVal.Len() {
-			ops.LogTrail()
+			_ = ops.LogTrail()
 			wStr, hStr, diff := ops.Dumper.DiffValue(wVal, hVal)
 			msg := notice.New("expected values to be equal").
 				Prepend("have len", "%d", hVal.Len()).
@@ -202,7 +200,7 @@ func deepEqual(
 			return AddRows(ops, msg)
 		}
 		if knd == reflect.Slice && wVal.Pointer() == hVal.Pointer() {
-			ops.LogTrail()
+			_ = ops.LogTrail()
 			return nil
 		}
 		var err error
@@ -221,7 +219,7 @@ func deepEqual(
 		// Lengths must match; then every want key must exist in have with an
 		// equal value. Keys are sorted for deterministic ordering.
 		if wVal.Len() != hVal.Len() {
-			ops.LogTrail()
+			_ = ops.LogTrail()
 			wStr, hStr, diff := ops.Dumper.DiffValue(wVal, hVal)
 			msg := notice.New("expected values to be equal").
 				Prepend("have len", "%d", hVal.Len()).
@@ -232,7 +230,7 @@ func deepEqual(
 			return AddRows(ops, msg)
 		}
 		if wVal.Pointer() == hVal.Pointer() {
-			ops.LogTrail()
+			_ = ops.LogTrail()
 			return nil
 		}
 
@@ -271,7 +269,7 @@ func deepEqual(
 	case reflect.Bool:
 		// For all primitive kinds we simply compare the underlying values
 		// and use equalError for the failure message.
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := wVal.Bool(), hVal.Bool()
 		if w == h {
 			return nil
@@ -279,7 +277,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Int:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := int(wVal.Int()), int(hVal.Int())
 		if w == h {
 			return nil
@@ -287,7 +285,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Int8:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := int8(wVal.Int()), int8(hVal.Int()) //nolint:gosec
 		if w == h {
 			return nil
@@ -295,7 +293,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Int16:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := int16(wVal.Int()), int16(hVal.Int()) //nolint:gosec
 		if w == h {
 			return nil
@@ -303,7 +301,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Int32:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := int32(wVal.Int()), int32(hVal.Int()) //nolint:gosec
 		if w == h {
 			return nil
@@ -311,7 +309,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Int64:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := wVal.Int(), hVal.Int()
 		if w == h {
 			return nil
@@ -319,7 +317,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Uint:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := uint(wVal.Uint()), uint(hVal.Uint())
 		if w == h {
 			return nil
@@ -327,7 +325,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Uint8:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := uint8(wVal.Uint()), uint8(hVal.Uint()) //nolint:gosec
 		if w == h {
 			return nil
@@ -335,7 +333,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Uint16:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := uint16(wVal.Uint()), uint16(hVal.Uint()) //nolint:gosec
 		if w == h {
 			return nil
@@ -343,7 +341,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Uint32:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := uint32(wVal.Uint()), uint32(hVal.Uint()) //nolint:gosec
 		if w == h {
 			return nil
@@ -351,7 +349,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Uint64:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := wVal.Uint(), hVal.Uint()
 		if w == h {
 			return nil
@@ -359,7 +357,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Float32:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := float32(wVal.Float()), float32(hVal.Float()) //nolint:gosec
 		if w == h {
 			return nil
@@ -367,7 +365,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Float64:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := wVal.Float(), hVal.Float()
 		if w == h {
 			return nil
@@ -375,7 +373,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Complex64:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := complex64(wVal.Complex()), complex64(hVal.Complex())
 		if w == h {
 			return nil
@@ -383,7 +381,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Complex128:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := wVal.Complex(), hVal.Complex()
 		if w == h {
 			return nil
@@ -391,7 +389,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.String:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := wVal.String(), hVal.String()
 		if w == h {
 			return nil
@@ -399,7 +397,7 @@ func deepEqual(
 		return equalError(w, h, WithOptions(ops))
 
 	case reflect.Chan:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := wVal.Pointer(), hVal.Pointer()
 		if w == h {
 			return nil
@@ -410,7 +408,7 @@ func deepEqual(
 		return AddRows(ops, msg)
 
 	case reflect.Func:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := wVal.Pointer(), hVal.Pointer()
 		if w == h {
 			return nil
@@ -421,7 +419,7 @@ func deepEqual(
 		return AddRows(ops, msg)
 
 	case reflect.Uintptr:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := wVal.Uint(), hVal.Uint()
 		if w == h {
 			return nil
@@ -432,7 +430,7 @@ func deepEqual(
 		return AddRows(ops, msg)
 
 	case reflect.UnsafePointer:
-		ops.LogTrail()
+		_ = ops.LogTrail()
 		w, h := wVal.Pointer(), hVal.Pointer()
 		if w == h {
 			return nil
@@ -443,11 +441,13 @@ func deepEqual(
 		return AddRows(ops, msg)
 
 	default:
-		ops.LogTrail()
+		_ = ops.LogTrail()
+		const hint = "" +
+			"use WithSkipTrail or WithSkipUnexported option to skip this " +
+			"field"
 		msg := notice.New("cannot compare values").
 			Append("cause", "%s", "value cannot be used without panicking").
-			Append("hint", "%s", "use WithSkipTrail or WithSkipUnexported "+
-				"option to skip this field")
+			Append("hint", "%s", hint)
 		return AddRows(ops, msg)
 	}
 }
@@ -522,7 +522,7 @@ func dumpByte(dmp dump.Dump, lvl int, val reflect.Value) string {
 	return prn.Tab(dmp.Indent + lvl).Write(str).String()
 }
 
-// withByteDumper returns a copy of dmp using [dumpByte] for bytes unless a
+// withByteDumper returns a copy of dmp using dumpByte for bytes unless a
 // byte dumper is already set. The copy has its own Dumpers map, so the
 // caller's options are never modified.
 func withByteDumper(dmp dump.Dump) dump.Dump {

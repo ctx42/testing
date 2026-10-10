@@ -13,46 +13,15 @@ import (
 	"github.com/ctx42/testing/pkg/testcases"
 )
 
-func Test_typeString(t *testing.T) {
-	tt := []struct {
-		testN string
-
-		val  reflect.Value
-		want string
-	}{
-		{"string", reflect.ValueOf("abc"), "string"},
-		{"int", reflect.ValueOf(123), "int"},
-		{"invalid", reflect.ValueOf(nil), "<invalid>"},
-		{"struct", reflect.ValueOf(testcases.TA{}), "testcases.TA"},
-		{"ptr struct", reflect.ValueOf(&testcases.TA{}), "*testcases.TA"},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
+func Test_isPrintableChar(t *testing.T) {
+	for i := range 256 {
+		t.Run(fmt.Sprintf("byte %d", i), func(t *testing.T) {
 			// --- When ---
-			have := typeString(tc.val)
+			have := isPrintableChar(byte(i))
 
 			// --- Then ---
-			affirm.Equal(t, tc.want, have)
+			affirm.Equal(t, i >= 32 && i <= 126, have)
 		})
-	}
-}
-
-func Test_isPrintableChar(t *testing.T) {
-	for i := 0; i <= 31; i++ {
-		if !affirm.Equal(t, false, isPrintableChar(byte(i))) {
-			t.Logf("expected false for %d", i)
-		}
-	}
-	for i := 32; i <= 126; i++ {
-		if !affirm.Equal(t, true, isPrintableChar(byte(i))) {
-			t.Logf("expected true for %d", i)
-		}
-	}
-	for i := 127; i <= 255; i++ {
-		if !affirm.Equal(t, false, isPrintableChar(byte(i))) {
-			t.Logf("expected false for %d", i)
-		}
 	}
 }
 

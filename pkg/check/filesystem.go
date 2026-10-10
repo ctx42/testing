@@ -22,7 +22,6 @@ func FileExist(pth string, opts ...any) error {
 			msg := notice.New("expected path to an existing file").
 				Append("path", "%s", pth)
 			return AddRows(ops, msg)
-
 		}
 		msg := notice.New("expected os.Stat to succeed").
 			Append("path", "%s", pth).
@@ -46,7 +45,7 @@ func NoFileExist(pth string, opts ...any) error {
 	return noPathExist(pth, opts...)
 }
 
-// Content declares type constraint for file content.
+// Content declares a type constraint for file content.
 type Content interface {
 	string | []byte
 }

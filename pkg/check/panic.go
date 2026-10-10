@@ -16,9 +16,6 @@ import (
 type TestFunc func()
 
 // Panic checks that calling "fn" causes a panic.
-//
-// On success (panic occurred) it returns nil.
-// On failure it returns a structured error.
 func Panic(fn TestFunc, opts ...any) error {
 	if _, stack := core.WillPanic(fn); stack == "" {
 		ops := DefaultOptions(opts...)
@@ -28,7 +25,7 @@ func Panic(fn TestFunc, opts ...any) error {
 	return nil
 }
 
-// NoPanic checks that calling "fn" does **not** cause a panic.
+// NoPanic checks that calling "fn" does not cause a panic.
 //
 // If a panic occurs, the recovered value and stack are included in the
 // returned error.
@@ -65,11 +62,11 @@ func PanicContain(want string, fn TestFunc, opts ...any) error {
 	}
 	if !strings.Contains(msg, want) {
 		ops := DefaultOptions(opts...)
-		msg := notice.New("func should panic with string containing").
+		ntc := notice.New("func should panic with string containing").
 			Append("substring", "%q", want).
 			Append("panic value", "%v", val).
 			Append("panic stack", "%s", notice.Indent(2, ' ', stack))
-		return AddRows(ops, msg)
+		return AddRows(ops, ntc)
 	}
 	return nil
 }

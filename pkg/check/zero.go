@@ -15,7 +15,7 @@ import (
 // Zero values include false, 0, "", non-nil values that [reflect.Value.IsZero]
 // reports as zero, and types implementing `IsZero() bool`. Untyped nil, nil
 // pointers, and nil or empty collections are not zero; use [Nil] or [Empty]
-// for those. See [testcases.ZENValues] for the full matrix.
+// for those. See testcases.ZENValues for the full matrix.
 //
 // See assert.Zero for the assertion wrapper.
 func Zero(have any, opts ...any) error {
@@ -36,7 +36,7 @@ func Zero(have any, opts ...any) error {
 	return zeroError(have, opts...)
 }
 
-// zeroError returns error for non-zero value of have.
+// zeroError returns the error for a non-zero value of have.
 func zeroError(have any, opts ...any) error {
 	ops := DefaultOptions(opts...)
 	msg := notice.New("expected argument to be zero value").
@@ -45,7 +45,7 @@ func zeroError(have any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// NotZero checks that "have" is **not** the zero value for its type.
+// NotZero checks that "have" is not the zero value for its type.
 //
 // See assert.NotZero for the assertion wrapper.
 func NotZero(have any, opts ...any) error {

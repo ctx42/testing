@@ -59,8 +59,8 @@ type zoneRep string
 
 // The timezone representations the [Zone] supports.
 const (
-	zoneString = "zone-string"
-	zoneZone   = "zone-zone"
+	zoneString zoneRep = "zone-string"
+	zoneZone   zoneRep = "zone-zone"
 )
 
 // durRep is duration representation.
@@ -105,9 +105,8 @@ func Time(want, have any, opts ...any) error {
 	return AddRows(ops, msg)
 }
 
-// Exact checks "want" and "have" dates are equal and are in the same timezone.
-// Returns nil if they are, otherwise returns an error with a message indicating
-// the expected and actual values.
+// Exact checks that "want" and "have" dates are equal and are in the same
+// timezone.
 //
 // The "want" and "have" may represent dates in the form of a string, int,
 // int64, or [time.Time]. For string representations the [Options.TimeFormat]
@@ -138,7 +137,7 @@ func Exact(want, have any, opts ...any) error {
 		return AddRows(ops, msg)
 	}
 
-	if err := Zone(wTim.Location(), hTim.Location(), opts...); err != nil {
+	if err = Zone(wTim.Location(), hTim.Location(), opts...); err != nil {
 		return err
 	}
 
@@ -268,8 +267,8 @@ func AfterOrEqual(mark, date any, opts ...any) error {
 // most the given "within" duration.
 //
 // Arguments may be strings, ints, int64s or [time.Time] (for instants);
-// "within" may also be a duration string/int64/[time.Duration]. See package
-// docs or [Exact] for details.
+// "within" may also be a duration string, int, int64 or [time.Duration]. See
+// package docs or [Exact] for details.
 func Within(want, within, have any, opts ...any) error {
 	wTim, wStr, _, err := getTime(want, opts...)
 	if err != nil {
@@ -311,7 +310,7 @@ func WithinChecker(within any) Checker {
 }
 
 // Recent checks that "have" is within the [Options.Recent] duration of
-// the current time (see [Options.now]).
+// the current time.
 //
 // "have" may be a string, int, int64, or [time.Time]. See the package
 // documentation or [Exact] for representation rules.
@@ -380,8 +379,10 @@ func Duration(want, have any, opts ...any) error {
 //	2000-01-02T03:04:05Z ( 2000-01-02T03:04:05Z      )
 //	2001-01-02T02:04:05Z ( 2001-01-02T03:04:05+01:00 )
 func formatDates(
-	wTim time.Time, wTimStr string,
-	hTim time.Time, hTimStr string,
+	wTim time.Time,
+	wTimStr string,
+	hTim time.Time,
+	hTimStr string,
 ) (string, string) {
 
 	wTimUTC := wTim.In(time.UTC).Format(time.RFC3339Nano)
@@ -403,7 +404,6 @@ func formatDates(
 		want = wTimUTC
 	} else {
 		want = fmt.Sprintf("%s ( %s %s)", wTimUTC, wTimStr, wTimPad)
-
 	}
 
 	if hTimUTC == hTimStr {

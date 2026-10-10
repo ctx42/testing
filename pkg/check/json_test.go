@@ -50,32 +50,31 @@ func Test_JSON(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("not equal", func(t *testing.T) {
+	t.Run("error - not equal", func(t *testing.T) {
 		// --- Given ---
 		want := ` {"hello": "world"} `
 		have := `{"hello": "ms"}`
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := JSON(want, have, opt)
+		err := JSON(want, have, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := `expected JSON strings to be equal:
-  trail: type.field
-   want: {"hello":"world"}
-   have: {"hello":"ms"}`
+		wMsg := "" +
+			"expected JSON strings to be equal:\n" +
+			"  trail: type.field\n" +
+			"   want: {\"hello\":\"world\"}\n" +
+			"   have: {\"hello\":\"ms\"}"
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid want JSON", func(t *testing.T) {
+	t.Run("error - invalid want JSON", func(t *testing.T) {
 		// --- Given ---
 		want := `{!!!}`
 		have := `{"hello": "world"}`
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := JSON(want, have, opt)
+		err := JSON(want, have, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -88,14 +87,13 @@ func Test_JSON(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid have JSON", func(t *testing.T) {
+	t.Run("error - invalid have JSON", func(t *testing.T) {
 		// --- Given ---
 		want := `{"hello": "world"}`
 		have := `{!!!}`
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := JSON(want, have, opt)
+		err := JSON(want, have, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -143,5 +141,4 @@ func Test_JSON(t *testing.T) {
 		// --- Then ---
 		affirm.Nil(t, err)
 	})
-
 }

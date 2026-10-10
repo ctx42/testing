@@ -15,7 +15,7 @@ import (
 // [Options.WaitThrottle] — use [WithWaitThrottle] to change it.
 // See assert.Wait.
 //
-// The "within" may represent duration in the form of a string, int, int64, or
+// The "within" may represent a duration in the form of a string, int, int64, or
 // [time.Duration].
 func Wait(within any, fn func() bool, opts ...any) error {
 	ops := DefaultOptions(opts...)
@@ -32,12 +32,9 @@ func Wait(within any, fn func() bool, opts ...any) error {
 	defer sleep.Stop()
 
 	for {
-		sleep.Reset(ops.WaitThrottle)
+		_ = sleep.Reset(ops.WaitThrottle)
 		select {
 		case <-ctx.Done():
-			if !sleep.Stop() {
-				<-sleep.C
-			}
 			msg := notice.New("expected function to return true").
 				Append("within", "%s", durStr).
 				Append("throttle", ops.WaitThrottle.String())

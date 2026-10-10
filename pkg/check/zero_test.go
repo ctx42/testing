@@ -29,6 +29,18 @@ func Test_Zero(t *testing.T) {
 	})
 }
 
+func Test_Zero_tabular(t *testing.T) {
+	for _, tc := range testcases.ZENValues() {
+		t.Run("Zero "+tc.Desc, func(t *testing.T) {
+			// --- When ---
+			err := Zero(tc.Val)
+
+			// --- Then ---
+			affirm.Equal(t, tc.IsZero, err == nil)
+		})
+	}
+}
+
 func Test_zeroError(t *testing.T) {
 	t.Run("error - fails", func(t *testing.T) {
 		// --- When ---
@@ -44,11 +56,8 @@ func Test_zeroError(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := zeroError(42, opt)
+		err := zeroError(42, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -59,21 +68,6 @@ func Test_zeroError(t *testing.T) {
 			"   have: 42"
 		affirm.Equal(t, wMsg, err.Error())
 	})
-}
-
-func Test_Zero_tabular(t *testing.T) {
-	for _, tc := range testcases.ZENValues() {
-		t.Run("Zero "+tc.Desc, func(t *testing.T) {
-			// --- When ---
-			err := Zero(tc.Val)
-
-			// --- Then ---
-			if have := err == nil; tc.IsZero != have {
-				format := "expected Zero to accept %#v: %v\n  have: %v"
-				t.Errorf(format, tc.Val, tc.IsZero, err)
-			}
-		})
-	}
 }
 
 func Test_NotZero(t *testing.T) {
@@ -99,11 +93,8 @@ func Test_NotZero(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := NotZero(time.Time{}, opt)
+		err := NotZero(time.Time{}, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)

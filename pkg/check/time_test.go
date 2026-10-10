@@ -23,10 +23,9 @@ func Test_Time(t *testing.T) {
 
 		// --- Then ---
 		affirm.Nil(t, err)
-		affirm.Equal(t, true, want.Equal(have))
 	})
 
-	t.Run("not equal both time Time", func(t *testing.T) {
+	t.Run("error - not equal both time Time", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
@@ -55,7 +54,7 @@ func Test_Time(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("not equal want is string", func(t *testing.T) {
+	t.Run("error - not equal want is string", func(t *testing.T) {
 		// --- Given ---
 		have := time.Date(2000, 1, 2, 2, 4, 4, 0, time.UTC)
 
@@ -72,7 +71,7 @@ func Test_Time(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("not equal have is string", func(t *testing.T) {
+	t.Run("error - not equal have is string", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 2, 4, 4, 0, time.UTC)
 
@@ -89,7 +88,7 @@ func Test_Time(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid want date format", func(t *testing.T) {
+	t.Run("error - invalid want date format", func(t *testing.T) {
 		// --- When ---
 		err := Time("2022-02-18", time.Now())
 
@@ -102,7 +101,7 @@ func Test_Time(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid have date format", func(t *testing.T) {
+	t.Run("error - invalid have date format", func(t *testing.T) {
 		// --- When ---
 		err := Time(time.Now(), "2022-02-18")
 
@@ -115,12 +114,9 @@ func Test_Time(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid option date format", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTimeFormat("abc")
-
+	t.Run("error - invalid option date format", func(t *testing.T) {
 		// --- When ---
-		err := Time("2022-02-18", time.Now(), opt)
+		err := Time("2022-02-18", time.Now(), WithTimeFormat("abc"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -131,14 +127,13 @@ func Test_Time(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 4, 4, 6, 0, testcases.WAW)
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Time(want, have, opt)
+		err := Time(want, have, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -179,7 +174,6 @@ func Test_Exact(t *testing.T) {
 
 		// --- Then ---
 		affirm.Nil(t, err)
-		affirm.Equal(t, true, want.Equal(have))
 	})
 
 	t.Run("error - not exact date", func(t *testing.T) {
@@ -250,10 +244,9 @@ func Test_Exact(t *testing.T) {
 			"  want: UTC\n" +
 			"  have: Europe/Warsaw"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.Equal(t, true, want.Equal(have))
 	})
 
-	t.Run("invalid want date format", func(t *testing.T) {
+	t.Run("error - invalid want date format", func(t *testing.T) {
 		// --- When ---
 		err := Exact("2022-02-18", time.Now())
 
@@ -266,7 +259,7 @@ func Test_Exact(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid have date format", func(t *testing.T) {
+	t.Run("error - invalid have date format", func(t *testing.T) {
 		// --- When ---
 		err := Exact(time.Now(), "2022-02-18")
 
@@ -279,14 +272,13 @@ func Test_Exact(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Exact(want, have, opt)
+		err := Exact(want, have, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -304,8 +296,8 @@ func Test_Exact(t *testing.T) {
 func Test_Before(t *testing.T) {
 	t.Run("before", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 4, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 4, 0, time.UTC)
 
 		// --- When ---
 		err := Before(mark, date)
@@ -314,10 +306,10 @@ func Test_Before(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("equal", func(t *testing.T) {
+	t.Run("error - equal", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		err := Before(mark, date)
@@ -332,10 +324,10 @@ func Test_Before(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("after", func(t *testing.T) {
+	t.Run("error - after", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 
 		// --- When ---
 		err := Before(mark, date)
@@ -350,7 +342,7 @@ func Test_Before(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid date", func(t *testing.T) {
+	t.Run("error - invalid date", func(t *testing.T) {
 		// --- When ---
 		err := Before(time.Now(), "abc")
 
@@ -363,7 +355,7 @@ func Test_Before(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid mark", func(t *testing.T) {
+	t.Run("error - invalid mark", func(t *testing.T) {
 		// --- When ---
 		err := Before("abc", time.Now())
 
@@ -376,14 +368,13 @@ func Test_Before(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := WithTrail("type.field")
+		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 
 		// --- When ---
-		err := Before(mark, date, opt)
+		err := Before(mark, date, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -400,8 +391,8 @@ func Test_Before(t *testing.T) {
 func Test_After(t *testing.T) {
 	t.Run("after", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		err := After(mark, date)
@@ -410,13 +401,13 @@ func Test_After(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("equal", func(t *testing.T) {
+	t.Run("error - equal", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := After(date, mark)
+		err := After(mark, date)
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -428,10 +419,10 @@ func Test_After(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("before", func(t *testing.T) {
+	t.Run("error - before", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		err := After(mark, date)
@@ -446,7 +437,7 @@ func Test_After(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid date", func(t *testing.T) {
+	t.Run("error - invalid date", func(t *testing.T) {
 		// --- When ---
 		err := After(time.Now(), "abc")
 
@@ -459,7 +450,7 @@ func Test_After(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid mark", func(t *testing.T) {
+	t.Run("error - invalid mark", func(t *testing.T) {
 		// --- When ---
 		err := After("abc", time.Now())
 
@@ -472,14 +463,13 @@ func Test_After(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := WithTrail("type.field")
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
-		err := After(mark, date, opt)
+		err := After(mark, date, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -496,8 +486,8 @@ func Test_After(t *testing.T) {
 func Test_BeforeOrEqual(t *testing.T) {
 	t.Run("before", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 4, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 4, 0, time.UTC)
 
 		// --- When ---
 		err := BeforeOrEqual(mark, date)
@@ -508,8 +498,8 @@ func Test_BeforeOrEqual(t *testing.T) {
 
 	t.Run("equal", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		err := BeforeOrEqual(mark, date)
@@ -518,10 +508,10 @@ func Test_BeforeOrEqual(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("after", func(t *testing.T) {
+	t.Run("error - after", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 
 		// --- When ---
 		err := BeforeOrEqual(mark, date)
@@ -536,7 +526,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid date", func(t *testing.T) {
+	t.Run("error - invalid date", func(t *testing.T) {
 		// --- When ---
 		err := BeforeOrEqual(time.Now(), "abc")
 
@@ -549,7 +539,7 @@ func Test_BeforeOrEqual(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid mark", func(t *testing.T) {
+	t.Run("error - invalid mark", func(t *testing.T) {
 		// --- When ---
 		err := BeforeOrEqual("abc", time.Now())
 
@@ -562,14 +552,13 @@ func Test_BeforeOrEqual(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := WithTrail("type.field")
+		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 
 		// --- When ---
-		err := BeforeOrEqual(mark, date, opt)
+		err := BeforeOrEqual(mark, date, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -586,8 +575,8 @@ func Test_BeforeOrEqual(t *testing.T) {
 func Test_AfterOrEqual(t *testing.T) {
 	t.Run("after", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 6, 0, time.UTC)
 
 		// --- When ---
 		err := AfterOrEqual(mark, date)
@@ -598,8 +587,8 @@ func Test_AfterOrEqual(t *testing.T) {
 
 	t.Run("equal", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 
 		// --- When ---
 		err := AfterOrEqual(mark, date)
@@ -608,10 +597,10 @@ func Test_AfterOrEqual(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("before", func(t *testing.T) {
+	t.Run("error - before", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 4, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		date := time.Date(2000, 1, 2, 3, 4, 4, 0, time.UTC)
 
 		// --- When ---
 		err := AfterOrEqual(mark, date)
@@ -626,7 +615,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid date", func(t *testing.T) {
+	t.Run("error - invalid date", func(t *testing.T) {
 		// --- When ---
 		err := AfterOrEqual(time.Now(), "abc")
 
@@ -639,7 +628,7 @@ func Test_AfterOrEqual(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid mark", func(t *testing.T) {
+	t.Run("error - invalid mark", func(t *testing.T) {
 		// --- When ---
 		err := AfterOrEqual("abc", time.Now())
 
@@ -652,14 +641,13 @@ func Test_AfterOrEqual(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- Given ---
-		date := time.Date(2000, 1, 2, 3, 4, 4, 0, time.UTC)
 		mark := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := WithTrail("type.field")
+		date := time.Date(2000, 1, 2, 3, 4, 4, 0, time.UTC)
 
 		// --- When ---
-		err := AfterOrEqual(mark, date, opt)
+		err := AfterOrEqual(mark, date, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -698,7 +686,7 @@ func Test_Within(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("not within", func(t *testing.T) {
+	t.Run("error - not within", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
@@ -717,7 +705,7 @@ func Test_Within(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid want date format", func(t *testing.T) {
+	t.Run("error - invalid want date format", func(t *testing.T) {
 		// --- When ---
 		err := Within("2022-02-18", "1s", time.Now())
 
@@ -730,7 +718,7 @@ func Test_Within(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid within format", func(t *testing.T) {
+	t.Run("error - invalid within format", func(t *testing.T) {
 		// --- When ---
 		err := Within(time.Now(), "abc", "2000-01-02T03:04:05Z")
 
@@ -740,7 +728,7 @@ func Test_Within(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid have date format", func(t *testing.T) {
+	t.Run("error - invalid have date format", func(t *testing.T) {
 		// --- When ---
 		err := Within(time.Now(), "1s", "2022-02-18")
 
@@ -753,14 +741,13 @@ func Test_Within(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 3, 4, 6, 5e8, time.UTC)
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Within(want, "1s", have, opt)
+		err := Within(want, "1s", have, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -788,7 +775,7 @@ func Test_WithinChecker(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("it is not within", func(t *testing.T) {
+	t.Run("error - it is not within", func(t *testing.T) {
 		// --- Given ---
 		want := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := time.Date(2000, 1, 2, 3, 4, 7, 0, time.UTC)
@@ -797,7 +784,13 @@ func Test_WithinChecker(t *testing.T) {
 		err := WithinChecker(time.Second)(want, have)
 
 		// --- Then ---
-		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected dates to be within:\n" +
+			"          want: 2000-01-02T03:04:05Z\n" +
+			"          have: 2000-01-02T03:04:07Z\n" +
+			"  max diff +/-: 1s\n" +
+			"     have diff: -2s"
+		affirm.Equal(t, wMsg, err.Error())
 	})
 }
 
@@ -816,11 +809,10 @@ func Test_Recent(t *testing.T) {
 	t.Run("recent in the future", func(t *testing.T) {
 		// --- Given ---
 		now := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := WithNow(func() time.Time { return now })
 		have := now.Add(9 * time.Second)
 
 		// --- When ---
-		err := Recent(have, opt)
+		err := Recent(have, WithNow(func() time.Time { return now }))
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -829,11 +821,10 @@ func Test_Recent(t *testing.T) {
 	t.Run("recent in the past", func(t *testing.T) {
 		// --- Given ---
 		now := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := WithNow(func() time.Time { return now })
 		have := now.Add(-9 * time.Second)
 
 		// --- When ---
-		err := Recent(have, opt)
+		err := Recent(have, WithNow(func() time.Time { return now }))
 
 		// --- Then ---
 		affirm.Nil(t, err)
@@ -842,11 +833,10 @@ func Test_Recent(t *testing.T) {
 	t.Run("error - not recent in the future", func(t *testing.T) {
 		// --- Given ---
 		now := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := WithNow(func() time.Time { return now })
 		have := now.Add(11 * time.Second)
 
 		// --- When ---
-		err := Recent(have, opt)
+		err := Recent(have, WithNow(func() time.Time { return now }))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -862,11 +852,10 @@ func Test_Recent(t *testing.T) {
 	t.Run("error - not recent in the past", func(t *testing.T) {
 		// --- Given ---
 		now := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
-		opt := WithNow(func() time.Time { return now })
 		have := now.Add(-11 * time.Second)
 
 		// --- When ---
-		err := Recent(have, opt)
+		err := Recent(have, WithNow(func() time.Time { return now }))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -879,7 +868,7 @@ func Test_Recent(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid have date format", func(t *testing.T) {
+	t.Run("error - invalid have date format", func(t *testing.T) {
 		// --- When ---
 		err := Recent("2022-02-18")
 
@@ -892,7 +881,7 @@ func Test_Recent(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- Given ---
 		now := time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
 		have := now.Add(-11 * time.Second)
@@ -934,12 +923,23 @@ func Test_Zone(t *testing.T) {
 		affirm.Nil(t, err)
 	})
 
-	t.Run("nil is equivalent to UTC", func(t *testing.T) {
-		affirm.Nil(t, Zone(nil, time.UTC))
-		affirm.Nil(t, Zone(time.UTC, nil))
+	t.Run("nil want is UTC", func(t *testing.T) {
+		// --- When ---
+		err := Zone(nil, time.UTC)
+
+		// --- Then ---
+		affirm.Nil(t, err)
 	})
 
-	t.Run("not equal instance", func(t *testing.T) {
+	t.Run("nil have is UTC", func(t *testing.T) {
+		// --- When ---
+		err := Zone(time.UTC, nil)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - not equal instance", func(t *testing.T) {
 		// --- When ---
 		err := Zone(time.UTC, testcases.WAW)
 
@@ -952,7 +952,7 @@ func Test_Zone(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("not equal string", func(t *testing.T) {
+	t.Run("error - not equal string", func(t *testing.T) {
 		// --- When ---
 		err := Zone("UTC", "Europe/Warsaw")
 
@@ -989,12 +989,9 @@ func Test_Zone(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- When ---
-		err := Zone(time.UTC, testcases.WAW, opt)
+		err := Zone(time.UTC, testcases.WAW, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -1029,7 +1026,7 @@ func Test_Duration(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid want", func(t *testing.T) {
+	t.Run("error - invalid want", func(t *testing.T) {
 		// --- When ---
 		err := Duration("abc", "2000s")
 
@@ -1039,7 +1036,7 @@ func Test_Duration(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("invalid have", func(t *testing.T) {
+	t.Run("error - invalid have", func(t *testing.T) {
 		// --- When ---
 		err := Duration("2000s", "abc")
 
@@ -1049,12 +1046,9 @@ func Test_Duration(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- When ---
-		err := Duration(time.Second, 2*time.Second, opt)
+		err := Duration(time.Second, 2*time.Second, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -1076,13 +1070,13 @@ func Test_formatDates(t *testing.T) {
 		hTimStr := "2001-01-02T03:04:05+02:00"
 
 		// --- When ---
-		wHave, hHave := formatDates(wTim, wTimStr, hTim, hTimStr)
+		hW, hH := formatDates(wTim, wTimStr, hTim, hTimStr)
 
 		// --- Then ---
 		want := "2000-01-02T02:04:05Z ( 2000-01-02T03:04:05+02:00 )"
-		affirm.Equal(t, want, wHave)
+		affirm.Equal(t, want, hW)
 		want = "2001-01-02T02:04:05Z ( 2001-01-02T03:04:05+02:00 )"
-		affirm.Equal(t, want, hHave)
+		affirm.Equal(t, want, hH)
 	})
 
 	t.Run("shorted format when both dates in UTC", func(t *testing.T) {
@@ -1093,11 +1087,11 @@ func Test_formatDates(t *testing.T) {
 		hTimStr := "2001-01-02T03:04:05Z"
 
 		// --- When ---
-		wHave, hHave := formatDates(wTim, wTimStr, hTim, hTimStr)
+		hW, hH := formatDates(wTim, wTimStr, hTim, hTimStr)
 
 		// --- Then ---
-		affirm.Equal(t, "2000-01-02T03:04:05Z", wHave)
-		affirm.Equal(t, "2001-01-02T03:04:05Z", hHave)
+		affirm.Equal(t, "2000-01-02T03:04:05Z", hW)
+		affirm.Equal(t, "2001-01-02T03:04:05Z", hH)
 	})
 
 	t.Run("want date string is longer", func(t *testing.T) {
@@ -1108,12 +1102,12 @@ func Test_formatDates(t *testing.T) {
 		hTimStr := "2000-01-02T03:04:05Z"
 
 		// --- When ---
-		wHave, hHave := formatDates(wTim, wTimStr, hTim, hTimStr)
+		hW, hH := formatDates(wTim, wTimStr, hTim, hTimStr)
 
 		// --- Then ---
 		want := "2001-01-02T02:04:05Z ( 2001-01-02T03:04:05+01:00 )"
-		affirm.Equal(t, want, wHave)
-		affirm.Equal(t, "2000-01-02T03:04:05Z", hHave)
+		affirm.Equal(t, want, hW)
+		affirm.Equal(t, "2000-01-02T03:04:05Z", hH)
 	})
 
 	t.Run("have date string is longer", func(t *testing.T) {
@@ -1124,27 +1118,27 @@ func Test_formatDates(t *testing.T) {
 		hTimStr := "2001-01-02T03:04:05+01:00"
 
 		// --- When ---
-		wHave, hHave := formatDates(wTim, wTimStr, hTim, hTimStr)
+		hW, hH := formatDates(wTim, wTimStr, hTim, hTimStr)
 
 		// --- Then ---
-		affirm.Equal(t, "2000-01-02T03:04:05Z", wHave)
+		affirm.Equal(t, "2000-01-02T03:04:05Z", hW)
 		want := "2001-01-02T02:04:05Z ( 2001-01-02T03:04:05+01:00 )"
-		affirm.Equal(t, want, hHave)
+		affirm.Equal(t, want, hH)
 	})
 }
 
 func Test_getTime(t *testing.T) {
-	t.Run("wrong time format", func(t *testing.T) {
+	t.Run("error - wrong time format", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTimeFormat(time.RFC3339)
 
 		// --- When ---
-		haveTim, haveStr, haveRep, err := getTime("2000-01-02", opt)
+		hTim, hStr, hRep, err := getTime("2000-01-02", opt)
 
 		// --- Then ---
-		affirm.Equal(t, true, haveTim.IsZero())
-		affirm.Equal(t, "2000-01-02", haveStr)
-		affirm.Equal(t, timeTypeStr, haveRep)
+		affirm.Equal(t, true, hTim.IsZero())
+		affirm.Equal(t, "2000-01-02", hStr)
+		affirm.Equal(t, timeTypeStr, hRep)
 		wMsg := "" +
 			"failed to parse time:\n" +
 			"  format: 2006-01-02T15:04:05Z07:00\n" +
@@ -1153,17 +1147,14 @@ func Test_getTime(t *testing.T) {
 		affirm.Equal(t, true, errors.Is(err, ErrTimeParse))
 	})
 
-	t.Run("empty option time format", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTimeFormat("")
-
+	t.Run("error - empty option time format", func(t *testing.T) {
 		// --- When ---
-		have, haveStr, haveRep, err := getTime("2000-01-02", opt)
+		have, hStr, hRep, err := getTime("2000-01-02", WithTimeFormat(""))
 
 		// --- Then ---
 		affirm.Equal(t, true, have.IsZero())
-		affirm.Equal(t, "2000-01-02", haveStr)
-		affirm.Equal(t, timeTypeStr, haveRep)
+		affirm.Equal(t, "2000-01-02", hStr)
+		affirm.Equal(t, timeTypeStr, hRep)
 		wMsg := "" +
 			"failed to parse time:\n" +
 			"  format: \n" +
@@ -1173,7 +1164,7 @@ func Test_getTime(t *testing.T) {
 		affirm.Equal(t, true, errors.Is(err, ErrTimeParse))
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- Given ---
 		opts := []any{
 			WithTimeFormat(time.RFC3339),
@@ -1181,12 +1172,12 @@ func Test_getTime(t *testing.T) {
 		}
 
 		// --- When ---
-		have, haveStr, haveRep, err := getTime("2000-01-02", opts...)
+		have, hStr, hRep, err := getTime("2000-01-02", opts...)
 
 		// --- Then ---
 		affirm.Equal(t, true, have.IsZero())
-		affirm.Equal(t, "2000-01-02", haveStr)
-		affirm.Equal(t, timeTypeStr, haveRep)
+		affirm.Equal(t, "2000-01-02", hStr)
+		affirm.Equal(t, timeTypeStr, hRep)
 		wMsg := "" +
 			"failed to parse time:\n" +
 			"   trail: type.field\n" +
@@ -1195,17 +1186,17 @@ func Test_getTime(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
-	t.Run("str-ts format with non-numeric value", func(t *testing.T) {
+	t.Run("error - str-ts format with non-numeric value", func(t *testing.T) {
 		// --- Given ---
 		opt := WithTimeFormat(TimeFormatUnixStr)
 
 		// --- When ---
-		haveTim, haveStr, haveRep, err := getTime("not-a-number", opt)
+		hTim, hStr, hRep, err := getTime("not-a-number", opt)
 
 		// --- Then ---
-		affirm.Equal(t, true, haveTim.IsZero())
-		affirm.Equal(t, "not-a-number", haveStr)
-		affirm.Equal(t, timeTypeStr, haveRep)
+		affirm.Equal(t, true, hTim.IsZero())
+		affirm.Equal(t, "not-a-number", hStr)
+		affirm.Equal(t, timeTypeStr, hRep)
 		wMsg := "" +
 			"failed to parse time:\n" +
 			"  format: str-ts\n" +
@@ -1214,14 +1205,14 @@ func Test_getTime(t *testing.T) {
 		affirm.Equal(t, true, errors.Is(err, ErrTimeParse))
 	})
 
-	t.Run("unsupported type", func(t *testing.T) {
+	t.Run("error - unsupported type", func(t *testing.T) {
 		// --- When ---
-		have, haveStr, haveRep, err := getTime(true)
+		have, hStr, hRep, err := getTime(true)
 
 		// --- Then ---
 		affirm.Equal(t, true, have.IsZero())
-		affirm.Equal(t, "true", haveStr)
-		affirm.Equal(t, "", haveRep)
+		affirm.Equal(t, "true", hStr)
+		affirm.Equal(t, "", hRep)
 		wMsg := "" +
 			"failed to parse time:\n" +
 			"  cause: not supported time type\n" +
@@ -1235,12 +1226,12 @@ func Test_getTime_success_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		opts    []any
-		have    any
-		haveStr string
-		haveRep timeRep
-		want    time.Time
-		wantTZ  *time.Location
+		opts []any
+		in   any
+		wStr string
+		wRep timeRep
+		wTim time.Time
+		wTZ  *time.Location
 	}{
 		{
 			"time Time in UTC",
@@ -1346,14 +1337,14 @@ func Test_getTime_success_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			haveTim, haveStr, haveRep, err := getTime(tc.have, tc.opts...)
+			hTim, hStr, hRep, err := getTime(tc.in, tc.opts...)
 
 			// --- Then ---
 			affirm.Nil(t, err)
-			affirm.Equal(t, tc.haveStr, haveStr)
-			affirm.Equal(t, tc.haveRep, haveRep)
-			affirm.Equal(t, true, tc.want.Equal(haveTim))
-			affirm.Equal(t, tc.wantTZ.String(), haveTim.Location().String())
+			affirm.Equal(t, tc.wStr, hStr)
+			affirm.Equal(t, tc.wRep, hRep)
+			affirm.Equal(t, true, tc.wTim.Equal(hTim))
+			affirm.Equal(t, tc.wTZ.String(), hTim.Location().String())
 		})
 	}
 }
@@ -1361,45 +1352,45 @@ func Test_getTime_success_tabular(t *testing.T) {
 func Test_getZone(t *testing.T) {
 	t.Run("timezone as string", func(t *testing.T) {
 		// --- When ---
-		haveZone, haveStr, haveRep, err := getZone("Europe/Warsaw")
+		hZone, hStr, hRep, err := getZone("Europe/Warsaw")
 
 		// --- Then ---
 		affirm.Nil(t, err)
-		affirm.Equal(t, zoneString, haveRep)
-		affirm.Equal(t, "Europe/Warsaw", haveStr)
-		affirm.Equal(t, testcases.WAW.String(), haveZone.String())
+		affirm.Equal(t, zoneString, hRep)
+		affirm.Equal(t, "Europe/Warsaw", hStr)
+		affirm.Equal(t, testcases.WAW.String(), hZone.String())
 	})
 
 	t.Run("timezone pointer instance", func(t *testing.T) {
 		// --- When ---
-		haveZone, haveStr, haveRep, err := getZone(testcases.WAW)
+		hZone, hStr, hRep, err := getZone(testcases.WAW)
 
 		// --- Then ---
 		affirm.Nil(t, err)
-		affirm.Equal(t, zoneZone, haveRep)
-		affirm.Equal(t, "Europe/Warsaw", haveStr)
-		affirm.Equal(t, testcases.WAW.String(), haveZone.String())
+		affirm.Equal(t, zoneZone, hRep)
+		affirm.Equal(t, "Europe/Warsaw", hStr)
+		affirm.Equal(t, testcases.WAW.String(), hZone.String())
 	})
 
 	t.Run("timezone instance", func(t *testing.T) {
 		// --- When ---
-		haveZone, haveStr, haveRep, err := getZone(*testcases.WAW)
+		hZone, hStr, hRep, err := getZone(*testcases.WAW)
 
 		// --- Then ---
 		affirm.Nil(t, err)
-		affirm.Equal(t, zoneZone, haveRep)
-		affirm.Equal(t, "Europe/Warsaw", haveStr)
-		affirm.Equal(t, testcases.WAW.String(), haveZone.String())
+		affirm.Equal(t, zoneZone, hRep)
+		affirm.Equal(t, "Europe/Warsaw", hStr)
+		affirm.Equal(t, testcases.WAW.String(), hZone.String())
 	})
 
-	t.Run("parsing error", func(t *testing.T) {
+	t.Run("error - parsing error", func(t *testing.T) {
 		// --- When ---
-		have, haveStr, haveRep, err := getZone("abc///")
+		have, hStr, hRep, err := getZone("abc///")
 
 		// --- Then ---
 		affirm.Nil(t, have)
-		affirm.Equal(t, "abc///", haveStr)
-		affirm.Equal(t, zoneString, haveRep)
+		affirm.Equal(t, "abc///", hStr)
+		affirm.Equal(t, zoneString, hRep)
 		wMsg := "" +
 			"failed to parse timezone:\n" +
 			"  value: abc///"
@@ -1407,14 +1398,14 @@ func Test_getZone(t *testing.T) {
 		affirm.Equal(t, true, errors.Is(err, ErrZoneParse))
 	})
 
-	t.Run("unsupported type", func(t *testing.T) {
+	t.Run("error - unsupported type", func(t *testing.T) {
 		// --- When ---
-		have, haveStr, haveRep, err := getZone(123)
+		have, hStr, hRep, err := getZone(123)
 
 		// --- Then ---
 		affirm.Nil(t, have)
-		affirm.Equal(t, "123", haveStr)
-		affirm.Equal(t, "", haveRep)
+		affirm.Equal(t, "123", hStr)
+		affirm.Equal(t, "", hRep)
 		wMsg := "" +
 			"failed to parse timezone:\n" +
 			"  cause: not supported timezone type\n" +
@@ -1425,27 +1416,26 @@ func Test_getZone(t *testing.T) {
 }
 
 func Test_getDur(t *testing.T) {
-	t.Run("invalid string duration", func(t *testing.T) {
+	t.Run("error - invalid string duration", func(t *testing.T) {
 		// --- When ---
-		haveDur, haveStr, haveRep, err := getDur("abc")
+		hDur, hStr, hRep, err := getDur("abc")
 
 		// --- Then ---
-		affirm.Equal(t, time.Duration(0), haveDur)
-		affirm.Equal(t, "abc", haveStr)
-		affirm.Equal(t, durTypeStr, haveRep)
-		wMsg := "failed to parse duration:\n  value: abc"
-		affirm.Equal(t, wMsg, err.Error())
+		affirm.Equal(t, time.Duration(0), hDur)
+		affirm.Equal(t, "abc", hStr)
+		affirm.Equal(t, durTypeStr, hRep)
+		affirm.Equal(t, "failed to parse duration:\n  value: abc", err.Error())
 		affirm.Equal(t, true, errors.Is(err, ErrDurParse))
 	})
 
 	t.Run("error - unsupported type", func(t *testing.T) {
 		// --- When ---
-		haveDur, haveStr, haveRep, err := getDur(true)
+		hDur, hStr, hRep, err := getDur(true)
 
 		// --- Then ---
-		affirm.Equal(t, time.Duration(0), haveDur)
-		affirm.Equal(t, "true", haveStr)
-		affirm.Equal(t, "", haveRep)
+		affirm.Equal(t, time.Duration(0), hDur)
+		affirm.Equal(t, "true", hStr)
+		affirm.Equal(t, "", hRep)
 		wMsg := "" +
 			"failed to parse duration:\n" +
 			"  cause: not supported duration type\n" +
@@ -1454,17 +1444,14 @@ func Test_getDur(t *testing.T) {
 		affirm.Equal(t, true, errors.Is(err, ErrDurType))
 	})
 
-	t.Run("log message with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
+	t.Run("error - log message with trail", func(t *testing.T) {
 		// --- When ---
-		haveDur, haveStr, haveRep, err := getDur(true, opt)
+		hDur, hStr, hRep, err := getDur(true, WithTrail("type.field"))
 
 		// --- Then ---
-		affirm.Equal(t, time.Duration(0), haveDur)
-		affirm.Equal(t, "true", haveStr)
-		affirm.Equal(t, "", haveRep)
+		affirm.Equal(t, time.Duration(0), hDur)
+		affirm.Equal(t, "true", hStr)
+		affirm.Equal(t, "", hRep)
 		wMsg := "" +
 			"failed to parse duration:\n" +
 			"  trail: type.field\n" +
@@ -1479,10 +1466,10 @@ func Test_getDur_success_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		have    any
-		haveStr string
-		haveRep durRep
-		want    time.Duration
+		in   any
+		wStr string
+		wRep durRep
+		wDur time.Duration
 	}{
 		{"time Duration", time.Second, "1s", durTypeDur, time.Second},
 		{"time Duration as string", "1s", "1s", durTypeStr, time.Second},
@@ -1494,7 +1481,7 @@ func Test_getDur_success_tabular(t *testing.T) {
 			time.Duration(12345678),
 		},
 		{
-			"time Duration as int",
+			"time Duration as int64",
 			int64(12345678),
 			"12345678",
 			durTypeInt64,
@@ -1505,13 +1492,13 @@ func Test_getDur_success_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			haveDur, haveStr, haveRep, err := getDur(tc.have)
+			hDur, hStr, hRep, err := getDur(tc.in)
 
 			// --- Then ---
 			affirm.Nil(t, err)
-			affirm.Equal(t, tc.want, haveDur)
-			affirm.Equal(t, tc.haveStr, haveStr)
-			affirm.Equal(t, tc.haveRep, haveRep)
+			affirm.Equal(t, tc.wDur, hDur)
+			affirm.Equal(t, tc.wStr, hStr)
+			affirm.Equal(t, tc.wRep, hRep)
 		})
 	}
 }

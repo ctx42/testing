@@ -45,11 +45,8 @@ func Test_Greater(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Greater(4, 2, opt)
+		err := Greater(4, 2, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -93,11 +90,8 @@ func Test_GreaterOrEqual(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := GreaterOrEqual(4, 2, opt)
+		err := GreaterOrEqual(4, 2, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -146,11 +140,8 @@ func Test_Smaller(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Smaller(2, 4, opt)
+		err := Smaller(2, 4, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -194,11 +185,8 @@ func Test_SmallerOrEqual(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := SmallerOrEqual(2, 4, opt)
+		err := SmallerOrEqual(2, 4, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -277,11 +265,8 @@ func Test_Delta(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Delta(42, 0.10, 47, opt)
+		err := Delta(42, 0.10, 47, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -354,7 +339,13 @@ func Test_Epsilon(t *testing.T) {
 		err := Epsilon(int64(1<<60), 0, int64(1<<60+1))
 
 		// --- Then ---
-		affirm.NotNil(t, err)
+		wMsg := "" +
+			"expected numbers to be within the given epsilon:\n" +
+			"          want: 1152921504606846976\n" +
+			"          have: 1152921504606846977\n" +
+			"  want epsilon: 0\n" +
+			"  have epsilon: 0.0000000000000000008673617379884035"
+		affirm.Equal(t, wMsg, err.Error())
 	})
 
 	t.Run("error - negative epsilon", func(t *testing.T) {
@@ -423,11 +414,8 @@ func Test_Epsilon(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Epsilon(42, 0.10, 47, opt)
+		err := Epsilon(42, 0.10, 47, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -572,10 +560,9 @@ func Test_Increasing(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		seq := []float64{1, 2, 2, 4}
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Increasing(seq, opt)
+		err := Increasing(seq, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -721,10 +708,9 @@ func Test_Decreasing(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
 		// --- Given ---
 		seq := []float64{4, 3, 3, 1}
-		opt := WithTrail("type.field")
 
 		// --- When ---
-		err := Decreasing(seq, opt)
+		err := Decreasing(seq, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)

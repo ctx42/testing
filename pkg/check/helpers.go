@@ -22,14 +22,6 @@ var (
 	typError   = reflect.TypeFor[error]()
 )
 
-// typeString returns a type of the value as a string.
-func typeString(val reflect.Value) string {
-	if !val.IsValid() {
-		return "<invalid>"
-	}
-	return val.Type().String()
-}
-
 // isPrintableChar returns true if "v" is a printable ASCII character.
 func isPrintableChar(v byte) bool {
 	return v >= 32 && v <= 126

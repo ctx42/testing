@@ -82,10 +82,8 @@ func Test_Same(t *testing.T) {
 		ptr0 := &testcases.TPtr{Val: "0"}
 		ptr1 := &testcases.TPtr{Val: "1"}
 
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Same(ptr0, ptr1, opt)
+		err := Same(ptr0, ptr1, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -113,13 +111,13 @@ func Test_Same_tabular(t *testing.T) {
 		same bool
 	}{
 		{"same ptr", ptr0, ptr0, true},
-		{"not same ptr", ptr0, ptr1, false},
+		{"error - not same ptr", ptr0, ptr1, false},
 		{"itf ptr", itfPtr0, itfPtr0, true},
 
-		{"not same itf ptr", itfPtr0, itfPtr1, false},
-		{"not same val", testcases.TVal{}, testcases.TVal{}, false},
+		{"error - not same itf ptr", itfPtr0, itfPtr1, false},
+		{"error - not same val", testcases.TVal{}, testcases.TVal{}, false},
 		{
-			"not same ptr different types",
+			"error - not same ptr different types",
 			&testcases.TPtr{},
 			&testcases.TVal{},
 			false,
@@ -132,10 +130,7 @@ func Test_Same_tabular(t *testing.T) {
 			have := Same(tc.p0, tc.p1)
 
 			// --- Then ---
-			if tc.same && have != nil {
-				format := "expected same values:\n  want: %#v\n  have: %#v"
-				t.Errorf(format, tc.p0, tc.p1)
-			}
+			affirm.Equal(t, tc.same, have == nil)
 		})
 	}
 }
@@ -174,10 +169,8 @@ func Test_NotSame(t *testing.T) {
 		// --- Given ---
 		ptr0 := &testcases.TPtr{Val: "0"}
 
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := NotSame(ptr0, ptr0, opt)
+		err := NotSame(ptr0, ptr0, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)

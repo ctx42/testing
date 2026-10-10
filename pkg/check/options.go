@@ -16,17 +16,17 @@ import (
 	"github.com/ctx42/testing/pkg/notice"
 )
 
-// Package wide default configuration.
+// Package-wide default configuration.
 const (
-	// DefaultParseTimeFormat is the default format for dumping [time.Time]
-	// values.
+	// DefaultParseTimeFormat is the default format for parsing time strings.
 	DefaultParseTimeFormat = time.RFC3339Nano
 
 	// DefaultRecentDuration is the default duration when comparing recent
 	// dates.
 	DefaultRecentDuration = 10 * time.Second
 
-	// DefaultDumpTimeFormat is the default format for parsing time strings.
+	// DefaultDumpTimeFormat is the default format for dumping [time.Time]
+	// values.
 	DefaultDumpTimeFormat = time.RFC3339Nano
 
 	// DefaultDumpDepth is the default depth when dumping values recursively in
@@ -126,7 +126,8 @@ func WithTrailLog(list *[]string) Option {
 	}
 }
 
-// WithTimeFormat is a [Checker] option setting time format when parsing dates.
+// WithTimeFormat is a [Checker] option setting the time format when parsing
+// dates.
 func WithTimeFormat(format string) Option {
 	return func(ops Options) Options {
 		ops.TimeFormat = format
@@ -134,7 +135,7 @@ func WithTimeFormat(format string) Option {
 	}
 }
 
-// WithZone is a [Checker] option which specifies the timezone to apply to the
+// WithZone is a [Checker] option that specifies the timezone to apply to the
 // "want" date before comparing times. It ensures consistent timezone handling
 // for string-based date inputs. For [time.Time] values, it calls
 // [time.Time.In] to adjust the timezone.
@@ -152,7 +153,7 @@ func WithZone(zone *time.Location) Option {
 	}
 }
 
-// WithRecent is a [Checker] option setting duration used to compare recent
+// WithRecent is a [Checker] option setting the duration used to compare recent
 // dates.
 func WithRecent(recent time.Duration) Option {
 	return func(ops Options) Options {
@@ -223,7 +224,7 @@ func WithSkipUnexported() Option {
 	}
 }
 
-// WithIncreasingSoft is an option used by [Increasing] check allowing
+// WithIncreasingSoft is an option used by the [Increasing] check allowing
 // consecutive values to be equal to each other.
 func WithIncreasingSoft() Option {
 	return func(ops Options) Options {
@@ -232,7 +233,7 @@ func WithIncreasingSoft() Option {
 	}
 }
 
-// WithDecreasingSoft is an option used by [Decreasing] check allowing
+// WithDecreasingSoft is an option used by the [Decreasing] check allowing
 // consecutive values to be equal to each other.
 func WithDecreasingSoft() Option {
 	return func(ops Options) Options {
@@ -305,7 +306,7 @@ func WithComment(format string, args ...any) Option {
 	}
 }
 
-// WithOptions is a [Checker] option which passes all options.
+// WithOptions is a [Checker] option that passes all options.
 func WithOptions(src Options) Option {
 	return func(ops Options) Options {
 		ops.Dumper = src.Dumper
@@ -328,12 +329,12 @@ func WithOptions(src Options) Option {
 	}
 }
 
-// Options represent options used by [Checker] functions.
+// Options represents options used by [Checker] functions.
 type Options struct {
 	// Dump configuration.
 	Dumper dump.Dump
 
-	// Time format when parsing time strings (default: [time.RFC3339]).
+	// Time format when parsing time strings (default: [time.RFC3339Nano]).
 	TimeFormat string
 
 	// See [WithZone].
@@ -346,7 +347,7 @@ type Options struct {
 	Trail string
 
 	// List of visited trails.
-	// The skipped trails have "<skipped>" suffix.
+	// The skipped trails have a "<skipped>" suffix.
 	TrailLog *[]string
 
 	// Custom checks to run for a given type.
@@ -458,12 +459,14 @@ func parseCheckArgs(opts ...any) (string, []any, []Option) {
 			chkOpts = append(chkOpts, a)
 		case Option:
 			chkOpts = append(chkOpts, a)
+
 		case string:
 			if cmtFmt == "" {
 				cmtFmt = a
 			} else {
 				cmtArgs = append(cmtArgs, a)
 			}
+
 		default:
 			if cmtFmt == "" {
 				panic("cannot use a non-string comment format")
@@ -519,7 +522,7 @@ func (ops Options) StructTrail(typeName, fldName string) Options {
 	return ops
 }
 
-// MapTrail updates [Options.Trail] with trail of the map value considering
+// MapTrail updates [Options.Trail] with the trail of the map value considering
 // already existing trails.
 //
 // Example trails:
@@ -540,7 +543,7 @@ func (ops Options) MapTrail(key string) Options {
 	return ops
 }
 
-// ArrTrail updates [Options.Trail] with slice or array index considering
+// ArrTrail updates [Options.Trail] with a slice or array index considering an
 // already existing trail.
 //
 // Example trails:
@@ -558,13 +561,14 @@ func (ops Options) ArrTrail(kind string, idx int) Options {
 
 // FieldName returns a helper function which updates [Options.Trail].
 //
-// It is useful when construction trails in custom struct checkers.
+// It is useful when constructing trails in custom struct checkers.
 //
 // Example:
 //
 //	func fileCheck(want, have any, opts ...any) error {
 //		ops := check.DefaultOptions(opts...)
-//		if err := check.Type(file{}, have, check.WithOptions(ops)); err != nil {
+//		err := check.Type(file{}, have, check.WithOptions(ops))
+//		if err != nil {
 //			return err
 //		}
 //		w, h := want.(file), have.(file)

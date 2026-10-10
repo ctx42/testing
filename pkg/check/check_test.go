@@ -14,11 +14,8 @@ import (
 
 func Test_Count(t *testing.T) {
 	t.Run("error - unsupported what type", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Count(1, 123, "ab cd ef", opt)
+		err := Count(1, 123, "ab cd ef", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -29,11 +26,8 @@ func Test_Count(t *testing.T) {
 	})
 
 	t.Run("error - unsupported where type", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Count(1, "ab", 123, opt)
+		err := Count(1, "ab", 123, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -44,11 +38,8 @@ func Test_Count(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Count(2, "a", "abc abc anc", opt)
+		err := Count(2, "a", "abc abc anc", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -129,11 +120,8 @@ func Test_SameType(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		have, err := SameType(42, 4.2, opt)
+		have, err := SameType(42, 4.2, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -218,11 +206,8 @@ func Test_SameType_error_tabular(t *testing.T) {
 
 func Test_NotSameType(t *testing.T) {
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := NotSameType(42, 42, opt)
+		err := NotSameType(42, 42, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -468,11 +453,8 @@ func Test_Fields(t *testing.T) {
 	})
 
 	t.Run("error - fails", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Fields(1, &testcases.TA{}, opt)
+		err := Fields(1, &testcases.TA{}, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -485,11 +467,8 @@ func Test_Fields(t *testing.T) {
 	})
 
 	t.Run("error - not struct", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Fields(1, 1, opt)
+		err := Fields(1, 1, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)

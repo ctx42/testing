@@ -13,17 +13,10 @@ import (
 
 // Empty checks that "have" is empty.
 //
-// Empty values are:
-//   - nil
-//   - int(0)
-//   - float64(0)
-//   - float32(0)
-//   - false
-//   - len(array) == 0
-//   - len(slice) == 0
-//   - len(map) == 0
-//   - len(chan) == 0
-//   - time.Time{}
+// Empty values are nil (including nil pointers, maps, slices, channels and
+// functions), zero values of other types, collections, channels and strings of
+// length zero, and pointers to empty values. See testcases.ZENValues for the
+// full matrix.
 //
 // See assert.Empty for the assertion form.
 func Empty(have any, opts ...any) error {
@@ -42,7 +35,7 @@ func isEmpty(have any) bool {
 	return isEmptyVisit(have, nil)
 }
 
-// isEmptyVisit implements [isEmpty]. The seen set holds the pointers already
+// isEmptyVisit implements isEmpty. The seen set holds the pointers already
 // followed, so a pointer cycle is reported as not empty.
 func isEmptyVisit(have any, seen map[uintptr]bool) bool {
 	if is := core.IsNil(have); is {

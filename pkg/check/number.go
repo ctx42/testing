@@ -203,7 +203,7 @@ func Epsilon[T, E constraints.Number](
 }
 
 // EpsilonSlice checks that the relative error between corresponding elements
-// of "want" and "have" is less than "epsilon".
+// of "want" and "have" is at most "epsilon".
 //
 //	|w[i]-h[i]|/|w[i]| <= epsilon
 //
@@ -358,13 +358,13 @@ func intAbsDiff[T constraints.Number](a, b T) (*big.Int, bool) {
 	var aInt, bInt big.Int
 	switch aVal.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		aInt.SetInt64(aVal.Int())
-		bInt.SetInt64(bVal.Int())
+		_ = aInt.SetInt64(aVal.Int())
+		_ = bInt.SetInt64(bVal.Int())
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32,
 		reflect.Uint64, reflect.Uintptr:
-		aInt.SetUint64(aVal.Uint())
-		bInt.SetUint64(bVal.Uint())
+		_ = aInt.SetUint64(aVal.Uint())
+		_ = bInt.SetUint64(bVal.Uint())
 
 	default:
 		return nil, false
@@ -377,7 +377,8 @@ func intAbsDiff[T constraints.Number](a, b T) (*big.Int, bool) {
 // the formatted want, have and difference, and whether the check passed. For
 // floating-point types, or a NaN delta, the formatted values are empty.
 func deltaInt[T constraints.Number](
-	want, have T,
+	want T,
+	have T,
 	delta float64,
 ) (string, string, string, bool) {
 
@@ -394,7 +395,8 @@ func deltaInt[T constraints.Number](
 // check passed. For floating-point types, or a NaN epsilon, the formatted
 // values are empty.
 func epsilonInt[T constraints.Number](
-	want, have T,
+	want T,
+	have T,
 	epsilon float64,
 ) (string, string, string, bool) {
 
@@ -412,7 +414,7 @@ func epsilonInt[T constraints.Number](
 		return wantFmt, haveFmt, formatFloat(math.Inf(1)), false
 	}
 	rel := new(big.Float).SetPrec(256).SetInt(diff)
-	rel.Quo(rel, new(big.Float).SetPrec(256).SetInt(wAbs))
+	_ = rel.Quo(rel, new(big.Float).SetPrec(256).SetInt(wAbs))
 	pass := big.NewFloat(epsilon).Cmp(rel) >= 0
 	relFlt, _ := rel.Float64()
 	return wantFmt, haveFmt, formatFloat(relFlt), pass

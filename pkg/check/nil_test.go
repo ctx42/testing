@@ -32,11 +32,8 @@ func Test_Nil(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Nil(42, opt)
+		err := Nil(42, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -64,16 +61,12 @@ func Test_NotNil(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected non-nil value"
-		affirm.Equal(t, wMsg, err.Error())
+		affirm.Equal(t, "expected non-nil value", err.Error())
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := NotNil(nil, opt)
+		err := NotNil(nil, WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)

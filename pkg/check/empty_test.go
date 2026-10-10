@@ -45,11 +45,8 @@ func Test_Empty(t *testing.T) {
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := Empty("abc", opt)
+		err := Empty("abc", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)
@@ -69,10 +66,7 @@ func Test_Empty_tabular(t *testing.T) {
 			err := Empty(tc.Val)
 
 			// --- Then ---
-			if have := err == nil; tc.IsEmpty != have {
-				format := "expected Empty to accept %#v: %v\n  have: %v"
-				t.Errorf(format, tc.Val, tc.IsEmpty, err)
-			}
+			affirm.Equal(t, tc.IsEmpty, err == nil)
 		})
 	}
 }
@@ -92,16 +86,12 @@ func Test_NotEmpty(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
-		wMsg := "expected non-empty value"
-		affirm.Equal(t, wMsg, err.Error())
+		affirm.Equal(t, "expected non-empty value", err.Error())
 	})
 
 	t.Run("error - with trail", func(t *testing.T) {
-		// --- Given ---
-		opt := WithTrail("type.field")
-
 		// --- When ---
-		err := NotEmpty("", opt)
+		err := NotEmpty("", WithTrail("type.field"))
 
 		// --- Then ---
 		affirm.NotNil(t, err)

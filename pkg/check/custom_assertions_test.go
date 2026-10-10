@@ -77,8 +77,8 @@ func Test_AssertTA(t *testing.T) {
 
 		// --- When ---
 		have := AssertTA(tspy, w, h)
-		// --- Then ---
 
+		// --- Then ---
 		affirm.Equal(t, false, have)
 	})
 
