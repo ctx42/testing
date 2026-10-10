@@ -170,7 +170,7 @@ func ExampleEqual_customTypeChecker() {
 	chk := func(want, have any, opts ...any) error {
 		w := want.(T)
 		h := have.(T)
-		return check.Epsilon(w.value, h.value, 0.001, opts...)
+		return check.Epsilon(w.value, 0.001, h.value, opts...)
 	}
 
 	opt := check.WithTypeChecker(T{}, chk)

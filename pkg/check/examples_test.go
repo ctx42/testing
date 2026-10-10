@@ -193,7 +193,7 @@ func ExampleEqual_customTrailChecker() {
 
 	chk := func(want, have any, opts ...any) error {
 		wVal := want.(float64)
-		hVal := want.(float64)
+		hVal := have.(float64)
 		return check.Epsilon(wVal, 0.01, hVal, opts...)
 	}
 	opt := check.WithTrailChecker("T.Any[1]", chk)
@@ -214,7 +214,7 @@ func ExampleEqual_customTypeChecker() {
 	chk := func(want, have any, opts ...any) error {
 		w := want.(T)
 		h := have.(T)
-		return check.Epsilon(w.value, h.value, 0.001, opts...)
+		return check.Epsilon(w.value, 0.001, h.value, opts...)
 	}
 
 	opt := check.WithTypeChecker(T{}, chk)
