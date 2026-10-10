@@ -4,12 +4,9 @@
 package dump
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 	"unsafe"
@@ -24,16 +21,13 @@ import (
 func Test_RegisterTypeDumper(t *testing.T) {
 	t.Setenv("___", "___")
 	affirm.Nil(t, typeDumpers)
-	origLog := globLog
-	buf := &bytes.Buffer{}
-	globLog = log.New(buf, "", 0)
 	dmp := func(Dump, int, reflect.Value) string { return "123456" }
-	t.Cleanup(func() { globLog = origLog; typeDumpers = nil })
+	t.Cleanup(func() { typeDumpers = nil })
 
 	t.Run("is registered", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
-		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
+		t.Cleanup(func() { typeDumpers = nil })
 
 		// --- When ---
 		RegisterTypeDumper(custom{}, dmp)
@@ -42,14 +36,12 @@ func Test_RegisterTypeDumper(t *testing.T) {
 		affirm.Equal(t, 1, len(typeDumpers))
 		wChk := core.Same(dmp, typeDumpers[reflect.TypeFor[custom]()])
 		affirm.Equal(t, true, wChk)
-		wMsg := "Registering type dumper for: dump.custom\n"
-		affirm.Equal(t, wMsg, buf.String())
 	})
 
 	t.Run("error - already registered", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
-		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
+		t.Cleanup(func() { typeDumpers = nil })
 		typeDumpers = map[reflect.Type]Dumper{reflect.TypeFor[custom](): dmp}
 
 		// --- When ---
@@ -57,15 +49,14 @@ func Test_RegisterTypeDumper(t *testing.T) {
 		msg := affirm.Panic(t, fn)
 
 		// --- Then ---
-		wMsg := "cannot overwrite an existing type dumper"
-		affirm.Equal(t, true, strings.Contains(*msg, wMsg))
-		affirm.Equal(t, "", buf.String())
+		wMsg := "cannot overwrite an existing type dumper for: dump.custom"
+		affirm.Equal(t, wMsg, *msg)
 	})
 
 	t.Run("concurrent with New", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
-		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
+		t.Cleanup(func() { typeDumpers = nil })
 		done := make(chan struct{})
 		go func() {
 			defer close(done)
@@ -85,7 +76,7 @@ func Test_RegisterTypeDumper(t *testing.T) {
 	t.Run("error - nil dumper", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
-		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
+		t.Cleanup(func() { typeDumpers = nil })
 
 		// --- When ---
 		fn := func() { RegisterTypeDumper(custom{}, nil) }
@@ -93,7 +84,6 @@ func Test_RegisterTypeDumper(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "cannot register a nil type dumper", *msg)
-		affirm.Equal(t, "", buf.String())
 	})
 }
 
@@ -214,16 +204,13 @@ func Test_WithTabWidth(t *testing.T) {
 func Test_WithDumper(t *testing.T) {
 	t.Setenv("___", "___")
 	affirm.Nil(t, typeDumpers)
-	origLog := globLog
-	buf := &bytes.Buffer{}
-	globLog = log.New(buf, "", 0)
 	cDpr := func(Dump, int, reflect.Value) string { return "123456" }
-	t.Cleanup(func() { globLog = origLog; typeDumpers = nil })
+	t.Cleanup(func() { typeDumpers = nil })
 
 	t.Run("setting", func(t *testing.T) {
 		// --- Given ---
 		dmp := &Dump{Dumpers: make(map[reflect.Type]Dumper)}
-		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
+		t.Cleanup(func() { typeDumpers = nil })
 
 		// --- When ---
 		WithDumper(123, cDpr)(dmp)
@@ -231,17 +218,15 @@ func Test_WithDumper(t *testing.T) {
 		// --- Then ---
 		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[int]()])
 		affirm.Equal(t, true, wChk)
-		affirm.Equal(t, "", buf.String())
 	})
 
 	t.Run("overwriting global checker", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
 		dmp := &Dump{Dumpers: make(map[reflect.Type]Dumper)}
-		t.Cleanup(func() { typeDumpers = nil; buf.Reset() })
+		t.Cleanup(func() { typeDumpers = nil })
 
-		RegisterTypeDumper(custom{}, cDpr) // The first call.
-		buf.Reset()                        // Test later the log is empty.
+		RegisterTypeDumper(custom{}, cDpr)
 
 		// --- When ---
 		WithDumper(custom{}, cDpr)(dmp)
@@ -249,8 +234,6 @@ func Test_WithDumper(t *testing.T) {
 		// --- Then ---
 		wChk := core.Same(cDpr, dmp.Dumpers[reflect.TypeFor[custom]()])
 		affirm.Equal(t, true, wChk)
-		wMsg := "Overwriting the global type dumper for: dump.custom\n"
-		affirm.Equal(t, wMsg, buf.String())
 	})
 
 	t.Run("nil dumper removes the custom dumper", func(t *testing.T) {

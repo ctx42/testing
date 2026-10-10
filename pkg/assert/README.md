@@ -365,30 +365,9 @@ func init() {
 }
 ```
 
-#### Log Messages
-
-When a global checker is successfully registered you will see a line like this
-in the test output (the exact path and line will vary):
-
-```log
-*** CHECK /path/to/your/package/all_test.go:42: Registering type checker for: pkg.MyType
-```
-
-When `check.WithTypeChecker` is used for a type that already has a global
-checker, the following warning is logged (the global checker is **not**
-replaced):
-
-```log
-*** CHECK /path/to/your/test/file_test.go:17: Overwriting the global type checker for: pkg.MyType
-```
-
-These log messages are emitted via an internal package logger and are useful
-for debugging unexpected checker behavior during test runs.
-
-> **Note**: This section documents setup patterns and side-effect logging
-> rather than pure assertion usage. The examples are therefore shown as
-> illustrative code rather than executable `Example*` functions.
-```
+> **Note**: This section documents setup patterns rather than pure
+> assertion usage. The examples are therefore shown as illustrative code
+> rather than executable `Example*` functions.
 
 ### Skipping Fields, Elements, or Indexes
 

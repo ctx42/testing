@@ -5,9 +5,7 @@ package check
 
 import (
 	"fmt"
-	"log"
 	"maps"
-	"os"
 	"reflect"
 	"slices"
 	"strconv"
@@ -17,9 +15,6 @@ import (
 	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/notice"
 )
-
-// globLog is a global logger used package-wide.
-var globLog = log.New(os.Stderr, "*** CHECK ", log.Llongfile)
 
 // Package wide default configuration.
 const (
@@ -99,11 +94,10 @@ func RegisterTypeChecker(typ any, chk Checker) {
 		typeCheckers = make(map[reflect.Type]Checker)
 	}
 	rt := reflect.TypeOf(typ)
-	msg := fmt.Sprintf("Registering type checker for: %s", rt)
 	if _, ok := typeCheckers[rt]; ok {
-		panic("cannot overwrite an existing type checker: " + msg)
+		format := "cannot overwrite an existing type checker for: %s"
+		panic(fmt.Sprintf(format, rt))
 	}
-	_ = globLog.Output(2, msg)
 	typeCheckers[rt] = chk
 }
 
@@ -182,14 +176,6 @@ func WithDumper(optsD ...dump.Option) Option {
 // See the Design section in the root README for the customization model.
 func WithTypeChecker(typ any, chk Checker) Option {
 	rt := reflect.TypeOf(typ)
-	typeCheckersMx.RLock()
-	_, global := typeCheckers[rt]
-	typeCheckersMx.RUnlock()
-	if global {
-		// Logged once, attributed to the caller of WithTypeChecker.
-		format := "Overwriting the global type checker for: %s"
-		_ = globLog.Output(2, fmt.Sprintf(format, rt))
-	}
 	return func(ops Options) Options {
 		ops.TypeCheckers = maps.Clone(ops.TypeCheckers)
 		if ops.TypeCheckers == nil {

@@ -35,9 +35,7 @@ package dump
 
 import (
 	"fmt"
-	"log"
 	"maps"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -47,9 +45,6 @@ import (
 	"github.com/ctx42/testing/internal/core"
 	"github.com/ctx42/testing/internal/diff"
 )
-
-// globLog is a global logger used package-wide.
-var globLog = log.New(os.Stderr, "*** DUMP ", log.Llongfile)
 
 // Special sentinel strings that appear in rendered output for values that
 // cannot be printed in the normal way or that carry semantic meaning.
@@ -170,9 +165,8 @@ var (
 // all values of the given type by default (across all [New] calls that
 // do not override it with [WithDumper]).
 //
-// It panics if a dumper for the same type is already registered. The
-// registration is logged to stderr for visibility into overrides. It is safe
-// to call concurrently with [New].
+// It panics if a dumper for the same type is already registered. It is safe to
+// call concurrently with [New].
 func RegisterTypeDumper(typ any, dmp Dumper) {
 	if dmp == nil {
 		panic("cannot register a nil type dumper")
@@ -183,11 +177,10 @@ func RegisterTypeDumper(typ any, dmp Dumper) {
 		typeDumpers = make(map[reflect.Type]Dumper)
 	}
 	rt := reflect.TypeOf(typ)
-	msg := fmt.Sprintf("Registering type dumper for: %s", rt)
 	if _, ok := typeDumpers[rt]; ok {
-		panic("cannot overwrite an existing type dumper: " + msg)
+		format := "cannot overwrite an existing type dumper for: %s"
+		panic(fmt.Sprintf(format, rt))
 	}
-	_ = globLog.Output(2, msg)
 	typeDumpers[rt] = dmp
 }
 
@@ -233,13 +226,6 @@ func WithTimeFormat(format string) Option {
 func WithDumper(typ any, dumper Dumper) Option {
 	return func(dmp *Dump) {
 		rt := reflect.TypeOf(typ)
-		typeDumpersMx.RLock()
-		_, global := typeDumpers[rt]
-		typeDumpersMx.RUnlock()
-		if global {
-			format := "Overwriting the global type dumper for: %s"
-			_ = globLog.Output(2, fmt.Sprintf(format, rt))
-		}
 		if dumper == nil {
 			delete(dmp.Dumpers, rt)
 			return

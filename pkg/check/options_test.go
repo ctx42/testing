@@ -4,11 +4,8 @@
 package check
 
 import (
-	"bytes"
 	"errors"
-	"log"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
@@ -22,16 +19,13 @@ import (
 func Test_RegisterTypeChecker(t *testing.T) {
 	t.Setenv("___", "___")
 	affirm.Nil(t, typeCheckers)
-	origLog := globLog
-	buf := &bytes.Buffer{}
-	globLog = log.New(buf, "", 0)
 	chk := func(_, _ any, _ ...any) error { return errors.New("123456") }
-	t.Cleanup(func() { globLog = origLog; typeCheckers = nil })
+	t.Cleanup(func() { typeCheckers = nil })
 
 	t.Run("is registered", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
-		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
+		t.Cleanup(func() { typeCheckers = nil })
 
 		// --- When ---
 		RegisterTypeChecker(custom{}, chk)
@@ -40,14 +34,12 @@ func Test_RegisterTypeChecker(t *testing.T) {
 		affirm.Equal(t, 1, len(typeCheckers))
 		wChk := core.Same(chk, typeCheckers[reflect.TypeFor[custom]()])
 		affirm.Equal(t, true, wChk)
-		wMsg := "Registering type checker for: check.custom\n"
-		affirm.Equal(t, wMsg, buf.String())
 	})
 
 	t.Run("panics if already registered", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
-		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
+		t.Cleanup(func() { typeCheckers = nil })
 		typeCheckers = map[reflect.Type]Checker{reflect.TypeFor[custom](): chk}
 
 		// --- When ---
@@ -55,15 +47,14 @@ func Test_RegisterTypeChecker(t *testing.T) {
 		msg := affirm.Panic(t, fn)
 
 		// --- Then ---
-		wMsg := "cannot overwrite an existing type checker"
-		affirm.Equal(t, true, strings.Contains(*msg, wMsg))
-		affirm.Equal(t, "", buf.String())
+		wMsg := "cannot overwrite an existing type checker for: check.custom"
+		affirm.Equal(t, wMsg, *msg)
 	})
 
 	t.Run("concurrent with checks", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
-		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
+		t.Cleanup(func() { typeCheckers = nil })
 		done := make(chan struct{})
 		go func() {
 			defer close(done)
@@ -83,7 +74,7 @@ func Test_RegisterTypeChecker(t *testing.T) {
 	t.Run("panics if the checker is nil", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
-		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
+		t.Cleanup(func() { typeCheckers = nil })
 
 		// --- When ---
 		fn := func() { RegisterTypeChecker(custom{}, nil) }
@@ -91,7 +82,6 @@ func Test_RegisterTypeChecker(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "cannot register a nil type checker", *msg)
-		affirm.Equal(t, "", buf.String())
 	})
 }
 
@@ -168,16 +158,13 @@ func Test_WithDumper(t *testing.T) {
 func Test_WithTypeChecker(t *testing.T) {
 	t.Setenv("___", "___")
 	affirm.Nil(t, typeCheckers)
-	origLog := globLog
-	buf := &bytes.Buffer{}
-	globLog = log.New(buf, "", 0)
 	cChk := func(_, _ any, _ ...any) error { return errors.New("123456") }
-	t.Cleanup(func() { globLog = origLog; typeCheckers = nil })
+	t.Cleanup(func() { typeCheckers = nil })
 
 	t.Run("setting", func(t *testing.T) {
 		// --- Given ---
 		ops := Options{}
-		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
+		t.Cleanup(func() { typeCheckers = nil })
 
 		// --- When ---
 		have := WithTypeChecker(123, cChk)(ops)
@@ -185,17 +172,14 @@ func Test_WithTypeChecker(t *testing.T) {
 		// --- Then ---
 		wChk := core.Same(cChk, have.TypeCheckers[reflect.TypeFor[int]()])
 		affirm.Equal(t, true, wChk)
-		affirm.Equal(t, "", buf.String())
 	})
 
 	t.Run("overwriting global checker", func(t *testing.T) {
 		// --- Given ---
 		type custom struct{}
-		t.Cleanup(func() { typeCheckers = nil; buf.Reset() })
+		t.Cleanup(func() { typeCheckers = nil })
 
-		RegisterTypeChecker(custom{}, cChk) // The first call.
-		buf.Reset()                         // Test later the log is empty.
-
+		RegisterTypeChecker(custom{}, cChk)
 		ops := Options{}
 
 		// --- When ---
@@ -204,8 +188,6 @@ func Test_WithTypeChecker(t *testing.T) {
 		// --- Then ---
 		wChk := core.Same(cChk, have.TypeCheckers[reflect.TypeFor[custom]()])
 		affirm.Equal(t, true, wChk)
-		wMsg := "Overwriting the global type checker for: check.custom\n"
-		affirm.Equal(t, wMsg, buf.String())
 	})
 }
 
