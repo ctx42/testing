@@ -261,6 +261,18 @@ func Test_New(t *testing.T) {
 		want := "ExpectHelpers cnt must be greater or equal to minus one"
 		affirm.Equal(t, want, *msg)
 	})
+
+	t.Run("more than one Helper calls value panics", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		// --- When ---
+		msg := affirm.Panic(t, func() { New(ti, 1, 2) })
+
+		// --- Then ---
+		affirm.NotNil(t, msg)
+		affirm.Equal(t, "New accepts at most one expectHelpers value", *msg)
+	})
 }
 
 func Test_New_auto_finish(t *testing.T) {
@@ -330,6 +342,21 @@ func Test_Spy_ExpectCleanups(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, have)
 		affirm.Equal(t, errExpectOnFinished, *have)
+		affirm.Equal(t, true, spy.panicked)
+	})
+
+	t.Run("error - negative count panics", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+		spy := New(ti, 0)
+
+		// --- When ---
+		msg := affirm.Panic(t, func() { spy.ExpectCleanups(-1) })
+
+		// --- Then ---
+		affirm.NotNil(t, msg)
+		want := "ExpectCleanups cnt must be greater or equal to zero"
+		affirm.Equal(t, want, *msg)
 		affirm.Equal(t, true, spy.panicked)
 	})
 }
@@ -1372,6 +1399,21 @@ func Test_Spy_ExpectTempDir(t *testing.T) {
 		affirm.Equal(t, errExpectOnFinished, *have)
 		affirm.Equal(t, true, spy.panicked)
 	})
+
+	t.Run("error - count less than minus one panics", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+		spy := New(ti, 0)
+
+		// --- When ---
+		msg := affirm.Panic(t, func() { spy.ExpectTempDir(-2) })
+
+		// --- Then ---
+		affirm.NotNil(t, msg)
+		want := "ExpectTempDir cnt must be greater or equal to minus one"
+		affirm.Equal(t, want, *msg)
+		affirm.Equal(t, true, spy.panicked)
+	})
 }
 
 func Test_Spy_GetTempDir(t *testing.T) {
@@ -1739,16 +1781,19 @@ func Test_Spy_ExpectLog(t *testing.T) {
 		affirm.Equal(t, true, spy == have)
 	})
 
-	t.Run("does not add empty messages", func(t *testing.T) {
+	t.Run("adds empty messages", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
 		spy := New(ti, 0)
 
 		// --- When ---
-		have := spy.ExpectLog(Contains, "")
+		have := spy.ExpectLog(Equal, "")
 
 		// --- Then ---
-		affirm.Equal(t, 0, len(spy.wantLogMsgs))
+		affirm.Equal(t, 1, len(spy.wantLogMsgs))
+		ent := spy.wantLogMsgs[0]
+		affirm.Equal(t, Equal, ent.strategy)
+		affirm.Equal(t, "", ent.want)
 		affirm.Equal(t, true, spy == have)
 	})
 
@@ -2495,6 +2540,21 @@ func Test_Spy_ExpectNames(t *testing.T) {
 		// --- Then ---
 		affirm.NotNil(t, have)
 		affirm.Equal(t, errExpectOnFinished, *have)
+		affirm.Equal(t, true, spy.panicked)
+	})
+
+	t.Run("error - negative count panics", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+		spy := New(ti, 0)
+
+		// --- When ---
+		msg := affirm.Panic(t, func() { spy.ExpectNames(-1) })
+
+		// --- Then ---
+		affirm.NotNil(t, msg)
+		want := "ExpectNames cnt must be greater or equal to zero"
+		affirm.Equal(t, want, *msg)
 		affirm.Equal(t, true, spy.panicked)
 	})
 }
@@ -3746,6 +3806,30 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 			"expected Helper to be called N times:\n" +
 			"\twant: >= 1\n" +
 			"\thave: 0"
+		assertSpyHasMsg(t, spy, 0, wMsg)
+	})
+
+	t.Run("ExpectLog - empty message - fail", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.ExpectLogEqual("")
+		spy.Close()
+		spy.Log("msg")
+		spy.Finish()
+
+		// --- When ---
+		have := spy.AssertExpectations()
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, true, ti.Failed())
+		wMsg := "" +
+			"expected HUT to log message 0:\n" +
+			"\tmatcher: equal\n" +
+			"\t   want: \"\"\n" +
+			"\t   have: \"msg\""
 		assertSpyHasMsg(t, spy, 0, wMsg)
 	})
 }

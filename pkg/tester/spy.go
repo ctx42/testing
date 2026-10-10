@@ -299,9 +299,13 @@ type Spy struct {
 //	tspy.AssertExpectations()
 //
 // The optional expectHelpers argument is a convenience for the common case
-// of wanting an exact number of Helper calls; see [Spy.ExpectHelpers].
+// of wanting an exact number of Helper calls; see [Spy.ExpectHelpers]. New
+// panics when given more than one value.
 func New(tt *testing.T, expectHelpers ...int) *Spy {
 	tt.Helper()
+	if len(expectHelpers) > 1 {
+		panic("New accepts at most one expectHelpers value")
+	}
 	spy := &Spy{tt: tt, wantHelperCnt: -1}
 	tt.Cleanup(spy.cleanup)
 	if len(expectHelpers) > 0 {
@@ -311,11 +315,16 @@ func New(tt *testing.T, expectHelpers ...int) *Spy {
 }
 
 // ExpectCleanups declares how many times the helper under test must call
-// Cleanup. Use 0 to assert that no cleanups were registered.
+// Cleanup. Use 0 to assert that no cleanups were registered. Panics when cnt
+// is negative.
 func (spy *Spy) ExpectCleanups(cnt int) *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
 	spy.tt.Helper()
+	if cnt < 0 {
+		spy.panicked = true
+		panic("ExpectCleanups cnt must be greater or equal to zero")
+	}
 	spy.checkState(expectCall)
 	spy.wantCleanupsCnt = cnt
 	return spy
@@ -498,11 +507,15 @@ func (spy *Spy) Skip(args ...any) {
 }
 
 // ExpectTempDir declares how many times TempDir must be called. -1 means
-// "any number of times" (including zero).
+// "any number of times" (including zero). Panics when cnt is less than -1.
 func (spy *Spy) ExpectTempDir(cnt int) *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
 	spy.tt.Helper()
+	if cnt < -1 {
+		spy.panicked = true
+		panic("ExpectTempDir cnt must be greater or equal to minus one")
+	}
 	spy.checkState(expectCall)
 	spy.wantTempDirCnt = cnt
 	return spy
@@ -576,6 +589,8 @@ func (spy *Spy) IgnoreLogs() *Spy {
 
 // ExpectLog declares that the helper under test must produce a log message
 // (via Log or Logf) that matches the given strategy and formatted string.
+// The msg is formatted with [fmt.Sprintf] only when args are given, so
+// without args it is used verbatim. An empty msg is recorded like any other.
 // Panics if [Spy.IgnoreLogs] was already called.
 func (spy *Spy) ExpectLog(matcher Strategy, msg string, args ...any) *Spy {
 	spy.mx.Lock()
@@ -588,9 +603,6 @@ func (spy *Spy) ExpectLog(matcher Strategy, msg string, args ...any) *Spy {
 	}
 	if len(args) > 0 {
 		msg = fmt.Sprintf(msg, args...)
-	}
-	if msg == "" {
-		return spy
 	}
 	ent := find{
 		strategy: matcher,
@@ -691,10 +703,15 @@ func (spy *Spy) ExamineLog() string {
 }
 
 // ExpectNames declares how many times Name must be called on the spy.
+// Panics when cnt is negative.
 func (spy *Spy) ExpectNames(cnt int) *Spy {
 	spy.mx.Lock()
 	defer spy.mx.Unlock()
 	spy.tt.Helper()
+	if cnt < 0 {
+		spy.panicked = true
+		panic("ExpectNames cnt must be greater or equal to zero")
+	}
 	spy.checkState(expectCall)
 	spy.wantNamesCnt = cnt
 	return spy
