@@ -39,7 +39,7 @@ func WithData(data map[string]any) func(*Goldy) {
 }
 
 // bom is the UTF-8 byte order mark.
-var bom = []byte("\xef\xbb\xbf")
+const bom = "\xef\xbb\xbf"
 
 // Goldy represents a golden file. Build it with [Open] or [Create]; the zero
 // value is not usable.
@@ -96,16 +96,15 @@ func Open(t tester.T, pth string, opts ...func(*Goldy)) *Goldy {
 			return nil
 		}
 		if first {
-			line = bytes.TrimPrefix(line, bom)
+			line = bytes.TrimPrefix(line, []byte(bom))
 		}
 		line = crlfToLF(line)
 		if !started {
 			started = isMarker(line)
 			if !started {
 				if eof {
-					m := strings.TrimSpace(Marker)
 					format := "the golden file %s is missing the %q marker"
-					t.Fatalf(format, pth, m)
+					t.Fatalf(format, pth, strings.TrimSpace(Marker))
 					return nil
 				}
 				gld.comment += string(line)
@@ -137,11 +136,12 @@ func Create(t tester.T, pth string) *Goldy {
 	dir := filepath.Dir(pth)
 	inf, err := os.Stat(dir)
 	if err != nil {
-		t.Fatalf("error creating file: %v", err)
+		t.Fatalf("error checking golden file directory: %v", err)
 		return nil
 	}
 	if !inf.IsDir() {
-		t.Fatalf("error creating file: %s is not a directory", dir)
+		format := "error checking golden file directory: %s is not a directory"
+		t.Fatalf(format, dir)
 		return nil
 	}
 
@@ -198,12 +198,12 @@ func (gld *Goldy) Save() {
 	}
 
 	buf := &bytes.Buffer{}
-	buf.WriteString(comment)
-	buf.WriteString(Marker)
+	_, _ = buf.WriteString(comment)
+	_, _ = buf.WriteString(Marker)
 	if gld.isTpl {
-		buf.Write(gld.tpl)
+		_, _ = buf.Write(gld.tpl)
 	} else {
-		buf.Write(gld.content)
+		_, _ = buf.Write(gld.content)
 	}
 	if err := os.WriteFile(gld.pth, buf.Bytes(), 0o600); err != nil {
 		gld.t.Errorf("error writing golden file (%s): %v", gld.pth, err)
@@ -236,12 +236,4 @@ func (gld *Goldy) renderTemplate() *Goldy {
 // spaces, tabs and the line ending.
 func isMarker(line []byte) bool {
 	return string(bytes.TrimRight(line, " \t\r\n")) == strings.TrimSpace(Marker)
-}
-
-// crlfToLF replaces a trailing CRLF line ending with LF.
-func crlfToLF(line []byte) []byte {
-	if bytes.HasSuffix(line, []byte("\r\n")) {
-		line = append(line[:len(line)-2], '\n')
-	}
-	return line
 }

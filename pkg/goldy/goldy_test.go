@@ -24,6 +24,7 @@ func Test_WithData(t *testing.T) {
 
 	// --- Then ---
 	affirm.Equal(t, true, core.Same(data, gld.data))
+	affirm.Equal(t, true, gld.isTpl)
 }
 
 func Test_Open(t *testing.T) {
@@ -335,38 +336,43 @@ func Test_Create(t *testing.T) {
 
 	t.Run("error - directory does not exist", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectFatal()
 		dir := filepath.Join(t.TempDir(), "not-existing-dir")
 		pth := filepath.Join(dir, "empty.gld")
+
+		tspy := tester.New(t)
+		tspy.ExpectFatal()
 		wMsg := "" +
-			"error creating file: stat " + dir +
+			"error checking golden file directory: stat " + dir +
 			": no such file or directory"
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
 		// --- When ---
-		msg := affirm.Panic(t, func() { Create(tspy, pth) })
+		have := affirm.Panic(t, func() { Create(tspy, pth) })
 
 		// --- Then ---
-		affirm.Equal(t, tester.FailNowMsg, *msg)
+		affirm.Equal(t, tester.FailNowMsg, *have)
 	})
 
 	t.Run("error - parent is not a directory", func(t *testing.T) {
 		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectFatal()
 		dir := filepath.Join(t.TempDir(), "file")
 		must.Nil(os.WriteFile(dir, nil, 0o600))
 		pth := filepath.Join(dir, "empty.gld")
-		tspy.ExpectLogEqual("error creating file: %s is not a directory", dir)
+
+		tspy := tester.New(t)
+		tspy.ExpectFatal()
+		wMsg := "" +
+			"error checking golden file directory: " + dir +
+			" is not a directory"
+		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
 		// --- When ---
-		msg := affirm.Panic(t, func() { Create(tspy, pth) })
+		have := affirm.Panic(t, func() { Create(tspy, pth) })
 
 		// --- Then ---
-		affirm.Equal(t, tester.FailNowMsg, *msg)
+		affirm.Equal(t, tester.FailNowMsg, *have)
 	})
 }
 
@@ -476,6 +482,7 @@ func Test_Goldy_Save(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, "---\ncontent", string(must.Value(os.ReadFile(pth))))
+
 		have := Open(tspy, pth)
 		affirm.Equal(t, "", have.comment)
 		affirm.Equal(t, "content", have.String())
@@ -483,10 +490,12 @@ func Test_Goldy_Save(t *testing.T) {
 
 	t.Run("error - comment with marker line", func(t *testing.T) {
 		// --- Given ---
+		pth := filepath.Join(t.TempDir(), "golden.gld")
+
 		tspy := tester.New(t)
 		tspy.ExpectError()
-		pth := filepath.Join(t.TempDir(), "golden.gld")
-		wMsg := "golden file (" + pth + ") comment must not contain " +
+		wMsg := "" +
+			"golden file (" + pth + ") comment must not contain " +
 			"the \"---\" marker"
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
@@ -519,9 +528,8 @@ func Test_Goldy_Save(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
-		have := must.Value(os.ReadFile(pth))
 		want := "Comment 1.\nComment 2.\n---\ncontent 1\ncontent 2\n"
-		affirm.Equal(t, want, string(have))
+		affirm.Equal(t, want, string(must.Value(os.ReadFile(pth))))
 	})
 
 	t.Run("when a template", func(t *testing.T) {
@@ -545,9 +553,8 @@ func Test_Goldy_Save(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
-		have := must.Value(os.ReadFile(pth))
 		want := "comment\n---\ncontent {{ .first }}"
-		affirm.Equal(t, want, string(have))
+		affirm.Equal(t, want, string(must.Value(os.ReadFile(pth))))
 	})
 
 	t.Run("comment lines do not end with a new line", func(t *testing.T) {
@@ -568,17 +575,18 @@ func Test_Goldy_Save(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, false, tspy.Failed())
-		have := must.Value(os.ReadFile(pth))
 		want := "Comment 1.\nComment 2.\n---\ncontent 1\ncontent 2\n"
-		affirm.Equal(t, want, string(have))
+		affirm.Equal(t, want, string(must.Value(os.ReadFile(pth))))
 	})
 
 	t.Run("error - when the file cannot be written", func(t *testing.T) {
 		// --- Given ---
+		pth := filepath.Join(t.TempDir(), "sub-dir", "golden.gld")
+
 		tspy := tester.New(t)
 		tspy.ExpectError()
-		pth := filepath.Join(t.TempDir(), "sub-dir", "golden.gld")
-		wMsg := "error writing golden file (" + pth + "): open " + pth +
+		wMsg := "" +
+			"error writing golden file (" + pth + "): open " + pth +
 			": no such file or directory"
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
@@ -592,18 +600,45 @@ func Test_Goldy_Save(t *testing.T) {
 
 		// --- When ---
 		gld.Save()
+
+		// --- Then ---
+		affirm.Equal(t, true, tspy.Failed())
 	})
+}
+
+func Test_isMarker_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		line string
+		want bool
+	}{
+		{"marker", "---\n", true},
+		{"marker without line ending", "---", true},
+		{"marker with crlf", "---\r\n", true},
+		{"marker with trailing space", "--- \t\n", true},
+		{"leading space", " ---\n", false},
+		{"longer", "----\n", false},
+		{"other text", "abc\n", false},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := isMarker([]byte(tc.line))
+
+			// --- Then ---
+			affirm.Equal(t, tc.want, have)
+		})
+	}
 }
 
 // Benchmarks for goldy I/O and templating hot paths.
 
-func Benchmark_Goldy_Open_Small(b *testing.B) {
-	dir := b.TempDir()
-	pth := filepath.Join(dir, "small.gld")
+func Benchmark_Open_Small(b *testing.B) {
+	pth := filepath.Join(b.TempDir(), "small.gld")
 	content := "header comment\n---\nline1\nline2\n"
-	if err := os.WriteFile(pth, []byte(content), 0o644); err != nil {
-		b.Fatal(err)
-	}
+	must.Nil(os.WriteFile(pth, []byte(content), 0o600))
 
 	b.ReportAllocs()
 	for b.Loop() {
@@ -612,13 +647,10 @@ func Benchmark_Goldy_Open_Small(b *testing.B) {
 	}
 }
 
-func Benchmark_Goldy_Open_WithTemplate(b *testing.B) {
-	dir := b.TempDir()
-	pth := filepath.Join(dir, "tpl.gld")
+func Benchmark_Open_WithTemplate(b *testing.B) {
+	pth := filepath.Join(b.TempDir(), "tpl.gld")
 	content := "data for {{.Name}}\n---\nHello {{.Name}}!\n"
-	if err := os.WriteFile(pth, []byte(content), 0o644); err != nil {
-		b.Fatal(err)
-	}
+	must.Nil(os.WriteFile(pth, []byte(content), 0o600))
 
 	data := map[string]any{"Name": "World"}
 
@@ -630,8 +662,7 @@ func Benchmark_Goldy_Open_WithTemplate(b *testing.B) {
 }
 
 func Benchmark_Goldy_Save(b *testing.B) {
-	dir := b.TempDir()
-	pth := filepath.Join(dir, "out.gld")
+	pth := filepath.Join(b.TempDir(), "out.gld")
 
 	b.ReportAllocs()
 	for b.Loop() {
