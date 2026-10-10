@@ -1012,7 +1012,7 @@ func (spy *Spy) assertHelperCalls(want, have int) bool {
 func (spy *Spy) assertLogMgs(wants []find, haves []string) bool {
 	spy.tt.Helper()
 	haveStr := strings.Join(haves, "\n")
-	if haveStr != "" && len(wants) == 0 {
+	if len(haves) > 0 && len(wants) == 0 {
 		if spy.ignoreLog {
 			return true
 		}

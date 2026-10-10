@@ -3746,6 +3746,27 @@ func Test_Spy_AssertExpectations(t *testing.T) {
 		assertSpyHasMsg(t, spy, 0, wMsg)
 	})
 
+	t.Run("error - empty message when no logs expected", func(t *testing.T) {
+		// --- Given ---
+		ti := &testing.T{}
+
+		spy := New(ti, 0)
+		spy.Close()
+		spy.Log()
+		spy.Finish()
+
+		// --- When ---
+		have := spy.AssertExpectations()
+
+		// --- Then ---
+		affirm.Equal(t, false, have)
+		affirm.Equal(t, true, ti.Failed())
+		wMsg := "" +
+			"expected HUT to log no messages but got:\n" +
+			"\thave: \"\""
+		assertSpyHasMsg(t, spy, 0, wMsg)
+	})
+
 	t.Run("do not care if messages were logged", func(t *testing.T) {
 		// --- Given ---
 		ti := &testing.T{}
