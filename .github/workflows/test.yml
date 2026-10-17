@@ -16,6 +16,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  C42_CC_RUN_ID: github-${{ github.repository }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
