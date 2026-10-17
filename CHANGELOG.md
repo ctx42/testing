@@ -1,3 +1,6 @@
+## v0.57.1 (Sat, 17 Oct 2026 22:00:00 UTC)
+- ci: set C42_CC_RUN_ID in the workflow environment.
+
 ## v0.57.0 (Sat, 10 Oct 2026 13:54:57 UTC)
 - fix(core): return pointee address from Pointer.
 - fix(core): keep named simple types in Value.
