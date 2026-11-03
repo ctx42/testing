@@ -4,6 +4,7 @@
 package mocker
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/ctx42/testing/pkg/assert"
@@ -97,6 +98,137 @@ func Test_method_generateOn(t *testing.T) {
 		// --- Then ---
 		assert.Equal(t, goldy.Open(t, gfp).String(), have)
 	})
+
+	t.Run("wrapped", func(t *testing.T) {
+		// --- Given ---
+		one := strings.Repeat("a", 30)
+		two := strings.Repeat("b", 30)
+		met := &method{
+			name: "Long",
+			args: []argument{{name: one, typ: "int"}, {name: two, typ: "bool"}},
+		}
+
+		// --- When ---
+		have := met.generateOn("M")
+
+		// --- Then ---
+		want := "" +
+			"// OnLong expects a call of [M.Long] with the arguments.\n" +
+			"func (_mck *M) OnLong(\n" +
+			"\t" + one + " any,\n" +
+			"\t" + two + " any,\n" +
+			") *mock.Call {\n" +
+			"\n" +
+			"\t_mck.t.Helper()\n"
+		assert.True(t, strings.HasPrefix(have, want))
+	})
+}
+
+func Test_method_genDoc(t *testing.T) {
+	t.Run("no returns", func(t *testing.T) {
+		// --- Given ---
+		met := &method{name: "Close"}
+
+		// --- When ---
+		have := met.genDoc()
+
+		// --- Then ---
+		assert.Equal(t, "// Close records a call of Close.\n", have)
+	})
+
+	t.Run("with returns", func(t *testing.T) {
+		// --- Given ---
+		met := &method{name: "Count", rets: []argument{{typ: "int"}}}
+
+		// --- When ---
+		have := met.genDoc()
+
+		// --- Then ---
+		want := "" +
+			"// Count records a call of Count and returns its set results.\n"
+		assert.Equal(t, want, have)
+	})
+}
+
+func Test_wrapSig_tabular(t *testing.T) {
+	head := "func (_mck *M) Method("
+	arg80 := strings.Repeat("a", 51) + " int" // Signature with " {": 80.
+	arg81 := strings.Repeat("a", 52) + " int" // Signature with " {": 81.
+	long := strings.Repeat("M", 70)
+
+	tt := []struct {
+		testN string
+
+		head string
+		args []string
+		tail string
+		want string
+	}{
+		{
+			"fits at 80 columns",
+			head,
+			[]string{arg80},
+			")",
+			head + arg80 + ") {\n",
+		},
+		{
+			"wraps at 81 columns",
+			head,
+			[]string{arg81},
+			")",
+			head + "\n\t" + arg81 + ",\n) {\n\n",
+		},
+		{
+			"long without arguments",
+			"func (_mck *M) " + long + "(",
+			nil,
+			") int",
+			"func (_mck *M) " + long + "() int {\n",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := wrapSig(tc.head, tc.args, tc.tail)
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
+}
+
+func Test_method_genArgList(t *testing.T) {
+	// --- Given ---
+	met := &method{
+		args: []argument{
+			{name: "x", typ: "int"},
+			{name: "", typ: "string"},
+			{name: "y", typ: "...bool"},
+		},
+	}
+
+	// --- When ---
+	have := met.genArgList()
+
+	// --- Then ---
+	assert.Equal(t, []string{"x int", "_a1 string", "y ...bool"}, have)
+}
+
+func Test_method_genAnyArgList(t *testing.T) {
+	// --- Given ---
+	met := &method{
+		args: []argument{
+			{name: "x", typ: "int"},
+			{name: "y", typ: "...bool"},
+		},
+	}
+
+	// --- When ---
+	have := met.genAnyArgList()
+
+	// --- Then ---
+	assert.Equal(t, []string{"x any", "y ...any"}, have)
 }
 
 func Test_method_genReceiver(t *testing.T) {
@@ -876,7 +1008,7 @@ func Test_method_genReturnBody(t *testing.T) {
 
 	t.Run("one return", func(t *testing.T) {
 		// --- Given ---
-		met := &method{rets: []argument{{typ: "int"}}}
+		met := &method{name: "Count", rets: []argument{{typ: "int"}}}
 
 		// --- When ---
 		have := met.genReturnBody(1)
@@ -884,10 +1016,14 @@ func Test_method_genReturnBody(t *testing.T) {
 		// --- Then ---
 		want := "" +
 			"\tvar _r0 int\n" +
-			"\tif _rFn, _ok := _rets.Get(0).(func() int); _ok {\n" +
-			"\t\t_r0 = _rFn()\n" +
-			"\t} else if _r := _rets.Get(0); _r != nil {\n" +
-			"\t\t_r0 = _r.(int)\n" +
+			"\tswitch _v := _rets.Get(0).(type) {\n" +
+			"\tcase func() int:\n" +
+			"\t\t_r0 = _v()\n" +
+			"\tcase int:\n" +
+			"\t\t_r0 = _v\n" +
+			"\tcase nil:\n" +
+			"\tdefault:\n" +
+			"\t\t_mck.t.Fatalf(\"Count return 0 is %T, not int\", _v)\n" +
 			"\t}"
 		assert.Equal(t, want, have)
 	})
@@ -909,10 +1045,14 @@ func Test_method_genSingleRet_tabular(t *testing.T) {
 			0,
 			[]string{
 				"var _r1 int",
-				"if _rFn, _ok := _rets.Get(1).(func() int); _ok {",
-				"\t_r1 = _rFn()",
-				"} else if _r := _rets.Get(1); _r != nil {",
-				"\t_r1 = _r.(int)",
+				"switch _v := _rets.Get(1).(type) {",
+				"case func() int:",
+				"\t_r1 = _v()",
+				"case int:",
+				"\t_r1 = _v",
+				"case nil:",
+				"default:",
+				"\t_mck.t.Fatalf(\"Method return 1 is %T, not int\", _v)",
 				"}",
 			},
 		},
@@ -925,10 +1065,14 @@ func Test_method_genSingleRet_tabular(t *testing.T) {
 			0,
 			[]string{
 				"var _r1 int",
-				"if _rFn, _ok := _rets.Get(1).(func(int) int); _ok {",
-				"\t_r1 = _rFn(a)",
-				"} else if _r := _rets.Get(1); _r != nil {",
-				"\t_r1 = _r.(int)",
+				"switch _v := _rets.Get(1).(type) {",
+				"case func(int) int:",
+				"\t_r1 = _v(a)",
+				"case int:",
+				"\t_r1 = _v",
+				"case nil:",
+				"default:",
+				"\t_mck.t.Fatalf(\"Method return 1 is %T, not int\", _v)",
 				"}",
 			},
 		},
@@ -939,10 +1083,11 @@ func Test_method_genSingleRet_tabular(t *testing.T) {
 			0,
 			[]string{
 				"var _r1 any",
-				"if _rFn, _ok := _rets.Get(1).(func() any); _ok {",
-				"\t_r1 = _rFn()",
-				"} else if _r := _rets.Get(1); _r != nil {",
-				"\t_r1 = _r",
+				"switch _v := _rets.Get(1).(type) {",
+				"case func() any:",
+				"\t_r1 = _v()",
+				"default:",
+				"\t_r1 = _v",
 				"}",
 			},
 		},
@@ -951,7 +1096,7 @@ func Test_method_genSingleRet_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- Given ---
-			met := &method{args: tc.args}
+			met := &method{name: "Method", args: tc.args}
 
 			// --- When ---
 			have := met.genSingleRet(1, tc.ret, tc.indent)

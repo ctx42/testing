@@ -1,5 +1,6 @@
 On helper for method with couple of arguments.
 ---
+// OnMethod expects a call of [MyMock.Method] with the arguments.
 func (_mck *MyMock) OnMethod(a any, b any) *mock.Call {
 	_mck.t.Helper()
 	_args := []any{a, b}

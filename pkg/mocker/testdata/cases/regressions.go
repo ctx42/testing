@@ -54,3 +54,17 @@ type CaseItfAliasImp = io.Reader
 
 // Interface declared as a defined type of an imported interface.
 type CaseItfDefinedImp fmt.Stringer
+
+// Parameter named like the type switch value of the generated returns.
+type CaseSwitchParam interface{ V(_v int) int }
+
+// Parameters named like predeclared identifiers the generated code uses.
+type CasePredeclaredParam interface {
+	V(nil int, len int, error bool) error
+}
+
+// Local type used by CaseLocalTypeParam.
+type key int
+
+// Parameter named like a source package type its method uses.
+type CaseLocalTypeParam interface{ Get(key key) key }

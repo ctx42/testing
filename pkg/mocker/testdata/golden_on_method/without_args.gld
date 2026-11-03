@@ -1,5 +1,6 @@
 On helper for method without arguments.
 ---
+// OnMethod expects a call of [MyMock.Method].
 func (_mck *MyMock) OnMethod() *mock.Call {
 	_mck.t.Helper()
 	var _args []any

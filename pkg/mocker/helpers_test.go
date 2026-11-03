@@ -309,16 +309,75 @@ func Test_dedupeImports(t *testing.T) {
 func Test_renameShadowingArgs(t *testing.T) {
 	// --- Given ---
 	pkg := &gopkg{pkgName: "url", pkgPath: "net/url"}
-	met := &method{args: []argument{{name: "url"}, {name: "any"}, {name: "a"}}}
+	met := &method{
+		args: []argument{
+			{name: "url"},
+			{name: "any"},
+			{name: "a"},
+			{name: "nil"},
+			{name: "len"},
+			{name: "error"},
+		},
+	}
+	local := &method{
+		args: []argument{
+			{name: "key", typ: "key"},
+			{name: "Tx", typ: "int"},
+			{name: "b", typ: "int"},
+		},
+		rets: []argument{{typ: "map[key]pkg.Tx"}},
+	}
 	imps := []*gopkg{pkg, nil}
-	mts := []*method{met}
+	mts := []*method{met, local}
 
 	// --- When ---
 	renameShadowingArgs(imps, mts)
 
 	// --- Then ---
-	want := []argument{{name: ""}, {name: ""}, {name: "a"}}
+	want := []argument{
+		{name: ""},
+		{name: ""},
+		{name: "a"},
+		{name: ""},
+		{name: ""},
+		{name: ""},
+	}
 	assert.Equal(t, want, met.args)
+
+	want = []argument{
+		{name: "", typ: "key"},
+		{name: "", typ: "int"},
+		{name: "b", typ: "int"},
+	}
+	assert.Equal(t, want, local.args)
+}
+
+func Test_typeIdents_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		typ  string
+		want []string
+	}{
+		{"empty", "", nil},
+		{"predeclared", "int", []string{"int"}},
+		{"local", "key", []string{"key"}},
+		{"qualified", "*pkg.Tx", []string{"pkg", "Tx"}},
+		{"map", "map[key]pkg.Tx", []string{"key", "pkg", "Tx"}},
+		{"func", "func(int, ...bool) error", []string{"int", "bool", "error"}},
+		{"chan", "<-chan struct{}", nil},
+		{"array len", `[len("a")]byte`, []string{"len", "byte"}},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := typeIdents(tc.typ)
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
 }
 
 func Test_resolveImportNameClashes(t *testing.T) {

@@ -7,6 +7,8 @@ import (
 	"bytes"
 	"fmt"
 	"go/build"
+	"go/scanner"
+	"go/token"
 	"os"
 	"path"
 	"path/filepath"
@@ -181,21 +183,69 @@ func dedupeImports(imps []*gopkg, methods []*method) []*gopkg {
 	return out
 }
 
+// predeclared are Go's predeclared identifiers: an argument with one of
+// these names would shadow it in the generated method body, which uses
+// nil, len, append and the return types.
+var predeclared = []string{
+	"any", "bool", "byte", "comparable", "complex64", "complex128",
+	"error", "float32", "float64", "int", "int8", "int16", "int32",
+	"int64", "rune", "string", "uint", "uint8", "uint16", "uint32",
+	"uint64", "uintptr", "true", "false", "iota", "nil", "append", "cap",
+	"clear", "close", "complex", "copy", "delete", "imag", "len", "make",
+	"max", "min", "new", "panic", "print", "println", "real", "recover",
+}
+
 // renameShadowingArgs clears the names of method arguments equal to an
-// import identity or "any", so the generated code names them _aN instead of
-// shadowing the package or the predeclared type in the method body.
+// import identity, a predeclared identifier, or an identifier in the
+// method's argument and return types, so the generated code names them _aN
+// instead of shadowing the package, type or built-in in the method body.
 func renameShadowingArgs(imps []*gopkg, methods []*method) {
-	reserved := map[string]bool{"any": true}
+	reserved := make(map[string]bool, len(predeclared)+len(imps))
+	for _, name := range predeclared {
+		reserved[name] = true
+	}
 	for _, pkg := range imps {
 		if pkg != nil && pkg.pkgPath != "" {
 			reserved[pkg.ident()] = true
 		}
 	}
 	for _, met := range methods {
+		inTypes := make(map[string]bool)
+		for _, args := range [][]argument{met.args, met.rets} {
+			for _, arg := range args {
+				for _, name := range typeIdents(arg.typ) {
+					inTypes[name] = true
+				}
+			}
+		}
 		for i := range met.args {
-			if reserved[met.args[i].name] {
+			name := met.args[i].name
+			if reserved[name] || inTypes[name] {
 				met.args[i].name = ""
 			}
+		}
+	}
+}
+
+// typeIdents returns the identifiers in the type text: the names of the
+// types, packages and built-ins it refers to.
+//
+// Example:
+//
+//	map[key]pkg.Tx -> []string{"key", "pkg", "Tx"}
+func typeIdents(typ string) []string {
+	var sca scanner.Scanner
+	fset := token.NewFileSet()
+	src := []byte(typ)
+	sca.Init(fset.AddFile("", fset.Base(), len(src)), src, nil, 0)
+	var out []string
+	for {
+		_, tok, lit := sca.Scan()
+		if tok == token.EOF {
+			return out
+		}
+		if tok == token.IDENT {
+			out = append(out, lit)
 		}
 	}
 }

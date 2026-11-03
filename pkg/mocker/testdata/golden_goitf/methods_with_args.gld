@@ -1,11 +1,13 @@
 Two simple methods with arguments and no return values.
 ---
+// Method0 records a call of Method0.
 func (_mck *MyMock) Method0(a int) {
 	_mck.t.Helper()
 	_args := []any{a}
 	_mck.Called(_args...)
 }
 
+// Method1 records a call of Method1.
 func (_mck *MyMock) Method1(a string, b ...int) {
 	_mck.t.Helper()
 	_args := []any{a}

@@ -5,8 +5,14 @@ package mocker
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"unicode/utf8"
 )
+
+// maxLine is the widest a generated line may be before a signature is
+// broken one argument per line.
+const maxLine = 80
 
 // method represents an interface method.
 type method struct {
@@ -28,8 +34,14 @@ type method struct {
 //			_mck.t.Fatal("the number of mocked method returns does not match")
 //		}
 func (met *method) generate(recType string) string {
-	code := met.genSig(recType, true)
-	code += " {\n\t_mck.t.Helper()\n"
+	head := "func " + met.genReceiver(recType) + " " + met.name + "("
+	tail := ")"
+	if rets := met.genRets(); rets != "" {
+		tail += " " + rets
+	}
+	code := met.genDoc()
+	code += wrapSig(head, met.genArgList(), tail)
+	code += "\t_mck.t.Helper()\n"
 	code += met.genCalled()
 	code += met.genRetCheck()
 	retBody := met.genReturnBody(1)
@@ -43,12 +55,76 @@ func (met *method) generate(recType string) string {
 
 // generateOn generates code for the method's "OnXXX" helper.
 func (met *method) generateOn(typ string) string {
-	code := met.genOnSig(typ)
-	code += " {\n\t_mck.t.Helper()\n"
+	format := "// On%s expects a call of [%s.%s].\n"
+	if len(met.args) > 0 {
+		format = "// On%s expects a call of [%s.%s] with the arguments.\n"
+	}
+	code := fmt.Sprintf(format, met.name, typ, met.name)
+	head := "func " + met.genReceiver(typ) + " On" + met.name + "("
+	code += wrapSig(head, met.genAnyArgList(), ") *mock.Call")
+	code += "\t_mck.t.Helper()\n"
 	code += met.genArgSlice()
 	code += fmt.Sprintf("\treturn _mck.On(%q, _args...)\n", met.name)
 	code += "}"
 	return code
+}
+
+// genDoc generates the method's godoc line.
+//
+// Examples:
+//
+//	// Method records a call of Method.
+//	// Method records a call of Method and returns its set results.
+func (met *method) genDoc() string {
+	if len(met.rets) == 0 {
+		return fmt.Sprintf("// %s records a call of %[1]s.\n", met.name)
+	}
+	format := "// %s records a call of %[1]s and returns its set results.\n"
+	return fmt.Sprintf(format, met.name)
+}
+
+// wrapSig returns the signature made of the head up to the opening
+// parenthesis, the args, and the tail from the closing parenthesis,
+// opening a method's body: on one line when it fits [maxLine], else with
+// one argument per line and a blank line opening the body.
+func wrapSig(head string, args []string, tail string) string {
+	sig := head + strings.Join(args, ", ") + tail
+	if utf8.RuneCountInString(sig+" {") <= maxLine || len(args) == 0 {
+		return sig + " {\n"
+	}
+	return head + "\n\t" + strings.Join(args, ",\n\t") + ",\n" +
+		tail + " {\n\n"
+}
+
+// genArgList returns the method's arguments, each with its name and type.
+//
+// Example:
+//
+//	[]string{"x int", "y ...bool"}
+func (met *method) genArgList() []string {
+	out := make([]string, 0, len(met.args))
+	for i, arg := range met.args {
+		out = append(out, arg.genName(i)+" "+arg.typ)
+	}
+	return out
+}
+
+// genAnyArgList returns the method's arguments with "any" types, as
+// [method.genAnyArgs] writes them.
+//
+// Example:
+//
+//	[]string{"x any", "y ...any"}
+func (met *method) genAnyArgList() []string {
+	out := make([]string, 0, len(met.args))
+	for i, arg := range met.args {
+		typ := "any"
+		if arg.isVariadic() {
+			typ = "...any"
+		}
+		out = append(out, arg.genName(i)+" "+typ)
+	}
+	return out
 }
 
 // genReceiver generates code for the method's receiver where "typ" represents
@@ -293,21 +369,24 @@ func (met *method) genRetCheck() string {
 	return code
 }
 
-// genReturnBody generates code for mocked method return arguments.
+// genReturnBody generates code for mocked method return arguments, one
+// [method.genSingleRet] block each.
 //
 // Example:
 //
 //	var _r0 pkg.Tx
-//	if _rFn, _ok := _rets.Get(0).(func() pkg.Tx); _ok {
-//		_r0 = _rFn()
-//	} else if _r := _rets.Get(0); _r != nil {
-//		_r0 = _r.(pkg.Tx)
+//	switch _v := _rets.Get(0).(type) {
+//	case func() pkg.Tx:
+//		_r0 = _v()
+//	case pkg.Tx:
+//		_r0 = _v
+//	case nil:
+//	default:
+//		_mck.t.Fatalf("Method return 0 is %T, not pkg.Tx", _v)
 //	}
 //	var _r1 error
-//	if _rFn, _ok := _rets.Get(1).(func() error); _ok {
-//		_r1 = _rFn()
-//	} else if _r := _rets.Get(1); _r != nil {
-//		_r1 = _r.(error)
+//	switch _v := _rets.Get(1).(type) {
+//	...
 //	}
 func (met *method) genReturnBody(indent int) string {
 	if len(met.rets) == 0 {
@@ -321,45 +400,52 @@ func (met *method) genReturnBody(indent int) string {
 	return strings.Join(lines, "\n")
 }
 
-// genSingleRet generates code for mocked method single return argument.
+// genSingleRet generates code for mocked method single return argument: a
+// function of the method's arguments is called, a value of the type taken,
+// a nil left as the zero value, and any other value fails the test.
 //
 // Example:
 //
 //	var _r0 pkg.Tx
-//	if _rFn, _ok := _rets.Get(0).(func(pkg.Tx) pkg.Tx); _ok {
-//		_r0 = _rFn(a)
-//	} else if _r := _rets.Get(0); _r != nil {
-//		_r0 = _r.(pkg.Tx)
+//	switch _v := _rets.Get(0).(type) {
+//	case func(pkg.Tx) pkg.Tx:
+//		_r0 = _v(a)
+//	case pkg.Tx:
+//		_r0 = _v
+//	case nil:
+//	default:
+//		_mck.t.Fatalf("Method return 0 is %T, not pkg.Tx", _v)
 //	}
 func (met *method) genSingleRet(idx int, ret argument, indent int) []string {
 	ind := strings.Repeat("\t", indent)
-	lines := make([]string, 0, 5)
-
-	// Declare variable.
-	lines = append(lines, fmt.Sprintf("%svar _r%d %s", ind, idx, ret.typ))
-
-	// Check if Get returns a function.
-	codeFnTyp := fmt.Sprintf("func%s %s", met.genArgTypes(), ret.typ)
-	format := "%sif _rFn, _ok := _rets.Get(%d).(%s); _ok {"
-	code := fmt.Sprintf(format, ind, idx, codeFnTyp)
-	lines = append(lines, code)
-
-	// If function call.
 	argNames := strings.Join(met.argNames(), ", ")
-	code = fmt.Sprintf("%s\t_r%d = _rFn(%s)", ind, idx, argNames)
-	lines = append(lines, code)
-
-	// Else cast.
-	code = fmt.Sprintf("%s} else if _r := _rets.Get(%d); _r != nil {", ind, idx)
-	lines = append(lines, code)
-	if ret.typ == "any" {
-		code = fmt.Sprintf("%s\t_r%d = _r", ind, idx)
-	} else {
-		code = fmt.Sprintf("%s\t_r%d = _r.(%s)", ind, idx, ret.typ)
+	codeFnTyp := fmt.Sprintf("func%s %s", met.genArgTypes(), ret.typ)
+	lines := []string{
+		fmt.Sprintf("%svar _r%d %s", ind, idx, ret.typ),
+		fmt.Sprintf("%sswitch _v := _rets.Get(%d).(type) {", ind, idx),
+		fmt.Sprintf("%scase %s:", ind, codeFnTyp),
+		fmt.Sprintf("%s\t_r%d = _v(%s)", ind, idx, argNames),
 	}
-	lines = append(lines, code, ind+"}")
-
-	return lines
+	if ret.typ == "any" {
+		return append(lines,
+			ind+"default:",
+			fmt.Sprintf("%s\t_r%d = _v", ind, idx),
+			ind+"}",
+		)
+	}
+	// The message is a Go string literal holding a format: quote it, and
+	// keep a "%" of the type text from reading as a verb.
+	typ := strings.ReplaceAll(ret.typ, "%", "%%")
+	msg := strconv.Quote(fmt.Sprintf("%s return %d is %%T, not %s",
+		met.name, idx, typ))
+	return append(lines,
+		fmt.Sprintf("%scase %s:", ind, ret.typ),
+		fmt.Sprintf("%s\t_r%d = _v", ind, idx),
+		ind+"case nil:",
+		ind+"default:",
+		fmt.Sprintf("%s\t_mck.t.Fatalf(%s, _v)", ind, msg),
+		ind+"}",
+	)
 }
 
 // genReturn generates code for the method return line. Returns an empty string

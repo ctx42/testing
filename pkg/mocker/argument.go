@@ -38,11 +38,11 @@ func (arg argument) genName(idx int) string {
 }
 
 // isGenLocal reports whether name is reserved for mock method body locals
-// (_mck, _args, _rets, _rN, …). User parameters with those names would
-// produce invalid Go if kept as-is.
+// (_mck, _args, _rets, _rN, the type switch's _v, …). User parameters with
+// those names would produce invalid Go if kept as-is.
 func isGenLocal(name string) bool {
 	switch name {
-	case "_mck", "_args", "_arg", "_rets", "_r", "_rFn", "_ok", "_elem":
+	case "_mck", "_args", "_arg", "_rets", "_r", "_rFn", "_ok", "_elem", "_v":
 		return true
 	}
 	if len(name) < 3 || name[0] != '_' {

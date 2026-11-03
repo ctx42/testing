@@ -363,6 +363,14 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 		{"CaseItfDefined", "CaseItfDefined", "cases", "golden"},
 		{"CaseItfAliasImp", "CaseItfAliasImp", "cases", "golden"},
 		{"CaseItfDefinedImp", "CaseItfDefinedImp", "cases", "golden"},
+		{"CaseSwitchParam", "CaseSwitchParam", "cases", "golden"},
+		{"CasePredeclaredParam", "CasePredeclaredParam", "cases", "golden"},
+		{
+			"CaseLocalTypeParam_dst_cases",
+			"CaseLocalTypeParam",
+			"cases",
+			"cases",
+		},
 	}
 
 	for _, tc := range tt {

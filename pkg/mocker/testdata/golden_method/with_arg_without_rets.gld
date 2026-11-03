@@ -1,5 +1,6 @@
 Method with single argument and without return values.
 ---
+// Method records a call of Method.
 func (_mck *MyMock) Method(a int) {
 	_mck.t.Helper()
 	_args := []any{a}

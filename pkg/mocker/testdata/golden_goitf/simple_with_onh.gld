@@ -1,11 +1,13 @@
 Simple single method without arguments nor return values. With OnXXX helper.
 ---
+// Method0 records a call of Method0.
 func (_mck *MyMock) Method0() {
 	_mck.t.Helper()
 	var _args []any
 	_mck.Called(_args...)
 }
 
+// OnMethod0 expects a call of [MyMock.Method0].
 func (_mck *MyMock) OnMethod0() *mock.Call {
 	_mck.t.Helper()
 	var _args []any

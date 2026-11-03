@@ -1,5 +1,6 @@
 Method without arguments and with single return value.
 ---
+// Method records a call of Method and returns its set results.
 func (_mck *MyMock) Method() error {
 	_mck.t.Helper()
 	var _args []any
@@ -9,10 +10,14 @@ func (_mck *MyMock) Method() error {
 	}
 
 	var _r0 error
-	if _rFn, _ok := _rets.Get(0).(func() error); _ok {
-		_r0 = _rFn()
-	} else if _r := _rets.Get(0); _r != nil {
-		_r0 = _r.(error)
+	switch _v := _rets.Get(0).(type) {
+	case func() error:
+		_r0 = _v()
+	case error:
+		_r0 = _v
+	case nil:
+	default:
+		_mck.t.Fatalf("Method return 0 is %T, not error", _v)
 	}
 	return _r0
 }

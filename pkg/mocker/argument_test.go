@@ -50,6 +50,7 @@ func Test_isGenLocal_tabular(t *testing.T) {
 	}{
 		{"mock receiver", "_mck", true},
 		{"ok local", "_ok", true},
+		{"type switch value", "_v", true},
 		{"synthetic argument", "_a12", true},
 		{"return temp", "_r0", true},
 		{"short", "_a", false},
