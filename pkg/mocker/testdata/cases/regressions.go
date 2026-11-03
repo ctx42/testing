@@ -73,3 +73,13 @@ type CaseLocalTypeParam interface{ Get(key key) key }
 type CaseLongNamesWrapTheGodocs interface {
 	RecordEveryOperationOfTheService(a int) error
 }
+
+// Argument and return types long enough to wrap the generated returns.
+type CaseLongReturnLines interface {
+	Do(
+		a map[string]int,
+		b []complex128,
+		c ...chan<- uint64,
+	) map[string][]complex128
+	Get(k int) map[string]map[string]map[string][]complex128
+}

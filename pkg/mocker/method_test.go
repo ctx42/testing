@@ -867,9 +867,14 @@ func Test_method_genReturnBody(t *testing.T) {
 }
 
 func Test_method_genSingleRet_tabular(t *testing.T) {
-	fit := "pkg." + strings.Repeat("T", 24) // Fatalf line: 80 columns.
-	over := fit + "T"                       // Fatalf line: 81 columns.
-	long := "pkg." + strings.Repeat("T", 40)
+	// Widths below are of the "Method" return 1 lines at indent 0.
+	fit := "pkg." + strings.Repeat("T", 24)    // Fatalf call: 80 columns.
+	over := fit + "T"                          // Fatalf call: 81 columns.
+	msgFit := "pkg." + strings.Repeat("T", 38) // Fatalf message: 80 columns.
+	msgOver := msgFit + "T"                    // Fatalf message: 81 columns.
+	argFit := "pkg." + strings.Repeat("A", 60) // Func case: 80 columns.
+	argOver := argFit + "A"                    // Func case: 81 columns.
+	long := "pkg." + strings.Repeat("T", 30)
 
 	tt := []struct {
 		testN string
@@ -977,6 +982,87 @@ func Test_method_genSingleRet_tabular(t *testing.T) {
 			},
 		},
 		{
+			"fatal message fits at 80 columns",
+			[]argument{},
+			argument{name: "", typ: msgFit},
+			0,
+			[]string{
+				"var _r1 " + msgFit,
+				"switch _v := _rets.Get(1).(type) {",
+				"case func() " + msgFit + ":",
+				"\t_r1 = _v()",
+				"case " + msgFit + ":",
+				"\t_r1 = _v",
+				"case nil:",
+				"default:",
+				"\t_mck.t.Fatalf(",
+				"\t\t\"Method return 1 is %T, not " + msgFit + "\",",
+				"\t\t_v,",
+				"\t)",
+				"}",
+			},
+		},
+		{
+			"fatal message splits at 81 columns",
+			[]argument{},
+			argument{name: "", typ: msgOver},
+			0,
+			[]string{
+				"var _r1 " + msgOver,
+				"switch _v := _rets.Get(1).(type) {",
+				"case func() " + msgOver + ":",
+				"\t_r1 = _v()",
+				"case " + msgOver + ":",
+				"\t_r1 = _v",
+				"case nil:",
+				"default:",
+				"\t_mck.t.Fatalf(",
+				"\t\t\"Method return 1 is %T, not \"+",
+				"\t\t\t\"" + msgOver + "\",",
+				"\t\t_v,",
+				"\t)",
+				"}",
+			},
+		},
+		{
+			"func case fits at 80 columns",
+			[]argument{{name: "a", typ: argFit}},
+			argument{name: "", typ: "int"},
+			0,
+			[]string{
+				"var _r1 int",
+				"switch _v := _rets.Get(1).(type) {",
+				"case func(" + argFit + ") int:",
+				"\t_r1 = _v(a)",
+				"case int:",
+				"\t_r1 = _v",
+				"case nil:",
+				"default:",
+				"\t_mck.t.Fatalf(\"Method return 1 is %T, not int\", _v)",
+				"}",
+			},
+		},
+		{
+			"func case wraps at 81 columns",
+			[]argument{{name: "a", typ: argOver}},
+			argument{name: "", typ: "int"},
+			0,
+			[]string{
+				"var _r1 int",
+				"switch _v := _rets.Get(1).(type) {",
+				"case func(",
+				"\t" + argOver + ",",
+				") int:",
+				"\t_r1 = _v(a)",
+				"case int:",
+				"\t_r1 = _v",
+				"case nil:",
+				"default:",
+				"\t_mck.t.Fatalf(\"Method return 1 is %T, not int\", _v)",
+				"}",
+			},
+		},
+		{
 			"wrapped fatal call",
 			[]argument{},
 			argument{name: "", typ: long},
@@ -1021,6 +1107,137 @@ func Test_method_genSingleRet_tabular(t *testing.T) {
 
 			// --- When ---
 			have := met.genSingleRet(1, tc.ret, tc.indent)
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
+}
+
+func Test_method_genFuncCase_tabular(t *testing.T) {
+	argFit := "pkg." + strings.Repeat("A", 60) // Case: 80 columns.
+	argOver := argFit + "A"                    // Case: 81 columns.
+	long := "pkg." + strings.Repeat("R", 80)
+
+	tt := []struct {
+		testN string
+
+		args []argument
+		ret  string
+		want []string
+	}{
+		{
+			"fits at 80 columns",
+			[]argument{{name: "a", typ: argFit}},
+			"int",
+			[]string{"case func(" + argFit + ") int:"},
+		},
+		{
+			"wraps at 81 columns",
+			[]argument{{name: "a", typ: argOver}},
+			"int",
+			[]string{"case func(", "\t" + argOver + ",", ") int:"},
+		},
+		{
+			"wraps variadic",
+			[]argument{{name: "a", typ: argOver}, {name: "b", typ: "...int"}},
+			"int",
+			[]string{"case func(", "\t" + argOver + ",", "\t...int,", ") int:"},
+		},
+		{
+			"long without arguments",
+			nil,
+			long,
+			[]string{"case func() " + long + ":"},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- Given ---
+			met := &method{name: "Method", args: tc.args}
+
+			// --- When ---
+			have := met.genFuncCase(argument{typ: tc.ret}, "")
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
+}
+
+func Test_method_genFatalf_tabular(t *testing.T) {
+	// Widths below are of the "Method" return 1 lines indented one tab.
+	callFit := "pkg." + strings.Repeat("T", 24) // Call: 80 columns.
+	callOver := callFit + "T"                   // Call: 81 columns.
+	msgFit := "pkg." + strings.Repeat("T", 38)  // Message: 80 columns.
+	msgOver := msgFit + "T"                     // Message: 81 columns.
+
+	tt := []struct {
+		testN string
+
+		typ  string
+		want []string
+	}{
+		{
+			"call fits at 80 columns",
+			callFit,
+			[]string{
+				"\t_mck.t.Fatalf(\"Method return 1 is %T, not " + callFit +
+					"\", _v)",
+			},
+		},
+		{
+			"call breaks at 81 columns",
+			callOver,
+			[]string{
+				"\t_mck.t.Fatalf(",
+				"\t\t\"Method return 1 is %T, not " + callOver + "\",",
+				"\t\t_v,",
+				"\t)",
+			},
+		},
+		{
+			"message fits at 80 columns",
+			msgFit,
+			[]string{
+				"\t_mck.t.Fatalf(",
+				"\t\t\"Method return 1 is %T, not " + msgFit + "\",",
+				"\t\t_v,",
+				"\t)",
+			},
+		},
+		{
+			"message splits at 81 columns",
+			msgOver,
+			[]string{
+				"\t_mck.t.Fatalf(",
+				"\t\t\"Method return 1 is %T, not \"+",
+				"\t\t\t\"" + msgOver + "\",",
+				"\t\t_v,",
+				"\t)",
+			},
+		},
+		{
+			"percent and quote in split type",
+			`[len("a%")]` + msgOver,
+			[]string{
+				"\t_mck.t.Fatalf(",
+				"\t\t\"Method return 1 is %T, not \"+",
+				"\t\t\t" + `"[len(\"a%%\")]` + msgOver + "\",",
+				"\t\t_v,",
+				"\t)",
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- Given ---
+			met := &method{name: "Method"}
+
+			// --- When ---
+			have := met.genFatalf(1, argument{typ: tc.typ}, "\t")
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)

@@ -365,6 +365,7 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 		{"CaseItfDefinedImp", "CaseItfDefinedImp", "cases", "golden"},
 		{"CaseSwitchParam", "CaseSwitchParam", "cases", "golden"},
 		{"CasePredeclaredParam", "CasePredeclaredParam", "cases", "golden"},
+		{"CaseLongReturnLines", "CaseLongReturnLines", "cases", "golden"},
 		{
 			"CaseLongNamesWrapTheGodocs",
 			"CaseLongNamesWrapTheGodocs",

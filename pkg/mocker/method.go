@@ -350,8 +350,9 @@ func (met *method) genReturnBody(indent int) string {
 
 // genSingleRet generates code for mocked method single return argument: a
 // function of the method's arguments is called, a value of the type taken,
-// a nil left as the zero value, and any other value fails the test. A
-// Fatalf call wider than [maxLine] is broken one argument per line.
+// a nil left as the zero value, and any other value fails the test. Lines
+// wider than [maxLine] are broken by [method.genFuncCase] and
+// [method.genFatalf].
 //
 // Example:
 //
@@ -368,13 +369,12 @@ func (met *method) genReturnBody(indent int) string {
 func (met *method) genSingleRet(idx int, ret argument, indent int) []string {
 	ind := strings.Repeat("\t", indent)
 	argNames := strings.Join(met.argNames(), ", ")
-	codeFnTyp := fmt.Sprintf("func%s %s", met.genArgTypes(), ret.typ)
 	lines := []string{
 		fmt.Sprintf("%svar _r%d %s", ind, idx, ret.typ),
 		fmt.Sprintf("%sswitch _v := _rets.Get(%d).(type) {", ind, idx),
-		fmt.Sprintf("%scase %s:", ind, codeFnTyp),
-		fmt.Sprintf("%s\t_r%d = _v(%s)", ind, idx, argNames),
 	}
+	lines = append(lines, met.genFuncCase(ret, ind)...)
+	lines = append(lines, fmt.Sprintf("%s\t_r%d = _v(%s)", ind, idx, argNames))
 	if ret.typ == "any" {
 		return append(lines,
 			ind+"default:",
@@ -382,28 +382,74 @@ func (met *method) genSingleRet(idx int, ret argument, indent int) []string {
 			ind+"}",
 		)
 	}
-	// The message is a Go string literal holding a format: quote it, and
-	// keep a "%" of the type text from reading as a verb.
-	typ := strings.ReplaceAll(ret.typ, "%", "%%")
-	msg := strconv.Quote(fmt.Sprintf("%s return %d is %%T, not %s",
-		met.name, idx, typ))
 	lines = append(lines,
 		fmt.Sprintf("%scase %s:", ind, ret.typ),
 		fmt.Sprintf("%s\t_r%d = _v", ind, idx),
 		ind+"case nil:",
 		ind+"default:",
 	)
-	fatal := fmt.Sprintf("%s\t_mck.t.Fatalf(%s, _v)", ind, msg)
-	if lineWidth(fatal) > maxLine {
-		lines = append(lines,
-			ind+"\t_mck.t.Fatalf(",
-			ind+"\t\t"+msg+",",
-			ind+"\t\t_v,",
-			ind+"\t)",
-		)
-		return append(lines, ind+"}")
+	lines = append(lines, met.genFatalf(idx, ret, ind+"\t")...)
+	return append(lines, ind+"}")
+}
+
+// genFuncCase generates the type switch case for a function of the
+// method's arguments returning the ret type, at the ind indentation. A case
+// wider than [maxLine] gets one argument type per line.
+//
+// Examples:
+//
+//	case func(int, bool) error:
+//
+//	case func(
+//		map[string]int,
+//		...bool,
+//	) error:
+func (met *method) genFuncCase(ret argument, ind string) []string {
+	line := fmt.Sprintf("%scase func%s %s:", ind, met.genArgTypes(), ret.typ)
+	if lineWidth(line) <= maxLine || len(met.args) == 0 {
+		return []string{line}
 	}
-	return append(lines, fatal, ind+"}")
+	lines := []string{ind + "case func("}
+	for _, arg := range met.args {
+		lines = append(lines, ind+"\t"+arg.typ+",")
+	}
+	return append(lines, ind+") "+ret.typ+":")
+}
+
+// genFatalf generates the Fatalf call reporting a set result of the wrong
+// type for the ret return at the idx index, at the ind indentation. A call
+// wider than [maxLine] gets one argument per line, and a message still too
+// wide is split before the type.
+//
+// Examples:
+//
+//	_mck.t.Fatalf("Method return 0 is %T, not error", _v)
+//
+//	_mck.t.Fatalf(
+//		"Method return 0 is %T, not "+
+//			"map[string]map[string][]error",
+//		_v,
+//	)
+func (met *method) genFatalf(idx int, ret argument, ind string) []string {
+	// The message is a Go string literal holding a format: quote it, and
+	// keep a "%" of the type text from reading as a verb.
+	head := fmt.Sprintf("%s return %d is %%T, not ", met.name, idx)
+	typ := strings.ReplaceAll(ret.typ, "%", "%%")
+	msg := strconv.Quote(head + typ)
+	line := fmt.Sprintf("%s_mck.t.Fatalf(%s, _v)", ind, msg)
+	if lineWidth(line) <= maxLine {
+		return []string{line}
+	}
+	lines := []string{ind + "_mck.t.Fatalf("}
+	if lineWidth(ind+"\t"+msg+",") <= maxLine {
+		lines = append(lines, ind+"\t"+msg+",")
+	} else {
+		lines = append(lines,
+			ind+"\t"+strconv.Quote(head)+"+",
+			ind+"\t\t"+strconv.Quote(typ)+",",
+		)
+	}
+	return append(lines, ind+"\t_v,", ind+")")
 }
 
 // genReturn generates code for the method return line. Returns an empty string
