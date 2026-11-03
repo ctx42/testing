@@ -1,3 +1,11 @@
+## v0.58.0 (Tue, 03 Nov 2026 11:58:42 UTC)
+- feat(mocker): generate lint-clean mocks that fail on wrong returns.
+- feat(mocker): wrap generated godoc and Fatalf calls at 80 columns.
+- test(mocker): pin the 80-column edge of comment and Fatalf wrapping.
+- fix(mocker): count wide and combining runes in line widths.
+- feat(mocker): wrap long func cases and Fatalf messages.
+- docs(mocker): describe the full generated method and width table.
+
 ## v0.57.1 (Sat, 17 Oct 2026 22:00:00 UTC)
 - ci: set C42_CC_RUN_ID in the workflow environment.
 
