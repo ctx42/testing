@@ -256,8 +256,8 @@ func Test_lineWidth_tabular(t *testing.T) {
 }
 
 func Test_wrapComment_tabular(t *testing.T) {
-	word77 := strings.Repeat("a", 77)
-	word78 := strings.Repeat("a", 78)
+	word75 := strings.Repeat("a", 75)
+	word76 := strings.Repeat("a", 76)
 	long := strings.Repeat("b", 90)
 
 	tt := []struct {
@@ -267,8 +267,8 @@ func Test_wrapComment_tabular(t *testing.T) {
 		want string
 	}{
 		{"short", "Close records a call.", "// Close records a call.\n"},
-		{"fits at 80 columns", word77, "// " + word77 + "\n"},
-		{"wraps at 81 columns", word78 + " x", "// " + word78 + "\n// x\n"},
+		{"fits at 80 columns", "a " + word75, "// a " + word75 + "\n"},
+		{"wraps at 81 columns", "a " + word76, "// a\n// " + word76 + "\n"},
 		{
 			"word over the limit",
 			"a " + long + " c",
@@ -893,6 +893,8 @@ func Test_method_genReturnBody(t *testing.T) {
 }
 
 func Test_method_genSingleRet_tabular(t *testing.T) {
+	fit := "pkg." + strings.Repeat("T", 24) // Fatalf line: 80 columns.
+	over := fit + "T"                       // Fatalf line: 81 columns.
 	long := "pkg." + strings.Repeat("T", 40)
 
 	tt := []struct {
@@ -957,6 +959,46 @@ func Test_method_genSingleRet_tabular(t *testing.T) {
 				"default:",
 				"\t_mck.t.Fatalf(" +
 					`"Method return 1 is %T, not [len(\"a%%\")]byte", _v)`,
+				"}",
+			},
+		},
+		{
+			"fatal call fits at 80 columns",
+			[]argument{},
+			argument{name: "", typ: fit},
+			0,
+			[]string{
+				"var _r1 " + fit,
+				"switch _v := _rets.Get(1).(type) {",
+				"case func() " + fit + ":",
+				"\t_r1 = _v()",
+				"case " + fit + ":",
+				"\t_r1 = _v",
+				"case nil:",
+				"default:",
+				"\t_mck.t.Fatalf(\"Method return 1 is %T, not " +
+					fit + "\", _v)",
+				"}",
+			},
+		},
+		{
+			"fatal call wraps at 81 columns",
+			[]argument{},
+			argument{name: "", typ: over},
+			0,
+			[]string{
+				"var _r1 " + over,
+				"switch _v := _rets.Get(1).(type) {",
+				"case func() " + over + ":",
+				"\t_r1 = _v()",
+				"case " + over + ":",
+				"\t_r1 = _v",
+				"case nil:",
+				"default:",
+				"\t_mck.t.Fatalf(",
+				"\t\t\"Method return 1 is %T, not " + over + "\",",
+				"\t\t_v,",
+				"\t)",
 				"}",
 			},
 		},
