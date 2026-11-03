@@ -7,6 +7,9 @@ import "unicode"
 
 // wideRunes are the runes Unicode 15.0 gives the East Asian Width "W"
 // (wide) or "F" (fullwidth) property, which take two columns when shown.
+// The ranges are every rune whose golang.org/x/text/width v0.43.0 Kind is
+// EastAsianWide or EastAsianFullwidth, merged where consecutive; regenerate
+// them when [unicode.Version] moves past 15.0.
 var wideRunes = &unicode.RangeTable{
 	R16: []unicode.Range16{
 		{Lo: 0x1100, Hi: 0x115F, Stride: 1},

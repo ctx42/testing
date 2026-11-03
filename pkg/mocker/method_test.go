@@ -119,8 +119,11 @@ func Test_method_generateOn(t *testing.T) {
 			"\t" + two + " any,\n" +
 			") *mock.Call {\n" +
 			"\n" +
-			"\t_mck.t.Helper()\n"
-		assert.True(t, strings.HasPrefix(have, want))
+			"\t_mck.t.Helper()\n" +
+			"\t_args := []any{" + one + ", " + two + "}\n" +
+			"\treturn _mck.On(\"Long\", _args...)\n" +
+			"}"
+		assert.Equal(t, want, have)
 	})
 
 	t.Run("wrapped doc", func(t *testing.T) {
@@ -135,8 +138,12 @@ func Test_method_generateOn(t *testing.T) {
 		want := "" +
 			"// On" + name + " expects a call of [M." + name + "] with the\n" +
 			"// arguments.\n" +
-			"func (_mck *M) On" + name + "(a any) *mock.Call {\n"
-		assert.True(t, strings.HasPrefix(have, want))
+			"func (_mck *M) On" + name + "(a any) *mock.Call {\n" +
+			"\t_mck.t.Helper()\n" +
+			"\t_args := []any{a}\n" +
+			"\treturn _mck.On(\"" + name + "\", _args...)\n" +
+			"}"
+		assert.Equal(t, want, have)
 	})
 }
 

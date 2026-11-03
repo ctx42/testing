@@ -26,11 +26,14 @@ type method struct {
 	rets []argument // Zero or more method return values.
 }
 
-// generate generates the start of the method's code: the signature, the
-// Helper call, the call to Called, and the check of the returns count.
+// generate generates the method's code: the godoc, the signature, the
+// Helper call, the call to Called, and, when the method returns values, the
+// check of the returns count, one [method.genSingleRet] block per return,
+// and the return line.
 //
 // Example:
 //
+//	// Method13 records a call of Method13 and returns its set results.
 //	func (_mck *CaseMock) Method13(tim mt.Time) error {
 //		_mck.t.Helper()
 //		_args := []any{tim}
@@ -38,6 +41,13 @@ type method struct {
 //		if len(_rets) != 1 {
 //			_mck.t.Fatal("the number of mocked method returns does not match")
 //		}
+//
+//		var _r0 error
+//		switch _v := _rets.Get(0).(type) {
+//		...
+//		}
+//		return _r0
+//	}
 func (met *method) generate(recType string) string {
 	head := "func " + met.genReceiver(recType) + " " + met.name + "("
 	tail := ")"
@@ -91,7 +101,8 @@ func (met *method) genDoc() string {
 // wrapSig returns the signature made of the head up to the opening
 // parenthesis, the args, and the tail from the closing parenthesis,
 // opening a method's body: on one line when it fits [maxLine], else with
-// one argument per line and a blank line opening the body.
+// one argument per line and a blank line opening the body. A signature
+// without arguments stays on one line however wide it is.
 func wrapSig(head string, args []string, tail string) string {
 	sig := head + strings.Join(args, ", ") + tail
 	if lineWidth(sig+" {") <= maxLine || len(args) == 0 {
