@@ -229,32 +229,6 @@ func Test_wrapSig_tabular(t *testing.T) {
 	}
 }
 
-func Test_lineWidth_tabular(t *testing.T) {
-	tt := []struct {
-		testN string
-
-		line string
-		want int
-	}{
-		{"empty", "", 0},
-		{"ascii", "abc", 3},
-		{"multibyte rune", "ąb", 2},
-		{"leading tab", "\tab", 6},
-		{"tab to next stop", "a\tb", 5},
-		{"two tabs", "\t\tx", 9},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
-			// --- When ---
-			have := lineWidth(tc.line)
-
-			// --- Then ---
-			assert.Equal(t, tc.want, have)
-		})
-	}
-}
-
 func Test_wrapComment_tabular(t *testing.T) {
 	word75 := strings.Repeat("a", 75)
 	word76 := strings.Repeat("a", 76)

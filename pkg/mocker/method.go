@@ -101,20 +101,6 @@ func wrapSig(head string, args []string, tail string) string {
 		tail + " {\n\n"
 }
 
-// lineWidth returns the number of columns the line takes when shown, a tab
-// moving to the next multiple of [tabWidth].
-func lineWidth(line string) int {
-	var width int
-	for _, r := range line {
-		if r == '\t' {
-			width += tabWidth - width%tabWidth
-			continue
-		}
-		width++
-	}
-	return width
-}
-
 // wrapComment returns the text as "//" comment lines, each ending with a new
 // line, broken between words to fit [maxLine]. A word longer than the
 // limit gets a line of its own.
