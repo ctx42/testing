@@ -138,10 +138,11 @@ func (mck *Mocker) generate(name string, opts ...Option) error {
 	if cfg.srcPkg.pkgPath != cfg.tgtPkg.pkgPath {
 		itfName = cfg.srcPkg.pkgName + "." + cfg.srcName
 	}
-	const format = "" +
-		"// %[1]s is a mock of the %[2]s interface.\n" +
-		"type %[1]s struct {\n\t*mock.Mock\n\tt %[3]s.T\n}"
-	_, _ = fmt.Fprintf(buf, format, cfg.tgtName, itfName, tstImp.pkgName)
+	docFormat := "%s is a mock of the %s interface."
+	doc := fmt.Sprintf(docFormat, cfg.tgtName, itfName)
+	_, _ = buf.WriteString(wrapComment(doc))
+	const format = "type %[1]s struct {\n\t*mock.Mock\n\tt %[2]s.T\n}"
+	_, _ = fmt.Fprintf(buf, format, cfg.tgtName, tstImp.pkgName)
 	_, _ = buf.WriteString("\n\n")
 	_, _ = buf.WriteString(mck.genConstructor(cfg.tgtName, tstImp.pkgName))
 	_, _ = buf.WriteString("\n\n")
@@ -429,7 +430,7 @@ func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 			return expression{}, err
 		}
 		exp := expression{}
-		exp.value = met.genSig("", false)
+		exp.value = met.genSig("")
 		exp.pks = append(exp.pks, met.imports()...)
 		return exp, nil
 
@@ -497,13 +498,14 @@ func (mck *Mocker) parseExpr(cfg Config, e ast.Expr) (expression, error) {
 
 // genConstructor generates code for the mock constructor.
 func (mck *Mocker) genConstructor(typeName, testerName string) string {
+	docFormat := "New%[1]s returns a new %[1]s that reports to t."
+	doc := fmt.Sprintf(docFormat, typeName)
 	const format = "" +
-		"// New%[1]s returns a new %[1]s that reports to t.\n" +
 		"func New%[1]s(t %s.T) *%[1]s {\n" +
 		"\tt.Helper()\n" +
 		"\treturn &%[1]s{Mock: mock.NewMock(t), t: t}\n" +
 		"}"
-	return fmt.Sprintf(format, typeName, testerName)
+	return wrapComment(doc) + fmt.Sprintf(format, typeName, testerName)
 }
 
 // parseArrayLen parses an array length expression, returning the "[len]"

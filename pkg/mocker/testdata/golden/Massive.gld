@@ -860,7 +860,10 @@ func (_mck *Massive) Method58() cases.ParamTwo[int, *cases.Concrete] {
 		_r0 = _v
 	case nil:
 	default:
-		_mck.t.Fatalf("Method58 return 0 is %T, not cases.ParamTwo[int, *cases.Concrete]", _v)
+		_mck.t.Fatalf(
+			"Method58 return 0 is %T, not cases.ParamTwo[int, *cases.Concrete]",
+			_v,
+		)
 	}
 	return _r0
 }

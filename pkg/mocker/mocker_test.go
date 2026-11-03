@@ -366,6 +366,12 @@ func Test_Mocker_Generate_tabular(t *testing.T) {
 		{"CaseSwitchParam", "CaseSwitchParam", "cases", "golden"},
 		{"CasePredeclaredParam", "CasePredeclaredParam", "cases", "golden"},
 		{
+			"CaseLongNamesWrapTheGodocs",
+			"CaseLongNamesWrapTheGodocs",
+			"cases",
+			"golden",
+		},
+		{
 			"CaseLocalTypeParam_dst_cases",
 			"CaseLocalTypeParam",
 			"cases",

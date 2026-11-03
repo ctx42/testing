@@ -7,12 +7,17 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"unicode/utf8"
 )
 
-// maxLine is the widest a generated line may be before a signature is
-// broken one argument per line.
-const maxLine = 80
+// Generated code layout.
+const (
+	// maxLine is the widest a generated line may be, in columns, before it
+	// is broken.
+	maxLine = 80
+
+	// tabWidth is the number of columns a tab takes.
+	tabWidth = 4
+)
 
 // method represents an interface method.
 type method struct {
@@ -55,11 +60,11 @@ func (met *method) generate(recType string) string {
 
 // generateOn generates code for the method's "OnXXX" helper.
 func (met *method) generateOn(typ string) string {
-	format := "// On%s expects a call of [%s.%s].\n"
+	format := "On%s expects a call of [%s.%s]."
 	if len(met.args) > 0 {
-		format = "// On%s expects a call of [%s.%s] with the arguments.\n"
+		format = "On%s expects a call of [%s.%s] with the arguments."
 	}
-	code := fmt.Sprintf(format, met.name, typ, met.name)
+	code := wrapComment(fmt.Sprintf(format, met.name, typ, met.name))
 	head := "func " + met.genReceiver(typ) + " On" + met.name + "("
 	code += wrapSig(head, met.genAnyArgList(), ") *mock.Call")
 	code += "\t_mck.t.Helper()\n"
@@ -69,18 +74,18 @@ func (met *method) generateOn(typ string) string {
 	return code
 }
 
-// genDoc generates the method's godoc line.
+// genDoc generates the method's godoc, wrapped to fit [maxLine].
 //
 // Examples:
 //
 //	// Method records a call of Method.
 //	// Method records a call of Method and returns its set results.
 func (met *method) genDoc() string {
-	if len(met.rets) == 0 {
-		return fmt.Sprintf("// %s records a call of %[1]s.\n", met.name)
+	format := "%s records a call of %[1]s."
+	if len(met.rets) > 0 {
+		format = "%s records a call of %[1]s and returns its set results."
 	}
-	format := "// %s records a call of %[1]s and returns its set results.\n"
-	return fmt.Sprintf(format, met.name)
+	return wrapComment(fmt.Sprintf(format, met.name))
 }
 
 // wrapSig returns the signature made of the head up to the opening
@@ -89,11 +94,43 @@ func (met *method) genDoc() string {
 // one argument per line and a blank line opening the body.
 func wrapSig(head string, args []string, tail string) string {
 	sig := head + strings.Join(args, ", ") + tail
-	if utf8.RuneCountInString(sig+" {") <= maxLine || len(args) == 0 {
+	if lineWidth(sig+" {") <= maxLine || len(args) == 0 {
 		return sig + " {\n"
 	}
 	return head + "\n\t" + strings.Join(args, ",\n\t") + ",\n" +
 		tail + " {\n\n"
+}
+
+// lineWidth returns the number of columns the line takes when shown, a tab
+// moving to the next multiple of [tabWidth].
+func lineWidth(line string) int {
+	var width int
+	for _, r := range line {
+		if r == '\t' {
+			width += tabWidth - width%tabWidth
+			continue
+		}
+		width++
+	}
+	return width
+}
+
+// wrapComment returns the text as "//" comment lines, each ending with a new
+// line, broken between words to fit [maxLine]. A word longer than the
+// limit gets a line of its own.
+func wrapComment(text string) string {
+	var code, line strings.Builder
+	_, _ = line.WriteString("//")
+	for _, word := range strings.Fields(text) {
+		if line.Len() > 2 && lineWidth(line.String()+" "+word) > maxLine {
+			_, _ = code.WriteString(line.String() + "\n")
+			line.Reset()
+			_, _ = line.WriteString("//")
+		}
+		_, _ = line.WriteString(" " + word)
+	}
+	_, _ = code.WriteString(line.String() + "\n")
+	return code.String()
 }
 
 // genArgList returns the method's arguments, each with its name and type.
@@ -109,8 +146,8 @@ func (met *method) genArgList() []string {
 	return out
 }
 
-// genAnyArgList returns the method's arguments with "any" types, as
-// [method.genAnyArgs] writes them.
+// genAnyArgList returns the method's arguments with "any" types, so
+// the "OnXXX" helper accepts a [mock.ArgMatcher] for any of them.
 //
 // Example:
 //
@@ -138,54 +175,6 @@ func (met *method) genReceiver(typ string) string {
 		return ""
 	}
 	return fmt.Sprintf("(_mck *%s)", typ)
-}
-
-// genArgs generates code representing method's arguments wrapped in
-// parentheses.
-//
-// Examples:
-//
-//	()
-//	(x int)
-//	(x int, y bool)
-func (met *method) genArgs() string {
-	var code strings.Builder
-	_, _ = code.WriteString("(")
-	for i, arg := range met.args {
-		if i > 0 {
-			_, _ = code.WriteString(", ")
-		}
-		_, _ = code.WriteString(arg.genName(i) + " " + arg.typ)
-	}
-	_, _ = code.WriteString(")")
-	return code.String()
-}
-
-// genAnyArgs generates code representing method's arguments wrapped in
-// parentheses where all types are replaced with "any" to allow usage of
-// [mock.ArgMatcher]. Used in "OnXXX" helper methods.
-//
-// Examples:
-//
-//	()
-//	(x any)
-//	(x any, y any)
-//	(x any, y any, z ...any)
-func (met *method) genAnyArgs() string {
-	var code strings.Builder
-	_, _ = code.WriteString("(")
-	for i, arg := range met.args {
-		if i > 0 {
-			_, _ = code.WriteString(", ")
-		}
-		_, _ = code.WriteString(arg.genName(i) + " ")
-		if arg.isVariadic() {
-			_, _ = code.WriteString("...")
-		}
-		_, _ = code.WriteString("any")
-	}
-	_, _ = code.WriteString(")")
-	return code.String()
 }
 
 // argNames returns method's argument names.
@@ -249,17 +238,16 @@ func (met *method) genRets() string {
 	return code.String()
 }
 
-// genSig generates code for a method signature. If recType is non-empty, the
-// method receiver is generated with the given type. If argNames is true,
-// the function arguments are generated with names.
+// genSig generates code for a method signature with the argument types
+// only. If recType is non-empty, the method receiver is generated with the
+// given type.
 //
 // Examples:
 //
 //	func (_mck *TypeMock) Method()
-//	func (_mck *TypeMock) Method(a int) (int, error)
 //	func (_mck *TypeMock) Method(int) (int, error)
 //	func Method(int) (int, error)
-func (met *method) genSig(recType string, argNames bool) string {
+func (met *method) genSig(recType string) string {
 	code := "func"
 	rcv := met.genReceiver(recType)
 	if rcv != "" {
@@ -268,37 +256,11 @@ func (met *method) genSig(recType string, argNames bool) string {
 	if met.name != "" {
 		code += " " + met.name
 	}
-	if argNames {
-		code += met.genArgs()
-	} else {
-		code += met.genArgTypes()
-	}
+	code += met.genArgTypes()
 	retCode := met.genRets()
 	if retCode != "" {
 		code += " " + retCode
 	}
-	return code
-}
-
-// genOnSig generates code for the method's "OnXXX" helper signature where
-// method's argument types are replaced with "any" to allow usage of
-// [mock.ArgMatcher], and the return value of [mock.Call].
-//
-// Examples:
-//
-//	func (_mck *TypeMock) OnMethod() *mock.Call
-//	func (_mck *TypeMock) OnMethod(a ...any) *mock.Call
-func (met *method) genOnSig(typ string) string {
-	code := "func"
-	rcv := met.genReceiver(typ)
-	if rcv != "" {
-		code += " " + rcv
-	}
-	if met.name != "" {
-		code += " On" + met.name
-	}
-	code += met.genAnyArgs()
-	code += " *mock.Call"
 	return code
 }
 
@@ -402,7 +364,8 @@ func (met *method) genReturnBody(indent int) string {
 
 // genSingleRet generates code for mocked method single return argument: a
 // function of the method's arguments is called, a value of the type taken,
-// a nil left as the zero value, and any other value fails the test.
+// a nil left as the zero value, and any other value fails the test. A
+// Fatalf call wider than [maxLine] is broken one argument per line.
 //
 // Example:
 //
@@ -438,14 +401,23 @@ func (met *method) genSingleRet(idx int, ret argument, indent int) []string {
 	typ := strings.ReplaceAll(ret.typ, "%", "%%")
 	msg := strconv.Quote(fmt.Sprintf("%s return %d is %%T, not %s",
 		met.name, idx, typ))
-	return append(lines,
+	lines = append(lines,
 		fmt.Sprintf("%scase %s:", ind, ret.typ),
 		fmt.Sprintf("%s\t_r%d = _v", ind, idx),
 		ind+"case nil:",
 		ind+"default:",
-		fmt.Sprintf("%s\t_mck.t.Fatalf(%s, _v)", ind, msg),
-		ind+"}",
 	)
+	fatal := fmt.Sprintf("%s\t_mck.t.Fatalf(%s, _v)", ind, msg)
+	if lineWidth(fatal) > maxLine {
+		lines = append(lines,
+			ind+"\t_mck.t.Fatalf(",
+			ind+"\t\t"+msg+",",
+			ind+"\t\t_v,",
+			ind+"\t)",
+		)
+		return append(lines, ind+"}")
+	}
+	return append(lines, fatal, ind+"}")
 }
 
 // genReturn generates code for the method return line. Returns an empty string

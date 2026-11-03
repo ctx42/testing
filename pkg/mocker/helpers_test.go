@@ -321,11 +321,12 @@ func Test_renameShadowingArgs(t *testing.T) {
 	}
 	local := &method{
 		args: []argument{
-			{name: "key", typ: "key"},
+			{name: "key", typ: "int"},
+			{name: "a", typ: "map[key]bool"},
 			{name: "Tx", typ: "int"},
 			{name: "b", typ: "int"},
 		},
-		rets: []argument{{typ: "map[key]pkg.Tx"}},
+		rets: []argument{{typ: "*pkg.Tx"}},
 	}
 	imps := []*gopkg{pkg, nil}
 	mts := []*method{met, local}
@@ -345,7 +346,8 @@ func Test_renameShadowingArgs(t *testing.T) {
 	assert.Equal(t, want, met.args)
 
 	want = []argument{
-		{name: "", typ: "key"},
+		{name: "", typ: "int"},
+		{name: "a", typ: "map[key]bool"},
 		{name: "", typ: "int"},
 		{name: "b", typ: "int"},
 	}

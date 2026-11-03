@@ -122,6 +122,22 @@ func Test_method_generateOn(t *testing.T) {
 			"\t_mck.t.Helper()\n"
 		assert.True(t, strings.HasPrefix(have, want))
 	})
+
+	t.Run("wrapped doc", func(t *testing.T) {
+		// --- Given ---
+		name := strings.Repeat("N", 20)
+		met := &method{name: name, args: []argument{{name: "a", typ: "int"}}}
+
+		// --- When ---
+		have := met.generateOn("M")
+
+		// --- Then ---
+		want := "" +
+			"// On" + name + " expects a call of [M." + name + "] with the\n" +
+			"// arguments.\n" +
+			"func (_mck *M) On" + name + "(a any) *mock.Call {\n"
+		assert.True(t, strings.HasPrefix(have, want))
+	})
 }
 
 func Test_method_genDoc(t *testing.T) {
@@ -146,6 +162,21 @@ func Test_method_genDoc(t *testing.T) {
 		// --- Then ---
 		want := "" +
 			"// Count records a call of Count and returns its set results.\n"
+		assert.Equal(t, want, have)
+	})
+
+	t.Run("wrapped", func(t *testing.T) {
+		// --- Given ---
+		name := strings.Repeat("N", 20)
+		met := &method{name: name, rets: []argument{{typ: "int"}}}
+
+		// --- When ---
+		have := met.genDoc()
+
+		// --- Then ---
+		want := "" +
+			"// " + name + " records a call of " + name + " and returns its\n" +
+			"// set results.\n"
 		assert.Equal(t, want, have)
 	})
 }
@@ -191,6 +222,64 @@ func Test_wrapSig_tabular(t *testing.T) {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
 			have := wrapSig(tc.head, tc.args, tc.tail)
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
+}
+
+func Test_lineWidth_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		line string
+		want int
+	}{
+		{"empty", "", 0},
+		{"ascii", "abc", 3},
+		{"multibyte rune", "ąb", 2},
+		{"leading tab", "\tab", 6},
+		{"tab to next stop", "a\tb", 5},
+		{"two tabs", "\t\tx", 9},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := lineWidth(tc.line)
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+		})
+	}
+}
+
+func Test_wrapComment_tabular(t *testing.T) {
+	word77 := strings.Repeat("a", 77)
+	word78 := strings.Repeat("a", 78)
+	long := strings.Repeat("b", 90)
+
+	tt := []struct {
+		testN string
+
+		text string
+		want string
+	}{
+		{"short", "Close records a call.", "// Close records a call.\n"},
+		{"fits at 80 columns", word77, "// " + word77 + "\n"},
+		{"wraps at 81 columns", word78 + " x", "// " + word78 + "\n// x\n"},
+		{
+			"word over the limit",
+			"a " + long + " c",
+			"// a\n// " + long + "\n// c\n",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := wrapComment(tc.text)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)
@@ -264,132 +353,6 @@ func Test_method_genReceiver(t *testing.T) {
 		// --- Then ---
 		assert.Equal(t, "", have)
 	})
-}
-
-func Test_method_genArgs_tabular(t *testing.T) {
-	tt := []struct {
-		testN string
-
-		args []argument
-		want string
-	}{
-		{"nil args", nil, "()"},
-		{"no args", []argument{}, "()"},
-		{
-			"one named argument",
-			[]argument{
-				{name: "a", typ: "int"},
-			},
-			"(a int)",
-		},
-		{
-			"two named arguments",
-			[]argument{
-				{name: "a", typ: "int"},
-				{name: "b", typ: "bool"},
-			},
-			"(a int, b bool)",
-		},
-		{
-			"one argument without a name",
-			[]argument{
-				{name: "", typ: "int"},
-			},
-			"(_a0 int)",
-		},
-		{
-			"two arguments without a name",
-			[]argument{
-				{name: "", typ: "int"},
-				{name: "", typ: "bool"},
-			},
-			"(_a0 int, _a1 bool)",
-		},
-		{
-			"variadic",
-			[]argument{
-				{name: "", typ: "int"},
-				{name: "", typ: "...bool"},
-			},
-			"(_a0 int, _a1 ...bool)",
-		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
-			// --- Given ---
-			met := &method{args: tc.args}
-
-			// --- When ---
-			have := met.genArgs()
-
-			// --- Then ---
-			assert.Equal(t, tc.want, have)
-		})
-	}
-}
-
-func Test_method_genAnyArgs_tabular(t *testing.T) {
-	tt := []struct {
-		testN string
-
-		args []argument
-		want string
-	}{
-		{"nil args", nil, "()"},
-		{"no args", []argument{}, "()"},
-		{
-			"one named argument",
-			[]argument{
-				{name: "a", typ: "int"},
-			},
-			"(a any)",
-		},
-		{
-			"two named arguments",
-			[]argument{
-				{name: "a", typ: "int"},
-				{name: "b", typ: "bool"},
-			},
-			"(a any, b any)",
-		},
-		{
-			"one argument without a name",
-			[]argument{
-				{name: "", typ: "int"},
-			},
-			"(_a0 any)",
-		},
-		{
-			"two arguments without a name",
-			[]argument{
-				{name: "", typ: "int"},
-				{name: "", typ: "bool"},
-			},
-			"(_a0 any, _a1 any)",
-		},
-		{
-			"variadic",
-			[]argument{
-				{name: "", typ: "int"},
-				{name: "", typ: "...bool"},
-			},
-			"(_a0 any, _a1 ...any)",
-		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
-			// --- Given ---
-			met := &method{args: tc.args}
-
-			// --- When ---
-			have := met.genAnyArgs()
-
-			// --- Then ---
-			assert.Equal(t, tc.want, have)
-		})
-	}
 }
 
 func Test_method_argNames_tabular(t *testing.T) {
@@ -569,12 +532,11 @@ func Test_method_genSig_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
-		typ   string
-		name  string
-		args  []argument
-		rets  []argument
-		names bool
-		want  string
+		typ  string
+		name string
+		args []argument
+		rets []argument
+		want string
 	}{
 		{
 			"no arguments no returns",
@@ -582,7 +544,6 @@ func Test_method_genSig_tabular(t *testing.T) {
 			"Method",
 			nil,
 			nil,
-			true,
 			"func (_mck *TypeMock) Method()",
 		},
 		{
@@ -593,7 +554,6 @@ func Test_method_genSig_tabular(t *testing.T) {
 			[]argument{
 				{name: "", typ: "error"},
 			},
-			true,
 			"func (_mck *TypeMock) Method() error",
 		},
 		{
@@ -605,7 +565,6 @@ func Test_method_genSig_tabular(t *testing.T) {
 				{name: "", typ: "int"},
 				{name: "", typ: "error"},
 			},
-			true,
 			"func (_mck *TypeMock) Method() (int, error)",
 		},
 		{
@@ -619,8 +578,7 @@ func Test_method_genSig_tabular(t *testing.T) {
 				{name: "", typ: "int"},
 				{name: "", typ: "error"},
 			},
-			true,
-			"func (_mck *TypeMock) Method(a int) (int, error)",
+			"func (_mck *TypeMock) Method(int) (int, error)",
 		},
 		{
 			"one argument no returns",
@@ -630,8 +588,7 @@ func Test_method_genSig_tabular(t *testing.T) {
 				{name: "a", typ: "int"},
 			},
 			nil,
-			true,
-			"func (_mck *TypeMock) Method(a int)",
+			"func (_mck *TypeMock) Method(int)",
 		},
 		{
 			"no receiver type",
@@ -641,11 +598,10 @@ func Test_method_genSig_tabular(t *testing.T) {
 				{name: "a", typ: "int"},
 			},
 			nil,
-			true,
-			"func Method(a int)",
+			"func Method(int)",
 		},
 		{
-			"no receiver type and no argument types",
+			"no receiver type two arguments",
 			"",
 			"Method",
 			[]argument{
@@ -653,7 +609,6 @@ func Test_method_genSig_tabular(t *testing.T) {
 				{name: "b", typ: "float64"},
 			},
 			nil,
-			false,
 			"func Method(int, float64)",
 		},
 	}
@@ -668,99 +623,7 @@ func Test_method_genSig_tabular(t *testing.T) {
 			}
 
 			// --- When ---
-			have := met.genSig(tc.typ, tc.names)
-
-			// --- Then ---
-			assert.Equal(t, tc.want, have)
-		})
-	}
-}
-
-func Test_method_genOnSig_tabular(t *testing.T) {
-	tt := []struct {
-		testN string
-
-		typ  string
-		name string
-		args []argument
-		rets []argument
-		want string
-	}{
-		{
-			"no arguments no returns",
-			"TypeMock",
-			"Method",
-			nil,
-			nil,
-			"func (_mck *TypeMock) OnMethod() *mock.Call",
-		},
-		{
-			"no arguments one return",
-			"TypeMock",
-			"Method",
-			nil,
-			[]argument{
-				{name: "", typ: "error"},
-			},
-			"func (_mck *TypeMock) OnMethod() *mock.Call",
-		},
-		{
-			"no arguments two returns",
-			"TypeMock",
-			"Method",
-			nil,
-			[]argument{
-				{name: "", typ: "int"},
-				{name: "", typ: "error"},
-			},
-			"func (_mck *TypeMock) OnMethod() *mock.Call",
-		},
-		{
-			"one argument two returns",
-			"TypeMock",
-			"Method",
-			[]argument{
-				{name: "a", typ: "int"},
-			},
-			[]argument{
-				{name: "", typ: "int"},
-				{name: "", typ: "error"},
-			},
-			"func (_mck *TypeMock) OnMethod(a any) *mock.Call",
-		},
-		{
-			"one argument no returns",
-			"TypeMock",
-			"Method",
-			[]argument{
-				{name: "a", typ: "int"},
-			},
-			nil,
-			"func (_mck *TypeMock) OnMethod(a any) *mock.Call",
-		},
-		{
-			"variadic",
-			"TypeMock",
-			"Method",
-			[]argument{
-				{name: "a", typ: "...int"},
-			},
-			nil,
-			"func (_mck *TypeMock) OnMethod(a ...any) *mock.Call",
-		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.testN, func(t *testing.T) {
-			// --- Given ---
-			met := &method{
-				name: tc.name,
-				args: tc.args,
-				rets: tc.rets,
-			}
-
-			// --- When ---
-			have := met.genOnSig(tc.typ)
+			have := met.genSig(tc.typ)
 
 			// --- Then ---
 			assert.Equal(t, tc.want, have)
@@ -1030,6 +893,8 @@ func Test_method_genReturnBody(t *testing.T) {
 }
 
 func Test_method_genSingleRet_tabular(t *testing.T) {
+	long := "pkg." + strings.Repeat("T", 40)
+
 	tt := []struct {
 		testN string
 
@@ -1074,6 +939,46 @@ func Test_method_genSingleRet_tabular(t *testing.T) {
 				"default:",
 				"\t_mck.t.Fatalf(\"Method return 1 is %T, not int\", _v)",
 				"}",
+			},
+		},
+		{
+			"percent and quote in type",
+			[]argument{},
+			argument{name: "", typ: `[len("a%")]byte`},
+			0,
+			[]string{
+				`var _r1 [len("a%")]byte`,
+				"switch _v := _rets.Get(1).(type) {",
+				`case func() [len("a%")]byte:`,
+				"\t_r1 = _v()",
+				`case [len("a%")]byte:`,
+				"\t_r1 = _v",
+				"case nil:",
+				"default:",
+				"\t_mck.t.Fatalf(" +
+					`"Method return 1 is %T, not [len(\"a%%\")]byte", _v)`,
+				"}",
+			},
+		},
+		{
+			"wrapped fatal call",
+			[]argument{},
+			argument{name: "", typ: long},
+			1,
+			[]string{
+				"\tvar _r1 " + long,
+				"\tswitch _v := _rets.Get(1).(type) {",
+				"\tcase func() " + long + ":",
+				"\t\t_r1 = _v()",
+				"\tcase " + long + ":",
+				"\t\t_r1 = _v",
+				"\tcase nil:",
+				"\tdefault:",
+				"\t\t_mck.t.Fatalf(",
+				"\t\t\t\"Method return 1 is %T, not " + long + "\",",
+				"\t\t\t_v,",
+				"\t\t)",
+				"\t}",
 			},
 		},
 		{

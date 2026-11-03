@@ -68,3 +68,8 @@ type key int
 
 // Parameter named like a source package type its method uses.
 type CaseLocalTypeParam interface{ Get(key key) key }
+
+// Interface and method names long enough to wrap the generated comments.
+type CaseLongNamesWrapTheGodocs interface {
+	RecordEveryOperationOfTheService(a int) error
+}
