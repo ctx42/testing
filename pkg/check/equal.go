@@ -54,6 +54,28 @@ type visit struct {
 	typ     reflect.Type
 }
 
+// mapEntry is one key and value of a map compared by deepEqual.
+type mapEntry struct {
+	key   reflect.Value
+	val   reflect.Value
+	order string // Cached result of valOrder.
+}
+
+// valOrder returns a string ordering entries whose keys tie: the dump of the
+// value followed by its dynamic type. It dumps the value at most once, because
+// dumps of cyclic values are costly.
+func (ent *mapEntry) valOrder(dmp dump.Dump) string {
+	if ent.order != "" {
+		return ent.order
+	}
+	val := ent.val
+	if val.Kind() == reflect.Interface && !val.IsNil() {
+		val = val.Elem()
+	}
+	ent.order = dmp.Value(ent.val) + " " + val.Type().String()
+	return ent.order
+}
+
 // deepEqual is the internal recursive comparison engine used by [Equal].
 // It handles all Go kinds, custom checkers (see [WithTypeChecker] /
 // [WithTrailChecker]), trail skipping ([WithSkipTrail]), unexported field
@@ -259,26 +281,38 @@ func deepEqual(
 			return nil
 		}
 
-		keys := wVal.MapKeys()
-		slices.SortFunc(keys, func(a, b reflect.Value) int {
-			if c := cmp.Compare(valToString(a), valToString(b)); c != 0 {
+		// Values come from the iterator: a NaN key is not found by lookup.
+		entries := make([]*mapEntry, 0, wVal.Len())
+		for itr := wVal.MapRange(); itr.Next(); {
+			ent := &mapEntry{key: itr.Key(), val: itr.Value()}
+			entries = append(entries, ent)
+		}
+		slices.SortFunc(entries, func(a, b *mapEntry) int {
+			c := cmp.Compare(valToString(a.key), valToString(b.key))
+			if c != 0 {
 				return c
 			}
 			// Keys rendering the same (struct, array) are ordered by dump.
-			return cmp.Compare(ops.Dumper.Value(a), ops.Dumper.Value(b))
+			c = cmp.Compare(ops.Dumper.Value(a.key), ops.Dumper.Value(b.key))
+			if c != 0 {
+				return c
+			}
+			// Keys dumping the same (NaN) are ordered by value.
+			return cmp.Compare(a.valOrder(ops.Dumper), b.valOrder(ops.Dumper))
 		})
 
 		var err error
-		for _, key := range keys {
-			wkVal := wVal.MapIndex(key)
-			hkVal := hVal.MapIndex(key)
-			kOps := ops.MapTrail(valToString(key))
+		for _, ent := range entries {
+			hkVal := hVal.MapIndex(ent.key)
+			kOps := ops.MapTrail(valToString(ent.key))
 			if !hkVal.IsValid() {
-				e := equalError(wkVal.Interface(), nil, WithOptions(kOps))
+				// The value is valid, so it can always be extracted.
+				wItf, _ := core.Value(ent.val)
+				e := equalError(wItf, nil, WithOptions(kOps))
 				err = notice.Join(err, e)
 				continue
 			}
-			e := deepEqual(wkVal, hkVal, visited, WithOptions(kOps))
+			e := deepEqual(ent.val, hkVal, visited, WithOptions(kOps))
 			if e != nil {
 				err = notice.Join(err, e)
 			}

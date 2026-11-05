@@ -6,7 +6,9 @@ package check
 import (
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -1830,6 +1832,104 @@ func Test_Equal_kind_Map(t *testing.T) {
 		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
 	})
 
+	t.Run("error - NaN key is never found", func(t *testing.T) {
+		// --- Given ---
+		want := map[float64]int{math.NaN(): 1}
+		have := map[float64]int{math.NaN(): 1}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"      trail: map[NaN]\n" +
+			"  want type: int\n" +
+			"  have type: <nil>\n" +
+			"       want: 1\n" +
+			"       have: nil"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - NaN keys are reported by value", func(t *testing.T) {
+		// --- Given ---
+		want := make(map[float64]int)
+		have := make(map[float64]int)
+		for i := range 6 {
+			want[math.NaN()] = i
+			have[math.NaN()] = i
+		}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		found := regexp.MustCompile(`want: (\d)`).
+			FindAllStringSubmatch(err.Error(), -1)
+		order := make([]string, 0, len(found))
+		for _, match := range found {
+			order = append(order, match[1])
+		}
+		affirm.DeepEqual(t, []string{"0", "1", "2", "3", "4", "5"}, order)
+	})
+
+	t.Run("error - values with tied keys are ordered once", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ N int }
+		want := make(map[float64]T)
+		have := make(map[float64]T)
+		for i := range 6 {
+			want[math.NaN()] = T{N: i}
+			have[math.NaN()] = T{N: i}
+		}
+
+		var count int
+		dpr := func(dump.Dump, int, reflect.Value) string {
+			count++
+			return "T"
+		}
+
+		// --- When ---
+		err := Equal(want, have, WithDumper(dump.WithDumper(T{}, dpr)))
+
+		// --- Then ---
+		// Each of the six values is dumped to order it and to report it.
+		affirm.NotNil(t, err)
+		affirm.Equal(t, 12, count)
+	})
+
+	t.Run("error - length mismatch prints NaN key value", func(t *testing.T) {
+		// --- Given ---
+		want := map[float64]int{math.NaN(): 1}
+		have := make(map[float64]int)
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		affirm.Equal(t, true, strings.Contains(err.Error(), "NaN: 1,"))
+	})
+
+	t.Run("error - missing key in unexported map", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ m map[string]int }
+		want := T{m: map[string]int{"a": 1}}
+		have := T{m: map[string]int{"b": 1}}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"      trail: T.m[\"a\"]\n" +
+			"  want type: int\n" +
+			"  have type: <nil>\n" +
+			"       want: 1\n" +
+			"       have: nil"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("nil maps", func(t *testing.T) {
 		// --- When ---
 		err := Equal(map[string]int(nil), map[string]int(nil))
@@ -2481,6 +2581,56 @@ func Test_NotEqual(t *testing.T) {
 			"   want: 42\n" +
 			"   have: 42"
 		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
+func Test_mapEntry_valOrder(t *testing.T) {
+	t.Run("value is dumped once", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ N int }
+
+		var count int
+		dpr := func(dump.Dump, int, reflect.Value) string {
+			count++
+			return "T"
+		}
+		dmp := dump.New(dump.WithDumper(T{}, dpr))
+		ent := &mapEntry{val: reflect.ValueOf(T{})}
+
+		// --- When ---
+		have := ent.valOrder(dmp)
+
+		// --- Then ---
+		affirm.Equal(t, "T check.T", have)
+		affirm.Equal(t, "T check.T", ent.valOrder(dmp))
+		affirm.Equal(t, 1, count)
+	})
+
+	t.Run("dynamic type orders equal dumps", func(t *testing.T) {
+		// --- Given ---
+		vals := reflect.ValueOf(map[string]any{"a": 1, "b": int64(1)})
+		ent0 := &mapEntry{val: vals.MapIndex(reflect.ValueOf("a"))}
+		ent1 := &mapEntry{val: vals.MapIndex(reflect.ValueOf("b"))}
+
+		// --- When ---
+		hOrd0 := ent0.valOrder(dump.New())
+		hOrd1 := ent1.valOrder(dump.New())
+
+		// --- Then ---
+		affirm.Equal(t, "1 int", hOrd0)
+		affirm.Equal(t, "1 int64", hOrd1)
+	})
+
+	t.Run("nil interface value", func(t *testing.T) {
+		// --- Given ---
+		vals := reflect.ValueOf(map[string]any{"a": nil})
+		ent := &mapEntry{val: vals.MapIndex(reflect.ValueOf("a"))}
+
+		// --- When ---
+		have := ent.valOrder(dump.New())
+
+		// --- Then ---
+		affirm.Equal(t, "nil interface {}", have)
 	})
 }
 
