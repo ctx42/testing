@@ -473,8 +473,9 @@ func deepEqual(
 
 // refPtrs returns identity pointers for kinds that can form comparison
 // cycles (pointers, maps, slices). Nil references are not tracked, and neither
-// are zero-length maps and slices, or pointers to and slices of zero-size
-// values: they cannot form a cycle, and such values may share one address.
+// are values that cannot form a cycle: zero-length maps and slices, and
+// pointers to and slices of zero-size values. Zero-size values may also share
+// one address.
 func refPtrs(w, h reflect.Value) (unsafe.Pointer, unsafe.Pointer, bool) {
 	if w.Kind() != h.Kind() {
 		return nil, nil, false
@@ -534,8 +535,8 @@ func equalError(want, have any, opts ...any) *notice.Notice {
 }
 
 // nilnessError returns an error when exactly one of the want and have slices
-// or maps is nil, unless [WithEquateEmpty] is used. It panics for any other
-// kind.
+// or maps is nil, unless [WithEquateEmpty] is used. Both values must be slices
+// or maps.
 func nilnessError(wVal, hVal reflect.Value, ops Options) error {
 	if ops.EquateEmpty || wVal.IsNil() == hVal.IsNil() {
 		return nil
