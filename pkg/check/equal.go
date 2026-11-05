@@ -57,24 +57,38 @@ type visit struct {
 
 // mapEntry is one key and value of a map compared by deepEqual.
 type mapEntry struct {
-	key   reflect.Value
-	val   reflect.Value
-	order string // Cached result of valOrder.
+	key    reflect.Value
+	val    reflect.Value
+	keyOrd string // Cached result of keyOrder.
+	order  string // Cached result of valOrder.
+}
+
+// keyOrder returns a string ordering entries whose keys tie in valToString,
+// built like the one of valOrder. It dumps the key at most once.
+func (ent *mapEntry) keyOrder(dmp dump.Dump) string {
+	if ent.keyOrd == "" {
+		ent.keyOrd = orderString(dmp, ent.key)
+	}
+	return ent.keyOrd
 }
 
 // valOrder returns a string ordering entries whose keys tie: the dump of the
 // value followed by its dynamic type. It dumps the value at most once, because
 // dumps of cyclic values are costly.
 func (ent *mapEntry) valOrder(dmp dump.Dump) string {
-	if ent.order != "" {
-		return ent.order
+	if ent.order == "" {
+		ent.order = orderString(dmp, ent.val)
 	}
-	val := ent.val
-	if val.Kind() == reflect.Interface && !val.IsNil() {
-		val = val.Elem()
-	}
-	ent.order = dmp.Value(ent.val) + " " + val.Type().String()
 	return ent.order
+}
+
+// orderString returns the dump of the value followed by its dynamic type.
+func orderString(dmp dump.Dump, val reflect.Value) string {
+	dyn := val
+	if dyn.Kind() == reflect.Interface && !dyn.IsNil() {
+		dyn = dyn.Elem()
+	}
+	return dmp.Value(val) + " " + dyn.Type().String()
 }
 
 // deepEqual is the internal recursive comparison engine used by [Equal].
@@ -317,8 +331,9 @@ func deepEqual(
 			if c != 0 {
 				return c
 			}
-			// Keys rendering the same (struct, array) are ordered by dump.
-			c = cmp.Compare(ops.Dumper.Value(a.key), ops.Dumper.Value(b.key))
+			// Keys rendering the same (struct, array) are ordered by dump
+			// and type.
+			c = cmp.Compare(a.keyOrder(ops.Dumper), b.keyOrder(ops.Dumper))
 			if c != 0 {
 				return c
 			}

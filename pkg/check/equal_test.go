@@ -1988,6 +1988,55 @@ func Test_Equal_kind_Map(t *testing.T) {
 		affirm.Equal(t, 12, count)
 	})
 
+	t.Run("error - tied keys are ordered by type", func(t *testing.T) {
+		// --- Given ---
+		want := map[any]int{
+			int(1): 0, int8(1): 0, int16(1): 0,
+			int32(1): 0, int64(1): 0, uint(1): 0,
+		}
+		have := map[any]int{
+			int(1): 1, int16(1): 2, int32(1): 3,
+			int64(1): 4, int8(1): 5, uint(1): 6,
+		}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		found := regexp.MustCompile(`have: (\d)`).
+			FindAllStringSubmatch(err.Error(), -1)
+		order := make([]string, 0, len(found))
+		for _, match := range found {
+			order = append(order, match[1])
+		}
+		affirm.DeepEqual(t, []string{"1", "2", "3", "4", "5", "6"}, order)
+	})
+
+	t.Run("tied keys are dumped once", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ N int }
+		want := make(map[T]int)
+		have := make(map[T]int)
+		for i := range 6 {
+			want[T{N: i}] = i
+			have[T{N: i}] = i
+		}
+
+		var count int
+		dpr := func(dump.Dump, int, reflect.Value) string {
+			count++
+			return "T"
+		}
+
+		// --- When ---
+		err := Equal(want, have, WithDumper(dump.WithDumper(T{}, dpr)))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.Equal(t, 6, count)
+	})
+
 	t.Run("error - length mismatch prints NaN key value", func(t *testing.T) {
 		// --- Given ---
 		want := map[float64]int{math.NaN(): 1}
@@ -3073,6 +3122,27 @@ func Test_NotEqual(t *testing.T) {
 	})
 }
 
+func Test_mapEntry_keyOrder(t *testing.T) {
+	// --- Given ---
+	type T struct{ N int }
+
+	var count int
+	dpr := func(dump.Dump, int, reflect.Value) string {
+		count++
+		return "T"
+	}
+	dmp := dump.New(dump.WithDumper(T{}, dpr))
+	ent := &mapEntry{key: reflect.ValueOf(T{})}
+
+	// --- When ---
+	have := ent.keyOrder(dmp)
+
+	// --- Then ---
+	affirm.Equal(t, "T check.T", have)
+	affirm.Equal(t, "T check.T", ent.keyOrder(dmp))
+	affirm.Equal(t, 1, count)
+}
+
 func Test_mapEntry_valOrder(t *testing.T) {
 	t.Run("value is dumped once", func(t *testing.T) {
 		// --- Given ---
@@ -3121,6 +3191,35 @@ func Test_mapEntry_valOrder(t *testing.T) {
 		// --- Then ---
 		affirm.Equal(t, "nil interface {}", have)
 	})
+}
+
+func Test_orderString_tabular(t *testing.T) {
+	vals := reflect.ValueOf(map[string]any{"a": 1, "b": nil})
+
+	tt := []struct {
+		testN string
+
+		val  reflect.Value
+		want string
+	}{
+		{"concrete value", reflect.ValueOf(1), "1 int"},
+		{"interface value", vals.MapIndex(reflect.ValueOf("a")), "1 int"},
+		{
+			"nil interface",
+			vals.MapIndex(reflect.ValueOf("b")),
+			"nil interface {}",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := orderString(dump.New(), tc.val)
+
+			// --- Then ---
+			affirm.Equal(t, tc.want, have)
+		})
+	}
 }
 
 func Test_equalError(t *testing.T) {
