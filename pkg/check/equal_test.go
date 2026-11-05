@@ -1566,6 +1566,8 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		err := Equal(want, have, WithTrailLog(&trail))
 
 		// --- Then ---
+		// The runtime gives these slices one address, so elements are not
+		// logged. The Go specification does not promise that.
 		affirm.Nil(t, err)
 		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
 	})
@@ -1582,8 +1584,44 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		err := Equal(want, have, WithTrailLog(&trail))
 
 		// --- Then ---
+		// The runtime gives these slices one address, so elements are not
+		// logged. The Go specification does not promise that.
 		affirm.NotNil(t, err)
 		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
+	})
+
+	t.Run("slices of empty structs at real addresses", func(t *testing.T) {
+		// --- Given ---
+		type Z struct {
+			E [1]struct{}
+			X int
+		}
+		type T struct{ A, B []struct{} }
+		wZ, hZ := new(Z), new(Z)
+		want := T{A: wZ.E[:], B: wZ.E[:]}
+		have := T{A: hZ.E[:], B: hZ.E[:]}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"T.A[0]", "T.B[0]"}, trail)
+	})
+
+	t.Run("WithEquateEmpty on unexported field", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ items []int }
+		want := T{}
+		have := T{items: make([]int, 0)}
+
+		// --- When ---
+		err := Equal(want, have, WithEquateEmpty())
+
+		// --- Then ---
+		affirm.Nil(t, err)
 	})
 
 	t.Run("error - shorter alias hides no difference", func(t *testing.T) {
@@ -1829,6 +1867,56 @@ func Test_Equal_kind_Map(t *testing.T) {
 
 		// --- Then ---
 		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
+	})
+
+	t.Run("error - nil and empty unexported map", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ m map[string]int }
+		want := T{}
+		have := T{m: make(map[string]int)}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: T.m\n" +
+			"   want: map[string]int(nil)\n" +
+			"   have: map[string]int{}"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - each field with empty have is reported", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B map[string]int }
+		x := map[string]int{"a": 1}
+		y := make(map[string]int)
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(T{A: x, B: x}, T{A: y, B: y}, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
+	})
+
+	t.Run("error - each field with empty want is reported", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B map[string]int }
+		x := make(map[string]int)
+		y := map[string]int{"a": 1}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(T{A: x, B: x}, T{A: y, B: y}, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
 		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
 	})
 
