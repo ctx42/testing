@@ -2610,6 +2610,42 @@ func Test_Equal_kind_UnsafePointer(t *testing.T) {
 	})
 }
 
+func Test_Equal_shared_reference_tabular(t *testing.T) {
+	type TM struct{ A, B map[string]int }
+	type TS struct{ A, B []int }
+	type TP struct{ A, B *int }
+
+	dict := map[string]int{"a": 1}
+	list := []int{1}
+	one, oneB, two := 1, 1, 2
+
+	tt := []struct {
+		testN  string
+		shared any
+		split  any
+	}{
+		{
+			"map",
+			TM{dict, dict},
+			TM{map[string]int{"a": 1}, map[string]int{"a": 2}},
+		},
+		{"slice", TS{list, list}, TS{[]int{1}, []int{2}}},
+		{"pointer", TP{&one, &one}, TP{&oneB, &two}},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			err := Equal(tc.shared, tc.split)
+			rev := Equal(tc.split, tc.shared)
+
+			// --- Then ---
+			affirm.NotNil(t, err)
+			affirm.NotNil(t, rev)
+		})
+	}
+}
+
 func Test_Equal_EqualCases_tabular(t *testing.T) {
 	for _, tc := range testcases.EqualCases() {
 		t.Run("Equal "+tc.Desc, func(t *testing.T) {
