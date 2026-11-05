@@ -173,6 +173,10 @@ func deepEqual(
 
 	case reflect.Struct:
 		// Compare exported fields one by one, building per-field trails.
+		if wVal.NumField() == 0 {
+			_ = ops.LogTrail()
+			return nil
+		}
 		var err error
 		typeName := wVal.Type().Name()
 		sOps := ops.StructTrail(typeName, "")
@@ -211,6 +215,10 @@ func deepEqual(
 				return nil
 			}
 		}
+		if wVal.Len() == 0 {
+			_ = ops.LogTrail()
+			return nil
+		}
 		var err error
 		for i := 0; i < wVal.Len(); i++ {
 			wiVal := wVal.Index(i)
@@ -240,7 +248,7 @@ func deepEqual(
 		if e := nilnessError(wVal, hVal, ops); e != nil {
 			return e
 		}
-		if wVal.Pointer() == hVal.Pointer() {
+		if wVal.Len() == 0 || wVal.Pointer() == hVal.Pointer() {
 			_ = ops.LogTrail()
 			return nil
 		}
@@ -464,7 +472,9 @@ func deepEqual(
 }
 
 // refPtrs returns identity pointers for kinds that can form comparison
-// cycles (pointers, maps, slices). Nil references are not tracked.
+// cycles (pointers, maps, slices). Nil references are not tracked, and neither
+// are zero-length maps and slices, or pointers to and slices of zero-size
+// values: they cannot form a cycle, and such values may share one address.
 func refPtrs(w, h reflect.Value) (unsafe.Pointer, unsafe.Pointer, bool) {
 	if w.Kind() != h.Kind() {
 		return nil, nil, false
@@ -472,13 +482,16 @@ func refPtrs(w, h reflect.Value) (unsafe.Pointer, unsafe.Pointer, bool) {
 	switch w.Kind() {
 	case reflect.Pointer:
 		wp, hp := core.Pointer(w), core.Pointer(h)
-		if wp == nil || hp == nil {
+		if wp == nil || hp == nil || w.Type().Elem().Size() == 0 {
 			return nil, nil, false
 		}
 		return wp, hp, true
 
 	case reflect.Map, reflect.Slice:
-		if w.IsNil() || h.IsNil() {
+		if w.IsNil() || h.IsNil() || w.Len() == 0 || h.Len() == 0 {
+			return nil, nil, false
+		}
+		if w.Kind() == reflect.Slice && w.Type().Elem().Size() == 0 {
 			return nil, nil, false
 		}
 		return unsafe.Pointer(w.Pointer()), //nolint:gosec

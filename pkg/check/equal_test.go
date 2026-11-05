@@ -438,6 +438,38 @@ func Test_Equal_custom_type_checkers(t *testing.T) {
 }
 
 func Test_Equal_kind_Ptr(t *testing.T) {
+	t.Run("pointers to empty arrays log every trail", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B *[0]int }
+		want := T{A: new([0]int), B: new([0]int)}
+		have := T{A: new([0]int), B: new([0]int)}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
+	})
+
+	t.Run("pointers to empty structs log every trail", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B *struct{} }
+		want := T{A: new(struct{}), B: new(struct{})}
+		have := T{A: new(struct{}), B: new(struct{})}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
+	})
+
 	t.Run("equal structs by pointer", func(t *testing.T) {
 		// --- Given ---
 		want := &struct{ Int int }{Int: 123}
@@ -556,6 +588,20 @@ func Test_Equal_kind_Ptr(t *testing.T) {
 }
 
 func Test_Equal_kind_Struct(t *testing.T) {
+	t.Run("empty struct fields log every trail", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B struct{} }
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(T{}, T{}, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
+	})
+
 	t.Run("equal structs by value", func(t *testing.T) {
 		// --- Given ---
 		want := struct{ Int int }{Int: 123}
@@ -1374,6 +1420,170 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		affirm.NotNil(t, err)
 	})
 
+	t.Run("empty slices log the trail", func(t *testing.T) {
+		// --- Given ---
+		want := make([]int, 0, 1)
+		have := make([]int, 0, 2)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+
+	t.Run("empty arrays log the trail", func(t *testing.T) {
+		// --- Given ---
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
+
+		// --- When ---
+		err := Equal([0]int{}, [0]int{}, opts...)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+
+	t.Run("WithEquateEmpty logs the trail", func(t *testing.T) {
+		// --- Given ---
+		want := []int(nil)
+		have := make([]int, 0)
+
+		trail := make([]string, 0)
+		opts := []any{
+			WithEquateEmpty(),
+			WithTrailLog(&trail),
+			WithTrail("type.field"),
+		}
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+
+	t.Run("empty slice fields log every trail", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B []int }
+		want := T{A: make([]int, 0), B: make([]int, 0)}
+		have := T{A: make([]int, 0), B: make([]int, 0)}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
+	})
+
+	t.Run("empty slice elements log every trail", func(t *testing.T) {
+		// --- Given ---
+		want := [][]int{make([]int, 0), make([]int, 0)}
+		have := [][]int{make([]int, 0), make([]int, 0)}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"<slice>[0]", "<slice>[1]"}, trail)
+	})
+
+	t.Run("error - empty slice hides no later difference", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B []int }
+		x := []int{1}
+		y := []int{2}
+		want := T{A: x[:0], B: x}
+		have := T{A: y[:0], B: y}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: T.B[0]\n" +
+			"   want: 1\n" +
+			"   have: 2"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - each field with empty have is reported", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B []int }
+		x := []int{1}
+		y := make([]int, 0)
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(T{A: x, B: x}, T{A: y, B: y}, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
+	})
+
+	t.Run("error - each field with empty want is reported", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B []int }
+		x := make([]int, 0)
+		y := []int{1}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(T{A: x, B: x}, T{A: y, B: y}, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
+	})
+
+	t.Run("slices of empty structs log every trail", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B []struct{} }
+		want := T{A: make([]struct{}, 2), B: make([]struct{}, 2)}
+		have := T{A: make([]struct{}, 2), B: make([]struct{}, 2)}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
+	})
+
+	t.Run("error - slices of empty structs differ in length", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B []struct{} }
+		want := T{A: make([]struct{}, 2), B: make([]struct{}, 2)}
+		have := T{A: make([]struct{}, 2), B: make([]struct{}, 3)}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
+	})
+
 	t.Run("nil slices", func(t *testing.T) {
 		// --- When ---
 		err := Equal([]int(nil), []int(nil))
@@ -1459,6 +1669,75 @@ func Test_Equal_kind_Map(t *testing.T) {
 
 		// --- Then ---
 		affirm.Nil(t, err)
+	})
+
+	t.Run("empty maps log the trail", func(t *testing.T) {
+		// --- Given ---
+		want := make(map[string]int)
+		have := make(map[string]int)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+
+	t.Run("WithEquateEmpty logs the map trail", func(t *testing.T) {
+		// --- Given ---
+		want := map[string]int(nil)
+		have := make(map[string]int)
+
+		trail := make([]string, 0)
+		opts := []any{
+			WithEquateEmpty(),
+			WithTrailLog(&trail),
+			WithTrail("type.field"),
+		}
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+
+	t.Run("empty slice map values log every trail", func(t *testing.T) {
+		// --- Given ---
+		want := map[string][]int{"a": make([]int, 0), "b": make([]int, 0)}
+		have := map[string][]int{"a": make([]int, 0), "b": make([]int, 0)}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{`map["a"]`, `map["b"]`}, trail)
+	})
+
+	t.Run("shared empty map logs every trail", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B map[string]int }
+		wMap := make(map[string]int)
+		hMap := make(map[string]int)
+		want := T{A: wMap, B: wMap}
+		have := T{A: hMap, B: hMap}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
 	})
 
 	t.Run("nil maps", func(t *testing.T) {
