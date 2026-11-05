@@ -1,3 +1,16 @@
+## v0.60.0 (Thu, 05 Nov 2026 21:16:53 UTC)
+- test(check): compare edge values pairwise and shared references.
+- test(check): add generated checks for Equal.
+- fix(dump)!: sort map keys by dump to survive cycles.
+- fix(check): stop valToString on self-referencing keys.
+- fix(check): keep trail options from hiding shared values.
+- docs(check): state that a skip does not cover key presence.
+- fix(check): log the trail of a missing map key.
+- fix(check)!: name missing map keys in failures.
+- fix(check): order tied map keys by dump and type.
+- docs: clarify trail log, hop limit, and dump release godoc.
+- test: pin dump release, hop limit, and per-trail walks.
+
 ## v0.59.1 (Thu, 05 Nov 2026 15:47:51 UTC)
 - docs(check): state that nil rule covers unexported fields.
 - fix(check): stop zero-size values colliding in cycle check.
