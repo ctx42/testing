@@ -280,6 +280,18 @@ func Test_WithCmpBaseTypes(t *testing.T) {
 	affirm.Equal(t, true, have.CmpSimpleType)
 }
 
+func Test_WithEquateEmpty(t *testing.T) {
+	// --- Given ---
+	ops := Options{}
+
+	// --- When ---
+	have := WithEquateEmpty()(ops)
+
+	// --- Then ---
+	affirm.Equal(t, false, ops.EquateEmpty)
+	affirm.Equal(t, true, have.EquateEmpty)
+}
+
 func Test_WithWaitThrottle(t *testing.T) {
 	// --- Given ---
 	ops := Options{}
@@ -335,6 +347,7 @@ func Test_WithOptions(t *testing.T) {
 		SkipTrails:     []string{"skip"},
 		SkipUnexported: true,
 		CmpSimpleType:  true,
+		EquateEmpty:    true,
 		IncreaseSoft:   true,
 		DecreaseSoft:   true,
 		WaitThrottle:   10 * time.Millisecond,
@@ -360,7 +373,7 @@ func Test_WithOptions(t *testing.T) {
 
 	// When those fail, add fields above.
 	affirm.Equal(t, 16, reflect.ValueOf(have.Dumper).NumField())
-	affirm.Equal(t, 16, reflect.ValueOf(have).NumField())
+	affirm.Equal(t, 17, reflect.ValueOf(have).NumField())
 }
 
 func Test_DefaultOptions(t *testing.T) {
@@ -385,12 +398,13 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, true, have.SkipTrails == nil)
 		affirm.Equal(t, false, have.SkipUnexported)
 		affirm.Equal(t, false, have.CmpSimpleType)
+		affirm.Equal(t, false, have.EquateEmpty)
 		affirm.Equal(t, false, have.IncreaseSoft)
 		affirm.Equal(t, false, have.DecreaseSoft)
 		affirm.Equal(t, 10*time.Millisecond, have.WaitThrottle)
 		affirm.Equal(t, "", have.Comment)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 16, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 17, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("with options", func(t *testing.T) {
@@ -414,12 +428,13 @@ func Test_DefaultOptions(t *testing.T) {
 		affirm.Equal(t, true, have.SkipTrails == nil)
 		affirm.Equal(t, false, have.SkipUnexported)
 		affirm.Equal(t, false, have.CmpSimpleType)
+		affirm.Equal(t, false, have.EquateEmpty)
 		affirm.Equal(t, false, have.IncreaseSoft)
 		affirm.Equal(t, false, have.DecreaseSoft)
 		affirm.Equal(t, 10*time.Millisecond, have.WaitThrottle)
 		affirm.Equal(t, "", have.Comment)
 		affirm.Equal(t, true, core.Same(time.Now, have.now))
-		affirm.Equal(t, 16, reflect.ValueOf(have).NumField())
+		affirm.Equal(t, 17, reflect.ValueOf(have).NumField())
 	})
 
 	t.Run("TypeCheckers cloned", func(t *testing.T) {

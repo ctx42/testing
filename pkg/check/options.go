@@ -288,6 +288,21 @@ func WithCmpBaseTypes() Option {
 	}
 }
 
+// WithEquateEmpty is a [Checker] option making equality checks treat a nil
+// slice or map as equal to an empty one of the same type. By default, they are
+// different.
+//
+// Example:
+//
+//	err := Equal([]int(nil), []int{}, WithEquateEmpty())
+//	fmt.Println(err) // <nil>
+func WithEquateEmpty() Option {
+	return func(ops Options) Options {
+		ops.EquateEmpty = true
+		return ops
+	}
+}
+
 // WithWaitThrottle is a [Checker] option setting how calls to the test
 // function should be throttled.
 func WithWaitThrottle(throttle time.Duration) Option {
@@ -320,6 +335,7 @@ func WithOptions(src Options) Option {
 		ops.SkipTrails = src.SkipTrails
 		ops.SkipUnexported = src.SkipUnexported
 		ops.CmpSimpleType = src.CmpSimpleType
+		ops.EquateEmpty = src.EquateEmpty
 		ops.IncreaseSoft = src.IncreaseSoft
 		ops.DecreaseSoft = src.DecreaseSoft
 		ops.WaitThrottle = src.WaitThrottle
@@ -364,6 +380,9 @@ type Options struct {
 
 	// See [WithCmpBaseTypes].
 	CmpSimpleType bool
+
+	// See [WithEquateEmpty].
+	EquateEmpty bool
 
 	// Option for [Increasing] allowing consecutive values to be equal.
 	IncreaseSoft bool

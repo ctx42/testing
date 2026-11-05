@@ -18,6 +18,9 @@ import (
 
 // Equal recursively checks that want and have are equal.
 //
+// A nil slice or map is not equal to an empty one, at any depth. Use
+// [WithEquateEmpty] to treat them as equal.
+//
 // See the package documentation for the customization model
 // ([DefaultOptions], [WithTrail], [WithTypeChecker], etc.) and
 // [dump] options.
@@ -199,9 +202,14 @@ func deepEqual(
 				Append("diff", "%s", diff)
 			return AddRows(ops, msg)
 		}
-		if knd == reflect.Slice && wVal.Pointer() == hVal.Pointer() {
-			_ = ops.LogTrail()
-			return nil
+		if knd == reflect.Slice {
+			if e := nilnessError(wVal, hVal, ops); e != nil {
+				return e
+			}
+			if wVal.Pointer() == hVal.Pointer() {
+				_ = ops.LogTrail()
+				return nil
+			}
 		}
 		var err error
 		for i := 0; i < wVal.Len(); i++ {
@@ -228,6 +236,9 @@ func deepEqual(
 				Have("%s", hStr).
 				Append("diff", "%s", diff)
 			return AddRows(ops, msg)
+		}
+		if e := nilnessError(wVal, hVal, ops); e != nil {
+			return e
 		}
 		if wVal.Pointer() == hVal.Pointer() {
 			_ = ops.LogTrail()
@@ -506,6 +517,20 @@ func equalError(want, have any, opts ...any) *notice.Notice {
 	if diff != "" && assignable {
 		_ = msg.Append("diff", "%s", diff)
 	}
+	return AddRows(ops, msg)
+}
+
+// nilnessError returns an error when exactly one of the want and have slices
+// or maps is nil, unless [WithEquateEmpty] is used. It panics for any other
+// kind.
+func nilnessError(wVal, hVal reflect.Value, ops Options) error {
+	if ops.EquateEmpty || wVal.IsNil() == hVal.IsNil() {
+		return nil
+	}
+	_ = ops.LogTrail()
+	msg := notice.New("expected values to be equal").
+		Want("%s", ops.Dumper.Value(wVal)).
+		Have("%s", ops.Dumper.Value(hVal))
 	return AddRows(ops, msg)
 }
 

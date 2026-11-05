@@ -12,7 +12,8 @@ import (
 //
 // AreEqual follows check.Equal, which differs from [reflect.DeepEqual]: it
 // compares time.Time values by instant (ignoring the location), functions by
-// identity and pointers by the values they point to.
+// identity and pointers by the values they point to. Like [reflect.DeepEqual],
+// it treats a nil slice or map as different from an empty one.
 type EqualCase struct {
 	Desc     string // Human-readable description of the case.
 	Val0     any    // First value.
@@ -49,6 +50,20 @@ func EqualCases() []EqualCase {
 		{"not equal int slice", []int{42, 44}, []int{42, 45}, false},
 		{"empty int slice", []int{}, []int{}, true},
 		{"nil int slice", []int(nil), []int(nil), true},
+		{"nil and empty int slice", []int(nil), make([]int, 0), false},
+		{"empty and nil int slice", make([]int, 0), []int(nil), false},
+		{
+			"nil and empty map",
+			map[string]int(nil),
+			make(map[string]int),
+			false,
+		},
+		{
+			"empty and nil map",
+			make(map[string]int),
+			map[string]int(nil),
+			false,
+		},
 		{
 			"equal type value",
 			TStrType("abc"),

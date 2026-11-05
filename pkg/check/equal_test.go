@@ -1252,6 +1252,118 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 
+	t.Run("error - nil want and empty have slice", func(t *testing.T) {
+		// --- Given ---
+		want := []int(nil)
+		have := make([]int, 0)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: type.field\n" +
+			"   want: nil\n" +
+			"   have: []int{}"
+		affirm.Equal(t, wMsg, err.Error())
+		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+
+	t.Run("error - empty want and nil have slice", func(t *testing.T) {
+		// --- Given ---
+		want := make([]int, 0)
+		have := []int(nil)
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  want: []int{}\n" +
+			"  have: nil"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - nil and empty nested slice", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ Items [][]int }
+		want := T{Items: [][]int{nil}}
+		have := T{Items: [][]int{make([]int, 0)}}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: T.Items[0]\n" +
+			"   want: nil\n" +
+			"   have: []int{}"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("empty slices with different backing arrays", func(t *testing.T) {
+		// --- Given ---
+		want := make([]int, 0, 1)
+		have := make([]int, 0, 2)
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("nil and empty slice with WithEquateEmpty", func(t *testing.T) {
+		// --- Given ---
+		want := []int(nil)
+		have := make([]int, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithEquateEmpty())
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("nested nil and empty with WithEquateEmpty", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ Items [][]int }
+		want := T{Items: [][]int{nil}}
+		have := T{Items: [][]int{make([]int, 0)}}
+
+		// --- When ---
+		err := Equal(want, have, WithEquateEmpty())
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - nil and non-empty with WithEquateEmpty", func(t *testing.T) {
+		// --- Given ---
+		want := []int(nil)
+		have := []int{1}
+
+		// --- When ---
+		err := Equal(want, have, WithEquateEmpty())
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+	})
+
+	t.Run("nil slices", func(t *testing.T) {
+		// --- When ---
+		err := Equal([]int(nil), []int(nil))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
 	t.Run("error - not equal slices with multiple errors", func(t *testing.T) {
 		// --- Given ---
 		want := []int{1, 2}
@@ -1282,6 +1394,63 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 }
 
 func Test_Equal_kind_Map(t *testing.T) {
+	t.Run("error - nil want and empty have map", func(t *testing.T) {
+		// --- Given ---
+		want := map[string]int(nil)
+		have := make(map[string]int)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
+
+		// --- When ---
+		err := Equal(want, have, opts...)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: type.field\n" +
+			"   want: map[string]int(nil)\n" +
+			"   have: map[string]int{}"
+		affirm.Equal(t, wMsg, err.Error())
+		affirm.DeepEqual(t, []string{"type.field"}, trail)
+	})
+
+	t.Run("error - empty want and nil have map", func(t *testing.T) {
+		// --- Given ---
+		want := make(map[string]int)
+		have := map[string]int(nil)
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  want: map[string]int{}\n" +
+			"  have: map[string]int(nil)"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("nil and empty map with WithEquateEmpty", func(t *testing.T) {
+		// --- Given ---
+		want := map[string]int(nil)
+		have := make(map[string]int)
+
+		// --- When ---
+		err := Equal(want, have, WithEquateEmpty())
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("nil maps", func(t *testing.T) {
+		// --- When ---
+		err := Equal(map[string]int(nil), map[string]int(nil))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
 	t.Run("error - struct keys are reported in order", func(t *testing.T) {
 		// --- Given ---
 		type K struct{ A int }
@@ -2082,6 +2251,66 @@ func Test_equalError(t *testing.T) {
 			"        +  3,\n" +
 			"         }"
 		affirm.Equal(t, wMsg, err.Error())
+	})
+}
+
+func Test_nilnessError(t *testing.T) {
+	t.Run("both nil", func(t *testing.T) {
+		// --- Given ---
+		wVal := reflect.ValueOf([]int(nil))
+		hVal := reflect.ValueOf([]int(nil))
+
+		// --- When ---
+		err := nilnessError(wVal, hVal, DefaultOptions())
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("both not nil", func(t *testing.T) {
+		// --- Given ---
+		wVal := reflect.ValueOf(make(map[string]int))
+		hVal := reflect.ValueOf(make(map[string]int))
+
+		// --- When ---
+		err := nilnessError(wVal, hVal, DefaultOptions())
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("one nil with EquateEmpty", func(t *testing.T) {
+		// --- Given ---
+		wVal := reflect.ValueOf([]int(nil))
+		hVal := reflect.ValueOf(make([]int, 0))
+		ops := DefaultOptions(WithEquateEmpty())
+
+		// --- When ---
+		err := nilnessError(wVal, hVal, ops)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - one nil", func(t *testing.T) {
+		// --- Given ---
+		wVal := reflect.ValueOf([]int(nil))
+		hVal := reflect.ValueOf(make([]int, 0))
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithTrail("type.field")}
+
+		// --- When ---
+		err := nilnessError(wVal, hVal, DefaultOptions(opts...))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: type.field\n" +
+			"   want: nil\n" +
+			"   have: []int{}"
+		affirm.Equal(t, wMsg, err.Error())
+		affirm.DeepEqual(t, []string{"type.field"}, trail)
 	})
 }
 
