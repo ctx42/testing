@@ -40,7 +40,7 @@ func (ent *mapEntry) valStr(dmp Dump, lvl int) string {
 }
 
 // takeValStr returns the result of valStr and releases the cached dump, so
-// dumps of a large map are not all held at once.
+// dumps of a large map are not all held at once. Call it once per entry.
 func (ent *mapEntry) takeValStr(dmp Dump, lvl int) string {
 	str := ent.valStr(dmp, lvl)
 	ent.str = ""

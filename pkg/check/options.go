@@ -121,9 +121,10 @@ func WithTrail(pth string) Option {
 // WithTrailLog is a [Checker] option turning on a collection of checked
 // fields/elements/keys. The trails are added to the provided slice. A pair of
 // references compared once is logged once, even when several fields share it,
-// and a pair under a skip or a trail checker is logged once per trail.
-// Nil references, empty slices and maps, and references to zero-size values are
-// logged for every field.
+// and a pair under a skip or a trail checker is logged once per trail. A trail
+// sharing a prefix with an option, such as "T.A" for "T.AB", counts as under
+// it. Nil references, empty slices and maps, and references to zero-size values
+// are logged for every field.
 func WithTrailLog(list *[]string) Option {
 	return func(ops Options) Options {
 		ops.TrailLog = list

@@ -34,8 +34,9 @@ const maxValHops = 16
 func valToString(key reflect.Value) string { return valHopString(key, 0) }
 
 // valHopString is valToString for a value reached after the given number of
-// pointer and interface steps. A chain that reaches [maxValHops] ends with
-// [dump.ValMaxNesting], so a value referencing itself stops.
+// pointer and interface steps. A chain that needs another step after
+// [maxValHops] ends with [dump.ValMaxNesting], so a value referencing itself
+// stops.
 //
 //nolint:cyclop
 func valHopString(key reflect.Value, hops int) string {
