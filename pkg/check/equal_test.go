@@ -1584,6 +1584,96 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
 	})
 
+	t.Run("error - shorter alias hides no difference", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B []int }
+		x := []int{1, 2}
+		y := []int{1, 3}
+		want := T{A: x[:1], B: x[:2]}
+		have := T{A: y[:1], B: y[:2]}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: T.B[1]\n" +
+			"   want: 2\n" +
+			"   have: 3"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - shorter nested alias hides no nil", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B [][]int }
+		x := [][]int{{1}, nil}
+		y := [][]int{{1}, make([]int, 0)}
+		want := T{A: x[:1], B: x[:2]}
+		have := T{A: y[:1], B: y[:2]}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: T.B[1]\n" +
+			"   want: nil\n" +
+			"   have: []int{}"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - shorter have alias at same address", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B []int }
+		x := []int{1, 2}
+		y := []int{1, 2}
+		want := T{A: x[:2], B: x[:2]}
+		have := T{A: y[:2], B: y[:1]}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		affirm.DeepEqual(t, []string{"T.A[0]", "T.A[1]", "T.B"}, trail)
+	})
+
+	t.Run("error - shorter want alias at same address", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ A, B []int }
+		x := []int{1, 2}
+		y := []int{1, 2}
+		want := T{A: x[:2], B: x[:1]}
+		have := T{A: y[:2], B: y[:2]}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		affirm.DeepEqual(t, []string{"T.A[0]", "T.A[1]", "T.B"}, trail)
+	})
+
+	t.Run("cycle through a shorter alias", func(t *testing.T) {
+		// --- Given ---
+		want := make([]any, 2)
+		want[0] = want[:1]
+		have := make([]any, 2)
+		have[0] = have[:1]
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
 	t.Run("nil slices", func(t *testing.T) {
 		// --- When ---
 		err := Equal([]int(nil), []int(nil))

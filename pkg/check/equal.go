@@ -44,11 +44,14 @@ func NotEqual(want, have any, opts ...any) error {
 }
 
 // visit tracks pointers during deepEqual to detect cycles and prevent
-// infinite recursion.
+// infinite recursion. Slices also record their lengths, because slices of
+// different lengths can start at the same address.
 type visit struct {
-	want unsafe.Pointer
-	have unsafe.Pointer
-	typ  reflect.Type
+	want    unsafe.Pointer
+	have    unsafe.Pointer
+	wantLen int
+	haveLen int
+	typ     reflect.Type
 }
 
 // deepEqual is the internal recursive comparison engine used by [Equal].
@@ -155,7 +158,10 @@ func deepEqual(
 	// recorded only for the default recursion, so a value handled by a custom
 	// checker is still compared when reached through another trail.
 	if wPtr, hPtr, ok := refPtrs(wVal, hVal); ok {
-		v := visit{wPtr, hPtr, wTyp}
+		v := visit{want: wPtr, have: hPtr, typ: wTyp}
+		if wVal.Kind() == reflect.Slice {
+			v.wantLen, v.haveLen = wVal.Len(), hVal.Len()
+		}
 		if visited[v] {
 			return nil
 		}
