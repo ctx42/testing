@@ -52,6 +52,7 @@ type visit struct {
 	wantLen int
 	haveLen int
 	typ     reflect.Type
+	trail   string // Set only for walks under a trail option.
 }
 
 // mapEntry is one key and value of a map compared by deepEqual.
@@ -184,10 +185,34 @@ func deepEqual(
 		if wVal.Kind() == reflect.Slice {
 			v.wantLen, v.haveLen = wVal.Len(), hVal.Len()
 		}
-		if visited[v] {
+		// True marks a pair in progress, which stops cycles. False marks a
+		// finished pair, which is walked again only when a skip or a trail
+		// checker lies under this trail. A walk under such an option is not
+		// valid for other trails, so it leaves no mark, but it is remembered
+		// per trail: map keys can share a trail. Without trail options marks
+		// stay true, as every seen pair ends the walk.
+		below := ops.trailOptionBelow()
+		active, marked := visited[v]
+		if marked && (active || !below) {
 			return nil
 		}
+		if below {
+			walk := v
+			walk.trail = ops.Trail
+			if _, seen := visited[walk]; seen {
+				return nil
+			}
+			visited[walk] = false
+		}
 		visited[v] = true
+		if len(ops.SkipTrails) > 0 || len(ops.TrailCheckers) > 0 {
+			defer func() {
+				visited[v] = false
+				if below && !marked {
+					delete(visited, v)
+				}
+			}()
+		}
 	}
 
 	switch knd := wVal.Kind(); knd {

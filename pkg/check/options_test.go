@@ -728,6 +728,40 @@ func Test_Options_ArrTrail_tabular(t *testing.T) {
 	}
 }
 
+func Test_Options_trailOptionBelow_tabular(t *testing.T) {
+	chk := func(_, _ any, _ ...any) error { return nil }
+	checkers := map[string]Checker{"T.A[1]": chk}
+	skips := []string{"T.A"}
+	sibling := []string{"T.AB"}
+
+	tt := []struct {
+		testN string
+
+		ops  Options
+		want bool
+	}{
+		{"no options", Options{Trail: "T.A"}, false},
+		{"skip below", Options{Trail: "T", SkipTrails: skips}, true},
+		{"skip at trail", Options{Trail: "T.A", SkipTrails: skips}, true},
+		{"skip above", Options{Trail: "T.A.B", SkipTrails: skips}, false},
+		{"skip beside", Options{Trail: "T.B", SkipTrails: skips}, false},
+		{"root trail", Options{SkipTrails: skips}, true},
+		{"sibling prefix", Options{Trail: "T.A", SkipTrails: sibling}, true},
+		{"checker below", Options{Trail: "T.A", TrailCheckers: checkers}, true},
+		{"checker off", Options{Trail: "T.C", TrailCheckers: checkers}, false},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have := tc.ops.trailOptionBelow()
+
+			// --- Then ---
+			affirm.Equal(t, tc.want, have)
+		})
+	}
+}
+
 func Test_FieldName(t *testing.T) {
 	t.Run("empty trail", func(t *testing.T) {
 		// --- Given ---

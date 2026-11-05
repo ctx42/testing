@@ -2684,6 +2684,275 @@ func Test_Equal_shared_reference_tabular(t *testing.T) {
 	}
 }
 
+func Test_Equal_shared_reference_trail_options(t *testing.T) {
+	type T struct{ A, B []int }
+
+	t.Run("error - skip keeps other trails", func(t *testing.T) {
+		// --- Given ---
+		x := []int{1, 2}
+		y := []int{1, 3}
+
+		// --- When ---
+		err := Equal(T{x, x}, T{y, y}, WithSkipTrail("T.A[1]"))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: T.B[1]\n" +
+			"   want: 2\n" +
+			"   have: 3"
+		affirm.NotNil(t, err)
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - trail checker keeps other trails", func(t *testing.T) {
+		// --- Given ---
+		x := []int{1, 2}
+		y := []int{1, 3}
+		chk := func(_, _ any, _ ...any) error { return nil }
+
+		// --- When ---
+		err := Equal(T{x, x}, T{y, y}, WithTrailChecker("T.A[1]", chk))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: T.B[1]\n" +
+			"   want: 2\n" +
+			"   have: 3"
+		affirm.NotNil(t, err)
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("error - option on a later trail still runs", func(t *testing.T) {
+		// --- Given ---
+		x := []int{1, 2}
+		y := []int{1, 2}
+		chk := func(_, _ any, _ ...any) error { return errors.New("checked") }
+
+		// --- When ---
+		err := Equal(T{x, x}, T{y, y}, WithTrailChecker("T.B[1]", chk))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		affirm.Equal(t, "assertion error:\n  error: checked", err.Error())
+	})
+
+	t.Run("error - skip on a later trail", func(t *testing.T) {
+		// --- Given ---
+		x := []int{1, 2}
+		y := []int{1, 3}
+
+		// --- When ---
+		err := Equal(T{x, x}, T{y, y}, WithSkipTrail("T.B[1]"))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: T.A[1]\n" +
+			"   want: 2\n" +
+			"   have: 3"
+		affirm.NotNil(t, err)
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("no option logs a shared pair once", func(t *testing.T) {
+		// --- Given ---
+		x := []int{1}
+		y := []int{1}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(T{x, x}, T{y, y}, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"T.A[0]"}, trail)
+	})
+
+	t.Run("unrelated option logs a shared pair once", func(t *testing.T) {
+		// --- Given ---
+		x := []int{1}
+		y := []int{1}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithSkipTrail("other")}
+
+		// --- When ---
+		err := Equal(T{x, x}, T{y, y}, opts...)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"T.A[0]"}, trail)
+	})
+
+	t.Run("walk under an option keeps an earlier mark", func(t *testing.T) {
+		// --- Given ---
+		type T3 struct{ A, B, C []int }
+		x := []int{1}
+		y := []int{1}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithSkipTrail("T3.B[0]")}
+
+		// --- When ---
+		err := Equal(T3{x, x, x}, T3{y, y, y}, opts...)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.DeepEqual(t, []string{"T3.A[0]", "T3.B[0] <skipped>"}, trail)
+	})
+
+	t.Run("shared chain stays linear", func(t *testing.T) {
+		// --- Given ---
+		type N struct {
+			L, R *N
+			V    int
+		}
+		build := func() *N {
+			nod := new(N)
+			for range 12 {
+				nod = &N{L: nod, R: nod}
+			}
+			return nod
+		}
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithSkipTrail("N.L.L.V")}
+
+		// --- When ---
+		err := Equal(build(), build(), opts...)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.Equal(t, true, len(trail) < 200)
+	})
+
+	t.Run("shared maps with tied keys stay linear", func(t *testing.T) {
+		// --- Given ---
+		type K struct{ V int }
+		type M map[K]M
+		build := func() M {
+			nod := make(M)
+			for range 10 {
+				nod = M{K{1}: nod, K{2}: nod}
+			}
+			return nod
+		}
+		skip := strings.Repeat("map[check.K]", 10)
+
+		trail := make([]string, 0)
+		opts := []any{WithTrailLog(&trail), WithSkipTrail(skip)}
+
+		// --- When ---
+		err := Equal(build(), build(), opts...)
+
+		// --- Then ---
+		affirm.Nil(t, err)
+		affirm.Equal(t, true, len(trail) < 50)
+	})
+
+	t.Run("skip inside a cycle stops", func(t *testing.T) {
+		// --- Given ---
+		t.Setenv("___", "___")
+		defer debug.SetMaxStack(debug.SetMaxStack(64 << 20))
+
+		type N struct {
+			V    int
+			Next *N
+		}
+		want := &N{V: 1}
+		want.Next = want
+		have := &N{V: 2}
+		have.Next = have
+
+		// --- When ---
+		err := Equal(want, have, WithSkipTrail("N.V"))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+
+	t.Run("skip hides a value linked by a cycle", func(t *testing.T) {
+		// --- Given ---
+		type P struct {
+			S int
+			Q *struct{ P any }
+		}
+		type C struct {
+			A *P
+			B *struct{ P any }
+		}
+		build := func(val int) C {
+			par := &P{S: val, Q: new(struct{ P any })}
+			par.Q.P = par
+			return C{A: par, B: par.Q}
+		}
+
+		// --- When ---
+		err := Equal(build(1), build(2), WithSkipTrail("C.A.S"))
+
+		// --- Then ---
+		// The documented limit: B.P.S differs and is not reported.
+		affirm.Nil(t, err)
+	})
+
+	t.Run("error - field order decides the cycle limit", func(t *testing.T) {
+		// --- Given ---
+		type P struct {
+			S int
+			Q *struct{ P any }
+		}
+		type C struct {
+			B *struct{ P any }
+			A *P
+		}
+		build := func(val int) C {
+			par := &P{S: val, Q: new(struct{ P any })}
+			par.Q.P = par
+			return C{A: par, B: par.Q}
+		}
+
+		// --- When ---
+		err := Equal(build(1), build(2), WithSkipTrail("C.A.S"))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: C.B.P.S\n" +
+			"   want: 1\n" +
+			"   have: 2"
+		affirm.NotNil(t, err)
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
+	t.Run("cycles stop", func(t *testing.T) {
+		// --- Given ---
+		t.Setenv("___", "___")
+		defer debug.SetMaxStack(debug.SetMaxStack(64 << 20))
+
+		type N struct {
+			Next *N
+			Kids []any
+			Dict map[string]any
+		}
+		build := func() *N {
+			nod := &N{Kids: make([]any, 1), Dict: make(map[string]any)}
+			nod.Next = nod
+			nod.Kids[0] = nod.Kids
+			nod.Dict["self"] = nod.Dict
+			return nod
+		}
+
+		// --- When ---
+		err := Equal(build(), build(), WithSkipTrail("other"))
+
+		// --- Then ---
+		affirm.Nil(t, err)
+	})
+}
+
 func Test_Equal_EqualCases_tabular(t *testing.T) {
 	for _, tc := range testcases.EqualCases() {
 		t.Run("Equal "+tc.Desc, func(t *testing.T) {

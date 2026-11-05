@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"slices"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -119,7 +120,8 @@ func WithTrail(pth string) Option {
 
 // WithTrailLog is a [Checker] option turning on a collection of checked
 // fields/elements/keys. The trails are added to the provided slice. A pair of
-// references compared once is logged once, even when several fields share it.
+// references compared once is logged once, even when several fields share it,
+// and a pair under a skip or a trail checker is logged once per trail.
 // Nil references, empty slices and maps, and references to zero-size values are
 // logged for every field.
 func WithTrailLog(list *[]string) Option {
@@ -198,7 +200,9 @@ func WithTypeChecker(typ any, chk Checker) Option {
 }
 
 // WithTrailChecker registers a custom [Checker] that will only be used when
-// the current trail exactly matches the given string.
+// the current trail exactly matches the given string. A value that a cycle
+// links to that trail may stay unchecked on other trails, depending on the
+// order of the walk.
 func WithTrailChecker(trail string, chk Checker) Option {
 	return func(ops Options) Options {
 		ops.TrailCheckers = maps.Clone(ops.TrailCheckers)
@@ -210,7 +214,9 @@ func WithTrailChecker(trail string, chk Checker) Option {
 	}
 }
 
-// WithSkipTrail is a [Checker] option setting trails to skip.
+// WithSkipTrail is a [Checker] option setting trails to skip. A value that a
+// cycle links to a skipped trail may stay unchecked on other trails too,
+// depending on the order of the walk.
 func WithSkipTrail(skip ...string) Option {
 	return func(ops Options) Options {
 		ops.SkipTrails = append(slices.Clip(ops.SkipTrails), skip...)
@@ -579,6 +585,24 @@ func (ops Options) ArrTrail(kind string, idx int) Options {
 	}
 	ops.Trail = next + "[" + strconv.Itoa(idx) + "]"
 	return ops
+}
+
+// trailOptionBelow reports whether [Options.SkipTrails] or
+// [Options.TrailCheckers] hold a trail starting with [Options.Trail]. That
+// covers every trail at or under it, and also a sibling such as "T.AB" for
+// "T.A", which costs one extra walk.
+func (ops Options) trailOptionBelow() bool {
+	for _, trail := range ops.SkipTrails {
+		if strings.HasPrefix(trail, ops.Trail) {
+			return true
+		}
+	}
+	for trail := range ops.TrailCheckers {
+		if strings.HasPrefix(trail, ops.Trail) {
+			return true
+		}
+	}
+	return false
 }
 
 // FieldName returns a helper function which updates [Options.Trail].
