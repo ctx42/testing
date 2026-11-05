@@ -58,6 +58,22 @@ func Test_valToString(t *testing.T) {
 		affirm.Equal(t, "********1", have)
 	})
 
+	t.Run("interface step at the limit", func(t *testing.T) {
+		// --- Given ---
+		var val any = 1
+		for range maxValHops / 2 {
+			dup := val
+			val = &dup
+		}
+		key := reflect.ValueOf(map[any]int{val: 1}).MapKeys()[0]
+
+		// --- When ---
+		have := valToString(key)
+
+		// --- Then ---
+		affirm.Equal(t, "********"+dump.ValMaxNesting, have)
+	})
+
 	t.Run("chain over the limit", func(t *testing.T) {
 		// --- Given ---
 		var val any = 1

@@ -1536,6 +1536,7 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
+		affirm.Equal(t, true, strings.Contains(err.Error(), "trail: T.B"))
 		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
 	})
 
@@ -1552,6 +1553,7 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
+		affirm.Equal(t, true, strings.Contains(err.Error(), "trail: T.B"))
 		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
 	})
 
@@ -1593,6 +1595,7 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 
 	t.Run("slices of empty structs at real addresses", func(t *testing.T) {
 		// --- Given ---
+		// X gives Z a size, so E has an address of its own.
 		type Z struct {
 			E [1]struct{}
 			X int
@@ -1902,6 +1905,7 @@ func Test_Equal_kind_Map(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
+		affirm.Equal(t, true, strings.Contains(err.Error(), "trail: T.B"))
 		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
 	})
 
@@ -1918,6 +1922,7 @@ func Test_Equal_kind_Map(t *testing.T) {
 
 		// --- Then ---
 		affirm.NotNil(t, err)
+		affirm.Equal(t, true, strings.Contains(err.Error(), "trail: T.B"))
 		affirm.DeepEqual(t, []string{"T.A", "T.B"}, trail)
 	})
 
@@ -2839,6 +2844,24 @@ func Test_Equal_shared_reference_trail_options(t *testing.T) {
 
 		// --- When ---
 		err := Equal(T{x, x}, T{y, y}, WithTrailChecker("T.B[1]", chk))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		affirm.Equal(t, "assertion error:\n  error: checked", err.Error())
+	})
+
+	t.Run("error - options on two trails of one pair", func(t *testing.T) {
+		// --- Given ---
+		x := []int{1, 2}
+		y := []int{1, 3}
+		chk := func(_, _ any, _ ...any) error { return errors.New("checked") }
+		opts := []any{
+			WithSkipTrail("T.A[1]"),
+			WithTrailChecker("T.B[1]", chk),
+		}
+
+		// --- When ---
+		err := Equal(T{x, x}, T{y, y}, opts...)
 
 		// --- Then ---
 		affirm.NotNil(t, err)

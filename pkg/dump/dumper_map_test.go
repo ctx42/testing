@@ -4,12 +4,16 @@
 package dump
 
 import (
+	"bytes"
 	"math"
 	"reflect"
+	"runtime"
 	"runtime/debug"
 	"strconv"
 	"strings"
 	"testing"
+	"unsafe"
+	"weak"
 
 	"github.com/ctx42/testing/internal/affirm"
 	"github.com/ctx42/testing/pkg/goldy"
@@ -212,6 +216,41 @@ func Test_MapDumper(t *testing.T) {
 
 		// --- Then ---
 		affirm.DeepEqual(t, []int{0, 1, 2, 3, 4, 5}, order)
+	})
+
+	t.Run("printed dumps are released", func(t *testing.T) {
+		// --- Given ---
+		type K int
+		type V struct{ N int }
+		val := make(map[K]V)
+		for i := range 6 {
+			val[K(i)] = V{N: i}
+		}
+
+		var refs []weak.Pointer[byte]
+		vDpr := func(Dump, int, reflect.Value) string {
+			buf := bytes.Repeat([]byte("v"), 1<<16)
+			refs = append(refs, weak.Make(&buf[0]))
+			return unsafe.String(&buf[0], len(buf))
+		}
+		var held int
+		kDpr := func(_ Dump, _ int, val reflect.Value) string {
+			runtime.GC()
+			for _, ref := range refs {
+				if ref.Value() != nil {
+					held++
+				}
+			}
+			return strconv.Itoa(int(val.Int()))
+		}
+		dmp := New(WithDumper(V{}, vDpr), WithDumper(K(0), kDpr))
+
+		// --- When ---
+		_ = MapDumper(dmp, 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		affirm.Equal(t, 6, len(refs))
+		affirm.Equal(t, 0, held)
 	})
 
 	t.Run("NaN keys are ordered by value", func(t *testing.T) {
