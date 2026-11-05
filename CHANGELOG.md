@@ -1,3 +1,12 @@
+## v0.59.1 (Thu, 05 Nov 2026 15:47:51 UTC)
+- docs(check): state that nil rule covers unexported fields.
+- fix(check): stop zero-size values colliding in cycle check.
+- docs(check): correct godoc on nil checks, cycles, and trail log.
+- fix(dump): print real values for NaN map keys.
+- fix(check): compare slices of different lengths at one address.
+- fix(check): report missing map keys in unexported fields.
+- test(check): cover nil and empty values in more shapes.
+
 ## v0.59.0 (Thu, 05 Nov 2026 12:47:19 UTC)
 - fix(check)!: treat nil and empty slices and maps as different.
 
