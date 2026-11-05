@@ -6,10 +6,12 @@ package check
 import (
 	"fmt"
 	"reflect"
+	"runtime/debug"
 	"testing"
 	"unsafe"
 
 	"github.com/ctx42/testing/internal/affirm"
+	"github.com/ctx42/testing/pkg/dump"
 	"github.com/ctx42/testing/pkg/testcases"
 )
 
@@ -26,6 +28,51 @@ func Test_isPrintableChar(t *testing.T) {
 }
 
 func Test_valToString(t *testing.T) {
+	t.Run("self-referencing pointer", func(t *testing.T) {
+		// --- Given ---
+		t.Setenv("___", "___")
+		defer debug.SetMaxStack(debug.SetMaxStack(64 << 20))
+
+		var val any
+		val = &val
+
+		// --- When ---
+		have := valToString(reflect.ValueOf(val))
+
+		// --- Then ---
+		affirm.Equal(t, "********"+dump.ValMaxNesting, have)
+	})
+
+	t.Run("chain at the limit", func(t *testing.T) {
+		// --- Given ---
+		var val any = 1
+		for range maxValHops / 2 {
+			dup := val
+			val = &dup
+		}
+
+		// --- When ---
+		have := valToString(reflect.ValueOf(val))
+
+		// --- Then ---
+		affirm.Equal(t, "********1", have)
+	})
+
+	t.Run("chain over the limit", func(t *testing.T) {
+		// --- Given ---
+		var val any = 1
+		for range maxValHops/2 + 1 {
+			dup := val
+			val = &dup
+		}
+
+		// --- When ---
+		have := valToString(reflect.ValueOf(val))
+
+		// --- Then ---
+		affirm.Equal(t, "********"+dump.ValMaxNesting, have)
+	})
+
 	t.Run("interface map key", func(t *testing.T) {
 		// --- Given ---
 		key := reflect.ValueOf(map[any]int{"a": 1}).MapKeys()[0]

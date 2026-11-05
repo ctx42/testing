@@ -2018,6 +2018,24 @@ func Test_Equal_kind_Map(t *testing.T) {
 		affirm.NotNil(t, err)
 	})
 
+	t.Run("error - self-referencing pointer key", func(t *testing.T) {
+		// --- Given ---
+		t.Setenv("___", "___")
+		defer debug.SetMaxStack(debug.SetMaxStack(64 << 20))
+
+		var val any
+		val = &val
+		key := val.(*any)
+		want := map[*any]int{key: 1}
+		have := map[*any]int{key: 2}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		affirm.Equal(t, true, strings.Contains(err.Error(), dump.ValMaxNesting))
+	})
+
 	t.Run("error - missing key in unexported map", func(t *testing.T) {
 		// --- Given ---
 		type T struct{ m map[string]int }

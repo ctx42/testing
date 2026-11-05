@@ -27,10 +27,18 @@ func isPrintableChar(v byte) bool {
 	return v >= 32 && v <= 126
 }
 
+// maxValHops limits the pointer and interface steps valToString follows.
+const maxValHops = 16
+
 // valToString returns a string representation of the value.
+func valToString(key reflect.Value) string { return valHopString(key, 0) }
+
+// valHopString is valToString for a value reached after the given number of
+// pointer and interface steps. A chain that reaches [maxValHops] ends with
+// [dump.ValMaxNesting], so a value referencing itself stops.
 //
 //nolint:cyclop
-func valToString(key reflect.Value) string {
+func valHopString(key reflect.Value, hops int) string {
 	switch key.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return fmt.Sprintf("%d", key.Int())
@@ -68,7 +76,10 @@ func valToString(key reflect.Value) string {
 		if key.IsNil() {
 			return dump.ValNil
 		}
-		return "*" + valToString(key.Elem())
+		if hops >= maxValHops {
+			return dump.ValMaxNesting
+		}
+		return "*" + valHopString(key.Elem(), hops+1)
 
 	case reflect.Complex64:
 		return strconv.FormatComplex(key.Complex(), 'f', -1, 64)
@@ -83,7 +94,10 @@ func valToString(key reflect.Value) string {
 		if key.IsNil() {
 			return dump.ValNil
 		}
-		return valToString(key.Elem())
+		if hops >= maxValHops {
+			return dump.ValMaxNesting
+		}
+		return valHopString(key.Elem(), hops+1)
 
 	case reflect.UnsafePointer:
 		return fmt.Sprintf("<%p>", key.UnsafePointer())
