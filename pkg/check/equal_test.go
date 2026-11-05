@@ -2036,6 +2036,26 @@ func Test_Equal_kind_Map(t *testing.T) {
 		affirm.Equal(t, true, strings.Contains(err.Error(), dump.ValMaxNesting))
 	})
 
+	t.Run("error - skip does not cover a missing key", func(t *testing.T) {
+		// --- Given ---
+		want := map[string]int{"a": 1}
+		have := map[string]int{"b": 1}
+
+		// --- When ---
+		err := Equal(want, have, WithSkipTrail(`map["a"]`))
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"      trail: map[\"a\"]\n" +
+			"  want type: int\n" +
+			"  have type: <nil>\n" +
+			"       want: 1\n" +
+			"       have: nil"
+		affirm.NotNil(t, err)
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("error - missing key in unexported map", func(t *testing.T) {
 		// --- Given ---
 		type T struct{ m map[string]int }

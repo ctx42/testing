@@ -214,9 +214,10 @@ func WithTrailChecker(trail string, chk Checker) Option {
 	}
 }
 
-// WithSkipTrail is a [Checker] option setting trails to skip. A value that a
-// cycle links to a skipped trail may stay unchecked on other trails too,
-// depending on the order of the walk.
+// WithSkipTrail is a [Checker] option setting trails to skip. A skip covers a
+// value, not whether its map key exists. A value that a cycle links to a
+// skipped trail may stay unchecked on other trails too, depending on the order
+// of the walk.
 func WithSkipTrail(skip ...string) Option {
 	return func(ops Options) Options {
 		ops.SkipTrails = append(slices.Clip(ops.SkipTrails), skip...)
