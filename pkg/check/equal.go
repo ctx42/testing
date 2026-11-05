@@ -331,6 +331,7 @@ func deepEqual(
 			hkVal := hVal.MapIndex(ent.key)
 			kOps := ops.MapTrail(valToString(ent.key))
 			if !hkVal.IsValid() {
+				_ = kOps.LogTrail()
 				// The value is valid, so it can always be extracted.
 				wItf, _ := core.Value(ent.val)
 				e := equalError(wItf, nil, WithOptions(kOps))

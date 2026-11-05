@@ -2036,6 +2036,21 @@ func Test_Equal_kind_Map(t *testing.T) {
 		affirm.Equal(t, true, strings.Contains(err.Error(), dump.ValMaxNesting))
 	})
 
+	t.Run("error - missing key logs the trail", func(t *testing.T) {
+		// --- Given ---
+		want := map[string]int{"a": 1}
+		have := map[string]int{"b": 1}
+
+		trail := make([]string, 0)
+
+		// --- When ---
+		err := Equal(want, have, WithTrailLog(&trail))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
+		affirm.DeepEqual(t, []string{`map["a"]`}, trail)
+	})
+
 	t.Run("error - skip does not cover a missing key", func(t *testing.T) {
 		// --- Given ---
 		want := map[string]int{"a": 1}
@@ -2202,7 +2217,7 @@ func Test_Equal_kind_Map(t *testing.T) {
 			"       want: 43\n" +
 			"       have: nil"
 		affirm.Equal(t, wMsg, err.Error())
-		affirm.DeepEqual(t, []string{"map[1]"}, trail)
+		affirm.DeepEqual(t, []string{"map[1]", "map[2]"}, trail)
 	})
 
 	t.Run("error - not equal map length", func(t *testing.T) {
