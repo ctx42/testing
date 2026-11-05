@@ -129,6 +129,7 @@ func ExampleEqual_maps() {
 	// Output:
 	// expected values to be equal:
 	//       trail: map[2]
+	//       cause: key not found in have
 	//   want type: check_test.T
 	//   have type: <nil>
 	//        want:

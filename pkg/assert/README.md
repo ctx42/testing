@@ -113,18 +113,14 @@ assert.Equal(want, have)
 //
 // expected values to be equal:
 //       trail: map[2]
+//       cause: key not found in have
+//   want type: T
+//   have type: <nil>
 //        want:
-//              map[int]T{
-//                1: {
-//                  Str: "abc",
-//                },
-//                3: {
-//                  Str: "xyz",
-//                },
+//              {
+//                Str: "xyz",
 //              }
 //        have: nil
-//   want type: map[int]T
-//   have type: <nil>
 ```
 
 Slices and arrays

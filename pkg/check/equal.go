@@ -334,7 +334,8 @@ func deepEqual(
 				_ = kOps.LogTrail()
 				// The value is valid, so it can always be extracted.
 				wItf, _ := core.Value(ent.val)
-				e := equalError(wItf, nil, WithOptions(kOps))
+				e := equalError(wItf, nil, WithOptions(kOps)).
+					Prepend("cause", "%s", "key not found in have")
 				err = notice.Join(err, e)
 				continue
 			}

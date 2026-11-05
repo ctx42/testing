@@ -1933,6 +1933,7 @@ func Test_Equal_kind_Map(t *testing.T) {
 		wMsg := "" +
 			"expected values to be equal:\n" +
 			"      trail: map[NaN]\n" +
+			"      cause: key not found in have\n" +
 			"  want type: int\n" +
 			"  have type: <nil>\n" +
 			"       want: 1\n" +
@@ -2036,6 +2037,25 @@ func Test_Equal_kind_Map(t *testing.T) {
 		affirm.Equal(t, true, strings.Contains(err.Error(), dump.ValMaxNesting))
 	})
 
+	t.Run("error - nil value under a missing key", func(t *testing.T) {
+		// --- Given ---
+		want := map[string]any{"a": nil}
+		have := map[string]any{"b": nil}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: map[\"a\"]\n" +
+			"  cause: key not found in have\n" +
+			"   want: nil\n" +
+			"   have: nil"
+		affirm.NotNil(t, err)
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("error - missing key logs the trail", func(t *testing.T) {
 		// --- Given ---
 		want := map[string]int{"a": 1}
@@ -2063,6 +2083,7 @@ func Test_Equal_kind_Map(t *testing.T) {
 		wMsg := "" +
 			"expected values to be equal:\n" +
 			"      trail: map[\"a\"]\n" +
+			"      cause: key not found in have\n" +
 			"  want type: int\n" +
 			"  have type: <nil>\n" +
 			"       want: 1\n" +
@@ -2084,6 +2105,7 @@ func Test_Equal_kind_Map(t *testing.T) {
 		wMsg := "" +
 			"expected values to be equal:\n" +
 			"      trail: T.m[\"a\"]\n" +
+			"      cause: key not found in have\n" +
 			"  want type: int\n" +
 			"  have type: <nil>\n" +
 			"       want: 1\n" +
@@ -2212,6 +2234,7 @@ func Test_Equal_kind_Map(t *testing.T) {
 		wMsg := "" +
 			"expected values to be equal:\n" +
 			"      trail: map[2]\n" +
+			"      cause: key not found in have\n" +
 			"  want type: int\n" +
 			"  have type: <nil>\n" +
 			"       want: 43\n" +
