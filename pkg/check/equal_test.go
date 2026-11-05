@@ -1307,6 +1307,24 @@ func Test_Equal_kind_Slice_and_Array(t *testing.T) {
 		affirm.Equal(t, wMsg, err.Error())
 	})
 
+	t.Run("error - nil and empty unexported field", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ items []int }
+		want := T{}
+		have := T{items: make([]int, 0)}
+
+		// --- When ---
+		err := Equal(want, have)
+
+		// --- Then ---
+		wMsg := "" +
+			"expected values to be equal:\n" +
+			"  trail: T.items\n" +
+			"   want: nil\n" +
+			"   have: []int{}"
+		affirm.Equal(t, wMsg, err.Error())
+	})
+
 	t.Run("empty slices with different backing arrays", func(t *testing.T) {
 		// --- Given ---
 		want := make([]int, 0, 1)

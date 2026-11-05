@@ -18,8 +18,8 @@ import (
 
 // Equal recursively checks that want and have are equal.
 //
-// A nil slice or map is not equal to an empty one, at any depth. Use
-// [WithEquateEmpty] to treat them as equal.
+// A nil slice or map is not equal to an empty one, at any depth, unexported
+// fields included. Use [WithEquateEmpty] to treat them as equal.
 //
 // See the package documentation for the customization model
 // ([DefaultOptions], [WithTrail], [WithTypeChecker], etc.) and
