@@ -6,6 +6,8 @@ package dump
 import (
 	"math"
 	"reflect"
+	"runtime/debug"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -13,6 +15,34 @@ import (
 	"github.com/ctx42/testing/pkg/goldy"
 	"github.com/ctx42/testing/pkg/testcases"
 )
+
+// tiedKey is a map key with a String method that makes all keys print the same
+// through fmt.
+type tiedKey struct{ V int }
+
+// String implements [fmt.Stringer].
+func (tiedKey) String() string { return "same" }
+
+func Test_mapEntry_keyStr(t *testing.T) {
+	// --- Given ---
+	type T struct{ N int }
+
+	var count int
+	dpr := func(Dump, int, reflect.Value) string {
+		count++
+		return ""
+	}
+	dmp := New(WithDumper(T{}, dpr))
+	ent := &mapEntry{key: reflect.ValueOf(T{})}
+
+	// --- When ---
+	have := ent.keyStr(dmp, 0)
+
+	// --- Then ---
+	affirm.Equal(t, "", have)
+	affirm.Equal(t, "", ent.keyStr(dmp, 0))
+	affirm.Equal(t, 1, count)
+}
 
 func Test_mapEntry_valStr(t *testing.T) {
 	t.Run("value is dumped once", func(t *testing.T) {
@@ -71,6 +101,62 @@ func Test_mapEntry_takeValStr(t *testing.T) {
 }
 
 func Test_MapDumper(t *testing.T) {
+	t.Run("cycle under pointer keys", func(t *testing.T) {
+		// --- Given ---
+		t.Setenv("___", "___")
+		defer debug.SetMaxStack(debug.SetMaxStack(64 << 20))
+
+		type T struct{ M map[string]any }
+		cyc := make(map[string]any)
+		cyc["self"] = cyc
+		val := map[*T]int{{M: cyc}: 1, {M: cyc}: 2}
+
+		// --- When ---
+		have := MapDumper(New(WithMaxDepth(3)), 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		first := strings.Index(have, "}: 1,")
+		second := strings.Index(have, "}: 2,")
+		affirm.Equal(t, true, first >= 0)
+		affirm.Equal(t, true, first < second)
+	})
+
+	t.Run("keys that print the same are ordered by dump", func(t *testing.T) {
+		// --- Given ---
+		val := map[tiedKey]int{{3}: 1, {1}: 1, {2}: 1, {5}: 1, {4}: 1, {6}: 1}
+
+		// --- When ---
+		have := MapDumper(New(WithFlat), 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		want := "" +
+			"map[dump.tiedKey]int{" +
+			"{V: 1}: 1, {V: 2}: 1, {V: 3}: 1, " +
+			"{V: 4}: 1, {V: 5}: 1, {V: 6}: 1}"
+		affirm.Equal(t, want, have)
+	})
+
+	t.Run("tied keys are dumped once", func(t *testing.T) {
+		// --- Given ---
+		type T struct{ N int }
+		val := make(map[T]int)
+		for i := range 6 {
+			val[T{N: i}] = i
+		}
+
+		var count int
+		dpr := func(_ Dump, _ int, val reflect.Value) string {
+			count++
+			return strconv.Itoa(int(val.Field(0).Int()))
+		}
+
+		// --- When ---
+		_ = MapDumper(New(WithDumper(T{}, dpr)), 0, reflect.ValueOf(val))
+
+		// --- Then ---
+		affirm.Equal(t, 6, count)
+	})
+
 	t.Run("NaN key prints its value", func(t *testing.T) {
 		// --- Given ---
 		val := map[float64]int{math.NaN(): 1}

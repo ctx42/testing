@@ -5,7 +5,6 @@ package dump
 
 import (
 	"cmp"
-	"fmt"
 	"reflect"
 	"strings"
 )
@@ -33,7 +32,8 @@ func typeName(dmp Dump, typ reflect.Type) string {
 // valueCmp compares two map keys for sorting. It returns a negative number
 // when a sorts before b, zero when they are equal, and a positive number
 // otherwise. Keys of interface type are compared by their dynamic values,
-// ordered by kind and type first.
+// ordered by kind and type first. Structs, arrays, pointers, and channels have
+// no natural order and compare as equal, so [MapDumper] orders them by dump.
 //
 //nolint:cyclop
 func valueCmp(a, b reflect.Value) int {
@@ -101,9 +101,7 @@ func valueCmp(a, b reflect.Value) int {
 		return cmp.Compare(a.String(), b.String())
 
 	default:
-		// Structs, arrays, pointers and channels: compare their formatted
-		// values, which fmt renders even for unexported fields.
-		return cmp.Compare(fmt.Sprintf("%v", a), fmt.Sprintf("%v", b))
+		return 0
 	}
 }
 

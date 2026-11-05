@@ -11,10 +11,22 @@ import (
 
 // mapEntry is one key and value of a map dumped by [MapDumper].
 type mapEntry struct {
-	key reflect.Value
-	val reflect.Value
-	str string // Cached result of valStr.
-	has bool   // Whether str holds the cached result.
+	key    reflect.Value
+	val    reflect.Value
+	keyDmp string // Cached result of keyStr.
+	hasKey bool   // Whether keyDmp holds the cached result.
+	str    string // Cached result of valStr.
+	has    bool   // Whether str holds the cached result.
+}
+
+// keyStr returns the dump of the key. It dumps the key at most once, because
+// dumps of cyclic values are costly.
+func (ent *mapEntry) keyStr(dmp Dump, lvl int) string {
+	if !ent.hasKey {
+		ent.keyDmp, _ = dmp.value(lvl, ent.key)
+		ent.hasKey = true
+	}
+	return ent.keyDmp
 }
 
 // valStr returns the dump of the value. It dumps the value at most once,
@@ -68,7 +80,12 @@ func MapDumper(dmp Dump, lvl int, val reflect.Value) string {
 		if c := valueCmp(a.key, b.key); c != 0 {
 			return c
 		}
-		// Keys that compare the same, such as NaN, are ordered by value.
+		// Keys without a natural order are ordered by their depth-limited
+		// dump, and keys that dump the same, such as NaN, by value.
+		c := cmp.Compare(a.keyStr(dmp, lvl+1), b.keyStr(dmp, lvl+1))
+		if c != 0 {
+			return c
+		}
 		return cmp.Compare(a.valStr(dmp, lvl+1), b.valStr(dmp, lvl+1))
 	})
 
@@ -78,8 +95,7 @@ func MapDumper(dmp Dump, lvl int, val reflect.Value) string {
 	for i, ent := range entries {
 		last := i == num-1
 
-		sub, _ := dmp.value(lvl+1, ent.key)
-		prn.Write(sub)
+		prn.Write(ent.keyStr(dmp, lvl+1))
 		prn.Write(":").Space()
 
 		prn.Write(trimIndent(dmp, lvl+1, ent.takeValStr(dmp, lvl+1)))

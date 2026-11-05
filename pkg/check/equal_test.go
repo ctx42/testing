@@ -9,6 +9,7 @@ import (
 	"math"
 	"reflect"
 	"regexp"
+	"runtime/debug"
 	"strings"
 	"testing"
 	"time"
@@ -1996,6 +1997,25 @@ func Test_Equal_kind_Map(t *testing.T) {
 
 		// --- Then ---
 		affirm.Equal(t, true, strings.Contains(err.Error(), "NaN: 1,"))
+	})
+
+	t.Run("error - cycle under pointer keys", func(t *testing.T) {
+		// --- Given ---
+		t.Setenv("___", "___")
+		defer debug.SetMaxStack(debug.SetMaxStack(64 << 20))
+
+		type T struct{ M map[string]any }
+		cyc := make(map[string]any)
+		cyc["self"] = cyc
+		key0, key1 := &T{M: cyc}, &T{M: cyc}
+		want := map[*T]int{key0: 1, key1: 2}
+		have := map[*T]int{key0: 1}
+
+		// --- When ---
+		err := Equal(want, have, WithDumper(dump.WithMaxDepth(3)))
+
+		// --- Then ---
+		affirm.NotNil(t, err)
 	})
 
 	t.Run("error - missing key in unexported map", func(t *testing.T) {

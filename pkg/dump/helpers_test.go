@@ -92,6 +92,11 @@ func Test_valueCmp_tabular(t *testing.T) {
 		{"string abc and abc", "abc", "abc", 0},
 		{"string xyz and abc", "xyz", "abc", 1},
 		{"string abc and xyz", "abc", "xyz", -1},
+
+		{"struct ties", struct{ V int }{1}, struct{ V int }{2}, 0},
+		{"array ties", [1]int{1}, [1]int{2}, 0},
+		{"pointer ties", new(int), new(int), 0},
+		{"chan ties", make(chan int), make(chan int), 0},
 	}
 
 	for _, tc := range tt {
