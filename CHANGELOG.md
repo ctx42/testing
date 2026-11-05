@@ -1,3 +1,6 @@
+## v0.59.0 (Thu, 05 Nov 2026 12:47:19 UTC)
+- fix(check)!: treat nil and empty slices and maps as different.
+
 ## v0.58.0 (Tue, 03 Nov 2026 11:58:42 UTC)
 - feat(mocker): generate lint-clean mocks that fail on wrong returns.
 - feat(mocker): wrap generated godoc and Fatalf calls at 80 columns.
